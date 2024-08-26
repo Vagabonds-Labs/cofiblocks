@@ -1,81 +1,137 @@
-# Turborepo starter
+# CofiBlocks - La Comunidad del Café ☕️
 
-This is an official starter Turborepo.
+CofiBlocks is the first Collaborative Business connecting traditional coffee-growing communities in Costa Rica and worldwide directly with coffee lovers using Starknet blockchain technology. Our mission is to distribute benefits among all members, ensuring fair trade, community engagement, and technological innovation.
 
-## Using this example
+## 🌍 What is a Collaborative Business?
 
-Run the following command:
+A Collaborative Business is an organization where customers, producers, and supporters become members. These members share responsibility, decision-making, and benefits (both monetary and otherwise). Our model represents an evolution of the cooperative and DAO (Decentralized Autonomous Organization) concepts, leveraging blockchain technology, smart contracts, and crypto assets (such as NFTs and social currencies).
 
-```sh
-npx create-turbo@latest
-```
+## 🌟 How Does It Work?
 
-## What's inside?
+### Cofi in Your Home
+Subscribers receive freshly roasted coffee delivered to their doorsteps monthly, ensuring they enjoy the finest brews while supporting local producers.
 
-This Turborepo includes the following packages/apps:
+### Cofi is Fair
+Producers receive fair payments upfront, allowing them to plan and understand demand ahead of time, thanks to our subscription model.
 
-### Apps and Packages
+### Cofi Art & NFTs
+In its pilot year, CofiBlocks will create a collection of NFTs featuring original artwork, distributed via coffee labels on each bag sold.
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+### Cofi Complementary Currency
+Members of the CofiBlocks pilot community on the Cambiatus app can claim their COFI tokens—a complementary blockchain currency that ensures participation in the Collaborative Business's benefits.
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+### Cofi Distribution
+At the end of the first year, all CofiBlocks members will receive a percentage of the pilot's financial results in cryptocurrency based on their accumulated COFI tokens. Members will also have the opportunity to participate in decision-making for future stages of the project.
 
-### Utilities
+## 🔗 CofiBlocks & Cambiatus
 
-This Turborepo has some additional tools already setup for you:
+CofiBlocks is a proud member of Cambiatus's Social Currency and Collaborative Business Ecosystem.
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+[Learn More About Cambiatus](https://cambiatus.com)
 
-### Build
+## 🚀 CofiBlocks & Starknet
 
-To build all apps and packages, run the following command:
+We're building our Web3 marketplace using Starknet technology.
 
-```
-cd my-turborepo
-pnpm build
-```
+[Explore on GitHub](https://github.com/Vagabonds-Labs/marketplace)
 
-### Develop
+## 🛠️ Getting Started
 
-To develop all apps and packages, run the following command:
+### Prerequisites
+- Node.js (>= 18)
+- Bun package manager (bun@1.1.24)
+- Prisma
 
-```
-cd my-turborepo
-pnpm dev
-```
+### Installation
 
-### Remote Caching
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Vagabonds-Labs/marketplace.git
+   cd marketplace
+   ```
 
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+2. Install dependencies:
+   ```bash
+   bun install
+   ```
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup), then enter the following commands:
+3. Generate the Prisma client:
+   ```bash
+   bun prisma generate
+   ```
 
-```
-cd my-turborepo
-npx turbo login
-```
+4. Run the development server:
+   ```bash
+   bun turbo dev
+   ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+### Project Structure
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+The project is organized using workspaces:
 
-```
-npx turbo link
-```
+- `apps/` - Contains the main web application.
+- `packages/` - Shared packages and utilities.
 
-## Useful Links
+Key scripts include:
 
-Learn more about the power of Turborepo:
+- `build`: Build the project.
+- `dev`: Start the development server.
+- `db:migrate`: Apply database migrations.
+- `db:seed`: Seed the database with initial data.
 
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
+## Contributing
+
+We welcome contributions from the community! Here's how you can help:
+
+1. Fork the repository and create your branch:
+   ```bash
+   git checkout -b feature/amazing-feature
+   ```
+
+2. Commit your changes:
+   ```bash
+   git commit -m "Add amazing feature"
+   ```
+
+3. Push to the branch:
+   ```bash
+   git push origin feature/amazing-feature
+   ```
+
+4. Open a Pull Request.
+
+## Code of Conduct
+
+We are committed to creating a welcoming and inclusive environment. Please read our [Community Guidelines](COMMUNITY_GUIDELINES.md) to ensure a positive experience for everyone involved.
+
+## 🎉 Join the Community
+
+- Website: [CofiBlocks Website](https://cofiblocks.com)
+- Twitter: [Follow us on Twitter](https://twitter.com/cofiblocks)
+
+## 🚀 Roadmap
+
+### 2022-2023 Season
+Thank you to everyone who participated in our first season and enjoyed coffee from the slopes of Volcán Poás.
+
+### 2024-2025 Season
+We are preparing to launch our second season, featuring coffee from additional coffee-growing regions of Costa Rica.
+
+Want to bring CofiBlocks to your region? [Contact Us](mailto:info@cofiblocks.com)
+
+## 👥 Meet the Team
+
+### Omar Hurtado Munguia
+**Co-founder**
+
+Omar's journey from coffee picker to coffee tour guide in Poás de Alajuela inspired the creation of CofiBlocks. He brings firsthand knowledge of the challenges small producers face.
+
+### Karla Córdoba Brenes
+**Co-founder**
+
+Karla contributes her extensive experience in blockchain technology and impact-driven solutions.
+
+### Ranulfo Paiva Sobrinho
+**Co-founder**
+
+Ranulfo's background in blockchain development and collaborative economies helps drive the technical and organizational aspects of CofiBlocks.
