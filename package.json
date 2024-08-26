@@ -6,7 +6,6 @@
 		"seed": "node apps/web/prisma/seed.js"
 	},
 	"scripts": {
-		"postinstall": "prisma generate",
 		"build": "turbo build",
 		"dev": "turbo dev",
 		"format": "biome check .",

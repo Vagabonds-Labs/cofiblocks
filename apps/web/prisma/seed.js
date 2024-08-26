@@ -104,8 +104,8 @@ async function main() {
 				userId: user.id,
 				items: {
 					create: [
-						{ productId: products[0].id, quantity: 1 },
-						{ productId: products[1].id, quantity: 2 },
+						{ productId: products[0]?.id ?? 0, quantity: 1 },
+						{ productId: products[1]?.id ?? 0, quantity: 2 },
 					],
 				},
 			},
@@ -119,12 +119,12 @@ async function main() {
 				items: {
 					create: [
 						{
-							productId: products[0]?.id,
+							productId: products[0]?.id ?? 0,
 							quantity: 1,
 							price: products[0]?.price ?? 0,
 						},
 						{
-							productId: products[1]?.id,
+							productId: products[1]?.id ?? 0,
 							quantity: 2,
 							price: products[1]?.price ?? 0,
 						},

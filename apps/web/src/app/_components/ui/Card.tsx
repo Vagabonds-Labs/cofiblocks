@@ -24,11 +24,13 @@ export default function Card({
 	price,
 	productId,
 	className = "",
-	onClick = () => {},
+	onClick,
 	isAddingToShoppingCart = false,
 }: CardProps) {
 	const handleClick = React.useCallback(() => {
-		onClick(Number(productId));
+		if (onClick) {
+			onClick(Number(productId));
+		}
 	}, [onClick, productId]);
 
 	return (
@@ -45,7 +47,7 @@ export default function Card({
 				/>
 			</figure>
 			<div className="card-body">
-				<Subtitle as="h3" className="card-title line-clamp-1">
+				<Subtitle className="card-title line-clamp-1">
 					{title}
 				</Subtitle>
 				<p className="line-clamp-2 text-sm text-gray-600">{description}</p>
