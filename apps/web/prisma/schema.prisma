@@ -1,0 +1,103 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+enum Role {
+  ADMIN
+  COFFEE_PRODUCER
+  COFFEE_BUYER
+}
+
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id             Int      @id @default(autoincrement())
+  walletAddress  String   @unique
+  phone          String
+  address        String
+  name           String
+  role           Role
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  shoppingCarts  ShoppingCart[]
+  orders         Order[]
+}
+
+model Post {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+}
+
+model ShoppingCart {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    Int
+  items     ShoppingCartItem[]
+  user      User @relation(fields: [userId], references: [id])
+
+  @@index([createdAt])
+}
+
+model Product {
+  id           Int      @id @default(autoincrement())
+  name         String
+  price        Float
+  nftMetadata  Json
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  shoppingCartItems ShoppingCartItem[]
+  orderItems   OrderItem[]
+
+  @@index([name])
+}
+
+model ShoppingCartItem {
+  id             Int       @id @default(autoincrement())
+  quantity       Int
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  shoppingCart   ShoppingCart @relation(fields: [shoppingCartId], references: [id])
+  shoppingCartId Int
+  product        Product      @relation(fields: [productId], references: [id])
+  productId      Int
+
+  @@index([shoppingCartId])
+  @@index([productId])
+}
+
+model Order {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  total      Float
+  status     OrderStatus
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  items      OrderItem[]
+  user       User     @relation(fields: [userId], references: [id])
+}
+
+model OrderItem {
+  id         Int      @id @default(autoincrement())
+  orderId    Int
+  productId  Int
+  quantity   Int
+  price      Float
+  order      Order    @relation(fields: [orderId], references: [id])
+  product    Product  @relation(fields: [productId], references: [id])
+}
