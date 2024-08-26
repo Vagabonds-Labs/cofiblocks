@@ -16,14 +16,14 @@
 		"db:push": "prisma db push",
 		"db:studio": "prisma studio",
 		"db:seed": "NODE_ENV=development prisma db seed",
-		"sn:chain": "starknet-devnet --seed 0 --account-class cairo1",
-		"sn:deploy": "ts-node scripts-ts/helpers/deploy-wrapper.ts",
-		"sn:deploy:reset": "ts-node scripts-ts/helpers/deploy-wrapper.ts --reset",
-		"sn:test": "cd contracts && snforge test",
-		"sn:test-eslint": "node eslint-contract-name/eslint-plugin-contract-names.test.js",
-		"sn:compile": "cd contracts && scarb build",
-		"format:snfoundry": "biome format --write 'scripts-ts/**/*.{ts,tsx}' && cd contracts && scarb fmt",
-		"format:check:snfoundry": "biome check 'scripts-ts/**/*.{ts,tsx}' && cd contracts && scarb fmt --check"
+		"sn:chain": "cd apps/snfoundry && starknet-devnet --seed 0 --account-class cairo1",
+		"sn:deploy": "cd apps/snfoundry && ts-node scripts-ts/helpers/deploy-wrapper.ts",
+		"sn:deploy:reset": "cd apps/snfoundry && ts-node scripts-ts/helpers/deploy-wrapper.ts --reset",
+		"sn:test": "cd apps/snfoundry/contracts && snforge test",
+		"sn:test-eslint": "cd apps/snfoundry && node eslint-contract-name/eslint-plugin-contract-names.test.js",
+		"sn:compile": "cd apps/snfoundry/contracts && scarb build",
+		"sn:format": "biome format --write 'scripts-ts/**/*.{ts,tsx}' && cd apps/snfoundry/contracts && scarb fmt",
+		"sn:format:check": "biome check 'scripts-ts/**/*.{ts,tsx}' && cd apps/snfoundry/contracts && scarb fmt --check"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.8.3",

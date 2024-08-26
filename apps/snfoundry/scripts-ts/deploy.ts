@@ -1,8 +1,8 @@
 import {
-  deployContract,
-  executeDeployCalls,
-  exportDeployments,
-  deployer,
+	deployContract,
+	deployer,
+	executeDeployCalls,
+	exportDeployments,
 } from "./deploy-contract";
 import { green } from "./helpers/colorize-log";
 
@@ -42,19 +42,19 @@ import { green } from "./helpers/colorize-log";
  * @returns {Promise<void>}
  */
 const deployScript = async (): Promise<void> => {
-  await deployContract({
-    contract: "YourContract",
-    constructorArgs: {
-      owner: deployer.address,
-    },
-  });
+	await deployContract({
+		contract: "CofiCollection",
+		constructorArgs: {
+			owner: deployer.address,
+		},
+	});
 };
 
 deployScript()
-  .then(async () => {
-    await executeDeployCalls();
-    exportDeployments();
+	.then(async () => {
+		await executeDeployCalls();
+		exportDeployments();
 
-    console.log(green("All Setup Done"));
-  })
-  .catch(console.error);
+		console.log(green("All Setup Done"));
+	})
+	.catch(console.error);

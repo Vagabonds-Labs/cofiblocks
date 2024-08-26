@@ -1,5 +1,5 @@
-mod YourContract;
+mod CofiCollection;
 #[cfg(test)]
 mod test {
-    mod TestContract;
+    mod CofiCollection;
 }
