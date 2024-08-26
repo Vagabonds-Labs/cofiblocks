@@ -4,11 +4,10 @@ import "~/styles/globals.css";
 
 import { GeistSans } from "geist/font/sans";
 import type { Metadata } from "next";
+import SiteHead from "~/app/_components/layout/SiteHead";
 import { TRPCReactProvider } from "~/trpc/react";
-import SiteHead from "~/app/_components/layout/SiteHead"; 
 
 import StarknetProvider from "~/utils/starknet/provider";
-
 
 // export const metadata: Metadata = {
 //   title: "CofiBlocks",
@@ -17,18 +16,18 @@ import StarknetProvider from "~/utils/starknet/provider";
 // };
 
 export default function RootLayout({
-  children,
+	children,
 }: Readonly<{ children: React.ReactNode }>) {
-  return (
-    <html lang="en" className={`${GeistSans.variable}`}>
-      <body>
-        <StarknetProvider>
-        <TRPCReactProvider>
-          {/* <SiteHead /> */}
-            {children}
-          </TRPCReactProvider>
-        </StarknetProvider>
-      </body>
-    </html>
-  );
+	return (
+		<html lang="en" className={`${GeistSans.variable}`}>
+			<body>
+				<StarknetProvider>
+					<TRPCReactProvider>
+						{/* <SiteHead /> */}
+						{children}
+					</TRPCReactProvider>
+				</StarknetProvider>
+			</body>
+		</html>
+	);
 }

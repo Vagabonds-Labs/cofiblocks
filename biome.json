@@ -8,5 +8,8 @@
 		"rules": {
 			"recommended": true
 		}
+	},
+	"files": {
+		"ignore": ["scripts/*.js", ".next/**", "*/**/.next/**", "node_modules/**"]
 	}
 }

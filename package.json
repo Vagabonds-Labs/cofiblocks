@@ -1,40 +1,37 @@
 {
-  "name": "cofiblocks",
-  "private": true,
-  "prisma": {
-    "schema": "apps/web/prisma/schema.prisma",
-    "seed": "node apps/web/prisma/seed.js"
-  },
-  "scripts": {
-    "postinstall": "prisma generate",
-    "build": "turbo build",
-    "dev": "turbo dev",
-    "format": "biome check .",
-    "format:fix": "biome check . --write",
-    "db:generate": "prisma migrate dev",
-    "db:migrate": "prisma migrate deploy",
-    "db:push": "prisma db push",
-    "db:studio": "prisma studio",
-    "db:seed": "NODE_ENV=development prisma db seed"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "1.8.3",
-    "prettier": "^3.2.5",
-    "turbo": "^2.0.14",
-    "typescript": "^5.4.5"
-  },
-  "engines": {
-    "node": ">=18"
-  },
-  "packageManager": "bun@1.1.24",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
-  "dependencies": {
-    "@heroicons/react": "^2.1.5",
-    "@trpc/next": "^10.45.2",
-    "blockies-react-svg": "^0.0.13",
-    "starknetkit": "^1.1.9"
-  }
+	"name": "cofiblocks",
+	"private": true,
+	"prisma": {
+		"schema": "apps/web/prisma/schema.prisma",
+		"seed": "node apps/web/prisma/seed.js"
+	},
+	"scripts": {
+		"postinstall": "prisma generate",
+		"build": "turbo build",
+		"dev": "turbo dev",
+		"format": "biome check .",
+		"format:fix": "biome check . --write",
+		"db:generate": "prisma migrate dev",
+		"db:migrate": "prisma migrate deploy",
+		"db:push": "prisma db push",
+		"db:studio": "prisma studio",
+		"db:seed": "NODE_ENV=development prisma db seed"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "1.8.3",
+		"prettier": "^3.2.5",
+		"turbo": "^2.0.14",
+		"typescript": "^5.4.5"
+	},
+	"engines": {
+		"node": ">=18"
+	},
+	"packageManager": "bun@1.1.24",
+	"workspaces": ["apps/*", "packages/*"],
+	"dependencies": {
+		"@heroicons/react": "^2.1.5",
+		"@trpc/next": "^10.45.2",
+		"blockies-react-svg": "^0.0.13",
+		"starknetkit": "^1.1.9"
+	}
 }
