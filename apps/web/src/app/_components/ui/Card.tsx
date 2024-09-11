@@ -47,9 +47,7 @@ export default function Card({
 				/>
 			</figure>
 			<div className="card-body">
-				<Subtitle className="card-title line-clamp-1">
-					{title}
-				</Subtitle>
+				<Subtitle className="card-title line-clamp-1">{title}</Subtitle>
 				<p className="line-clamp-2 text-sm text-gray-600">{description}</p>
 				<div className="mt-4 flex items-center justify-between">
 					<div className="text-lg font-bold text-primary">${price}</div>

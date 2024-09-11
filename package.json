@@ -22,9 +22,12 @@
 		"sn:test-eslint": "cd apps/snfoundry && node eslint-contract-name/eslint-plugin-contract-names.test.js",
 		"sn:compile": "cd apps/snfoundry/contracts && scarb build",
 		"sn:format": "biome format --write 'scripts-ts/**/*.{ts,tsx}' && cd apps/snfoundry/contracts && scarb fmt",
-		"sn:format:check": "biome check 'scripts-ts/**/*.{ts,tsx}' && cd apps/snfoundry/contracts && scarb fmt --check"
+		"sn:format:check": "biome check 'scripts-ts/**/*.{ts,tsx}' && cd apps/snfoundry/contracts && scarb fmt --check",
+		"storybook": "cd apps/web/ storybook dev -p 6006",
+		"storybook:build": "cd apps/web. storybook build"
 	},
 	"devDependencies": {
+		"@repo/ui": "*",
 		"@biomejs/biome": "1.8.3",
 		"prettier": "^3.2.5",
 		"turbo": "^2.0.14",
@@ -37,8 +40,11 @@
 	"workspaces": ["apps/*", "packages/*"],
 	"dependencies": {
 		"@heroicons/react": "^2.1.5",
+		"@storybook/react": "^8.3.0",
 		"@trpc/next": "^10.45.2",
 		"blockies-react-svg": "^0.0.13",
+		"class-variance-authority": "^0.7.0",
+		"classnames": "^2.5.1",
 		"starknetkit": "^1.1.9"
 	}
 }
