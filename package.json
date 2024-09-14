@@ -7,6 +7,7 @@
 	},
 	"scripts": {
 		"build": "turbo build",
+		"build:web": "turbo run build --filter=web",
 		"dev": "turbo dev",
 		"format": "biome check .",
 		"format:fix": "biome check . --write",
@@ -45,6 +46,7 @@
 		"blockies-react-svg": "^0.0.13",
 		"class-variance-authority": "^0.7.0",
 		"classnames": "^2.5.1",
-		"starknetkit": "^1.1.9"
+		"starknetkit": "^1.1.9",
+		"uuid": "^10.0.0"
 	}
 }

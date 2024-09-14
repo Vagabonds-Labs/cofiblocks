@@ -89,6 +89,7 @@ TypeScript Rules:
 - Use 'type' for unions, intersections, and primitive compositions
 - Document complex types with JSDoc
 - Avoid ambiguous union types, use discriminated unions when necessary
+- Use interfaces instead of types for React Component Props
 
 TailwindCSS and DaisyUI Rules:
 - Use TailwindCSS utility classes for styling

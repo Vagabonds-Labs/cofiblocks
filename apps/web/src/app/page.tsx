@@ -1,13 +1,17 @@
 "use client";
 
-import { useAccount } from "@starknet-react/core";
-import { useConnect } from "@starknet-react/core";
-import { useDisconnect } from "@starknet-react/core";
+import { useAccount, useConnect, useDisconnect } from "@starknet-react/core";
+import Carousel from "@repo/ui/carousel";
+import { api } from "~/trpc/react";
 import ProductCatalog from "~/app/_components/features/ProductCatalog";
 import Header from "~/app/_components/layout/Header";
 import Main from "~/app/_components/layout/Main";
-import Hero from "~/app/_components/ui/Hero";
-import { api } from "~/trpc/react";
+
+const carouselData = [
+	{ id: "1", tag: "New", title: "Welcome Coffee Lover", image: "/images/carousel1.webp" },
+	{ id: "2", tag: "Featured", title: "Find the best coffee in the world", image: "/images/carousel2.webp" },
+	{ id: "3", tag: "Popular", title: "Discover unique blends", image: "/images/carousel3.webp" }
+];
 
 export default function Home() {
 	const { address } = useAccount();
@@ -24,12 +28,7 @@ export default function Home() {
 				disconnect={disconnect}
 				cartItems={0}
 			/>
-			<Hero
-				title="Welcome Coffee Lover"
-				description="Find the best coffee in the world"
-				buttonText="Search"
-				buttonOnClick={() => console.log("Button clicked")}
-			/>
+			<Carousel cards={carouselData} />
 			<ProductCatalog />
 		</Main>
 	);

@@ -8,7 +8,8 @@
 		"./productCard": "./src/productCard.tsx",
 		"./code": "./src/code.tsx",
 		"./pill": "./src/pill.tsx",
-		"./typography": "./src/typography.tsx"
+		"./typography": "./src/typography.tsx",
+		"./carousel": "./src/carousel.tsx"
 	},
 	"scripts": {
 		"lint": "eslint . --max-warnings 0",
