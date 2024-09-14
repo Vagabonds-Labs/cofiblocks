@@ -1,7 +1,7 @@
 import { ArrowRightIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
-import { IconButton } from "./iconButton";
-import Pill from "./pill";
+import IconButton from "./iconButton";
+import Pill from "./badge";
 import { H4, Text } from "./typography";
 
 interface ProductCardProps {
@@ -25,28 +25,28 @@ export function ProductCard({
 		<div className="max-w-sm rounded-2xl overflow-hidden shadow-lg border border-gray-200 min-w-[22.375rem]">
 			<div className="relative">
 				<Image
-					className="object-cover"
 					src={image}
 					alt="Product Image"
-					width={300}
-					height={192}
+					width={578}
+					height={382}
 				/>
 				<div className="absolute bottom-4 left-4">
 					<Pill text={`${available} bags available`} />
 				</div>
 			</div>
-			<div className="p-4 bg-primary-light">
-				<H4 className="text-lg font-bold text-gray-900 mb-1">{title}</H4>
-				<Text className="text-lg mb-2 text-primary font-bold">
-					{price} USD <span className="font-normal text-sm">/unit</span>
-				</Text>
-				<div className="flex justify-end">
-					<IconButton
-						variant="primary"
-						onClick={onClick}
-						icon={<ArrowRightIcon className="h-5 w-5 text-black" />}
-					/>
+			<div className="h-[102px] px-6 pt-4 pb-6 bg-surface-primary-soft rounded-bl-2xl rounded-br-2xl flex justify-between items-center">
+				<div className="flex-col justify-start items-start gap-1 inline-flex">
+					<H4>{title}</H4>
+					<Text className="self-stretch text-surface-primary-default text-base font-semibold font-inter leading-normal">
+						{price} USD
+					</Text>
 				</div>
+				<IconButton
+					size="lg"
+					variant="secondary"
+					onClick={onClick}
+					icon={<ArrowRightIcon className="w-5 h-5" />}
+				/>
 			</div>
 		</div>
 	);

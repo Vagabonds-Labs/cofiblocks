@@ -1,11 +1,10 @@
-import React from "react";
-import { Button as ButtonComponent } from "@repo/ui/button";
+import ButtonComponent from "@repo/ui/button";
 
 export interface ButtonProps {
   /** Button contents */
   children: React.ReactNode;
   /** Optional click handler */
-  onClick?: () => void | undefined;
+  onClick?: () => void;
   /** Is this the principal call to action on the page? */
   variant?: "primary" | "secondary";
   /** Is the button disabled? */
@@ -15,20 +14,21 @@ export interface ButtonProps {
 }
 
 /** Primary UI component for user interaction */
-export const Button = ({
+export function Button({
   children,
   onClick,
   variant = "primary",
   disabled = false,
   type = "button",
-}: ButtonProps) => {
+}: ButtonProps) {
   return (
     <ButtonComponent
       variant={variant}
       disabled={disabled}
       type={type}
+      onClick={onClick}
     >
       {children}
     </ButtonComponent>
   );
-};
+}
