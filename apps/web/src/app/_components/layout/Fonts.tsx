@@ -1,9 +1,15 @@
-import { Roboto } from "next/font/google";
+import { Inter, Manrope } from "next/font/google";
 
-const roboto = Roboto({
-	weight: ["400", "700"],
+const manrope = Manrope({
+	weight: ["700"],
 	subsets: ["latin"],
-	variable: "--font-montserrat",
+	variable: "--font-manrope",
+});
+
+const inter = Inter({
+	weight: ["400", "600"],
+	subsets: ["latin"],
+	variable: "--font-inter",
 });
 
 export default function Fonts() {
@@ -11,7 +17,9 @@ export default function Fonts() {
 		<style jsx global>
 			{`
         :root {
-          --roboto-font: ${roboto.style.fontFamily};
+          --manrope-font: ${manrope.style.fontFamily};
+          --inter-font: ${inter.style.fontFamily};
+        }
       `}
 		</style>
 	);

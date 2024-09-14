@@ -1,36 +1,34 @@
-import React from 'react';
-
-import { Button as ButtonComponent  } from "@repo/ui/button";
-
-import './button.css';
+import React from "react";
+import { Button as ButtonComponent } from "@repo/ui/button";
 
 export interface ButtonProps {
-  /** Is this the principal call to action on the page? */
-  primary?: boolean;
-  /** What background color to use */
-  backgroundColor?: string;
-  /** How large should the button be? */
-  size?: 'small' | 'medium' | 'large';
   /** Button contents */
-  label: string;
+  children: React.ReactNode;
   /** Optional click handler */
-  onClick?: () => void;
+  onClick?: () => void | undefined;
+  /** Is this the principal call to action on the page? */
+  variant?: "primary" | "secondary";
+  /** Is the button disabled? */
+  disabled?: boolean;
+  /** Button type */
+  type?: "button" | "submit" | "reset";
 }
 
 /** Primary UI component for user interaction */
 export const Button = ({
-  primary = false,
-  size = 'medium',
-  backgroundColor,
-  label,
-  ...props
+  children,
+  onClick,
+  variant = "primary",
+  disabled = false,
+  type = "button",
 }: ButtonProps) => {
-  const mode = primary ? 'storybook-button--primary' : 'storybook-button--secondary';
   return (
-								<ButtonComponent onClick={() => {}}>
-									<div className="flex items-center space-x-2">
-										<span>Connect</span>
-									</div>
-								</ButtonComponent>
+    <ButtonComponent
+      variant={variant}
+      disabled={disabled}
+      type={type}
+    >
+      {children}
+    </ButtonComponent>
   );
 };

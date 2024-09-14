@@ -1,6 +1,6 @@
+import { Button } from "@repo/ui/button";
 import Image from "next/image";
 import React from "react";
-import Button from "./Button";
 import Spinner from "./Spinner";
 import { Subtitle } from "./Typography";
 
@@ -35,7 +35,7 @@ export default function Card({
 
 	return (
 		<div
-			className={`card card-compact bg-base-100 shadow-xl transition-shadow hover:shadow-2xl ${className}`}
+			className={`card bg-test-red card-compact bg-base-100 shadow-xl transition-shadow hover:shadow-2xl ${className}`}
 		>
 			<figure className="relative aspect-[4/3] overflow-hidden">
 				<Image

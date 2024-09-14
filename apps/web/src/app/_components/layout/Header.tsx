@@ -2,12 +2,12 @@
 
 import { CubeTransparentIcon, WalletIcon } from "@heroicons/react/24/outline";
 import { ShoppingCartIcon } from "@heroicons/react/24/solid";
+// import Button from "../ui/Button";
+import { Button } from "@repo/ui/button";
 import type { ConnectVariables, Connector } from "@starknet-react/core";
 import dynamic from "next/dynamic";
 import { useState } from "react";
 import ShoppingCart from "~/app/_components/features/ShoppingCart";
-// import Button from "../ui/Button";
-import {Button} from "@repo/ui/button"
 
 const BlockiesSvg = dynamic(() => import("blockies-react-svg"), { ssr: false });
 

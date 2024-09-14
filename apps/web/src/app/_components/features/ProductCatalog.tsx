@@ -1,5 +1,5 @@
+import { ProductCard } from "@repo/ui/productCard";
 import React from "react";
-import Card from "~/app/_components/ui/Card";
 import { api } from "~/trpc/react";
 
 const coffeeCards = [
@@ -84,13 +84,11 @@ export default function ProductCatalog() {
 		<div className="grid grid-cols-1 gap-10 p-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
 			{coffeeCards.map(({ id, title, description, imageUrl, imageAlt }) => (
 				<div key={id}>
-					<Card
+					<ProductCard
+						image={imageUrl}
 						title={title}
-						description={description}
-						imageUrl={imageUrl}
-						imageAlt={imageAlt}
-						price="10.00"
-						productId={String(addedProduct)}
+						price={10.0}
+						available={100}
 						onClick={() => handleAddToCart(id)}
 						isAddingToShoppingCart={addedProduct === id}
 					/>

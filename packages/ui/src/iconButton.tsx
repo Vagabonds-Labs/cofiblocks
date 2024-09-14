@@ -1,8 +1,9 @@
 import { type VariantProps, cva } from "class-variance-authority";
+import React from "react";
 import type { ReactNode } from "react";
 
-const buttonVariants = cva(
-	"w-[7.8125rem] h-[3rem] rounded-lg px-4 py-[0.875rem] gap-2 border-t border-x-0 border-b-0 font-inter",
+const iconButtonVariants = cva(
+	"flex items-center justify-center w-10 h-10 rounded-lg gap-2 border-0 font-inter",
 	{
 		variants: {
 			variant: {
@@ -16,28 +17,28 @@ const buttonVariants = cva(
 	},
 );
 
-interface ButtonProps extends VariantProps<typeof buttonVariants> {
-	onClick?: () => void;
+interface IconButtonProps extends VariantProps<typeof iconButtonVariants> {
+	onClick: () => void;
 	disabled?: boolean;
-	children: ReactNode;
+	icon: ReactNode;
 	type?: "button" | "submit" | "reset";
 }
 
-export function Button({
+export function IconButton({
 	onClick,
 	disabled = false,
-	children,
+	icon,
 	type = "button",
 	variant,
-}: ButtonProps) {
+}: IconButtonProps) {
 	return (
 		<button
 			type={type}
 			disabled={disabled}
 			onClick={onClick}
-			className={buttonVariants({ variant })}
+			className={iconButtonVariants({ variant })}
 		>
-			{children}
+			{icon}
 		</button>
 	);
 }
