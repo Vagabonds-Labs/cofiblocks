@@ -4,6 +4,7 @@ import { CubeTransparentIcon, WalletIcon } from "@heroicons/react/24/outline";
 import Button from "@repo/ui/button";
 import PageHeader from "@repo/ui/pageHeader";
 import type { ConnectVariables, Connector } from "@starknet-react/core";
+import { useRouter } from 'next/navigation';
 
 interface HeaderProps {
   address: string | undefined;
@@ -18,6 +19,13 @@ function Header({
   connectors,
   disconnect,
 }: HeaderProps) {
+  const router = useRouter();
+
+  const handleLogout = () => {
+    disconnect();
+    router.push('/');
+  };
+
   const leftIcon = <CubeTransparentIcon className="h-6 w-6 text-content-title" />;
 
   const loginButton = (
@@ -39,7 +47,7 @@ function Header({
       leftIcon={leftIcon} 
       userAddress={address}
       loginButton={!address ? loginButton : undefined}
-      onLogout={disconnect}
+      onLogout={handleLogout}
     />
   );
 }

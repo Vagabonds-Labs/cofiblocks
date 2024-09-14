@@ -46,6 +46,7 @@
 		"blockies-react-svg": "^0.0.13",
 		"class-variance-authority": "^0.7.0",
 		"classnames": "^2.5.1",
+		"framer-motion": "^11.5.4",
 		"starknetkit": "^1.1.9",
 		"uuid": "^10.0.0"
 	}
