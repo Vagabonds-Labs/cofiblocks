@@ -9,7 +9,8 @@
 		"./code": "./src/code.tsx",
 		"./pill": "./src/pill.tsx",
 		"./typography": "./src/typography.tsx",
-		"./carousel": "./src/carousel.tsx"
+		"./carousel": "./src/carousel.tsx",
+		"./pageHeader": "./src/pageHeader.tsx"
 	},
 	"scripts": {
 		"lint": "eslint . --max-warnings 0",

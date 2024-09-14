@@ -17,8 +17,7 @@ export default function Home() {
 	const { address } = useAccount();
 	const { connect, connectors } = useConnect();
 	const { disconnect } = useDisconnect();
-	const { data: cartItems } = api.shoppingCart.getItems.useQuery({ cartId: 1 });
-
+		
 	return (
 		<Main>
 			<Header
@@ -26,7 +25,6 @@ export default function Home() {
 				connect={connect}
 				connectors={connectors}
 				disconnect={disconnect}
-				cartItems={0}
 			/>
 			<Carousel cards={carouselData} />
 			<ProductCatalog />
