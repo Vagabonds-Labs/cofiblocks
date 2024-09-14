@@ -1,7 +1,7 @@
 import { ArrowRightIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
 import IconButton from "./iconButton";
-import Pill from "./badge";
+import Badge from "./badge";
 import { H4, Text } from "./typography";
 
 interface ProductCardProps {
@@ -31,7 +31,7 @@ export function ProductCard({
 					height={382}
 				/>
 				<div className="absolute bottom-4 left-4">
-					<Pill text={`${available} bags available`} />
+					<Badge variant="accent" text={`${available} bags available`} />
 				</div>
 			</div>
 			<div className="h-[102px] px-6 pt-4 pb-6 bg-surface-primary-soft rounded-bl-2xl rounded-br-2xl flex justify-between items-center">
