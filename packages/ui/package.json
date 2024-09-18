@@ -10,7 +10,13 @@
 		"./pill": "./src/pill.tsx",
 		"./typography": "./src/typography.tsx",
 		"./carousel": "./src/carousel.tsx",
-		"./pageHeader": "./src/pageHeader.tsx"
+		"./pageHeader": "./src/pageHeader.tsx",
+		"./form/inputField": "./src/form/inputField.tsx",
+		"./form/radioButton": "./src/form/radioButton.tsx",
+		"./form/checkBox": "./src/form/checkBox.tsx",
+		"./form/toggle": "./src/form/toggle.tsx",
+		"./form/textAreaField": "./src/form/textAreaField.tsx",
+		"./form/numericField": "./src/form/numericField.tsx"
 	},
 	"scripts": {
 		"lint": "eslint . --max-warnings 0",

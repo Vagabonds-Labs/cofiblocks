@@ -9,17 +9,18 @@ import StarknetProvider from "~/utils/starknet/provider";
 import { useAccount } from "@starknet-react/core";
 
 function AuthWrapper({ children }: { children: React.ReactNode }) {
+	// useAutoConnect();
 	const { address } = useAccount();
 	const router = useRouter();
 	const pathname = usePathname();
 
-	useEffect(() => {
-		if (!address && pathname !== "/") {
-			router.push("/");
-		} else if (address && pathname === "/") {
-			router.push("/catalog");
-		}
-	}, [address, router, pathname]);
+	// useEffect(() => {
+	// 	if (!address && pathname !== "/") {
+	// 		router.push("/");
+	// 	} else if (address && pathname === "/") {
+	// 		router.push("/marketplace");
+	// 	}
+	// }, [address, router, pathname]);
 
 	return <>{children}</>;
 }

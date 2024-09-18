@@ -11,6 +11,8 @@ export interface ButtonProps {
   disabled?: boolean;
   /** Button type */
   type?: "button" | "submit" | "reset";
+  /** Button size */
+  size?: "xl" | "lg" | "md" | "sm";
 }
 
 /** Primary UI component for user interaction */
@@ -20,6 +22,7 @@ export function Button({
   variant = "primary",
   disabled = false,
   type = "button",
+  size = "md",
 }: ButtonProps) {
   return (
     <ButtonComponent
@@ -27,6 +30,7 @@ export function Button({
       disabled={disabled}
       type={type}
       onClick={onClick}
+      size={size}
     >
       {children}
     </ButtonComponent>

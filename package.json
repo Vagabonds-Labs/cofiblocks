@@ -6,8 +6,7 @@
 		"seed": "node apps/web/prisma/seed.js"
 	},
 	"scripts": {
-		"build": "turbo build",
-		"build:web": "turbo run build --filter=web",
+		"build": "turbo run build",
 		"dev": "turbo dev",
 		"format": "biome check .",
 		"format:fix": "biome check . --write",
@@ -40,14 +39,19 @@
 	"packageManager": "bun@1.1.24",
 	"workspaces": ["apps/*", "packages/*"],
 	"dependencies": {
+		"@argent/starknet-react-webwallet-connector": "^6.6.0",
 		"@heroicons/react": "^2.1.5",
+		"@hookform/resolvers": "^3.9.0",
 		"@storybook/react": "^8.3.0",
 		"@trpc/next": "^10.45.2",
 		"blockies-react-svg": "^0.0.13",
 		"class-variance-authority": "^0.7.0",
 		"classnames": "^2.5.1",
 		"framer-motion": "^11.5.4",
+		"react-hook-form": "^7.53.0",
 		"starknetkit": "^1.1.9",
-		"uuid": "^10.0.0"
+		"usehooks-ts": "^3.1.0",
+		"uuid": "^10.0.0",
+		"zod": "^3.23.8"
 	}
 }

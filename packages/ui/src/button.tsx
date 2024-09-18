@@ -2,28 +2,28 @@ import type { ButtonHTMLAttributes } from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 
 const buttonVariants = cva(
-  "flex items-center justify-center rounded-lg border font-normal font-inter transition-colors",
+  "flex items-center justify-center rounded-lg border font-medium transition-all duration-200",
   {
     variants: {
       variant: {
         primary: [
-          "bg-content-surface-primary-default text-content-surface-inverse",
-          "hover:bg-content-surface-primary-soft hover:text-content-surface-primary-default",
-          "focus:ring-2 focus:ring-content-surface-primary-default focus:ring-opacity-50",
-          "disabled:bg-content-surface-disable disabled:text-content-surface-border disabled:border-content-surface-border",
+          "bg-surface-secondary-default text-content-title border-surface-secondary-default",
+          "hover:bg-surface-secondary-focus hover:border-surface-secondary-focus",
+          "focus:ring-2 focus:ring-surface-secondary-default focus:ring-opacity-50",
+          "disabled:bg-surface-disable disabled:text-surface-border disabled:border-surface-border",
         ],
         secondary: [
-          "bg-content-surface-secondary-default text-content-title border-content-surface-secondary-default",
-          "hover:bg-content-surface-secondary-soft",
-          "focus:bg-content-surface-secondary-focus focus:border-content-surface-secondary-focus",
-          "disabled:bg-content-surface-disable disabled:text-content-surface-border disabled:border-content-surface-border",
+          "bg-surface-secondary-soft text-content-title border-surface-secondary-soft",
+          "hover:bg-surface-secondary-soft-focus hover:border-surface-secondary-soft-focus",
+          "focus:ring-2 focus:ring-surface-secondary-soft focus:ring-opacity-50",
+          "disabled:bg-surface-disable disabled:text-surface-border disabled:border-surface-border",
         ],
       },
       size: {
-        xl: "h-16 px-6 py-5 text-base leading-normal",
-        lg: "h-[3.25rem] px-4 py-3.5 text-base leading-normal",
-        md: "h-9 px-3 py-1.5 text-base leading-normal",
-        sm: "h-7 px-2 py-1 text-sm leading-tight",
+        xl: "h-16 px-8 py-4 text-base",
+        lg: "h-12 px-6 py-3 text-base",
+        md: "h-10 px-4 py-2 text-base",
+        sm: "h-8 px-3 py-1 text-sm",
       },
     },
     defaultVariants: {

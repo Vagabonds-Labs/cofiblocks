@@ -7,6 +7,8 @@ import Link from 'next/link'
 import { H1, Text } from "@repo/ui/typography"
 import { useConnect } from '@starknet-react/core'
 import Button from "@repo/ui/button"
+import { connect } from "starknetkit"
+
 
 const Particle = ({ delay }: { delay: number }) => (
   <motion.div
@@ -26,7 +28,7 @@ export default function AnimatedLoginPage() {
   const [showForm, setShowForm] = useState(false)
   const controls = useAnimation()
   const backgroundControls = useAnimation()
-  const { connect, connectors } = useConnect()
+  const { connectors } = useConnect()
 
   useEffect(() => {
     const sequence = async () => {
@@ -162,7 +164,7 @@ export default function AnimatedLoginPage() {
             </div>
             <div className="flex justify-center items-center">
               {connectors.map((connector) => (
-                <Button key={connector.id} onClick={() => connect({ connector })} variant="secondary" size="lg" className="w-full max-w-[15rem] px-4 py-3 bg-surface-secondary-default text-content-title text-base font-medium font-inter rounded-lg border border-surface-secondary-default transition-all duration-300 hover:bg-surface-secondary-hover">
+                <Button key={connector.id} onClick={() => connect()} variant="secondary" size="lg" className="w-full max-w-[15rem] px-4 py-3 bg-surface-secondary-default text-content-title text-base font-medium font-inter rounded-lg border border-surface-secondary-default transition-all duration-300 hover:bg-surface-secondary-hover">
                   <div className="flex items-center space-x-2">
                     <span>Login</span>
                   </div>

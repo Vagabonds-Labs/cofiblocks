@@ -11,12 +11,12 @@ export default function StarknetProvider({
 	const chains = [goerli];
 	const provider = publicProvider();
 	const connectors = [
-		// argent(),
 		new WebWalletConnector({ url: "https://web.argent.xyz" }),
 	];
 
 	return (
 		<StarknetConfig
+			autoConnect
 			chains={chains}
 			provider={provider}
 			connectors={connectors as unknown as Connector[]}
