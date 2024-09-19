@@ -1,4 +1,7 @@
 pre-commit:
+  scripts:
+    "template_checker.sh":
+      runner: bash
   commands:
     check:
       glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
