@@ -1,7 +1,8 @@
 commit-msg:
   scripts:
     template_checker.sh:
-      runner: bash
+      runner: bash  # Optional, Lefthook will default to bash if you don't specify it
+
 pre-commit:
   commands:
     check:
