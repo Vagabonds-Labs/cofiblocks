@@ -1,13 +1,16 @@
 #!/bin/bash
 
-INPUT_FILE=$1
-# START_LINE=$(head -n1 "$INPUT_FILE")
+# Set the commit message file
+INPUT_FILE="${1:-.git/COMMIT_EDITMSG}"
+START_LINE=$(head -n1 "$INPUT_FILE")
 
 # Define the regex pattern for conventional commits
 PATTERN="^(feat|fix|docs|style|refactor|test|chore)(\([a-zA-Z0-9_-]+\))?: .+"
 
+echo "START_LINE: $START_LINE"
+
 # Check if the start line matches the conventional commit pattern
-if ![[ "$START_LINE" =~ $PATTERN ]]; then
+if ! [[ "$START_LINE" =~ $PATTERN ]]; then
   echo "Bad commit message, see example: feat: add new feature"
   exit 1
 fi
