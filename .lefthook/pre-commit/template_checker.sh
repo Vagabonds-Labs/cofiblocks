@@ -1,7 +1,7 @@
 #!/bin/bash
 
 INPUT_FILE=$1
-START_LINE=$(head -n1 "$INPUT_FILE")
+# START_LINE=$(head -n1 "$INPUT_FILE")
 
 # Define the regex pattern for conventional commits
 PATTERN="^(feat|fix|docs|style|refactor|test|chore)(\([a-zA-Z0-9_-]+\))?: .+"
