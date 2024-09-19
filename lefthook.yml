@@ -1,6 +1,6 @@
 pre-commit:
   scripts:
-    "template_checker.sh":
+    template_checker:
       runner: bash
   commands:
     check:
