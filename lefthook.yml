@@ -1,0 +1,11 @@
+commit-msg:
+  scripts:
+    template_checker.sh:
+      runner: bash  # Optional, Lefthook will default to bash if you don't specify it
+
+pre-commit:
+  commands:
+    check:
+      glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
+      run: npx @biomejs/biome check --write --no-errors-on-unmatched --files-ignore-unknown=true --colors=off {staged_files}
+      stage_fixed: true
