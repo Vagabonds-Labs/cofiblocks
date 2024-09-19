@@ -135,3 +135,19 @@ Karla contributes her extensive experience in blockchain technology and impact-d
 **Co-founder**
 
 Ranulfo's background in blockchain development and collaborative economies helps drive the technical and organizational aspects of CofiBlocks.
+
+## 🤖 Development Resources
+
+### CofiBlocks Dev Assistant
+
+We've created a custom GPT to assist with development tasks related to CofiBlocks. This AI-powered assistant is designed to help with coding, answer questions about our tech stack, and provide guidance on best practices.
+
+Access the CofiBlocks Dev Assistant here: [CofiBlocks Dev Assistant](https://chatgpt.com/g/g-JIRAV36d5-cofiblocks-dev-assistant)
+
+Features:
+- Coding assistance for our tech stack (Next.js, TypeScript, TailwindCSS, etc.)
+- Guidance on project structure and best practices
+- Help with Starknet and blockchain-related development
+- Quick answers to common development questions
+
+Feel free to use this resource during your development process to streamline your workflow and get quick answers to your questions.
