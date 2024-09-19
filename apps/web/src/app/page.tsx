@@ -103,7 +103,7 @@ export default function AnimatedLoginPage() {
         {/* Particles */}
         <AnimatePresence>
           {Array.from({ length: 20 }).map((_, i) => (
-            <Particle key={`particle-${i}`} delay={i * 0.03} />
+            <Particle key={`particle-${i + 1}`} delay={i * 0.03} />
           ))}
         </AnimatePresence>
 
