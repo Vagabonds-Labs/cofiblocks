@@ -16,6 +16,7 @@ General Rules
 - Don't be lazy, write all the code to implement features I ask for.
 
 General Component Creation Guidelines:
+- Import ui components from @repo/ui
 - Use rems instead of pixels
 - Prioritize reusability and modularity
 - Ensure consistent naming conventions

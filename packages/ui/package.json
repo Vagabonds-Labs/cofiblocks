@@ -18,7 +18,8 @@
 		"./form/textAreaField": "./src/form/textAreaField.tsx",
 		"./form/numericField": "./src/form/numericField.tsx",
 		"./modal": "./src/modal.tsx",
-		"./alert": "./src/alert.tsx"
+		"./alert": "./src/alert.tsx",
+		"./tooltip": "./src/tooltip.tsx"
 	},
 	"scripts": {
 		"lint": "eslint . --max-warnings 0",
