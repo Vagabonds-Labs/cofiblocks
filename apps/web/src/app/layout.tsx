@@ -1,30 +1,41 @@
 "use client";
 
 import "~/styles/globals.css";
-
+import { useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { GeistSans } from "geist/font/sans";
-import type { Metadata } from "next";
-import SiteHead from "~/app/_components/layout/SiteHead";
 import { TRPCReactProvider } from "~/trpc/react";
-
 import StarknetProvider from "~/utils/starknet/provider";
+import { useAccount } from "@starknet-react/core";
 
-// export const metadata: Metadata = {
-//   title: "CofiBlocks",
-//   description: "CofiBlocks is a platform for buying and selling coffee beans",
-//   icons: [{ rel: "icon", url: "/favicon.ico" }],
-// };
+function AuthWrapper({ children }: { children: React.ReactNode }) {
+	// useAutoConnect();
+	const { address } = useAccount();
+	const router = useRouter();
+	const pathname = usePathname();
+
+	// useEffect(() => {
+	// 	if (!address && pathname !== "/") {
+	// 		router.push("/");
+	// 	} else if (address && pathname === "/") {
+	// 		router.push("/marketplace");
+	// 	}
+	// }, [address, router, pathname]);
+
+	return <>{children}</>;
+}
 
 export default function RootLayout({
 	children,
 }: Readonly<{ children: React.ReactNode }>) {
 	return (
-		<html lang="en" className={`${GeistSans.variable}`}>
+		<html lang="en" data-theme="cofiblocks" className={`${GeistSans.variable}`}>
 			<body>
 				<StarknetProvider>
 					<TRPCReactProvider>
-						{/* <SiteHead /> */}
-						{children}
+						<AuthWrapper>
+							{children}
+						</AuthWrapper>
 					</TRPCReactProvider>
 				</StarknetProvider>
 			</body>

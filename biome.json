@@ -10,6 +10,13 @@
 		}
 	},
 	"files": {
-		"ignore": ["scripts/*.js", ".next/**", "*/**/.next/**", "node_modules/**"]
+		"ignore": [
+			"scripts/*.js",
+			".next/**",
+			"*/**/.next/**",
+			"node_modules/**",
+			"apps/web/storybook-static/**",
+			"apps/web/.storybook/**"
+		]
 	}
 }

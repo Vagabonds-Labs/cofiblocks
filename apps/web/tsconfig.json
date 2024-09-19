@@ -37,6 +37,6 @@
 		"**/*.cjs",
 		"**/*.js",
 		".next/types/**/*.ts"
-	],
-	"exclude": ["node_modules"]
+, "../../packages/ui/src/NftCard.tsx"	],
+	"exclude": ["storybook-static", "node_modules", ".next", "out"]
 }

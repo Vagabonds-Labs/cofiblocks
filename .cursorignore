@@ -1,0 +1,33 @@
+# Complexity
+no-useless-type-constraint
+use-literal-keys
+use-optional-chain
+
+# Correctness
+# (no-unused-variables and use-array-literals are off in the original config)
+
+# Style
+no-inferrable-types
+no-namespace
+use-as-const-assertion
+# (use-consistent-array-type is off in the original config)
+use-for-of
+use-shorthand-function-type
+
+# Suspicious
+no-empty-block-statements
+no-explicit-any
+no-extra-non-null-assertion
+no-misleading-instantiator
+no-unsafe-declaration-merging
+# (use-await is off in the original config)
+use-namespace-keyword
+
+# Additional rules from overrides
+no-arguments
+no-var
+use-const
+
+# Note: Many rules in the "correctness" and "suspicious" categories 
+# under the overrides section are set to "off". These are not included
+# in the .cursorignore file as ignoring them would enable them.
