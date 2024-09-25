@@ -37,36 +37,43 @@ const profileOptions: ProfileOption[] = [
 		icon: NoSymbolIcon,
 		label: "Log out",
 		href: "/logout",
-		customClass: "text-red-500",
-		iconColor: "text-red-500",
-	},
+        customClass: "text-error-default",
+        iconColor: "text-error-default",
+    },
 ];
 
 function ProfileOptions() {
 	return (
-		<div className="bg-white rounded-lg overflow-hidden">
-			{profileOptions.map((option) => (
-				<Link
-					key={option.label}
-					href={option.href}
-					className={`flex items-center justify-between p-4 hover:bg-gray-50 ${
-						option.label !== "Log out" ? "border-b border-[#EAF1EF]" : ""
-					}`}
-				>
-					<div className="flex items-center">
-						<option.icon
-							className={`w-5 h-5 mr-3 ${option.label === "Log out" ? "text-red-500" : "text-[#3C3E3F]"}`}
-						/>
-						<span
-							className={`${option.label === "Log out" ? "text-red-500" : "text-[#3C3E3F]"}`}
-						>
-							{option.label}
-						</span>
-					</div>
-					<ChevronRightIcon scale={16} className="text-[#3C3E3F] w-5 h-5" />
-				</Link>
-			))}
-		</div>
+		<>
+			<div className="bg-surface-inverse rounded-lg overflow-hidden">
+				{profileOptions.map((option, index) => (
+					<>
+						<Link
+							key={option.label}
+							href={option.href}
+							className="flex items-center justify-between w-full py-1"
+                        >
+                            <div className="flex items-center">
+                                <option.icon
+                                    className={`w-5 h-5 mr-3 ${option.iconColor || "text-content-body-default"}`}
+                                />
+                                <span
+                                    className={
+                                        option.customClass || "text-content-body-default"
+                                    }
+                                >
+                                    {option.label}
+                                </span>
+                            </div>
+                            <ChevronRightIcon className="text-content-body-default w-5 h-5" />
+                        </Link>
+						{index < profileOptions.length - 1 && (
+							<hr className="my-2 surface-primary-soft" />
+						)}
+					</>
+				))}
+			</div>
+		</>
 	);
 }
 

@@ -3,6 +3,7 @@
 import { useAccount, useConnect, useDisconnect } from "@starknet-react/core";
 import { useState } from "react";
 import { ProfileCard } from "~/app/_components/features/ProfileCard";
+import { ProfileOptions } from "~/app/_components/features/ProfileOptions";
 import Header from "~/app/_components/layout/Header";
 import Main from "~/app/_components/layout/Main";
 
@@ -40,6 +41,7 @@ export default function UserProfile() {
 			<div className="container mx-auto px-4 py-8">
 				<h1 className="text-3xl font-bold mb-6">User Profile</h1>
 				<ProfileCard user={user} />
+				<ProfileOptions />
 			</div>
 		</Main>
 	);
