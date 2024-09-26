@@ -1,5 +1,8 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { mockedProducts } from "./mockProducts";
+
+// TODO: Replace mockedProducts with real data fetched from the blockchain in the near future.
 
 export const productRouter = createTRPCRouter({
 	getProducts: publicProcedure
@@ -9,16 +12,22 @@ export const productRouter = createTRPCRouter({
 				cursor: z.number().optional(), // Pagination cursor
 			}),
 		)
-		.query(async ({ ctx, input }) => {
+		.query(({ input }) => {
 			const { limit, cursor } = input;
 
-			const products = await ctx.db.product.findMany({
-				take: limit, // Fetch specified limit
-				skip: cursor ? 1 : 0, // Skip current cursor
-				cursor: cursor ? { id: cursor } : undefined,
-				orderBy: { id: "asc" }, // Ascending order by id
-			});
+			// Find the starting index based on the cursor
+			let startIndex = 0;
+			if (cursor) {
+				const index = mockedProducts.findIndex(
+					(product) => product.id === cursor,
+				);
+				startIndex = index >= 0 ? index + 1 : 0;
+			}
 
+			// Get the slice of products for the current page
+			const products = mockedProducts.slice(startIndex, startIndex + limit);
+
+			// Determine the next cursor
 			const nextCursor =
 				products.length === limit ? products[products.length - 1]?.id : null;
 
