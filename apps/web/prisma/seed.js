@@ -7,6 +7,9 @@ const coffeeCards = [
 		description: "Descripción del Café de Especialidad 1.",
 		imageUrl: "/images/cafe1.webp",
 		imageAlt: "Paquete de Café de Especialidad 1",
+		region: "Alajuela",
+		farmName: "Beneficio Las Peñas",
+		strength: "Light",
 	},
 	{
 		id: 2,
@@ -14,6 +17,9 @@ const coffeeCards = [
 		description: "Descripción del Café de Especialidad 2.",
 		imageUrl: "/images/cafe2.webp",
 		imageAlt: "Paquete de Café de Especialidad 2",
+		region: "Cartago",
+		farmName: "Beneficio Las Nubes",
+		strength: "Medium",
 	},
 	{
 		id: 3,
@@ -21,6 +27,9 @@ const coffeeCards = [
 		description: "Descripción del Café de Especialidad 3.",
 		imageUrl: "/images/cafe3.webp",
 		imageAlt: "Paquete de Café de Especialidad 3",
+		region: "Heredia",
+		farmName: "Beneficio Monteverde",
+		strength: "Strong",
 	},
 	{
 		id: 4,
@@ -28,6 +37,9 @@ const coffeeCards = [
 		description: "Descripción del Café de Especialidad 4.",
 		imageUrl: "/images/cafe4.webp",
 		imageAlt: "Paquete de Café de Especialidad 4",
+		region: "Guanacaste",
+		farmName: "Finca Santa Rosa",
+		strength: "Light",
 	},
 	{
 		id: 5,
@@ -35,6 +47,9 @@ const coffeeCards = [
 		description: "Descripción del Café de Especialidad 5.",
 		imageUrl: "/images/cafe5.webp",
 		imageAlt: "Paquete de Café de Especialidad 5",
+		region: "Puntarenas",
+		farmName: "Finca El Mirador",
+		strength: "Medium",
 	},
 ];
 
@@ -86,7 +101,10 @@ async function main() {
 			prisma.product.create({
 				data: {
 					name: card.title,
-					price: 15.99 + index * 2, // Prices range from 15.99 to 23.99
+					price: 15.99 + index * 2, // Randomize price for realism
+					region: card.region, // Add region
+					farmName: card.farmName, // Add farm name
+					strength: card.strength, // Add strength
 					nftMetadata: JSON.stringify({
 						description: card.description,
 						imageUrl: card.imageUrl,
