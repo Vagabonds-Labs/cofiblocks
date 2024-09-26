@@ -48,36 +48,39 @@ export default function ProductCatalog() {
 		// TODO: Add logic for adding product to cart.
 	};
 
+	// Render each product
+	const renderProduct = (product: Product) => {
+		let metadata: NftMetadata | null = null;
+
+		if (typeof product.nftMetadata === "string") {
+			try {
+				metadata = JSON.parse(product.nftMetadata) as NftMetadata; // Try to parse if it's a JSON string
+			} catch {
+				metadata = null; // Fallback in case of an error
+			}
+		} else {
+			metadata = product.nftMetadata as NftMetadata; // Assign directly if it's already an object
+		}
+
+		return (
+			<ProductCard
+				key={product.id}
+				image={metadata?.imageUrl ?? "/default-image.webp"} // Fallback image
+				region={product.region}
+				farmName={product.farmName}
+				variety={product.name}
+				price={product.price}
+				badgeText={product.strength}
+				isAddingToShoppingCart={false} // Disable shopping cart action for now
+				onClick={() => handleAddToCart(product.id)} // Trigger add-to-cart action
+			/>
+		);
+	};
+
 	return (
 		<div className="flex flex-col items-center gap-6 p-4 mx-auto">
 			{isLoading && <div className="mt-4">Loading...</div>}
-			{products.map((product) => {
-				let metadata: NftMetadata | null = null;
-
-				if (typeof product.nftMetadata === "string") {
-					try {
-						metadata = JSON.parse(product.nftMetadata) as NftMetadata; // Try to parse if it's a JSON string
-					} catch {
-						metadata = null; // Fallback in case of an error
-					}
-				} else {
-					metadata = product.nftMetadata as NftMetadata; // Assign directly if it's already an object
-				}
-
-				return (
-					<ProductCard
-						key={product.id}
-						image={metadata?.imageUrl ?? "/default-image.webp"} // Fallback image
-						region={product.region}
-						farmName={product.farmName}
-						variety={product.name}
-						price={product.price}
-						badgeText={product.strength}
-						isAddingToShoppingCart={false} // Disable shopping cart action for now
-						onClick={() => handleAddToCart(product.id)} // Trigger add-to-cart action
-					/>
-				);
-			})}
+			{products.map(renderProduct)}
 			{isFetchingNextPage && (
 				<div className="mt-4">Loading more products...</div>
 			)}
