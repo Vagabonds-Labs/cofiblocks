@@ -27,4 +27,32 @@ export const userRouter = createTRPCRouter({
 				data: updateData,
 			});
 		}),
+
+	getUserFarm: publicProcedure
+		.input(z.object({ userId: z.number() }))
+		.query(async ({ ctx, input }) => {
+			return ctx.db.farm.findFirst({
+				where: { userId: input.userId },
+			});
+		}),
+
+	updateUserFarm: publicProcedure
+		.input(
+			z.object({
+				farmId: z.number(),
+				name: z.string(),
+				region: z.string(),
+				altitude: z.number(),
+				coordinates: z.string(),
+				website: z.string(),
+				farmImage: z.string().optional(),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const { farmId, ...updateData } = input;
+			return ctx.db.farm.update({
+				where: { id: farmId },
+				data: updateData,
+			});
+		}),
 });

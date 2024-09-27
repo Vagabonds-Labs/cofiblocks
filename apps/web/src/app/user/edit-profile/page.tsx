@@ -18,7 +18,7 @@ const editProfileOptions: EditProfileOption[] = [
 		href: "/user/edit-profile/my-profile",
 	},
 	{
-		imgUrl: "/images/user-profile/avatar.svg",
+		imgUrl: "/images/user-profile/farm-avatar.svg",
 		label: "Edit my farm profile",
 		href: "/user/edit-profile/farm-profile",
 	},

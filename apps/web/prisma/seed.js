@@ -62,8 +62,8 @@ async function main() {
 	await prisma.shoppingCartItem.deleteMany();
 	await prisma.shoppingCart.deleteMany();
 	await prisma.product.deleteMany();
+	await prisma.farm.deleteMany();
 	await prisma.user.deleteMany();
-
 	// Insert new users with different roles
 	const users = await Promise.all([
 		prisma.user.create({
@@ -121,7 +121,7 @@ async function main() {
 		),
 	);
 
-	// Create shopping carts and orders for each user
+	// Create shopping carts, orders and farms for each user
 	for (const user of users) {
 		const cart = await prisma.shoppingCart.create({
 			data: {
@@ -157,8 +157,20 @@ async function main() {
 			},
 		});
 
+		const farm = await prisma.farm.create({
+			data: {
+				name: `${user.name}'s Farm`,
+				region: "Costa Rica",
+				altitude: Math.floor(Math.random() * 2000),
+				coordinates: "123.456, -78.910",
+				website: "https://www.myfarm.com",
+				farmImage: "/images/user-profile/farm-avatar.svg",
+				userId: user.id,
+			},
+		});
+
 		console.log(
-			`Seed data inserted: Order ${order.id} created for ${user.name}, shopping cart ${cart.id} created for ${user.name}`,
+			`Seed data inserted: Order ${order.id} created for ${user.name}, shopping cart ${cart.id} created for ${user.name}, farm ${farm.id} created for ${user.name}`,
 		);
 	}
 }
