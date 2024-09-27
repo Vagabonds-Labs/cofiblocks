@@ -55,7 +55,7 @@ async function main() {
 			data: {
 				walletAddress: "0xUniqueWalletAddress1",
 				phone: "123-456-7890",
-				address: "123 User Street",
+				physicaaddress: "123 User Street",
 				name: "Alice",
 				role: "COFFEE_BUYER",
 			},
@@ -64,7 +64,7 @@ async function main() {
 			data: {
 				walletAddress: "0xUniqueWalletAddress2",
 				phone: "987-654-3210",
-				address: "456 Admin Avenue",
+				physicaaddress: "456 Admin Avenue",
 				name: "Bob",
 				role: "ADMIN",
 			},
@@ -73,7 +73,7 @@ async function main() {
 			data: {
 				walletAddress: "0xUniqueWalletAddress3",
 				phone: "555-555-5555",
-				address: "789 Farmer Lane",
+				physicaaddress: "789 Farmer Lane",
 				name: "Charlie",
 				role: "COFFEE_PRODUCER",
 			},
@@ -87,11 +87,11 @@ async function main() {
 				data: {
 					name: card.title,
 					price: 15.99 + index * 2, // Prices range from 15.99 to 23.99
-					nftMetadata: JSON.stringify({
+					nftMetadata: {
 						description: card.description,
 						imageUrl: card.imageUrl,
 						imageAlt: card.imageAlt,
-					}),
+					},
 				},
 			}),
 		),

@@ -74,7 +74,7 @@ export default function ProductCatalog() {
 	});
 
 	const handleAddToCart = (productId: number) => {
-		const cartId = 1;
+		const cartId = "1"; // Changed to string
 
 		addItem({ cartId, productId, quantity: 1 });
 		setAddedProduct(productId);
@@ -82,7 +82,7 @@ export default function ProductCatalog() {
 
 	return (
 		<div className="flex flex-col items-center gap-6 p-4 mx-auto">
-			{coffeeCards.map(({ id, title, description, imageUrl, imageAlt }) => (
+			{coffeeCards.map(({ id, title, imageUrl }) => (
 				<div key={id} className="w-full max-w-md flex justify-center">
 					<ProductCard
 						image={imageUrl}
