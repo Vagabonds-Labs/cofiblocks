@@ -1,7 +1,7 @@
 "use client";
 
 import Button from "@repo/ui/button";
-import SkeletonLoader from "@repo/ui/sekelton";
+import SkeletonLoader from "@repo/ui/skeleton";
 import Tooltip from "@repo/ui/tooltip";
 
 function App() {

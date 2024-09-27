@@ -9,9 +9,10 @@ export default function StarknetProvider({
 	children: React.ReactNode;
 }) {
 	const connectors = [
-		new InjectedConnector({
-			options: { id: "argentX" },
-		}),
+		// TODO: add ArgentX
+		// new InjectedConnector({
+		// 	options: { id: "argentX" },
+		// }),
 		new InjectedConnector({
 			options: { id: "braavos" },
 		}),

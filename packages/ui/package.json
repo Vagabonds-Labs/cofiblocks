@@ -20,7 +20,7 @@
 		"./modal": "./src/modal.tsx",
 		"./alert": "./src/alert.tsx",
 		"./tooltip": "./src/tooltip.tsx",
-		"./sekelton": "./src/sekelton.tsx",
+		"./skeleton": "./src/skeleton.tsx",
 		"./particle": "./src/particle.tsx"
 	},
 	"scripts": {

@@ -11,7 +11,9 @@ import {
 } from "@starknet-react/core";
 import { motion, useAnimation } from "framer-motion";
 import { signIn, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
 import LoginAnimation from "~/app/_components/ui/LoginAnimation";
 import { MESSAGE } from "~/constants";
@@ -20,13 +22,14 @@ import {
 	formContainerVariants,
 	formContentVariants,
 } from "~/utils/animationsConfig";
-
 export default function LoginPage() {
 	const [showForm, setShowForm] = useState(false);
 	const controls = useAnimation();
 	const backgroundControls = useAnimation();
+	const [isClient, setIsClient] = useState(false);
 
 	const { address } = useAccount();
+	const { data: session } = useSession();
 	const { connect, connectors } = useConnect();
 	const { disconnect } = useDisconnect();
 	const { signTypedDataAsync } = useSignTypedData(MESSAGE);
@@ -79,6 +82,16 @@ export default function LoginPage() {
 		void sequence();
 	}, [controls, backgroundControls]);
 
+	useEffect(() => {
+		if (session && address) {
+			redirect("/marketplace");
+		}
+	}, [session, address]);
+
+	useEffect(() => {
+		setIsClient(true);
+	}, []);
+
 	return (
 		<div className="bg-surface-primary-default flex items-center justify-center min-h-screen overflow-hidden">
 			<motion.div
@@ -118,7 +131,7 @@ export default function LoginPage() {
 										size="lg"
 										className="w-full max-w-[15rem] px-4 py-3  text-content-title text-base font-medium font-inter rounded-lg border border-surface-secondary-default transition-all duration-300 hover:bg-surface-secondary-hover"
 									>
-										Register
+										Sign
 									</Button>
 									<button
 										onClick={handleDisconnectWallet}
@@ -130,28 +143,37 @@ export default function LoginPage() {
 								</>
 							) : (
 								<>
-									{connectors.map((connector) => (
-										<Button
-											key={connector.id}
-											onClick={() => handleConnectWallet(connector)}
-											variant="primary"
-											size="lg"
-											className="w-full max-w-[15rem] px-4 py-3  text-content-title text-base font-medium font-inter rounded-lg border border-surface-secondary-default transition-all duration-300 hover:bg-surface-secondary-hover"
-										>
-											<div className="flex items-center space-x-2">
-												<span>Connect {connector.name}</span>
-											</div>
-										</Button>
-									))}
+									{isClient && (
+										<>
+											{connectors.map((connector) => (
+												<Button
+													key={connector.id}
+													onClick={() => handleConnectWallet(connector)}
+													variant="primary"
+													size="lg"
+													className="w-full max-w-[15rem] px-4 py-3  text-content-title text-base font-medium font-inter rounded-lg border border-surface-secondary-default transition-all duration-300 hover:bg-surface-secondary-hover"
+												>
+													<div className="flex items-center space-x-2">
+														<span>
+															Connect{" "}
+															{connector.id === "argentX"
+																? "Argent X"
+																: connector.name}
+														</span>
+													</div>
+												</Button>
+											))}
+										</>
+									)}
 								</>
 							)}
 						</div>
-						<Link
+						{/* <Link
 							href="/sell"
 							className="block text-center text-content-title text-base font-normal font-inter underline transition-colors duration-300 hover:text-content-title-hover"
 						>
 							Sell My Coffee
-						</Link>
+						</Link> */}
 					</motion.div>
 				</motion.div>
 			</motion.div>

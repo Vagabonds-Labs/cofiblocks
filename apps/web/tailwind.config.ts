@@ -40,9 +40,9 @@ const colors = {
 
 export default {
 	content: [
-		"./src/**/*.tsx",
+		"./src/**/*.{js,ts,jsx,tsx}",
 		"./src/stories/**/*.{js,ts,jsx,tsx,mdx}",
-		"../../packages/ui/**/*.{js,ts,jsx,tsx}",
+		"../../packages/ui/src/**/*.{js,ts,jsx,tsx}",
 	],
 	daisyui: {
 		themes: [

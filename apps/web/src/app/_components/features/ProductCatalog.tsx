@@ -1,4 +1,5 @@
 import { ProductCard } from "@repo/ui/productCard";
+import SkeletonLoader from "@repo/ui/skeleton";
 import { useCallback, useEffect, useState } from "react";
 import { api } from "~/trpc/react";
 import type { NftMetadata, Product } from "./types";
@@ -78,10 +79,13 @@ export default function ProductCatalog() {
 
 	return (
 		<div className="flex flex-col items-center gap-6 p-4 mx-auto">
-			{isLoading && <div className="mt-4">Loading...</div>}
-			{products.map(renderProduct)}
-			{isFetchingNextPage && (
-				<div className="mt-4">Loading more products...</div>
+			{isLoading ? (
+				<SkeletonLoader />
+			) : (
+				<>
+					{products.map(renderProduct)}
+					{isFetchingNextPage && <SkeletonLoader />}
+				</>
 			)}
 		</div>
 	);

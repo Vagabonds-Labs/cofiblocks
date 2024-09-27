@@ -2,6 +2,7 @@
 
 import { CubeTransparentIcon } from "@heroicons/react/24/outline";
 import PageHeader from "@repo/ui/pageHeader";
+import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 interface HeaderProps {
@@ -12,7 +13,8 @@ interface HeaderProps {
 function Header({ address, disconnect }: HeaderProps) {
 	const router = useRouter();
 
-	const handleLogout = () => {
+	const handleLogout = async () => {
+		await signOut();
 		disconnect();
 		router.push("/");
 	};
