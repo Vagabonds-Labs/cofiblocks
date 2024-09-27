@@ -34,12 +34,12 @@ model ShoppingCart {
 }
 
 model Product {
-  id                Int                @id @default(autoincrement())
-  name              String
-  price             Float
-  nftMetadata       Json
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
+  id           Int      @id @default(autoincrement())
+  name         String
+  price        Float
+  nftMetadata  Json
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
   shoppingCartItems ShoppingCartItem[]
   orderItems        OrderItem[]
 

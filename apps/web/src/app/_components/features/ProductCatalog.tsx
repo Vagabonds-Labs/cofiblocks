@@ -1,99 +1,88 @@
 import { ProductCard } from "@repo/ui/productCard";
-import React from "react";
+import { useCallback, useEffect, useState } from "react";
 import { api } from "~/trpc/react";
-
-const coffeeCards = [
-	{
-		id: 1,
-		title: "Café de Especialidad 1",
-		description: "Descripción del Café de Especialidad 1.",
-		imageUrl: "/images/cafe1.webp",
-		imageAlt: "Paquete de Café de Especialidad 1",
-	},
-	{
-		id: 2,
-		title: "Café de Especialidad 2",
-		description: "Descripción del Café de Especialidad 2.",
-		imageUrl: "/images/cafe2.webp",
-		imageAlt: "Paquete de Café de Especialidad 2",
-	},
-	{
-		id: 3,
-		title: "Café de Especialidad 3",
-		description: "Descripción del Café de Especialidad 3.",
-		imageUrl: "/images/cafe3.webp",
-		imageAlt: "Paquete de Café de Especialidad 3",
-	},
-	{
-		id: 4,
-		title: "Café de Especialidad 4",
-		description: "Descripción del Café de Especialidad 4.",
-		imageUrl: "/images/cafe4.webp",
-		imageAlt: "Paquete de Café de Especialidad 4",
-	},
-	{
-		id: 5,
-		title: "Café de Especialidad 5",
-		description: "Descripción del Café de Especialidad 5.",
-		imageUrl: "/images/cafe5.webp",
-		imageAlt: "Paquete de Café de Especialidad 5",
-	},
-	{
-		id: 6,
-		title: "Café de Especialidad 3",
-		description: "Descripción del Café de Especialidad 3.",
-		imageUrl: "/images/cafe3.webp",
-		imageAlt: "Paquete de Café de Especialidad 3",
-	},
-	{
-		id: 7,
-		title: "Café de Especialidad 4",
-		description: "Descripción del Café de Especialidad 4.",
-		imageUrl: "/images/cafe4.webp",
-		imageAlt: "Paquete de Café de Especialidad 4",
-	},
-	{
-		id: 8,
-		title: "Café de Especialidad 5",
-		description: "Descripción del Café de Especialidad 5.",
-		imageUrl: "/images/cafe5.webp",
-		imageAlt: "Paquete de Café de Especialidad 5",
-	},
-];
+import type { NftMetadata, Product } from "./types";
 
 export default function ProductCatalog() {
-	const [addedProduct, setAddedProduct] = React.useState<number | null>(null);
+	const [products, setProducts] = useState<Product[]>([]);
 
-	const utils = api.useUtils();
+	// Using an infinite query to fetch products with pagination
+	const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+		api.product.getProducts.useInfiniteQuery(
+			{
+				limit: 3, // Fetch 3 products per request
+			},
+			{
+				getNextPageParam: (lastPage) => lastPage.nextCursor,
+			},
+		);
 
-	const { mutate: addItem } = api.shoppingCart.addItem.useMutation({
-		onSuccess: async () => {
-			await utils.shoppingCart.getItems.invalidate();
-			setAddedProduct(null);
-		},
-	});
+	// Effect to update local state whenever new data is loaded
+	useEffect(() => {
+		if (data) {
+			const allProducts = data.pages.flatMap((page) => page.products); // Flatten the pages to get all products
+			setProducts(allProducts);
+		}
+	}, [data]);
 
-	const handleAddToCart = (productId: number) => {
-		const cartId = "1"; // Changed to string
+	// Handle infinite scroll for fetching more products as the user scrolls down
+	const handleScroll = useCallback(() => {
+		if (
+			window.innerHeight + window.scrollY >= document.body.offsetHeight - 100 && // Check if near bottom
+			!isFetchingNextPage &&
+			hasNextPage
+		) {
+			void fetchNextPage(); // Fetch the next set of products
+		}
+	}, [isFetchingNextPage, hasNextPage, fetchNextPage]);
 
-		addItem({ cartId, productId, quantity: 1 });
-		setAddedProduct(productId);
+	// Attach and detach scroll event listeners
+	useEffect(() => {
+		window.addEventListener("scroll", handleScroll);
+		return () => window.removeEventListener("scroll", handleScroll);
+	}, [handleScroll]);
+
+	// Placeholder for adding products to the cart
+	const handleAddToCart = (_productId: number) => {
+		// TODO: Add logic for adding product to cart.
+	};
+
+	// Render each product
+	const renderProduct = (product: Product) => {
+		let metadata: NftMetadata | null = null;
+
+		if (typeof product.nftMetadata === "string") {
+			try {
+				metadata = JSON.parse(product.nftMetadata) as NftMetadata; // Try to parse if it's a JSON string
+			} catch {
+				metadata = null; // Fallback in case of an error
+			}
+		} else {
+			metadata = product.nftMetadata as NftMetadata; // Assign directly if it's already an object
+		}
+
+		return (
+			<ProductCard
+				key={product.id}
+				image={metadata?.imageUrl ?? "/default-image.webp"} // Fallback image
+				region={product.region}
+				farmName={product.farmName}
+				variety={product.name}
+				price={product.price}
+				badgeText={product.strength}
+				isAddingToShoppingCart={false} // Disable shopping cart action for now
+				onClick={() => handleAddToCart(product.id)} // Trigger add-to-cart action
+			/>
+		);
 	};
 
 	return (
 		<div className="flex flex-col items-center gap-6 p-4 mx-auto">
-			{coffeeCards.map(({ id, title, imageUrl }) => (
-				<div key={id} className="w-full max-w-md flex justify-center">
-					<ProductCard
-						image={imageUrl}
-						title={title}
-						price={10.0}
-						available={100}
-						onClick={() => handleAddToCart(id)}
-						isAddingToShoppingCart={addedProduct === id}
-					/>
-				</div>
-			))}
+			{isLoading && <div className="mt-4">Loading...</div>}
+			{products.map(renderProduct)}
+			{isFetchingNextPage && (
+				<div className="mt-4">Loading more products...</div>
+			)}
 		</div>
 	);
 }

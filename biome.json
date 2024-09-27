@@ -11,6 +11,7 @@
 	},
 	"files": {
 		"ignore": [
+			".turbo/**",
 			"scripts/*.js",
 			".next/**",
 			"*/**/.next/**",
