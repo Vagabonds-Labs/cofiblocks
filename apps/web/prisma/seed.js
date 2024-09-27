@@ -70,7 +70,7 @@ async function main() {
 			data: {
 				walletAddress: "0xUniqueWalletAddress1",
 				phone: "123-456-7890",
-				physicaaddress: "123 User Street",
+				physicalAddress: "123 User Street",
 				name: "Alice",
 				role: "COFFEE_BUYER",
 			},
@@ -79,7 +79,7 @@ async function main() {
 			data: {
 				walletAddress: "0xUniqueWalletAddress2",
 				phone: "987-654-3210",
-				physicaaddress: "456 Admin Avenue",
+				physicalAddress: "456 Admin Avenue",
 				name: "Bob",
 				role: "ADMIN",
 			},
@@ -88,7 +88,7 @@ async function main() {
 			data: {
 				walletAddress: "0xUniqueWalletAddress3",
 				phone: "555-555-5555",
-				physicaaddress: "789 Farmer Lane",
+				physicalAddress: "789 Farmer Lane",
 				name: "Charlie",
 				role: "COFFEE_PRODUCER",
 			},
