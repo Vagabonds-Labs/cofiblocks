@@ -40,7 +40,7 @@ export const ARGENT_WEBWALLET_URL =
 	process.env.NEXT_PUBLIC_ARGENT_WEBWALLET_URL ?? "https://web.argent.xyz";
 
 // Application Specific Constants
-export const SIGNER = "0x123";
+export const SIGNER = process.env.NEXT_PUBLIC_SIGNER_ADDRESS ?? "0x123";
 export const DOMAIN_NAME = "CofiBlocks";
 export const WELCOME_MESSAGE = `Welcome to ${DOMAIN_NAME}!`;
 export const MESSAGE = {
