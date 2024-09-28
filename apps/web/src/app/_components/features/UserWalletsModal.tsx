@@ -39,7 +39,7 @@ function UserWalletsModal({ isOpen, onClose }: UserWalletsModalProps) {
 				Wallets
 			</h3>
 			<div className="flex flex-col gap-2">
-				{wallets.map((wallet, index) => (
+				{wallets.map((wallet) => (
 					<div
 						key={wallet.name}
 						className="flex justify-between items-center py-2 cursor-pointer"

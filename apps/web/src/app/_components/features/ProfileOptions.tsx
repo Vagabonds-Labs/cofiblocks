@@ -13,6 +13,7 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { LogoutModal } from "~/app/_components/features/LogoutModal";
+import { UserWalletsModal } from "~/app/_components/features/UserWalletsModal";
 
 type ProfileOption = {
 	icon: React.ElementType;
@@ -25,6 +26,7 @@ type ProfileOption = {
 
 function ProfileOptions() {
 	const [isLogoutModalOpen, setIsLogoutModalOpen] = useState<boolean>(false);
+	const [isWalletModalOpen, setIsWalletModalOpen] = useState<boolean>(false);
 
 	const closeLogoutModal = () => {
 		setIsLogoutModalOpen(false);
@@ -34,6 +36,14 @@ function ProfileOptions() {
 		setIsLogoutModalOpen(true);
 	};
 
+	const openWalletModal = () => {
+		setIsWalletModalOpen(true);
+	};
+
+	const closeWalletModal = () => {
+		setIsWalletModalOpen(false);
+	};
+
 	const profileOptions: ProfileOption[] = [
 		{ icon: UserIcon, label: "Edit profile", href: "/user/edit-profile" },
 		{ icon: TicketIcon, label: "My Coffee", href: "/user/my-coffee" },
@@ -41,7 +51,7 @@ function ProfileOptions() {
 		{ icon: ShoppingCartIcon, label: "My Orders", href: "/user/my-orders" },
 		{ icon: HeartIcon, label: "Favorite products", href: "/user/favorites" },
 		{ icon: CubeIcon, label: "My collectibles", href: "/user/collectibles" },
-		{ icon: WalletIcon, label: "Wallet", href: "/user/wallet" },
+		{ icon: WalletIcon, label: "Wallet", onClick: openWalletModal },
 		{
 			icon: AdjustmentsHorizontalIcon,
 			label: "Settings",
@@ -90,7 +100,7 @@ function ProfileOptions() {
 								</>
 							) : (
 								<Link
-									href={option.href}
+									href={option.href || ""}
 									className="flex items-center justify-between w-full"
 								>
 									<div className="flex items-center">
@@ -116,6 +126,7 @@ function ProfileOptions() {
 				))}
 			</div>
 			<LogoutModal isOpen={isLogoutModalOpen} onClose={closeLogoutModal} />
+			<UserWalletsModal isOpen={isWalletModalOpen} onClose={closeWalletModal} />
 		</>
 	);
 }
