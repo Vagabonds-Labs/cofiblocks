@@ -59,8 +59,11 @@ model Product {
   name         String
   price        Float
   nftMetadata  Json
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  region       String    
+  farmName     String    
+  strength     String    
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
   shoppingCartItems ShoppingCartItem[]
   orderItems   OrderItem[]
 
