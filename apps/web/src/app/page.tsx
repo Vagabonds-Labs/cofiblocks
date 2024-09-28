@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { H1, Text } from "@repo/ui/typography"
 import { useConnect } from '@starknet-react/core'
 import Button from "@repo/ui/button"
+import { trpc } from '~/utils/trpc'
 import { connect } from "starknetkit"
 
 
@@ -26,9 +27,26 @@ const Particle = ({ delay }: { delay: number }) => (
 
 export default function AnimatedLoginPage() {
   const [showForm, setShowForm] = useState(false)
+  const [nfts, setNfts] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
   const controls = useAnimation()
   const backgroundControls = useAnimation()
   const { connectors } = useConnect()
+
+  useEffect(() => {
+    async function fetchNFTs() {
+      try {
+        const fetchedNFTs = await trpc.nft.getUserNFTs.query({ userId: 'sample-user-id' }); // Replace with real userId
+        setNfts(fetchedNFTs);
+      } catch (error) {
+        console.error('Error fetching NFTs:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchNFTs();
+  }, []);
 
   useEffect(() => {
     const sequence = async () => {
@@ -53,11 +71,11 @@ export default function AnimatedLoginPage() {
 
   const shapeVariants = {
     initial: { scale: 1, opacity: 1, x: '-50%', y: '-50%', rotate: 0 },
-    gather: { 
-      scale: 0.5, 
-      opacity: 1, 
-      x: '-50%', 
-      y: '-50%', 
+    gather: {
+      scale: 0.5,
+      opacity: 1,
+      x: '-50%',
+      y: '-50%',
       rotate: 360,
       transition: { duration: 0.3, ease: "easeInOut" }
     },
@@ -67,10 +85,10 @@ export default function AnimatedLoginPage() {
       x: custom.x,
       y: custom.y,
       rotate: 0,
-      transition: { 
-        type: "spring", 
-        stiffness: 150, 
-        damping: 10, 
+      transition: {
+        type: "spring",
+        stiffness: 150,
+        damping: 10,
         duration: 0.6,
         bounce: 0.4
       }
@@ -89,7 +107,7 @@ export default function AnimatedLoginPage() {
 
   return (
     <div className="bg-surface-primary-default flex items-center justify-center min-h-screen overflow-hidden">
-      <motion.div 
+      <motion.div
         className="w-[24.375rem] h-[52.75rem] bg-surface-primary-default relative overflow-hidden"
         variants={containerVariants}
         initial="initial"
@@ -108,6 +126,7 @@ export default function AnimatedLoginPage() {
         </AnimatePresence>
 
         {/* Exploding shapes */}
+
         <motion.div
           className="absolute left-1/2 top-1/2"
           variants={shapeVariants}
@@ -145,14 +164,34 @@ export default function AnimatedLoginPage() {
           <Image src="/images/splash/4.png" width={90} height={68} alt="Cup shape" />
         </motion.div>
 
+        {/* NFT Display */}
+        <div className="p-4">
+          <H1 className="text-content-title mb-4">Your NFTs</H1>
+          {loading ? (
+            <p>Loading NFTs...</p>
+          ) : nfts.length > 0 ? (
+            <div className="grid grid-cols-1 gap-4">
+              {nfts.map((nft) => (
+                <div key={nft.id} className="border p-2 rounded">
+                  <Image src={nft.imageUrl} alt={nft.name} width={100} height={100} />
+                  <Text>{nft.name}</Text>
+                  <Text>{nft.description}</Text>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p>You don't own any NFTs yet.</p>
+          )}
+        </div>
+
         {/* White area for form */}
-        <motion.div 
+        <motion.div
           className="absolute bottom-0 left-0 right-0 bg-surface-inverse rounded-t-3xl overflow-hidden"
           variants={formContainerVariants}
           initial="initial"
           animate={showForm ? "visible" : "initial"}
         >
-          <motion.div 
+          <motion.div
             className="p-6 space-y-6"
             variants={formContentVariants}
             initial="initial"
@@ -171,7 +210,7 @@ export default function AnimatedLoginPage() {
                 </Button>
               ))}
             </div>
-            
+
             <Link href="/sell" className="block text-center text-content-title text-base font-normal font-inter underline transition-colors duration-300 hover:text-content-title-hover">
               Sell My Coffee
             </Link>
