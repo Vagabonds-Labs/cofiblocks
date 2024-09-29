@@ -46,17 +46,12 @@ export const productRouter = createTRPCRouter({
 		.query(({ input }) => {
 			const { name } = input;
 
-			// matching product list
-			const products = [];
-
-			for (const product of mockedProducts) {
-				if (product.region === name) {
-					products.push(product);
-				}
-			}
+			const productsFound = mockedProducts.filter(
+				(product) => product.region === name,
+			);
 
 			return {
-				products,
+				productsFound,
 			};
 		}),
 });
