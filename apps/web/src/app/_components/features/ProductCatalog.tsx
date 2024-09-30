@@ -1,4 +1,5 @@
 import { ProductCard } from "@repo/ui/productCard";
+import ProductSearchBar from "@repo/ui/searchBar";
 import { useCallback, useEffect, useState } from "react";
 import { api } from "~/trpc/react";
 import type { NftMetadata, Product } from "./types";
@@ -79,6 +80,7 @@ export default function ProductCatalog() {
 
 	return (
 		<div className="flex flex-col items-center gap-6 p-4 mx-auto">
+			<ProductSearchBar />
 			{isLoading && <div className="mt-4">Loading...</div>}
 			{products.map(renderProduct)}
 			{isFetchingNextPage && (
