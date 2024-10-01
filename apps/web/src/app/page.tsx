@@ -1,5 +1,6 @@
-'use client'
+"use client";
 
+<<<<<<< HEAD
 import { useState, useEffect } from 'react'
 import { motion, useAnimation, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
@@ -9,22 +10,49 @@ import { useConnect } from '@starknet-react/core'
 import Button from "@repo/ui/button"
 import { trpc } from '~/utils/trpc'
 import { connect } from "starknetkit"
+=======
+import Button from "@repo/ui/button";
+import { H1, Text } from "@repo/ui/typography";
+import {
+	type Connector,
+	useAccount,
+	useConnect,
+	useDisconnect,
+	useSignTypedData,
+} from "@starknet-react/core";
+import { motion, useAnimation } from "framer-motion";
+import { signIn, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { useEffect, useState } from "react";
+import LoginAnimation from "~/app/_components/ui/LoginAnimation";
+import { MESSAGE } from "~/constants";
+import {
+	containerVariants,
+	formContainerVariants,
+	formContentVariants,
+} from "~/utils/animationsConfig";
+export default function LoginPage() {
+	const [showForm, setShowForm] = useState(false);
+	const controls = useAnimation();
+	const backgroundControls = useAnimation();
+	const [isClient, setIsClient] = useState(false);
+>>>>>>> 752680a5b5f3fab3a993aec764e691bad9e177fa
 
+	const { address } = useAccount();
+	const { data: session } = useSession();
+	const { connect, connectors } = useConnect();
+	const { disconnect } = useDisconnect();
+	const { signTypedDataAsync } = useSignTypedData(MESSAGE);
 
-const Particle = ({ delay }: { delay: number }) => (
-  <motion.div
-    className="absolute w-1 h-1 bg-yellow-300 rounded-full"
-    initial={{ opacity: 0, scale: 0 }}
-    animate={{
-      opacity: [0, 1, 0],
-      scale: [0, 1.5, 0],
-      top: ['50%', `${Math.random() * 40 + 30}%`],
-      left: ['50%', `${Math.random() * 100}%`],
-    }}
-    transition={{ duration: 2, delay, ease: "easeOut" }}
-  />
-)
+	const handleConnectWallet = async (connector: Connector) => {
+		if (connector) {
+			connect({ connector });
+		}
+	};
 
+<<<<<<< HEAD
 export default function AnimatedLoginPage() {
   const [showForm, setShowForm] = useState(false)
   const [nfts, setNfts] = useState<any[]>([])
@@ -63,12 +91,29 @@ export default function AnimatedLoginPage() {
     }
     void sequence()
   }, [controls, backgroundControls])
+=======
+	const handleSignMessage = async () => {
+		try {
+			const signature = await signTypedDataAsync();
 
-  const containerVariants = {
-    initial: { backgroundColor: 'var(--surface-primary-default)' },
-    exploded: { backgroundColor: 'var(--surface-primary-default)' }
-  }
+			await signIn("credentials", {
+				address,
+				message: JSON.stringify(MESSAGE),
+				redirect: false,
+				signature,
+			});
+		} catch (err) {
+			console.error("Error signing message:", err);
+		}
+	};
+>>>>>>> 752680a5b5f3fab3a993aec764e691bad9e177fa
 
+	const handleDisconnectWallet = () => {
+		disconnect();
+		void signOut();
+	};
+
+<<<<<<< HEAD
   const shapeVariants = {
     initial: { scale: 1, opacity: 1, x: '-50%', y: '-50%', rotate: 0 },
     gather: {
@@ -94,17 +139,41 @@ export default function AnimatedLoginPage() {
       }
     })
   }
+=======
+	useEffect(() => {
+		const sequence = async () => {
+			try {
+				await controls.start("gather");
+				await backgroundControls.start({
+					scale: 1.1,
+					transition: { duration: 0.3 },
+				});
+				await new Promise((resolve) => setTimeout(resolve, 200));
+				await controls.start("explode");
+				await backgroundControls.start({
+					scale: 1,
+					transition: { duration: 0.3 },
+				});
+				setShowForm(true);
+			} catch (error) {
+				console.error("Animation sequence error:", error);
+			}
+		};
+		void sequence();
+	}, [controls, backgroundControls]);
+>>>>>>> 752680a5b5f3fab3a993aec764e691bad9e177fa
 
-  const formContainerVariants = {
-    initial: { height: 0 },
-    visible: { height: '40%', transition: { duration: 0.3, ease: [0.65, 0, 0.35, 1] } }
-  }
+	useEffect(() => {
+		if (session && address) {
+			redirect("/marketplace");
+		}
+	}, [session, address]);
 
-  const formContentVariants = {
-    initial: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.2, delay: 0.1 } }
-  }
+	useEffect(() => {
+		setIsClient(true);
+	}, []);
 
+<<<<<<< HEAD
   return (
     <div className="bg-surface-primary-default flex items-center justify-center min-h-screen overflow-hidden">
       <motion.div
@@ -220,3 +289,93 @@ export default function AnimatedLoginPage() {
     </div>
   )
 }
+=======
+	return (
+		<div className="bg-surface-primary-default flex items-center justify-center min-h-screen overflow-hidden">
+			<motion.div
+				className="w-[24.375rem] h-[52.75rem] bg-surface-primary-default relative overflow-hidden"
+				variants={containerVariants}
+				initial="initial"
+				animate="exploded"
+			>
+				<LoginAnimation
+					backgroundControls={backgroundControls}
+					controls={controls}
+				/>
+				<motion.div
+					className="absolute bottom-0 left-0 right-0 bg-surface-inverse rounded-t-3xl overflow-hidden"
+					variants={formContainerVariants}
+					initial="initial"
+					animate={showForm ? "visible" : "initial"}
+				>
+					<motion.div
+						className="p-6 space-y-6"
+						variants={formContentVariants}
+						initial="initial"
+						animate={showForm ? "visible" : "initial"}
+					>
+						<div className="text-center">
+							<Text className="text-content-title text-lg mt-2">
+								Welcome to
+							</Text>
+							<H1 className="text-content-title">CofiBlocks</H1>
+						</div>
+						<div className="flex flex-col justify-center items-center space-y-4">
+							{address ? (
+								<>
+									<Button
+										onClick={handleSignMessage}
+										variant="primary"
+										size="lg"
+										className="w-full max-w-[15rem] px-4 py-3  text-content-title text-base font-medium font-inter rounded-lg border border-surface-secondary-default transition-all duration-300 hover:bg-surface-secondary-hover"
+									>
+										Sign
+									</Button>
+									<button
+										onClick={handleDisconnectWallet}
+										className="block text-center text-content-title text-base font-normal font-inter underline transition-colors duration-300 hover:text-content-title-hover"
+										type="button"
+									>
+										Disconnect
+									</button>
+								</>
+							) : (
+								<>
+									{isClient && (
+										<>
+											{connectors.map((connector) => (
+												<Button
+													key={connector.id}
+													onClick={() => handleConnectWallet(connector)}
+													variant="primary"
+													size="lg"
+													className="w-full max-w-[15rem] px-4 py-3  text-content-title text-base font-medium font-inter rounded-lg border border-surface-secondary-default transition-all duration-300 hover:bg-surface-secondary-hover"
+												>
+													<div className="flex items-center space-x-2">
+														<span>
+															Connect{" "}
+															{connector.id === "argentX"
+																? "Argent X"
+																: connector.name}
+														</span>
+													</div>
+												</Button>
+											))}
+										</>
+									)}
+								</>
+							)}
+						</div>
+						{/* <Link
+							href="/sell"
+							className="block text-center text-content-title text-base font-normal font-inter underline transition-colors duration-300 hover:text-content-title-hover"
+						>
+							Sell My Coffee
+						</Link> */}
+					</motion.div>
+				</motion.div>
+			</motion.div>
+		</div>
+	);
+}
+>>>>>>> 752680a5b5f3fab3a993aec764e691bad9e177fa

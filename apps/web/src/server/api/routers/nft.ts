@@ -1,16 +1,20 @@
 import { z } from 'zod';
 import { createTRPCRouter, publicProcedure } from '~/server/api/trpc';
-import { fetchUserNFTs } from '~/app/api/nftService';  // service to fetch from blockchain
+import { fetchUserNFTs } from '~/app/api/nftService';
 
 export const nftRouter = createTRPCRouter({
   getUserNFTs: publicProcedure
-    .input(z.object({ userId: z.string() })) // user-specific NFTs
+    .input(z.object({ userId: z.string() }))
     .query(async ({ input }) => {
       try {
-        const nfts = await fetchUserNFTs(input.userId); // Fetch NFTs from blockchain
-        return nfts;
+        const nfts = await fetchUserNFTs(input.userId);
+        if (nfts.length === 0) {
+          return { message: 'No NFTs found for this user', nfts: [] };
+        }
+        return { nfts };
       } catch (error) {
-        throw new Error('Failed to fetch NFTs');
+        console.error('Error fetching NFTs:', error);
+        throw new Error(`Failed to fetch NFTs: ${error.message}`);
       }
-    }),
+    })
 });

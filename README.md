@@ -151,3 +151,20 @@ Features:
 - Quick answers to common development questions
 
 Feel free to use this resource during your development process to streamline your workflow and get quick answers to your questions.
+
+
+### Prompt Guide
+
+To streamline our development process and maintain consistency across the project, we've created a comprehensive prompt guide. This guide covers various custom prompts designed to assist with component generation, code-related tasks, and information retrieval.
+
+Key features of our prompt guide include:
+
+- Instructions for using SudoLang, a powerful pseudocode language for AI collaboration
+- Detailed usage guidelines for our custom prompts:
+  - V0PromptWithComponent for generating v0.dev prompts
+  - TailwindReactComponentGenerator for creating React components with Tailwind CSS
+  - PerplexityBot for efficient information searches
+- Best practices for prompt usage and troubleshooting tips
+
+For full details and usage instructions, please refer to our [Prompt Guide](docs/prompt-guide.md).
+

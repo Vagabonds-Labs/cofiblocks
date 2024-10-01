@@ -1,4 +1,4 @@
-const cofiCollectionABI = [
+export const cofiCollectionABI = [
 	{
 		type: "constructor",
 		name: "constructor",

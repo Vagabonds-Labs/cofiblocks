@@ -23,7 +23,7 @@ export default function ProductList({ products }: ProductListProps) {
 	});
 
 	const handleAddToCart = (productId: number) => {
-		addToCart({ cartId: 0, productId, quantity: 1 });
+		addToCart({ cartId: "1", productId, quantity: 1 });
 	};
 
 	return (
