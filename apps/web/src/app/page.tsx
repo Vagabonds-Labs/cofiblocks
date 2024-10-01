@@ -40,17 +40,17 @@ export default function LoginPage() {
 	const [isClient, setIsClient] = useState(false);
 >>>>>>> 752680a5b5f3fab3a993aec764e691bad9e177fa
 
-	const { address } = useAccount();
-	const { data: session } = useSession();
-	const { connect, connectors } = useConnect();
-	const { disconnect } = useDisconnect();
-	const { signTypedDataAsync } = useSignTypedData(MESSAGE);
+const { address } = useAccount();
+const { data: session } = useSession();
+const { connect, connectors } = useConnect();
+const { disconnect } = useDisconnect();
+const { signTypedDataAsync } = useSignTypedData(MESSAGE);
 
-	const handleConnectWallet = async (connector: Connector) => {
-		if (connector) {
-			connect({ connector });
-		}
-	};
+const handleConnectWallet = async (connector: Connector) => {
+  if (connector) {
+    connect({ connector });
+  }
+};
 
 <<<<<<< HEAD
 export default function AnimatedLoginPage() {
@@ -108,10 +108,10 @@ export default function AnimatedLoginPage() {
 	};
 >>>>>>> 752680a5b5f3fab3a993aec764e691bad9e177fa
 
-	const handleDisconnectWallet = () => {
-		disconnect();
-		void signOut();
-	};
+  const handleDisconnectWallet = () => {
+    disconnect();
+    void signOut();
+  };
 
 <<<<<<< HEAD
   const shapeVariants = {
@@ -163,15 +163,15 @@ export default function AnimatedLoginPage() {
 	}, [controls, backgroundControls]);
 >>>>>>> 752680a5b5f3fab3a993aec764e691bad9e177fa
 
-	useEffect(() => {
-		if (session && address) {
-			redirect("/marketplace");
-		}
-	}, [session, address]);
+  useEffect(() => {
+    if (session && address) {
+      redirect("/marketplace");
+    }
+  }, [session, address]);
 
-	useEffect(() => {
-		setIsClient(true);
-	}, []);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
 <<<<<<< HEAD
   return (

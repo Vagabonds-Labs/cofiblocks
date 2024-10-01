@@ -3,16 +3,16 @@
 import { useState, useEffect } from 'react';
 import { H1 } from '@repo/ui/typography';
 import NftCard from '@repo/ui/nft/NftCard';
-import { fetchUserNFTs } from '@app/api/nftService'; // You will need to implement this API call
+import { fetchUserNFTs } from '@app/api/nftService';
 
 export default function NFTCollectionPage() {
-    const [nfts, setNfts] = useState<any[]>([]); // Replace 'any' with the actual type for NFTs
+    const [nfts, setNfts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         async function loadNFTs() {
             try {
-                const userNFTs = await fetchUserNFTs(); // Fetch NFTs from blockchain
+                const userNFTs = await fetchUserNFTs();
                 setNfts(userNFTs);
             } catch (error) {
                 console.error("Failed to load NFTs", error);
