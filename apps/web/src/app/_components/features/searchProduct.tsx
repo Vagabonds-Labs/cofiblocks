@@ -1,6 +1,3 @@
-import { FunnelIcon } from "@heroicons/react/24/outline";
-import { zodResolver } from "@hookform/resolvers/zod";
-import Button from "@repo/ui/button";
 import InputField from "@repo/ui/form/inputField";
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -8,7 +5,6 @@ import { z } from "zod";
 import { api } from "~/trpc/react";
 import type { Product } from "./types";
 
-// Esquema de validación
 const searchSchema = z.object({
 	name: z
 		.string()
@@ -19,29 +15,23 @@ const searchSchema = z.object({
 type formData = z.infer<typeof searchSchema>;
 
 interface ProductComponentProp {
-	products: Product[]; // Definir el tipo de prop
+	products: Product[];
 	setProducts: (newValue: Product[]) => void;
 }
 
 function ProductSearchBar({ products, setProducts }: ProductComponentProp) {
 	// Local state to handle the search
 	const [query, setQuery] = useState<string>("");
-
-	// Local state to store the quantity of products finded
 	const [quantityProducts, setQuantityProducts] = useState(0);
-
-	// Local state to store the original list of products
 	const [originalProducts, setOriginalProducts] = useState<Product[]>([]);
 
-	// Hook to manage the form
-	const { control, handleSubmit } = useForm<formData>({
+	const { control } = useForm<formData>({
 		defaultValues: {
 			name: "",
 		},
 		mode: "onBlur",
 	});
 
-	// Hook to run the search
 	const { data: productData } = api.product.searchProductCatalog.useQuery(
 		{
 			name: query,
@@ -51,7 +41,6 @@ function ProductSearchBar({ products, setProducts }: ProductComponentProp) {
 		},
 	);
 
-	// Save the original list of products only the first time the component is loaded
 	useEffect(() => {
 		if (products.length > 0 && originalProducts.length === 0) {
 			setOriginalProducts(products);
@@ -69,16 +58,7 @@ function ProductSearchBar({ products, setProducts }: ProductComponentProp) {
 		}
 	}, [productData, query, originalProducts, setProducts]);
 
-	// Function to clear the search and restore the original list of products
-	const onClear = () => {
-		setQuery("");
-		// Restore the original list of products
-		setProducts(originalProducts);
-	};
-
-	// Función para manejar el evento onChange
 	const handleInputChange = (value: string) => {
-		// Update the state with the value of the input
 		setQuery(value);
 	};
 
