@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-type Badge = "Founder" | "Lover" | "Contributor" | "Producer";
+type Badge = "Lover" | "Contributor" | "Producer";
 
 type UserProfile = {
 	name: string;
@@ -15,12 +15,12 @@ type ProfileCardProps = {
 };
 
 function ProfileCard({ user }: ProfileCardProps) {
-	const allBadges: Badge[] = ["Founder", "Lover", "Contributor", "Producer"];
+	const allBadges: Badge[] = ["Lover", "Contributor", "Producer"];
 
 	return (
 		<div className="overflow-hidden mb-6 bg-[url('/images/user-profile/bg-coffee-beans.svg')] pt-9 bg-repeat-y bg-top">
 			<div className="h-30 relative rounded-t-lg">
-				<div className="absolute inset-0 bg-surface-primary-default/90 rounded-t-lg"></div>
+				<div className="absolute inset-0 bg-surface-primary-default/90 rounded-t-lg" />
 				<div className="relative z-10 h-full p-6 flex items-center justify-center text-surface-inverse">
 					<Image
 						src={user.thumbnailUrl}

@@ -7,7 +7,7 @@ import { ProfileOptions } from "~/app/_components/features/ProfileOptions";
 import Header from "~/app/_components/layout/Header";
 import Main from "~/app/_components/layout/Main";
 
-type Badge = "Founder" | "Lover" | "Contributor" | "Producer";
+type Badge = "Lover" | "Contributor" | "Producer";
 
 type UserProfile = {
 	name: string;
@@ -27,7 +27,7 @@ export default function UserProfile() {
 		country: "United States",
 		memberSince: 2020,
 		thumbnailUrl: "/images/user-profile/avatar.svg",
-		badges: ["Founder", "Lover"],
+		badges: ["Lover"],
 	});
 
 	return (
