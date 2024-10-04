@@ -4,7 +4,6 @@ import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@repo/ui/button";
 import RadioButton from "@repo/ui/form/radioButton";
-import Toggle from "@repo/ui/form/toggle";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -12,7 +11,6 @@ import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLay
 import BottomModal from "~/app/_components/ui/BottomModal";
 
 interface SettingsProps {
-	initialChatEnabled?: boolean;
 	initialLanguage?: string;
 }
 
@@ -24,17 +22,12 @@ const languageMap: Record<string, string> = {
 };
 
 const languageSchema = z.object({
-	chat: z.boolean(),
 	language: z.string(),
 });
 
 type FormValues = z.infer<typeof languageSchema>;
 
-export default function Settings({
-	initialChatEnabled = true,
-	initialLanguage = "en",
-}: SettingsProps) {
-	const [isChatEnabled, setChatEnabled] = useState<boolean>(initialChatEnabled);
+export default function Settings({ initialLanguage = "en" }: SettingsProps) {
 	const [language, setLanguage] = useState<string>(initialLanguage ?? "en");
 	const [isLanguageModalOpen, setLanguageModalOpen] = useState<boolean>(false);
 
@@ -42,15 +35,11 @@ export default function Settings({
 
 	const { control, handleSubmit } = useForm<FormValues>({
 		defaultValues: {
-			chat: initialChatEnabled ?? true,
 			language: initialLanguage ?? "en",
 		},
 		resolver: zodResolver(languageSchema),
 	});
 
-	const onToggleChat = (value: boolean) => {
-		setChatEnabled(value);
-	};
 	const openLanguageModal = () => setLanguageModalOpen(true);
 	const closeLanguageModal = () => setLanguageModalOpen(false);
 
@@ -67,19 +56,6 @@ export default function Settings({
 	return (
 		<ProfileOptionLayout title="Settings">
 			<div>
-				<div className="flex justify-between items-center py-2">
-					<span className="text-lg font-medium">Chat</span>
-
-					<Toggle
-						name="chat"
-						label=""
-						control={control}
-						customOnChange={onToggleChat}
-					/>
-				</div>
-
-				<hr className="my-2 border-surface-primary-soft" />
-
 				<div
 					className="flex justify-between items-center py-2 cursor-pointer"
 					onClick={handleLanguageClick}
@@ -110,10 +86,10 @@ export default function Settings({
 								<>
 									<label key={lang} className="flex items-center gap-2">
 										<RadioButton
-										name="language"
-										label={languageMap[lang] || lang}
-										value={lang}
-										control={control}
+											name="language"
+											label={languageMap[lang] || lang}
+											value={lang}
+											control={control}
 										/>
 									</label>
 									{index < languagesKeys.length - 1 && (
