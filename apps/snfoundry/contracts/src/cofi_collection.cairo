@@ -1,6 +1,21 @@
 // SPDX-License-Identifier: MIT
 // Compatible with OpenZeppelin Contracts for Cairo ^0.15.0
 
+use starknet::ContractAddress;
+
+#[starknet::interface]
+pub trait ICofiCollection<TContractState> {
+    fn mint(
+        ref self: TContractState,
+        account: ContractAddress,
+        token_id: u256,
+        value: u256,
+        data: Span<felt252>,
+    );
+
+    fn balance_of(ref self: TContractState, account: ContractAddress, token_id: u256) -> u256;
+}
+
 #[starknet::contract]
 mod CofiCollection {
     use openzeppelin::access::ownable::OwnableComponent;
