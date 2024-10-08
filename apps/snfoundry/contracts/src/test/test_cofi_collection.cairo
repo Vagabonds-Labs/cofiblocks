@@ -1,11 +1,10 @@
-use starknet::ContractAddress;
-
-use snforge_std::{declare, ContractClassTrait, DeclareResultTrait, start_cheat_caller_address};
+use contracts::cofi_collection::ICofiCollectionDispatcher;
+use contracts::cofi_collection::ICofiCollectionDispatcherTrait;
 
 use openzeppelin::utils::serde::SerializedAppend;
 
-use contracts::cofi_collection::ICofiCollectionDispatcher;
-use contracts::cofi_collection::ICofiCollectionDispatcherTrait;
+use snforge_std::{declare, ContractClassTrait, DeclareResultTrait, start_cheat_caller_address};
+use starknet::ContractAddress;
 
 fn OWNER() -> ContractAddress {
     starknet::contract_address_const::<'OWNER'>()
@@ -24,10 +23,10 @@ fn deploy_cofi_collection() -> ICofiCollectionDispatcher {
 
     let mut calldata: Array<felt252> = array![];
     calldata.append_serde(OWNER());
-    
+
     let (contract_address, _) = contract.deploy(@calldata).unwrap();
     let cofi_collection = ICofiCollectionDispatcher { contract_address };
-    
+
     cofi_collection
 }
 
