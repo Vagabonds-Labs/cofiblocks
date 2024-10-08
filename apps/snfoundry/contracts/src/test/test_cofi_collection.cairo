@@ -1,7 +1,8 @@
 use starknet::ContractAddress;
 
-use snforge_std::{declare, ContractClassTrait, DeclareResultTrait, start_cheat_caller_address_global};
+use snforge_std::{declare, ContractClassTrait, DeclareResultTrait, start_cheat_caller_address};
 
+use openzeppelin::utils::serde::SerializedAppend;
 
 use contracts::cofi_collection::ICofiCollectionDispatcher;
 use contracts::cofi_collection::ICofiCollectionDispatcherTrait;
@@ -10,32 +11,39 @@ fn OWNER() -> ContractAddress {
     starknet::contract_address_const::<'OWNER'>()
 }
 
-
-fn deploy_contract() -> ContractAddress {
-    let owner = OWNER();
-    let contract = declare("CofiCollection").unwrap().contract_class();
-    let mut constructor_calldata = array![];
-    constructor_calldata.append(owner.into());
-    let (contract_address, _) = contract.deploy(@constructor_calldata).expect('Project deployment failed');
-
+fn deploy_receiver() -> ContractAddress {
+    let contract = declare("Receiver").unwrap().contract_class();
+    let calldata = array![];
+    let (contract_address, _) = contract.deploy(@calldata).unwrap();
+    println!("Receiver deployed on: {:?}", contract_address);
     contract_address
 }
 
-// #[test]
-// fn test_safe_mint() {
-//     let contract_address = deploy_contract();
-//     println!("contract_address--->: {:?}", contract_address);
+fn deploy_cofi_collection() -> ICofiCollectionDispatcher {
+    let contract = declare("CofiCollection").unwrap().contract_class();
 
-//     let account = OWNER();
-//     start_cheat_caller_address_global(account);
-//     let erc1155_dispatcher = ICofiCollectionDispatcher { contract_address };
+    let mut calldata: Array<felt252> = array![];
+    calldata.append_serde(OWNER());
     
+    let (contract_address, _) = contract.deploy(@calldata).unwrap();
+    let cofi_collection = ICofiCollectionDispatcher { contract_address };
+    
+    cofi_collection
+}
 
-//     let token_id = 1_u256;
-//     let value = 1_u256;
-//     let data: Span<felt252> = array![0].span();
+#[test]
+fn test_safe_mint() {
+    let cofi_collection = deploy_cofi_collection();
+    let receiver = deploy_receiver();
 
-//     erc1155_dispatcher.mint(account.into(), token_id, value, data);
-//     let balance = erc1155_dispatcher.balance_of(account, token_id);
-//     assert(balance == value, 'Incorrect balance');
-// }
+    // OWNER does the transactions to cofi_collection
+    start_cheat_caller_address(cofi_collection.contract_address, OWNER());
+
+    let token_id = 1_u256;
+    let value = 1_u256;
+    let data: Span<felt252> = array![0].span();
+
+    cofi_collection.mint(receiver, token_id, value, data);
+    let balance = cofi_collection.balance_of(receiver, token_id);
+    assert(balance == value, 'Incorrect balance');
+}
