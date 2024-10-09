@@ -5,17 +5,35 @@ import {
 	FunnelIcon,
 	MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
 
 export default function MyOrders() {
 	function OrderItem({
+		id,
 		productName,
 		sellerName,
 		status,
-	}: { productName: string; sellerName: string; status: string }) {
+	}: { id: string; productName: string; sellerName: string; status: string }) {
+		const router = useRouter();
+
+		const handleClick = () => {
+			router.push(`/user/my-orders/${id}`);
+		};
+
 		return (
-			<div className="flex items-center justify-between py-4">
+			<div
+				className="flex items-center justify-between py-4"
+				onClick={handleClick}
+				style={{ cursor: "pointer" }}
+				onKeyDown={(e) => {
+					if (e.key === "Enter" || e.key === " ") {
+						handleClick();
+					}
+				}}
+				role="button"
+			>
 				<div className="flex items-center space-x-4">
 					<img
 						src="/images/cafe2.webp"
@@ -48,16 +66,19 @@ export default function MyOrders() {
 			date: "October 18",
 			items: [
 				{
+					id: "1",
 					productName: "Edit profile",
 					sellerName: "seller1_fullname",
 					status: "Paid",
 				},
 				{
+					id: "2",
 					productName: "My Orders",
 					sellerName: "seller2_fullname",
 					status: "Shipped",
 				},
 				{
+					id: "3",
 					productName: "productName",
 					sellerName: "seller3_fullname",
 					status: "Delivered",
@@ -68,16 +89,19 @@ export default function MyOrders() {
 			date: "September 20",
 			items: [
 				{
+					id: "4",
 					productName: "productName",
 					sellerName: "seller1_fullname",
 					status: "Delivered",
 				},
 				{
+					id: "5",
 					productName: "productName",
 					sellerName: "seller2_fullname",
 					status: "Delivered",
 				},
 				{
+					id: "6",
 					productName: "productName",
 					sellerName: "seller3_fullname",
 					status: "Delivered",
