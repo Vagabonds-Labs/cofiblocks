@@ -1,14 +1,26 @@
 // SPDX-License-Identifier: MIT
 // Compatible with OpenZeppelin Contracts for Cairo ^0.15.0
 
+#[starknet::interface]
+pub trait IMarketplace<ContractState> {
+    fn assign_seller_role(ref self: ContractState);
+    fn assign_consumer_role(ref self: ContractState);
+    fn buy_product(ref self: ContractState);
+    fn create_product(ref self: ContractState);
+    fn update_stock(ref self: ContractState);
+    fn delete_product(ref self: ContractState);
+}
+
 #[starknet::contract]
 mod Marketplace {
     use openzeppelin::access::accesscontrol::AccessControlComponent;
     use openzeppelin::access::accesscontrol::DEFAULT_ADMIN_ROLE;
+    use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
     use openzeppelin::upgrade::UpgradeableComponent;
     use openzeppelin::upgrade::interface::IUpgradeable;
+    use contracts::cofi_collection::{ICofiCollectionDispatcher, ICofiCollectionDispatcherTrait};
     use starknet::ContractAddress;
-    use starknet::get_caller_address;
+    use starknet::{get_caller_address, get_contract_address};
 
     component!(path: AccessControlComponent, storage: accesscontrol, event: AccessControlEvent);
     component!(path: UpgradeableComponent, storage: upgradeable, event: UpgradeableEvent);
@@ -39,8 +51,9 @@ mod Marketplace {
         upgradeable: UpgradeableComponent::Storage,
         listed_products: Map<u256, Product>,
         seller_products: Map<ContractAddress, u256>,
-        cofi_collection_address: ContractAddress,
+        cofi_collection_dispatcher: ICofiCollectionDispatcher,
         cofi_vault_address: ContractAddress,
+        strk_token_dispatcher: IERC20Dispatcher,
 
     }
 
@@ -102,39 +115,64 @@ mod Marketplace {
     }
 
     #[constructor]
-    fn constructor(ref self: ContractState, cofi_collection_address: ContractAddress, cofi_vault_address: ContractAddress, admin: ContractAddress) {
+    fn constructor(ref self: ContractState, cofi_collection_address: ContractAddress, cofi_vault_address: ContractAddress, strk_contract: ContractAddress, admin: ContractAddress) {
         self.accesscontrol.initializer();
         self.accesscontrol._grant_role(DEFAULT_ADMIN_ROLE, admin);
-        self.cofi_collection_address.write(cofi_collection_address);
+        self.cofi_collection_dispatcher.write(ICofiCollectionDispatcher { contract_address: cofi_collection_address });
         self.cofi_vault_address.write(cofi_vault_address);
+        // TODO: figure out a way to receive multiple tokens besides STRK
+        self.strk_token_dispatcher.write(IERC20Dispatcher { contract_address: strk_contract });
     }
 
-    fn assign_seller_role(ref self: ContractState) {
-        self.accesscontrol.assert_only_role(DEFAULT_ADMIN_ROLE);
-        self.accesscontrol._grant_role(PRODUCER, get_caller_address());
+    #[abi(embed_v0)]
+    impl MarketplaceImpl of super::IMarketplace<ContractState> {
+        fn assign_seller_role(ref self: ContractState) {
+            self.accesscontrol.assert_only_role(DEFAULT_ADMIN_ROLE);
+            self.accesscontrol._grant_role(PRODUCER, get_caller_address());
+        }
+    
+        fn assign_consumer_role(ref self: ContractState) {
+            self.accesscontrol.assert_only_role(DEFAULT_ADMIN_ROLE);
+            self.accesscontrol._grant_role(CONSUMER, get_caller_address());
+        }
+    
+        fn buy_product(ref self: ContractState, token_id: u256, token_amount: u256) {
+            self.accesscontrol.assert_only_role(CONSUMER);
+            let stock = self.listed_products.entry(token_id).read().stock;
+            assert(stock >= token_amount, 'Not enough stock');
+            let buyer = get_caller_address();
+            let contract_address = get_contract_address();
+            // TODO: modify transfer to handle fees properly (ideal to use internal function)
+            let token = self.strk_token_dispatcher.read();
+            let price = self.listed_products.entry(token_id).read().price;
+            token.transfer_from(buyer, contract_address, price);
+            let new_stock = stock - token_amount;
+            self.update_stock(token_id, new_stock);
+            self.emit(BuyProduct { token_id, amount: token_amount, price });
+            // TODO: implement payment to producer (sending the fee)
+
+        }
+
+        // TODO: create a function to buy multiple products
+    
+        fn create_product(ref self: ContractState) {
+            self.accesscontrol.assert_only_role(PRODUCER)
+        }
+
+        // TODO: create a function to create multiple products (batch_mint)
+    
+        fn delete_product(ref self: ContractState, token_id: u256) {
+            self.accesscontrol.assert_only_role(PRODUCER);
+        }
+
+        // TODO: create a function to delete multiple products (batch_burn)
+    
     }
 
-    fn assign_consumer_role(ref self: ContractState) {
-        self.accesscontrol.assert_only_role(DEFAULT_ADMIN_ROLE);
-        self.accesscontrol._grant_role(CONSUMER, get_caller_address());
-    }
-
-    fn buy_product(ref self: ContractState) {
-        self.accesscontrol.assert_only_role(CONSUMER);
-        
-    }
-
-    fn create_product(ref self: ContractState) {
-        self.accesscontrol.assert_only_role(PRODUCER)
-    }
-
-    fn update_stock(ref self: ContractState) {
-        self.accesscontrol.assert_only_role(PRODUCER);
-    }
-
-    fn delete_product(ref self: ContractState) {
-        self.accesscontrol.assert_only_role(PRODUCER);
-    } 
+    fn update_stock(ref self: ContractState, token_id: u256, new_stock: u256) {
+        self.listed_products.entry(token_id).write().stock = new_stock;
+        self.emit(UpdateStock { token_id, new_stock });
+    }    
 
 
 
