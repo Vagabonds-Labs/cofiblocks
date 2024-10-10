@@ -1,5 +1,6 @@
 "use client";
 
+import "../i18n";
 import Button from "@repo/ui/button";
 import { H1, Text } from "@repo/ui/typography";
 import {
@@ -15,6 +16,7 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import LoginAnimation from "~/app/_components/ui/LoginAnimation";
 import { MESSAGE } from "~/constants";
 import {
@@ -22,6 +24,7 @@ import {
 	formContainerVariants,
 	formContentVariants,
 } from "~/utils/animationsConfig";
+
 export default function LoginPage() {
 	const [showForm, setShowForm] = useState(false);
 	const controls = useAnimation();
@@ -33,6 +36,8 @@ export default function LoginPage() {
 	const { connect, connectors } = useConnect();
 	const { disconnect } = useDisconnect();
 	const { signTypedDataAsync } = useSignTypedData(MESSAGE);
+
+	const { t } = useTranslation();
 
 	const handleConnectWallet = async (connector: Connector) => {
 		if (connector) {
@@ -118,7 +123,7 @@ export default function LoginPage() {
 					>
 						<div className="text-center">
 							<Text className="text-content-title text-lg mt-2">
-								Welcome to
+								{t("welcome_to")}
 							</Text>
 							<H1 className="text-content-title">CofiBlocks</H1>
 						</div>
@@ -131,14 +136,14 @@ export default function LoginPage() {
 										size="lg"
 										className="w-full max-w-[15rem] px-4 py-3  text-content-title text-base font-medium font-inter rounded-lg border border-surface-secondary-default transition-all duration-300 hover:bg-surface-secondary-hover"
 									>
-										Sign
+										{t("sign")}
 									</Button>
 									<button
 										onClick={handleDisconnectWallet}
 										className="block text-center text-content-title text-base font-normal font-inter underline transition-colors duration-300 hover:text-content-title-hover"
 										type="button"
 									>
-										Disconnect
+										{t("disconnect")}
 									</button>
 								</>
 							) : (
