@@ -109,6 +109,34 @@ mod Marketplace {
         self.cofi_vault_address.write(cofi_vault_address);
     }
 
+    fn assign_seller_role(ref self: ContractState) {
+        self.accesscontrol.assert_only_role(DEFAULT_ADMIN_ROLE);
+        self.accesscontrol._grant_role(PRODUCER, get_caller_address());
+    }
+
+    fn assign_consumer_role(ref self: ContractState) {
+        self.accesscontrol.assert_only_role(DEFAULT_ADMIN_ROLE);
+        self.accesscontrol._grant_role(CONSUMER, get_caller_address());
+    }
+
+    fn buy_product(ref self: ContractState) {
+        self.accesscontrol.assert_only_role(CONSUMER);
+        
+    }
+
+    fn create_product(ref self: ContractState) {
+        self.accesscontrol.assert_only_role(PRODUCER)
+    }
+
+    fn update_stock(ref self: ContractState) {
+        self.accesscontrol.assert_only_role(PRODUCER);
+    }
+
+    fn delete_product(ref self: ContractState) {
+        self.accesscontrol.assert_only_role(PRODUCER);
+    } 
+
+
 
 
 
