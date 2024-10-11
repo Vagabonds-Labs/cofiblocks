@@ -69,6 +69,11 @@ pub trait ICofiCollection<TContractState> {
     fn uri(ref self: TContractState, token_id: u256) -> ByteArray;
 
     fn set_base_uri(ref self: TContractState, base_uri: ByteArray);
+
+    fn pause(ref self: TContractState);
+
+    fn unpause(ref self: TContractState);
+
 }
 
 const PAUSER_ROLE: felt252 = selector!("PAUSER_ROLE");
