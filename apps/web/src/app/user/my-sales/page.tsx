@@ -1,10 +1,6 @@
 "use client";
 
-import {
-	ChevronRightIcon,
-	FunnelIcon,
-	MagnifyingGlassIcon,
-} from "@heroicons/react/24/outline";
+import { FunnelIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@repo/ui/button";
 import CheckBox from "@repo/ui/form/checkBox";
@@ -12,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import OrderListItem from "~/app/_components/features/OrderListItem";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
 import BottomModal from "~/app/_components/ui/BottomModal";
 
@@ -84,6 +81,7 @@ export default function MySales() {
 	const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
 	const [filteredOrders, setFilteredOrders] = useState(mockedOrders);
 	const [activeFilters, setActiveFilters] = useState<FormValues>({});
+	const router = useRouter();
 
 	const openFiltersModal = () => {
 		setIsFiltersModalOpen(true);
@@ -109,6 +107,10 @@ export default function MySales() {
 		console.log(data);
 		setActiveFilters(data);
 		closeFiltersModal();
+	};
+
+	const handleItemClick = (id: string) => {
+		router.push(`/user/my-sales/${id}`);
 	};
 
 	useEffect(() => {
@@ -162,57 +164,6 @@ export default function MySales() {
 		}
 	}, [searchTerm, activeFilters]);
 
-	function OrderItem({
-		id,
-		productName,
-		buyerName,
-		status,
-	}: { id: string; productName: string; buyerName: string; status: string }) {
-		const router = useRouter();
-
-		const handleClick = () => {
-			router.push(`/user/my-sales/${id}`);
-		};
-
-		return (
-			<div
-				className="flex items-center justify-between py-4"
-				onClick={handleClick}
-				style={{ cursor: "pointer" }}
-				onKeyDown={(e) => {
-					if (e.key === "Enter" || e.key === " ") {
-						handleClick();
-					}
-				}}
-				role="button"
-			>
-				<div className="flex items-center space-x-4">
-					<img
-						src="/images/cafe2.webp"
-						alt="Product"
-						className="w-12 h-12 rounded-md object-cover"
-					/>
-					<div>
-						<h3 className="font-semibold">{productName}</h3>
-						<p className="text-sm text-gray-500">{buyerName}</p>
-					</div>
-				</div>
-				<div className="flex items-center space-x-2">
-					<span
-						className={`px-2 py-1 text-sm rounded-full ${
-							status === SalesStatusEnum.Delivered
-								? "bg-surface-primary-default text-white"
-								: "bg-surface-primary-soft text-content-body-default"
-						}`}
-					>
-						{status}
-					</span>
-					<ChevronRightIcon className="text-content-body-default w-5 h-5" />
-				</div>
-			</div>
-		);
-	}
-
 	return (
 		<ProfileOptionLayout title="My Sellers">
 			<div className="bg-white rounded-lg p-6 space-y-6">
@@ -244,9 +195,12 @@ export default function MySales() {
 						<div className="bg-white rounded-lg">
 							{orderGroup.items.map((order, orderIndex) => (
 								<>
-									<OrderItem
+									<OrderListItem
 										key={`${order.productName}-${orderIndex}`}
-										{...order}
+										productName={order.productName}
+										name={order.buyerName}
+										status={order.status}
+										onClick={() => handleItemClick(order.id)}
 									/>
 									{orderIndex < orderGroup.items.length - 1 && (
 										<hr className="my-2 border-surface-primary-soft" />
