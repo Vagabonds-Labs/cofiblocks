@@ -40,14 +40,14 @@ export const productRouter = createTRPCRouter({
 	searchProductCatalog: publicProcedure
 		.input(
 			z.object({
-				name: z.string(),
+				region: z.string(),
 			}),
 		)
 		.query(({ input }) => {
-			const { name } = input;
+			const { region } = input;
 
 			const productsFound = mockedProducts.filter(
-				(product) => product.region === name,
+				(product) => product.region === region,
 			);
 
 			return {
