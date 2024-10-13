@@ -72,7 +72,9 @@ mod Marketplace {
         seller_products: Map<ContractAddress, u256>,
         cofi_collection_dispatcher: ICofiCollectionDispatcher,
         cofi_vault_address: ContractAddress,
+        // TODO: make STRK contract address a constant to avoid storing it in the contract
         strk_token_dispatcher: IERC20Dispatcher,
+        // TODO: create a variable to store seller balances to then claim 
 
     }
 
@@ -159,8 +161,11 @@ mod Marketplace {
             self.accesscontrol.assert_only_role(DEFAULT_ADMIN_ROLE);
             self.accesscontrol._grant_role(CONSUMER, get_caller_address());
         }
+
+        // TODO: create a function to assign admin 
     
         fn buy_product(ref self: ContractState, token_id: u256, token_amount: u256) {
+            // TODO: check if caller does not have consumer role after finishing buy process, assign it
             self.accesscontrol.assert_only_role(CONSUMER);
             let stock = self.listed_products.entry(token_id).read().stock;
             assert(stock >= token_amount, 'Not enough stock');
@@ -175,7 +180,7 @@ mod Marketplace {
             let new_stock = stock - token_amount;
             self.update_stock(token_id, new_stock);
             self.emit(BuyProduct { token_id, amount: token_amount, price });
-            // TODO: implement payment to producer (sending the fee)
+            // TODO: implement payment to producer (sending the fee) -> the fee should be stored in a variable in the smart contract
 
         }
 
@@ -189,8 +194,6 @@ mod Marketplace {
             self.seller_products.entry(get_caller_address()).write(token_id);
             self.listed_products.entry(token_id).write(product);
             self.emit(CreateProduct { token_id, initial_stock });
-            // TODO: is this necessary or leave only create_product?
-            self.emit(UpdateStock { token_id, new_stock: initial_stock });
         }
 
         // TODO: create a function to create multiple products (batch_mint)
@@ -209,6 +212,8 @@ mod Marketplace {
         }
 
         // TODO: create a function to delete multiple products (batch_burn)
+
+        // TODO: create claim function (seller needs to claim their tokens)
     
     }
 
