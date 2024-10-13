@@ -130,6 +130,21 @@ model User {
   orders        Order[]
   accounts      Account[]
   sessions      Session[]
+  farms          Farm[]
+}
+
+model Farm {
+  id        Int      @id @default(autoincrement())
+  name      String
+  region    String
+  altitude  Int
+  coordinates String
+  website   String
+  farmImage String
+  userId    String
+  user      User @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model VerificationToken {

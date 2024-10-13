@@ -62,8 +62,8 @@ async function main() {
 	await prisma.shoppingCartItem.deleteMany();
 	await prisma.shoppingCart.deleteMany();
 	await prisma.product.deleteMany();
+	await prisma.farm.deleteMany();
 	await prisma.user.deleteMany();
-
 	// Insert new users with different roles
 	const users = await Promise.all([
 		prisma.user.create({
@@ -72,6 +72,8 @@ async function main() {
 				phone: "123-456-7890",
 				physicalAddress: "123 User Street",
 				name: "Alice",
+				email: "alice@example.com",
+				image: "/images/user-profile/avatar.svg",
 				role: "COFFEE_BUYER",
 			},
 		}),
@@ -81,6 +83,8 @@ async function main() {
 				phone: "987-654-3210",
 				physicalAddress: "456 Admin Avenue",
 				name: "Bob",
+				email: "bob@example.com",
+				image: "/images/user-profile/avatar.svg",
 				role: "ADMIN",
 			},
 		}),
@@ -90,6 +94,8 @@ async function main() {
 				phone: "555-555-5555",
 				physicalAddress: "789 Farmer Lane",
 				name: "Charlie",
+				email: "charlie@example.com",
+				image: "/images/user-profile/avatar.svg",
 				role: "COFFEE_PRODUCER",
 			},
 		}),
@@ -115,7 +121,7 @@ async function main() {
 		),
 	);
 
-	// Create shopping carts and orders for each user
+	// Create shopping carts, orders and farms for each user
 	for (const user of users) {
 		const cart = await prisma.shoppingCart.create({
 			data: {
@@ -151,8 +157,20 @@ async function main() {
 			},
 		});
 
+		const farm = await prisma.farm.create({
+			data: {
+				name: `${user.name}'s Farm`,
+				region: "Costa Rica",
+				altitude: Math.floor(Math.random() * 2000),
+				coordinates: "123.456, -78.910",
+				website: "https://www.myfarm.com",
+				farmImage: "/images/user-profile/farm-avatar.svg",
+				userId: user.id,
+			},
+		});
+
 		console.log(
-			`Seed data inserted: Order ${order.id} created for ${user.name}, shopping cart ${cart.id} created for ${user.name}`,
+			`Seed data inserted: Order ${order.id} created for ${user.name}, shopping cart ${cart.id} created for ${user.name}, farm ${farm.id} created for ${user.name}`,
 		);
 	}
 }

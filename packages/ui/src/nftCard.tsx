@@ -1,20 +1,28 @@
 import { ArrowRightIcon } from "@heroicons/react/24/solid";
 import Button from "@repo/ui/button";
 
+interface NFTMetadata {
+	imageSrc: string;
+}
+
 interface NFTCardProps {
 	title: string;
+	nftMetadata: NFTMetadata;
 	onDetailsClick?: () => void;
 }
 
-function NFTCard({ title, onDetailsClick }: NFTCardProps) {
+function NFTCard({ title, nftMetadata, onDetailsClick }: NFTCardProps) {
 	return (
-		<div className="inline-flex h-47 w-36 flex-col items-start justify-between rounded-br-2xl rounded-tr-2xl bg-surface-primary-soft px-4 py-4 pl-6">
-			<div className="inline-flex w-full items-start justify-start gap-1">
-				<h2 className="text-content-title font-manrope text-2xl font-bold leading-[2.125rem]">
+		<div className="bg-surface-primary-soft rounded-[1rem] shadow-md flex overflow-hidden">
+			<img
+				src={nftMetadata.imageSrc}
+				alt={title}
+				className="w-36 h-[11.75rem] object-cover"
+			/>
+			<div className="flex flex-col items-start justify-center flex-1 p-4 ml-4">
+				<h2 className="text-content-title font-manrope text-2xl font-bold mb-4">
 					{title}
 				</h2>
-			</div>
-			<div className="inline-flex items-center justify-start gap-4">
 				<Button
 					variant="secondary"
 					size="sm"
