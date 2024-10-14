@@ -392,3 +392,27 @@ fn test_pause() {
     let receiver_balance = cofi_collection.balance_of(receiver, token_id);
     assert(receiver_balance == amount, 'Transfer failed after unpause');
 }
+
+#[test]
+fn test_uri() {
+    let cofi_collection = deploy_cofi_collection();
+    let owner = OWNER();
+    let token_id = 1_u256;
+    let base_uri: ByteArray = "https://api.example.com/token/";
+
+
+    // Set the base URI
+    start_cheat_caller_address(cofi_collection.contract_address, owner);
+    cofi_collection.set_base_uri(base_uri.clone());
+
+    // Check the URI for a token
+    let token_uri = cofi_collection.uri(token_id);
+    assert(token_uri ==  base_uri, 'Incorrect token URI');
+
+    // Test with a different token ID
+    let another_token_id = 42_u256;
+    let another_token_uri = cofi_collection.uri(another_token_id);
+    assert(another_token_uri == base_uri, 'Incorrect token URI');
+}
+
+

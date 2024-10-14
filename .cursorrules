@@ -99,6 +99,7 @@ Rules {
     minimizeStateChanges = true;
     documentContracts = true;
     explainLogic = true;
+    shortErrorMessages = true;
   }
 
   DevelopmentProcess {
