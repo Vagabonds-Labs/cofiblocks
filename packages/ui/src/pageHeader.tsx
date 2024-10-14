@@ -1,6 +1,7 @@
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
+import { useTranslation } from "react-i18next";
 import { v4 as uuidv4 } from "uuid";
 
 const BlockiesSvg = dynamic<{ address: string; size: number; scale: number }>(
@@ -25,6 +26,7 @@ function PageHeader({
 }: PageHeaderProps) {
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	const menuRef = useRef<HTMLDivElement>(null);
+	const { t } = useTranslation();
 
 	const toggleMenu = () => {
 		setIsMenuOpen((prevState) => !prevState);
@@ -80,7 +82,7 @@ function PageHeader({
 										role="menuitem"
 										type="button"
 									>
-										Logout
+										{t("disconnect")}
 									</button>
 								</div>
 							</div>
