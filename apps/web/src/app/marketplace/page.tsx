@@ -2,15 +2,19 @@
 
 import Carousel from "@repo/ui/carousel";
 import { useAccount, useDisconnect } from "@starknet-react/core";
+import { useAtom } from "jotai";
 import { useTranslation } from "react-i18next";
 import ProductCatalog from "~/app/_components/features/ProductCatalog";
 import Header from "~/app/_components/layout/Header";
 import Main from "~/app/_components/layout/Main";
+import { searchQueryAtom } from "~/atoms/productAtom";
+import SearchBar from "../_components/features/SearchBar";
 
 export default function Home() {
 	const { t } = useTranslation();
 	const { address } = useAccount();
 	const { disconnect } = useDisconnect();
+	const [query] = useAtom(searchQueryAtom);
 
 	const carouselData = [
 		{
@@ -36,7 +40,13 @@ export default function Home() {
 	return (
 		<Main>
 			<Header address={address} disconnect={disconnect} />
-			<Carousel cards={carouselData} />
+			<SearchBar />
+
+			{query.length <= 0 && (
+				<>
+					<Carousel cards={carouselData} />
+				</>
+			)}
 			<ProductCatalog />
 		</Main>
 	);

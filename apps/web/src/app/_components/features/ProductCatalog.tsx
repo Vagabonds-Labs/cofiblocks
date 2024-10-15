@@ -1,11 +1,24 @@
+import Button from "@repo/ui/button";
 import { ProductCard } from "@repo/ui/productCard";
 import SkeletonLoader from "@repo/ui/skeleton";
+import { useAtom } from "jotai";
+import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
+import {
+	isLoadingAtom,
+	quantityOfProducts,
+	searchQueryAtom,
+	searchResultsAtom,
+} from "~/atoms/productAtom";
 import { api } from "~/trpc/react";
 import type { NftMetadata, Product } from "./types";
 
 export default function ProductCatalog() {
 	const [products, setProducts] = useState<Product[]>([]);
+	const [results, setSearchResults] = useAtom(searchResultsAtom);
+	const [isLoadingResults, setIsLoading] = useAtom(isLoadingAtom);
+	const [quantity, setQuantityProducts] = useAtom(quantityOfProducts);
+	const [query, setQuery] = useAtom(searchQueryAtom);
 
 	// Using an infinite query to fetch products with pagination
 	const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
@@ -77,13 +90,57 @@ export default function ProductCatalog() {
 		);
 	};
 
+	const clearSearch = () => {
+		setQuantityProducts(0);
+		setSearchResults([]);
+		setIsLoading(false);
+		setQuery("");
+	};
+
 	return (
 		<div className="flex flex-col items-center gap-6 p-4 mx-auto">
-			{isLoading ? (
+			{isLoadingResults ? (
 				<SkeletonLoader />
 			) : (
 				<>
-					{products.map(renderProduct)}
+					{results.length > 0 ? (
+						<div>
+							<div className="flex justify-between mb-2">
+								<div>{quantity} products found</div>
+								<button
+									type="button"
+									className="underline cursor-pointer"
+									onClick={() => clearSearch()}
+								>
+									Clear search
+								</button>
+							</div>
+							{results.map(renderProduct)}
+						</div>
+					) : query ? (
+						<div className="flex flex-col justify-center items-center">
+							<div>
+								<Image
+									src="/images/NoResultsImage.png"
+									width={700}
+									height={700}
+									alt="No results"
+								/>
+							</div>
+							<div className="flex justify-center mt-4">
+								<Button
+									variant="primary"
+									size="sm"
+									onClick={() => clearSearch()}
+								>
+									Clear search
+								</Button>
+							</div>
+						</div>
+					) : (
+						products.map(renderProduct)
+					)}
+
 					{isFetchingNextPage && <SkeletonLoader />}
 				</>
 			)}
