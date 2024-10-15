@@ -1,5 +1,5 @@
 import cs from "classnames";
-import React from "react";
+import type React from "react";
 import { useController } from "react-hook-form";
 import type { Control, FieldPath, FieldValues } from "react-hook-form";
 
@@ -12,6 +12,7 @@ type InputFieldProps<T extends FieldValues> = {
 	className?: string;
 	inputClassName?: string;
 	disabled?: boolean;
+	onChange?: (value: string) => void;
 };
 
 function InputField<T extends FieldValues>({
@@ -23,6 +24,7 @@ function InputField<T extends FieldValues>({
 	className,
 	inputClassName,
 	disabled,
+	onChange,
 }: InputFieldProps<T>) {
 	const {
 		field,
@@ -31,6 +33,13 @@ function InputField<T extends FieldValues>({
 		name,
 		control,
 	});
+
+	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		field.onChange(e);
+		if (onChange) {
+			onChange(e.target.value);
+		}
+	};
 
 	return (
 		<div className={cs("flex flex-col gap-2 font-inter", className)}>
@@ -49,6 +58,7 @@ function InputField<T extends FieldValues>({
 			</div>
 			<div className={cs("relative", inputClassName)}>
 				<input
+					{...field}
 					id={name}
 					type="text"
 					className={cs(
@@ -62,7 +72,8 @@ function InputField<T extends FieldValues>({
 					)}
 					placeholder={placeholder}
 					disabled={disabled}
-					{...field}
+					value={field.value || ""}
+					onChange={handleChange}
 				/>
 			</div>
 			{error && (
