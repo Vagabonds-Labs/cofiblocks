@@ -258,8 +258,8 @@ fn test_safe_transfer_from() {
     // Switch back to OWNER() as caller
     start_cheat_caller_address(cofi_collection.contract_address, OWNER());
 
-    // Perform safeTransferFrom
-    cofi_collection.safeTransferFrom(sender, receiver, token_id, transfer_value, data.span());
+    // Perform safe_transfer_from
+    cofi_collection.safe_transfer_from(sender, receiver, token_id, transfer_value, data.span());
 
     // Check final balances
     let sender_final_balance = cofi_collection.balance_of(sender, token_id);
@@ -305,8 +305,8 @@ fn test_safe_batch_transfer_from() {
     let token_ids: Array<u256> = array![token_id1, token_id2];
     let values: Array<u256> = array![transfer_value1, transfer_value2];
 
-    // Perform safeBatchTransferFrom
-    cofi_collection.safeBatchTransferFrom(sender, receiver, token_ids.span(), values.span(), data.span());
+    // Perform safe_batch_transfer_from
+    cofi_collection.safe_batch_transfer_from(sender, receiver, token_ids.span(), values.span(), data.span());
 
     // Check final balances
     let sender_final_balance1 = cofi_collection.balance_of(sender, token_id1);
@@ -364,7 +364,7 @@ fn test_pause() {
 
     // Send tokens to the sender
     start_cheat_caller_address(cofi_collection.contract_address, sender);
-    cofi_collection.safeTransferFrom(sender, receiver, token_id, amount, array![].span());
+    cofi_collection.safe_transfer_from(sender, receiver, token_id, amount, array![].span());
 
     // Verify the sender's balance
     let sender_balance = cofi_collection.balance_of(sender, token_id);
@@ -376,7 +376,7 @@ fn test_pause() {
 
     // Try to transfer tokens while paused (should fail)
     start_cheat_caller_address(cofi_collection.contract_address, sender);
-    cofi_collection.safeTransferFrom(sender, receiver, token_id, amount, array![].span());
+    cofi_collection.safe_transfer_from(sender, receiver, token_id, amount, array![].span());
 
     // Assert that the transfer failed due to the contract being paused
     let receiver_balance = cofi_collection.balance_of(receiver, token_id);
@@ -388,7 +388,7 @@ fn test_pause() {
 
     // Transfer should now succeed
     start_cheat_caller_address(cofi_collection.contract_address, sender);
-    cofi_collection.safeTransferFrom(sender, receiver, token_id, amount, array![].span());
+    cofi_collection.safe_transfer_from(sender, receiver, token_id, amount, array![].span());
     let receiver_balance = cofi_collection.balance_of(receiver, token_id);
     assert(receiver_balance == amount, 'Transfer failed after unpause');
 }
@@ -414,5 +414,3 @@ fn test_uri() {
     let another_token_uri = cofi_collection.uri(another_token_id);
     assert(another_token_uri == base_uri, 'Incorrect token URI');
 }
-
-

@@ -3,12 +3,17 @@
 
 use starknet::ContractAddress;
 
+const PAUSER_ROLE: felt252 = selector!("PAUSER_ROLE");
+const MINTER_ROLE: felt252 = selector!("MINTER_ROLE");
+const URI_SETTER_ROLE: felt252 = selector!("URI_SETTER_ROLE");
+const UPGRADER_ROLE: felt252 = selector!("UPGRADER_ROLE");
+
 #[starknet::interface]
 pub trait ICofiCollection<TContractState> {
     fn balance_of(ref self: TContractState, account: ContractAddress, token_id: u256) -> u256;
 
     fn balance_of_batch(ref self: TContractState, accounts: Span<ContractAddress>, token_ids: Span<u256>) -> Span<u256>;
-    fn safeTransferFrom(
+    fn safe_transfer_from(
         ref self: TContractState,
         from: ContractAddress,
         to: ContractAddress,
@@ -16,7 +21,7 @@ pub trait ICofiCollection<TContractState> {
         value: u256,
         data: Span<felt252>
     );
-    fn safeBatchTransferFrom(
+    fn safe_batch_transfer_from(
         ref self: TContractState,
         from: ContractAddress,
         to: ContractAddress,
@@ -76,23 +81,10 @@ pub trait ICofiCollection<TContractState> {
 
 }
 
-const PAUSER_ROLE: felt252 = selector!("PAUSER_ROLE");
-const MINTER_ROLE: felt252 = selector!("MINTER_ROLE");
-const URI_SETTER_ROLE: felt252 = selector!("URI_SETTER_ROLE");
-const UPGRADER_ROLE: felt252 = selector!("UPGRADER_ROLE");
-
 #[starknet::contract]
 mod CofiCollection {
-    use openzeppelin::access::accesscontrol::AccessControlComponent;
-    use openzeppelin::access::accesscontrol::DEFAULT_ADMIN_ROLE;
-    use openzeppelin::introspection::src5::SRC5Component;
-    use openzeppelin::security::pausable::PausableComponent;
-    use openzeppelin::token::erc1155::ERC1155Component;
-    use openzeppelin::upgrades::UpgradeableComponent;
-    use openzeppelin::upgrades::interface::IUpgradeable;
-    use starknet::ClassHash;
-    use starknet::ContractAddress;
-    use starknet::get_caller_address;
+    use openzeppelin::{access::accesscontrol::{AccessControlComponent, DEFAULT_ADMIN_ROLE}, introspection::src5::SRC5Component, security::pausable::PausableComponent, token::erc1155::ERC1155Component, upgrades::{UpgradeableComponent, interface::IUpgradeable}};
+    use starknet::{ClassHash, ContractAddress, get_caller_address};
     use super::{PAUSER_ROLE, MINTER_ROLE, URI_SETTER_ROLE, UPGRADER_ROLE};
 
     component!(path: ERC1155Component, storage: erc1155, event: ERC1155Event);
@@ -232,16 +224,6 @@ mod CofiCollection {
         }
 
         #[external(v0)]
-        fn batchBurn(
-            ref self: ContractState,
-            account: ContractAddress,
-            tokenIds: Span<u256>,
-            values: Span<u256>,
-        ) {
-            self.batch_burn(account, tokenIds, values);
-        }
-
-        #[external(v0)]
         fn mint(
             ref self: ContractState,
             account: ContractAddress,
@@ -266,26 +248,9 @@ mod CofiCollection {
         }
 
         #[external(v0)]
-        fn batchMint(
-            ref self: ContractState,
-            account: ContractAddress,
-            tokenIds: Span<u256>,
-            values: Span<u256>,
-            data: Span<felt252>,
-        ) {
-            self.batch_mint(account, tokenIds, values, data);
-        }
-
-        #[external(v0)]
         fn set_base_uri(ref self: ContractState, base_uri: ByteArray) {
             self.accesscontrol.assert_only_role(URI_SETTER_ROLE);
             self.erc1155._set_base_uri(base_uri);
         }
-
-        #[external(v0)]
-        fn setBaseUri(ref self: ContractState, baseUri: ByteArray) {
-            self.set_base_uri(baseUri);
-        }
     }
 }
-
