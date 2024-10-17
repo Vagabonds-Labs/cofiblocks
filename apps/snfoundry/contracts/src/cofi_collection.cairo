@@ -12,7 +12,9 @@ const UPGRADER_ROLE: felt252 = selector!("UPGRADER_ROLE");
 pub trait ICofiCollection<TContractState> {
     fn balance_of(ref self: TContractState, account: ContractAddress, token_id: u256) -> u256;
 
-    fn balance_of_batch(ref self: TContractState, accounts: Span<ContractAddress>, token_ids: Span<u256>) -> Span<u256>;
+    fn balance_of_batch(
+        ref self: TContractState, accounts: Span<ContractAddress>, token_ids: Span<u256>
+    ) -> Span<u256>;
     fn safe_transfer_from(
         ref self: TContractState,
         from: ContractAddress,
@@ -45,12 +47,7 @@ pub trait ICofiCollection<TContractState> {
         data: Span<felt252>,
     );
 
-    fn burn(
-        ref self: TContractState,
-        account: ContractAddress,
-        token_id: u256,
-        value: u256,
-    );
+    fn burn(ref self: TContractState, account: ContractAddress, token_id: u256, value: u256,);
 
     fn batch_burn(
         ref self: TContractState,
@@ -59,13 +56,11 @@ pub trait ICofiCollection<TContractState> {
         values: Span<u256>,
     );
 
-    fn is_approved_for_all(ref self: TContractState, account: ContractAddress, operator: ContractAddress) -> bool;
+    fn is_approved_for_all(
+        ref self: TContractState, account: ContractAddress, operator: ContractAddress
+    ) -> bool;
 
-    fn set_approval_for_all(
-        ref self: TContractState,
-        operator: ContractAddress,
-        approved: bool
-    );
+    fn set_approval_for_all(ref self: TContractState, operator: ContractAddress, approved: bool);
 
     fn get_approval(ref self: TContractState, token_id: u256, account: ContractAddress) -> bool;
 
@@ -78,12 +73,15 @@ pub trait ICofiCollection<TContractState> {
     fn pause(ref self: TContractState);
 
     fn unpause(ref self: TContractState);
-
 }
 
 #[starknet::contract]
 mod CofiCollection {
-    use openzeppelin::{access::accesscontrol::{AccessControlComponent, DEFAULT_ADMIN_ROLE}, introspection::src5::SRC5Component, security::pausable::PausableComponent, token::erc1155::ERC1155Component, upgrades::{UpgradeableComponent, interface::IUpgradeable}};
+    use openzeppelin::{
+        access::accesscontrol::{AccessControlComponent, DEFAULT_ADMIN_ROLE},
+        introspection::src5::SRC5Component, security::pausable::PausableComponent,
+        token::erc1155::ERC1155Component, upgrades::{UpgradeableComponent, interface::IUpgradeable}
+    };
     use starknet::{ClassHash, ContractAddress, get_caller_address};
     use super::{PAUSER_ROLE, MINTER_ROLE, URI_SETTER_ROLE, UPGRADER_ROLE};
 
@@ -98,9 +96,11 @@ mod CofiCollection {
     #[abi(embed_v0)]
     impl PausableImpl = PausableComponent::PausableImpl<ContractState>;
     #[abi(embed_v0)]
-    impl AccessControlImpl = AccessControlComponent::AccessControlImpl<ContractState>;
+    impl AccessControlImpl =
+        AccessControlComponent::AccessControlImpl<ContractState>;
     #[abi(embed_v0)]
-    impl AccessControlCamelImpl = AccessControlComponent::AccessControlCamelImpl<ContractState>;
+    impl AccessControlCamelImpl =
+        AccessControlComponent::AccessControlCamelImpl<ContractState>;
 
     impl ERC1155InternalImpl = ERC1155Component::InternalImpl<ContractState>;
     impl PausableInternalImpl = PausableComponent::InternalImpl<ContractState>;
@@ -173,8 +173,7 @@ mod CofiCollection {
             to: ContractAddress,
             token_ids: Span<u256>,
             values: Span<u256>,
-        ) {
-        }
+        ) {}
     }
 
     #[abi(embed_v0)]
@@ -204,7 +203,10 @@ mod CofiCollection {
         fn burn(ref self: ContractState, account: ContractAddress, token_id: u256, value: u256) {
             let caller = get_caller_address();
             if account != caller {
-                assert(self.erc1155.is_approved_for_all(account, caller), ERC1155Component::Errors::UNAUTHORIZED);
+                assert(
+                    self.erc1155.is_approved_for_all(account, caller),
+                    ERC1155Component::Errors::UNAUTHORIZED
+                );
             }
             self.erc1155.burn(account, token_id, value);
         }
@@ -218,7 +220,10 @@ mod CofiCollection {
         ) {
             let caller = get_caller_address();
             if account != caller {
-                assert(self.erc1155.is_approved_for_all(account, caller), ERC1155Component::Errors::UNAUTHORIZED);
+                assert(
+                    self.erc1155.is_approved_for_all(account, caller),
+                    ERC1155Component::Errors::UNAUTHORIZED
+                );
             }
             self.erc1155.batch_burn(account, token_ids, values);
         }

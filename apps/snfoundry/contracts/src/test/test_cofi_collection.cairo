@@ -2,7 +2,6 @@ use contracts::cofi_collection::ICofiCollectionDispatcher;
 use contracts::cofi_collection::ICofiCollectionDispatcherTrait;
 
 use openzeppelin::utils::serde::SerializedAppend;
-
 use snforge_std::{declare, ContractClassTrait, DeclareResultTrait, start_cheat_caller_address};
 use starknet::ContractAddress;
 
@@ -97,9 +96,9 @@ fn test_balance_of_batch() {
 
     let accounts: Array<ContractAddress> = array![receiver1, receiver2];
     let token_ids: Array<u256> = array![token_id1, token_id2];
-    
+
     let balances = cofi_collection.balance_of_batch(accounts.span(), token_ids.span());
-    
+
     assert(*balances[0] == value1, 'Incorrect balance for receiver1');
     assert(*balances[1] == value2, 'Incorrect balance for receiver2');
 
@@ -107,9 +106,9 @@ fn test_balance_of_batch() {
     let non_existent_token_id = 999_u256;
     let accounts2: Array<ContractAddress> = array![receiver1, receiver2];
     let token_ids2: Array<u256> = array![token_id1, non_existent_token_id];
-    
+
     let balances2 = cofi_collection.balance_of_batch(accounts2.span(), token_ids2.span());
-    
+
     assert(*balances2[0] == value1, 'Wrong balance');
     assert(*balances2[1] == 0, 'Wrong balance');
 }
@@ -306,7 +305,8 @@ fn test_safe_batch_transfer_from() {
     let values: Array<u256> = array![transfer_value1, transfer_value2];
 
     // Perform safe_batch_transfer_from
-    cofi_collection.safe_batch_transfer_from(sender, receiver, token_ids.span(), values.span(), data.span());
+    cofi_collection
+        .safe_batch_transfer_from(sender, receiver, token_ids.span(), values.span(), data.span());
 
     // Check final balances
     let sender_final_balance1 = cofi_collection.balance_of(sender, token_id1);
@@ -400,14 +400,13 @@ fn test_uri() {
     let token_id = 1_u256;
     let base_uri: ByteArray = "https://api.example.com/token/";
 
-
     // Set the base URI
     start_cheat_caller_address(cofi_collection.contract_address, owner);
     cofi_collection.set_base_uri(base_uri.clone());
 
     // Check the URI for a token
     let token_uri = cofi_collection.uri(token_id);
-    assert(token_uri ==  base_uri, 'Incorrect token URI');
+    assert(token_uri == base_uri, 'Incorrect token URI');
 
     // Test with a different token ID
     let another_token_id = 42_u256;
