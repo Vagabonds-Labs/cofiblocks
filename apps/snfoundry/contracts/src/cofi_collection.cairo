@@ -8,13 +8,33 @@ const MINTER_ROLE: felt252 = selector!("MINTER_ROLE");
 const URI_SETTER_ROLE: felt252 = selector!("URI_SETTER_ROLE");
 const UPGRADER_ROLE: felt252 = selector!("UPGRADER_ROLE");
 
+/// Interface for the CofiCollection contract, defining ERC1155 and related methods.
 #[starknet::interface]
 pub trait ICofiCollection<TContractState> {
+    /// Returns the balance of the specified `account` for the given `token_id`.
+    ///
+    /// # Arguments
+    /// * `account` - The address of the account to query.
+    /// * `token_id` - The ID of the token to query the balance of.
     fn balance_of(ref self: TContractState, account: ContractAddress, token_id: u256) -> u256;
 
+    /// Returns the balances of multiple `accounts` for the respective `token_ids`.
+    ///
+    /// # Arguments
+    /// * `accounts` - A list of addresses to query.
+    /// * `token_ids` - A list of token IDs to query the balances of.
     fn balance_of_batch(
         ref self: TContractState, accounts: Span<ContractAddress>, token_ids: Span<u256>
     ) -> Span<u256>;
+
+    /// Transfers `value` amount of `token_id` from `from` to `to`.
+    ///
+    /// # Arguments
+    /// * `from` - Address of the sender.
+    /// * `to` - Address of the recipient.
+    /// * `token_id` - The ID of the token to transfer.
+    /// * `value` - The amount of tokens to transfer.
+    /// * `data` - Additional data to accompany the transfer.
     fn safe_transfer_from(
         ref self: TContractState,
         from: ContractAddress,
@@ -23,6 +43,15 @@ pub trait ICofiCollection<TContractState> {
         value: u256,
         data: Span<felt252>
     );
+
+    /// Transfers multiple tokens from `from` to `to` in a batch.
+    ///
+    /// # Arguments
+    /// * `from` - Address of the sender.
+    /// * `to` - Address of the recipient.
+    /// * `token_ids` - A list of token IDs to transfer.
+    /// * `values` - A list of corresponding values for each token ID to transfer.
+    /// * `data` - Additional data to accompany the batch transfer.
     fn safe_batch_transfer_from(
         ref self: TContractState,
         from: ContractAddress,
@@ -31,6 +60,14 @@ pub trait ICofiCollection<TContractState> {
         values: Span<u256>,
         data: Span<felt252>
     );
+
+    /// Mints `value` amount of `token_id` to `account`.
+    ///
+    /// # Arguments
+    /// * `account` - The address of the recipient.
+    /// * `token_id` - The ID of the token to mint.
+    /// * `value` - The amount of tokens to mint.
+    /// * `data` - Additional data to accompany the minting.
     fn mint(
         ref self: TContractState,
         account: ContractAddress,
@@ -39,6 +76,13 @@ pub trait ICofiCollection<TContractState> {
         data: Span<felt252>,
     );
 
+    /// Mints multiple tokens in a batch.
+    ///
+    /// # Arguments
+    /// * `account` - The address of the recipient.
+    /// * `token_ids` - A list of token IDs to mint.
+    /// * `values` - A list of corresponding values for each token ID to mint.
+    /// * `data` - Additional data to accompany the batch minting.
     fn batch_mint(
         ref self: TContractState,
         account: ContractAddress,
@@ -47,8 +91,20 @@ pub trait ICofiCollection<TContractState> {
         data: Span<felt252>,
     );
 
-    fn burn(ref self: TContractState, account: ContractAddress, token_id: u256, value: u256,);
+    /// Burns `value` amount of `token_id` from `account`.
+    ///
+    /// # Arguments
+    /// * `account` - The address of the account whose tokens are being burned.
+    /// * `token_id` - The ID of the token to burn.
+    /// * `value` - The amount of tokens to burn.
+    fn burn(ref self: TContractState, account: ContractAddress, token_id: u256, value: u256);
 
+    /// Burns multiple tokens in a batch.
+    ///
+    /// # Arguments
+    /// * `account` - The address of the account whose tokens are being burned.
+    /// * `token_ids` - A list of token IDs to burn.
+    /// * `values` - A list of corresponding values for each token ID to burn.
     fn batch_burn(
         ref self: TContractState,
         account: ContractAddress,
@@ -56,22 +112,51 @@ pub trait ICofiCollection<TContractState> {
         values: Span<u256>,
     );
 
+    /// Returns whether `operator` is approved to manage all of `account`'s assets.
+    ///
+    /// # Arguments
+    /// * `account` - The owner of the assets.
+    /// * `operator` - The address to check approval for.
     fn is_approved_for_all(
         ref self: TContractState, account: ContractAddress, operator: ContractAddress
     ) -> bool;
 
+    /// Sets the approval of `operator` to manage all of `account`'s assets.
+    ///
+    /// # Arguments
+    /// * `operator` - The address to approve or revoke approval for.
+    /// * `approved` - Whether the operator is approved.
     fn set_approval_for_all(ref self: TContractState, operator: ContractAddress, approved: bool);
 
+    /// Returns whether `account` is approved for the given `token_id`.
+    ///
+    /// # Arguments
+    /// * `token_id` - The ID of the token to check approval for.
+    /// * `account` - The address of the account.
     fn get_approval(ref self: TContractState, token_id: u256, account: ContractAddress) -> bool;
 
+    /// Checks if the contract implements an interface identified by `interface_id`.
+    ///
+    /// # Arguments
+    /// * `interface_id` - The interface identifier to check.
     fn supports_interface(ref self: TContractState, interface_id: felt252) -> bool;
 
+    /// Returns the URI for the metadata of `token_id`.
+    ///
+    /// # Arguments
+    /// * `token_id` - The ID of the token.
     fn uri(ref self: TContractState, token_id: u256) -> ByteArray;
 
+    /// Sets the base URI for all token metadata.
+    ///
+    /// # Arguments
+    /// * `base_uri` - The new base URI to set.
     fn set_base_uri(ref self: TContractState, base_uri: ByteArray);
 
+    /// Pauses all token transfers.
     fn pause(ref self: TContractState);
 
+    /// Unpauses all token transfers.
     fn unpause(ref self: TContractState);
 }
 
