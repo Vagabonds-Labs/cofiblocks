@@ -1,6 +1,6 @@
+import { motion } from "framer-motion";
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { motion } from 'framer-motion'
 
 type BottomModalProps = {
 	isOpen: boolean;
@@ -38,14 +38,14 @@ function BottomModal({
 
 	if (!isOpen) return null;
 
-  const divContainerVariants = {
-    initial: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.2, delay: 0.1 } }
-  }
+	const divContainerVariants = {
+		initial: { opacity: 0, y: 20 },
+		visible: { opacity: 1, y: 0, transition: { duration: 0.2, delay: 0.1 } },
+	};
 
 	return createPortal(
 		<motion.div
-		  className="fixed inset-0 bg-black bg-opacity-50 flex items-end justify-center z-50"
+			className="fixed inset-0 bg-black bg-opacity-50 flex items-end justify-center z-50"
 			variants={divContainerVariants}
 			initial="initial"
 			animate={isOpen ? "visible" : "initial"}
