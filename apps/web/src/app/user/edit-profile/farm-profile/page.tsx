@@ -4,6 +4,7 @@ import { CameraIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@repo/ui/button";
 import InputField from "@repo/ui/form/inputField";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -26,7 +27,7 @@ function EditMyFarmProfile() {
 	const utils = api.useUtils();
 	const [image, setImage] = useState<string | null>(null);
 
-	const userId = "1"; // Assume you have the logic to get the userId
+	const userId = 1; // Assume you have the logic to get the userId
 
 	const { data: userFarm, isLoading } = api.user.getUserFarm.useQuery({
 		// TODO: get user id from session or prop
@@ -41,26 +42,21 @@ function EditMyFarmProfile() {
 
 	const { mutate: updateFarm } = api.user.updateUserFarm.useMutation({
 		onSuccess: async () => {
-			utils.user.getUser.invalidate({ userId });
-			utils.user.getUserFarm.invalidate({ userId });
+			await utils.user.getUser.invalidate({ userId: userId.toString() });
+			await utils.user.getUserFarm.invalidate({ userId });
 			// TODO: display notification
 			alert("Farm profile updated");
 		},
 	});
 
-	const {
-		register,
-		handleSubmit,
-		formState: { errors },
-		control,
-	} = useForm<FormData>({
+	const { register, handleSubmit, control } = useForm<FormData>({
 		resolver: zodResolver(schema),
 		defaultValues: {
-			farmName: userFarm?.name || "",
-			region: userFarm?.region || "",
-			altitude: userFarm?.altitude || 0,
-			coordinates: userFarm?.coordinates || "",
-			website: userFarm?.website || "",
+			farmName: userFarm?.name ?? "",
+			region: userFarm?.region ?? "",
+			altitude: userFarm?.altitude ?? 0,
+			coordinates: userFarm?.coordinates ?? "",
+			website: userFarm?.website ?? "",
 		},
 	});
 
@@ -77,8 +73,8 @@ function EditMyFarmProfile() {
 			name: data.farmName,
 			region: data.region,
 			coordinates: data.coordinates,
-			website: data.website || "",
-			farmImage: image || undefined,
+			website: data.website ?? "",
+			farmImage: image ?? undefined,
 		});
 	};
 
@@ -100,10 +96,12 @@ function EditMyFarmProfile() {
 					<div className="mb-6 text-center">
 						<div className="w-32 h-32 mx-auto mb-2 bg-gray-200 rounded-[3.125rem] overflow-hidden">
 							{image ? (
-								<img
+								<Image
 									src={image}
 									alt="Farm Profile"
-									className="w-full h-full object-cover"
+									width={128}
+									height={128}
+									className="object-cover"
 								/>
 							) : (
 								<div className="w-full h-full flex items-center justify-center text-gray-400">

@@ -8,7 +8,7 @@ import { ClockIcon } from "@heroicons/react/24/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@repo/ui/button";
 import RadioButton from "@repo/ui/form/radioButton";
-import { useState } from "react";
+import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
@@ -29,20 +29,20 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-enum RoastLevel {
-	LIGHT = "Light",
-	MEDIUM = "Medium",
-	STRONG = "Strong",
-}
+const RoastLevel = {
+	LIGHT: "Light",
+	MEDIUM: "Medium",
+	STRONG: "Strong",
+} as const;
+
+type RoastLevelType = (typeof RoastLevel)[keyof typeof RoastLevel];
 
 export default function RegisterCoffee() {
-	const [roastLevel, setRoastLevel] = useState("");
-
 	const handleImageUpload = () => {
 		alert("Implement image upload");
 	};
 
-	const { register, handleSubmit, control, getValues, setValue, watch } =
+	const { register, handleSubmit, control, getValues, setValue } =
 		useForm<FormData>({
 			resolver: zodResolver(schema),
 			defaultValues: {
@@ -65,10 +65,12 @@ export default function RegisterCoffee() {
 			<div className="p-6 bg-white rounded-lg">
 				<form onSubmit={handleSubmit(onSubmit)}>
 					<div className="flex flex-col items-center my-6">
-						<img
+						<Image
 							src="/images/cafe1.webp"
 							alt="Coffee"
-							className="w-20 h-20 rounded-full mb-2"
+							width={80}
+							height={80}
+							className="rounded-full mb-2"
 						/>
 						<Button
 							className="mx-auto mt-4 w-46 h-10 px-2"
@@ -150,7 +152,7 @@ export default function RegisterCoffee() {
 							Roast level
 						</label>
 						<div className="flex flex-col space-y-2">
-							{Object.values(RoastLevel).map((level) => (
+							{(Object.values(RoastLevel) as RoastLevelType[]).map((level) => (
 								<div
 									key={level}
 									className="flex items-center justify-between p-3 bg-surface-primary-soft rounded-lg cursor-pointer"
@@ -170,7 +172,7 @@ export default function RegisterCoffee() {
 											color="bg-surface-primary-default"
 										/>
 										<span
-											className={`text-sm font-bold ${roastLevel === level ? "text-content-title" : "text-content-body-default"}`}
+											className={`text-sm font-bold ${getValues("roast") === level ? "text-content-title" : "text-content-body-default"}`}
 										>
 											{level}
 										</span>
@@ -208,7 +210,7 @@ export default function RegisterCoffee() {
 									event.preventDefault();
 								}
 							}}
-							onChange={(event) => {
+							onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
 								const value = event.target.value;
 								const parts = value.split(".");
 								if (parts[1] && parts[1].length > 2) {
@@ -219,7 +221,7 @@ export default function RegisterCoffee() {
 									setValue("price", value);
 								}
 							}}
-							onBlur={(event) => {
+							onBlur={(event: React.FocusEvent<HTMLInputElement>) => {
 								const value = Number.parseFloat(event.target.value);
 								if (!Number.isNaN(value)) {
 									const formattedValue = value.toFixed(2);
@@ -262,7 +264,7 @@ export default function RegisterCoffee() {
 								type="text"
 								className="w-16 text-center bg-transparent text-content-body-default text-lg"
 								{...register("bagsAvailable", {
-									onChange: (e) => {
+									onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
 										const value =
 											e.target.value === ""
 												? 0

@@ -4,6 +4,7 @@ import { CameraIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@repo/ui/button";
 import InputField from "@repo/ui/form/inputField";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -37,23 +38,18 @@ function EditMyProfile() {
 
 	const { mutate: updateProfile } = api.user.updateUserProfile.useMutation({
 		onSuccess: async () => {
-			utils.user.getUser.invalidate({ userId });
+			await utils.user.getUser.invalidate({ userId });
 			// TODO: display notification
 			alert("Profile updated");
 		},
 	});
 
-	const {
-		register,
-		handleSubmit,
-		formState: { errors },
-		control,
-	} = useForm<FormData>({
+	const { register, handleSubmit, control } = useForm<FormData>({
 		resolver: zodResolver(schema),
 		defaultValues: {
-			fullName: user?.name || "",
-			email: user?.email || "",
-			physicalAddress: user?.physicalAddress || "",
+			fullName: user?.name ?? "",
+			email: user?.email ?? "",
+			physicalAddress: user?.physicalAddress ?? "",
 		},
 	});
 
@@ -62,7 +58,7 @@ function EditMyProfile() {
 			userId: userId,
 			name: data.fullName,
 			physicalAddress: data.physicalAddress,
-			image: image || undefined,
+			image: image ?? undefined,
 		});
 	};
 
@@ -81,9 +77,11 @@ function EditMyProfile() {
 					<div className="mb-6 text-center">
 						<div className="w-32 h-32 mx-auto mb-2 bg-gray-200 rounded-[3.125rem] overflow-hidden">
 							{image ? (
-								<img
+								<Image
 									src={image}
 									alt="Profile"
+									width={128}
+									height={128}
 									className="w-full h-full object-cover"
 								/>
 							) : (

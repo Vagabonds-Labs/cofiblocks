@@ -13,7 +13,6 @@ import {
 import { motion, useAnimation } from "framer-motion";
 import { signIn, signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";

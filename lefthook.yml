@@ -7,5 +7,11 @@ pre-commit:
   commands:
     check:
       glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
-      run: npx @biomejs/biome check --write --no-errors-on-unmatched --files-ignore-unknown=true --colors=off {staged_files}
+      run: bun run format:fix
       stage_fixed: true
+    sn_format:
+      glob: "apps/snfoundry/contracts/**/*.cairo"
+      run: bun run sn:format:check
+      stage_fixed: true
+    build:
+      run: bun run build

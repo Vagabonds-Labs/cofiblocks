@@ -17,7 +17,8 @@
 			"*/**/.next/**",
 			"node_modules/**",
 			"apps/web/storybook-static/**",
-			"apps/web/.storybook/**"
+			"apps/web/.storybook/**",
+			"apps/snfoundry/contracts"
 		]
 	}
 }
