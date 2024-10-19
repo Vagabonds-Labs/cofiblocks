@@ -87,7 +87,7 @@ export default function Settings({ initialLanguage = "en" }: SettingsProps) {
 									<label key={lang} className="flex items-center gap-2">
 										<RadioButton
 											name="language"
-											label={languageMap[lang] || lang}
+											label={languageMap[lang] ?? lang}
 											value={lang}
 											control={control}
 										/>

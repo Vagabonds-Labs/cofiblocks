@@ -48,14 +48,16 @@ export default function SaleDetails() {
 
 	return (
 		<ProfileOptionLayout
-			title={saleDetails?.productName || ""}
+			title={saleDetails?.productName ?? ""}
 			backLink="/user/my-sales"
 		>
-			<ProductStatusDetails
-				productDetails={saleDetails as SaleDetails}
-				isProducer={isProducer}
-				updateProductDetails={updateSaleDetails}
-			/>
+			{saleDetails && (
+				<ProductStatusDetails
+					productDetails={saleDetails}
+					isProducer={isProducer}
+					updateProductDetails={updateSaleDetails}
+				/>
+			)}
 		</ProfileOptionLayout>
 	);
 }

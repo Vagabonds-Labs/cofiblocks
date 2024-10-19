@@ -22,7 +22,7 @@
 		"sn:test-eslint": "cd apps/snfoundry && node eslint-contract-name/eslint-plugin-contract-names.test.js",
 		"sn:compile": "cd apps/snfoundry/contracts && scarb build",
 		"sn:format": "biome format --write 'scripts-ts/**/*.{ts,tsx}' && cd apps/snfoundry/contracts && scarb fmt",
-		"sn:format:check": "biome check 'scripts-ts/**/*.{ts,tsx}' && cd apps/snfoundry/contracts && scarb fmt --check",
+		"sn:format:check": "dbiome check 'scripts-ts/**/*.{ts,tsx}' && cd apps/snfoundry/contracts && scarb fmt --check",
 		"storybook": "cd apps/web/ storybook dev -p 6006",
 		"storybook:build": "cd apps/web. storybook build"
 	},

@@ -49,14 +49,16 @@ export default function OrderDetails() {
 
 	return (
 		<ProfileOptionLayout
-			title={orderDetails?.productName || ""}
+			title={orderDetails?.productName ?? ""}
 			backLink="/user/my-orders"
 		>
-			<ProductStatusDetails
-				productDetails={orderDetails as OrderDetails}
-				isProducer={isProducer}
-				updateProductDetails={updateProductDetails}
-			/>
+			{orderDetails && (
+				<ProductStatusDetails
+					productDetails={orderDetails}
+					isProducer={isProducer}
+					updateProductDetails={updateProductDetails}
+				/>
+			)}
 		</ProfileOptionLayout>
 	);
 }

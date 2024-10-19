@@ -1,6 +1,6 @@
 "use client";
 
-import { useAccount, useConnect, useDisconnect } from "@starknet-react/core";
+import { useAccount, useDisconnect } from "@starknet-react/core";
 import { useState } from "react";
 import { ProfileCard } from "~/app/_components/features/ProfileCard";
 import { ProfileOptions } from "~/app/_components/features/ProfileOptions";
@@ -19,7 +19,6 @@ type UserProfile = {
 
 export default function UserProfile() {
 	const { address } = useAccount();
-	const { connect, connectors } = useConnect();
 	const { disconnect } = useDisconnect();
 
 	const [user] = useState<UserProfile>({
@@ -32,12 +31,7 @@ export default function UserProfile() {
 
 	return (
 		<Main>
-			<Header
-				address={address}
-				connect={connect}
-				connectors={connectors}
-				disconnect={disconnect}
-			/>
+			<Header address={address} disconnect={disconnect} />
 			<div className="container mx-auto px-4 py-8">
 				<h1 className="text-3xl font-bold mb-6">User Profile</h1>
 				<ProfileCard user={user} />
