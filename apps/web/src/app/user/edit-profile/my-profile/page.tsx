@@ -38,9 +38,13 @@ function EditMyProfile() {
 
 	const { mutate: updateProfile } = api.user.updateUserProfile.useMutation({
 		onSuccess: async () => {
-			await utils.user.getUser.invalidate({ userId });
-			// TODO: display notification
-			alert("Profile updated");
+			try {
+				await utils.user.getUser.invalidate({ userId });
+				// TODO: display notification
+				alert("Profile updated");
+			} catch (error) {
+				console.error("Failed to invalidate user data:", error);
+			}
 		},
 	});
 
@@ -53,8 +57,8 @@ function EditMyProfile() {
 		},
 	});
 
-	const onSubmit = async (data: FormData) => {
-		updateProfile({
+	const onSubmit = (data: FormData) => {
+		void updateProfile({
 			userId: userId,
 			name: data.fullName,
 			physicalAddress: data.physicalAddress,
@@ -64,8 +68,10 @@ function EditMyProfile() {
 
 	const handleImageUpload = () => {
 		// TODO: Implement image upload logic
-		alert("Implement image upload logic");
-		setImage(null);
+		void (async () => {
+			alert("Implement image upload logic");
+			setImage(null);
+		})();
 	};
 
 	return (
@@ -102,14 +108,20 @@ function EditMyProfile() {
 					<form onSubmit={handleSubmit(onSubmit)}>
 						<InputField
 							label="Full Name"
-							control={control}
 							{...register("fullName")}
+							onChange={(value: string) => {
+								void register("fullName").onChange({ target: { value } });
+							}}
+							control={control}
 							className="mb-4"
 						/>
 						<InputField
 							label="Email"
-							control={control}
 							{...register("email")}
+							onChange={(value: string) => {
+								void register("email").onChange({ target: { value } });
+							}}
+							control={control}
 							className="mb-4"
 							disabled
 							// TODO: update input style (set #F8FAFC as bg color and #788788 as text color)
@@ -117,10 +129,15 @@ function EditMyProfile() {
 							inputClassName="cursor-not-allowed"
 						/>
 						<InputField
-							label="City / Country"
-							control={control}
+							label="Physical Address"
 							{...register("physicalAddress")}
-							className="mb-6"
+							onChange={(value: string) => {
+								void register("physicalAddress").onChange({
+									target: { value },
+								});
+							}}
+							control={control}
+							className="mb-4"
 						/>
 						<Button type="submit" className="w-full mt-4">
 							Save Changes
