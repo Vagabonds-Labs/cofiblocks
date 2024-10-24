@@ -1,6 +1,21 @@
 // SPDX-License-Identifier: MIT
 // Compatible with OpenZeppelin Contracts for Cairo ^0.15.0
 
+use starknet::ContractAddress;
+
+#[starknet::interface]
+pub trait ICofiCollection<TContractState> {
+    fn mint(
+        ref self: TContractState,
+        account: ContractAddress,
+        token_id: u256,
+        value: u256,
+        data: Span<felt252>,
+    );
+
+    fn balance_of(ref self: TContractState, account: ContractAddress, token_id: u256) -> u256;
+}
+
 #[starknet::contract]
 mod CofiCollection {
     use openzeppelin::access::ownable::OwnableComponent;
@@ -73,7 +88,10 @@ mod CofiCollection {
         fn burn(ref self: ContractState, account: ContractAddress, token_id: u256, value: u256) {
             let caller = get_caller_address();
             if account != caller {
-                assert(self.erc1155.is_approved_for_all(account, caller), ERC1155Component::Errors::UNAUTHORIZED);
+                assert(
+                    self.erc1155.is_approved_for_all(account, caller),
+                    ERC1155Component::Errors::UNAUTHORIZED
+                );
             }
             self.erc1155.burn(account, token_id, value);
         }
@@ -87,7 +105,10 @@ mod CofiCollection {
         ) {
             let caller = get_caller_address();
             if account != caller {
-                assert(self.erc1155.is_approved_for_all(account, caller), ERC1155Component::Errors::UNAUTHORIZED);
+                assert(
+                    self.erc1155.is_approved_for_all(account, caller),
+                    ERC1155Component::Errors::UNAUTHORIZED
+                );
             }
             self.erc1155.batch_burn(account, token_ids, values);
         }
