@@ -1,5 +1,9 @@
-mod CofiCollection;
-#[cfg(test)]
+mod cofi_collection;
+
 mod test {
-    mod CofiCollection;
+    mod test_cofi_collection;
+}
+
+mod mock_contracts {
+    mod Receiver;
 }
