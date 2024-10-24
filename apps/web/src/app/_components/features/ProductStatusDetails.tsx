@@ -10,6 +10,7 @@ import { LightBulbIcon } from "@heroicons/react/24/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@repo/ui/button";
 import RadioButton from "@repo/ui/form/radioButton";
+import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -188,7 +189,7 @@ export default function ProductStatusDetails({
 							New order
 						</p>
 						<p className="text-xs text-gray-600">
-							You have a new order. Let's start the preparations.
+							You have a new order. Let&apos;s start the preparations.
 						</p>
 					</div>
 					<button
@@ -206,7 +207,7 @@ export default function ProductStatusDetails({
 				<div>
 					<p className="text-success-content flex items-center">
 						<LightBulbIcon className="w-6 h-6 mr-4" />
-						{statusText[orderStatus as keyof typeof statusText]}
+						{statusText[orderStatus as keyof typeof statusText] || ""}
 					</p>
 				</div>
 			</div>
@@ -223,10 +224,12 @@ export default function ProductStatusDetails({
 			</div>
 
 			<div className="flex items-center space-x-4 !mb-10">
-				<img
+				<Image
 					src="/images/cafe2.webp"
 					alt="Product"
-					className="w-12 h-12 rounded-md object-cover"
+					width={48}
+					height={48}
+					className="rounded-md object-cover"
 				/>
 				<p className="font-semibold">{productDetails.productName}</p>
 			</div>
@@ -258,18 +261,15 @@ export default function ProductStatusDetails({
 					{
 						label: "Delivery",
 						value:
-							productDetails.delivery === DeliveryTypeEnum.Delivery
+							productDetails.delivery === DeliveryTypeEnum.Delivery.toString()
 								? "My address"
 								: productDetails.delivery,
 						address: productDetails.address,
 					},
 					{ label: "Total price", value: productDetails.totalPrice },
 				].map((item, index, array) => (
-					<>
-						<div
-							key={item.label}
-							className="flex justify-between items-start py-3"
-						>
+					<React.Fragment key={item.label}>
+						<div className="flex justify-between items-start py-3">
 							<div className="w-3/4">
 								<p className="font-semibold">{item.label}</p>
 								{item.address && (
@@ -281,7 +281,7 @@ export default function ProductStatusDetails({
 							<p className="w-1/2 text-right break-words">{item.value}</p>
 						</div>
 						{index < array.length - 1 && <hr className="my-1" />}
-					</>
+					</React.Fragment>
 				))}
 			</div>
 
@@ -296,8 +296,8 @@ export default function ProductStatusDetails({
 					<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 						<div className="flex flex-col gap-2">
 							{statusStepsKeys.map((status, index) => (
-								<>
-									<label key={status} className="flex items-center gap-2">
+								<React.Fragment key={status}>
+									<label className="flex items-center gap-2">
 										<RadioButton
 											name="status"
 											label={status}
@@ -308,7 +308,7 @@ export default function ProductStatusDetails({
 									{index < statusStepsKeys.length - 1 && (
 										<hr className="my-2 border-surface-primary-soft" />
 									)}
-								</>
+								</React.Fragment>
 							))}
 						</div>
 						<Button type="submit" className="w-full !mt-6">

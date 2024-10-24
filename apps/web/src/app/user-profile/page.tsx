@@ -1,6 +1,8 @@
 "use client";
 
-import { useAccount, useConnect, useDisconnect } from "@starknet-react/core";
+import PageHeader from "@repo/ui/pageHeader";
+import { useAccount, useDisconnect } from "@starknet-react/core";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ProfileCard } from "~/app/_components/features/ProfileCard";
 import { ProfileOptions } from "~/app/_components/features/ProfileOptions";
@@ -19,7 +21,6 @@ type UserProfile = {
 
 export default function UserProfile() {
 	const { address } = useAccount();
-	const { connect, connectors } = useConnect();
 	const { disconnect } = useDisconnect();
 
 	const [user] = useState<UserProfile>({
@@ -30,16 +31,19 @@ export default function UserProfile() {
 		badges: ["Lover"],
 	});
 
+	const router = useRouter();
+
 	return (
 		<Main>
-			<Header
-				address={address}
-				connect={connect}
-				connectors={connectors}
-				disconnect={disconnect}
-			/>
 			<div className="container mx-auto px-4 py-8">
-				<h1 className="text-3xl font-bold mb-6">User Profile</h1>
+				<PageHeader
+					title="User Profile"
+					userAddress={address}
+					onLogout={disconnect}
+					showBackButton
+					onBackClick={() => router.back()}
+					showBlockie={false}
+				/>
 				<ProfileCard user={user} />
 				<ProfileOptions />
 			</div>

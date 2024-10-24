@@ -12,12 +12,14 @@ import OrderListItem from "~/app/_components/features/OrderListItem";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
 import BottomModal from "~/app/_components/ui/BottomModal";
 
-enum SalesStatusEnum {
-	Paid = "Paid",
-	Prepared = "Prepared",
-	Shipped = "Shipped",
-	Delivered = "Delivered",
-}
+const SalesStatusEnum = {
+	Paid: "Paid",
+	Prepared: "Prepared",
+	Shipped: "Shipped",
+	Delivered: "Delivered",
+} as const;
+
+type SalesStatus = (typeof SalesStatusEnum)[keyof typeof SalesStatusEnum];
 
 const filtersSchema = z.object({
 	statusPaid: z.boolean().optional(),
@@ -36,13 +38,13 @@ const mockedOrders = [
 				id: "1",
 				productName: "Edit profile",
 				sellerName: "seller1_fullname",
-				status: "Paid",
+				status: SalesStatusEnum.Paid as SalesStatus,
 			},
 			{
 				id: "2",
 				productName: "My Orders",
 				sellerName: "seller2_fullname",
-				status: "Paid",
+				status: SalesStatusEnum.Paid as SalesStatus,
 			},
 		],
 	},
@@ -53,13 +55,13 @@ const mockedOrders = [
 				id: "3",
 				productName: "productName",
 				sellerName: "seller1_fullname",
-				status: "Delivered",
+				status: SalesStatusEnum.Delivered as SalesStatus,
 			},
 			{
 				id: "4",
 				productName: "productName",
 				sellerName: "seller2_fullname",
-				status: "Delivered",
+				status: SalesStatusEnum.Delivered as SalesStatus,
 			},
 		],
 	},
@@ -118,11 +120,11 @@ export default function MyOrders() {
 
 					const matchesStatus = activeStatusFilters.some(Boolean)
 						? (activeFilters.statusPaid &&
-								item.status === SalesStatusEnum.Paid) ||
+								item.status === SalesStatusEnum.Paid) ??
 							(activeFilters.statusPrepared &&
-								item.status === SalesStatusEnum.Prepared) ||
+								item.status === SalesStatusEnum.Prepared) ??
 							(activeFilters.statusShipped &&
-								item.status === SalesStatusEnum.Shipped) ||
+								item.status === SalesStatusEnum.Shipped) ??
 							(activeFilters.statusDelivered &&
 								item.status === SalesStatusEnum.Delivered)
 						: true;

@@ -165,6 +165,7 @@ async function main() {
 				coordinates: "123.456, -78.910",
 				website: "https://www.myfarm.com",
 				farmImage: "/images/user-profile/farm-avatar.svg",
+				email: `${user.name?.toLowerCase() ?? "unknown"}@farm.com`,
 				userId: user.id,
 			},
 		});

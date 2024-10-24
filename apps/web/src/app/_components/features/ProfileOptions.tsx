@@ -10,6 +10,8 @@ import {
 	UserIcon,
 	WalletIcon,
 } from "@heroicons/react/24/outline";
+import { cva } from "class-variance-authority";
+import cx from "classnames";
 import Link from "next/link";
 import { useState } from "react";
 import { LogoutModal } from "~/app/_components/features/LogoutModal";
@@ -24,7 +26,38 @@ type ProfileOption = {
 	onClick?: () => void;
 };
 
-function ProfileOptions() {
+interface ProfileOptionsProps {
+	address?: string;
+}
+
+const optionStyles = cva(
+	"flex items-center justify-between p-2 cursor-pointer",
+	{
+		variants: {
+			intent: {
+				default: "text-content-body-default",
+				error: "text-error-default",
+			},
+		},
+		defaultVariants: {
+			intent: "default",
+		},
+	},
+);
+
+const iconStyles = cva("w-5 h-5 mr-3", {
+	variants: {
+		intent: {
+			default: "text-content-body-default",
+			error: "text-error-default",
+		},
+	},
+	defaultVariants: {
+		intent: "default",
+	},
+});
+
+function ProfileOptions({ address: _ }: ProfileOptionsProps) {
 	const [isLogoutModalOpen, setIsLogoutModalOpen] = useState<boolean>(false);
 	const [isWalletModalOpen, setIsWalletModalOpen] = useState<boolean>(false);
 
@@ -80,17 +113,27 @@ function ProfileOptions() {
 							}}
 							role="button"
 							tabIndex={0}
-							className="flex items-center justify-between p-2 cursor-pointer"
+							className={optionStyles({
+								intent:
+									option.customClass === "text-error-default"
+										? "error"
+										: "default",
+							})}
 						>
 							{option.onClick ? (
 								<>
 									<div className="flex items-center">
 										<option.icon
-											className={`w-5 h-5 mr-3 ${option.iconColor || "text-content-body-default"}`}
+											className={iconStyles({
+												intent:
+													option.iconColor === "text-error-default"
+														? "error"
+														: "default",
+											})}
 										/>
 										<span
 											className={
-												option.customClass || "text-content-body-default"
+												option.customClass ?? "text-content-body-default"
 											}
 										>
 											{option.label}
@@ -100,16 +143,21 @@ function ProfileOptions() {
 								</>
 							) : (
 								<Link
-									href={option.href || ""}
+									href={option.href ?? ""}
 									className="flex items-center justify-between w-full"
 								>
 									<div className="flex items-center">
 										<option.icon
-											className={`w-5 h-5 mr-3 ${option.iconColor || "text-content-body-default"}`}
+											className={iconStyles({
+												intent:
+													option.iconColor === "text-error-default"
+														? "error"
+														: "default",
+											})}
 										/>
 										<span
 											className={
-												option.customClass || "text-content-body-default"
+												option.customClass ?? "text-content-body-default"
 											}
 										>
 											{option.label}
@@ -120,7 +168,7 @@ function ProfileOptions() {
 							)}
 						</div>
 						{index < profileOptions.length - 1 && (
-							<hr className="my-2 surface-primary-soft" />
+							<hr className={cx("my-2", "surface-primary-soft")} />
 						)}
 					</div>
 				))}

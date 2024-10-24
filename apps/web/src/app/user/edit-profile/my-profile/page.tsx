@@ -4,6 +4,7 @@ import { CameraIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@repo/ui/button";
 import InputField from "@repo/ui/form/inputField";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -37,39 +38,40 @@ function EditMyProfile() {
 
 	const { mutate: updateProfile } = api.user.updateUserProfile.useMutation({
 		onSuccess: async () => {
-			utils.user.getUser.invalidate({ userId });
-			// TODO: display notification
-			alert("Profile updated");
+			try {
+				await utils.user.getUser.invalidate({ userId });
+				// TODO: display notification
+				alert("Profile updated");
+			} catch (error) {
+				console.error("Failed to invalidate user data:", error);
+			}
 		},
 	});
 
-	const {
-		register,
-		handleSubmit,
-		formState: { errors },
-		control,
-	} = useForm<FormData>({
+	const { register, handleSubmit, control } = useForm<FormData>({
 		resolver: zodResolver(schema),
 		defaultValues: {
-			fullName: user?.name || "",
-			email: user?.email || "",
-			physicalAddress: user?.physicalAddress || "",
+			fullName: user?.name ?? "",
+			email: user?.email ?? "",
+			physicalAddress: user?.physicalAddress ?? "",
 		},
 	});
 
-	const onSubmit = async (data: FormData) => {
-		updateProfile({
+	const onSubmit = (data: FormData) => {
+		void updateProfile({
 			userId: userId,
 			name: data.fullName,
 			physicalAddress: data.physicalAddress,
-			image: image || undefined,
+			image: image ?? undefined,
 		});
 	};
 
 	const handleImageUpload = () => {
 		// TODO: Implement image upload logic
-		alert("Implement image upload logic");
-		setImage(null);
+		void (async () => {
+			alert("Implement image upload logic");
+			setImage(null);
+		})();
 	};
 
 	return (
@@ -81,9 +83,11 @@ function EditMyProfile() {
 					<div className="mb-6 text-center">
 						<div className="w-32 h-32 mx-auto mb-2 bg-gray-200 rounded-[3.125rem] overflow-hidden">
 							{image ? (
-								<img
+								<Image
 									src={image}
 									alt="Profile"
+									width={128}
+									height={128}
 									className="w-full h-full object-cover"
 								/>
 							) : (
@@ -104,14 +108,20 @@ function EditMyProfile() {
 					<form onSubmit={handleSubmit(onSubmit)}>
 						<InputField
 							label="Full Name"
-							control={control}
 							{...register("fullName")}
+							onChange={(value: string) => {
+								void register("fullName").onChange({ target: { value } });
+							}}
+							control={control}
 							className="mb-4"
 						/>
 						<InputField
 							label="Email"
-							control={control}
 							{...register("email")}
+							onChange={(value: string) => {
+								void register("email").onChange({ target: { value } });
+							}}
+							control={control}
 							className="mb-4"
 							disabled
 							// TODO: update input style (set #F8FAFC as bg color and #788788 as text color)
@@ -119,10 +129,15 @@ function EditMyProfile() {
 							inputClassName="cursor-not-allowed"
 						/>
 						<InputField
-							label="City / Country"
-							control={control}
+							label="Physical Address"
 							{...register("physicalAddress")}
-							className="mb-6"
+							onChange={(value: string) => {
+								void register("physicalAddress").onChange({
+									target: { value },
+								});
+							}}
+							control={control}
+							className="mb-4"
 						/>
 						<Button type="submit" className="w-full mt-4">
 							Save Changes

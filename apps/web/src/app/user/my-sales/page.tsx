@@ -12,17 +12,22 @@ import OrderListItem from "~/app/_components/features/OrderListItem";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
 import BottomModal from "~/app/_components/ui/BottomModal";
 
-enum SalesStatusEnum {
-	Paid = "Paid",
-	Prepared = "Prepared",
-	Shipped = "Shipped",
-	Delivered = "Delivered",
-}
+const SalesStatusEnum = {
+	Paid: "Paid",
+	Prepared: "Prepared",
+	Shipped: "Shipped",
+	Delivered: "Delivered",
+} as const;
 
-enum DeliveryMethodEnum {
-	Address = "Address",
-	Meetup = "Meetup",
-}
+type SalesStatus = (typeof SalesStatusEnum)[keyof typeof SalesStatusEnum];
+
+const DeliveryMethodEnum = {
+	Address: "Address",
+	Meetup: "Meetup",
+} as const;
+
+type DeliveryMethod =
+	(typeof DeliveryMethodEnum)[keyof typeof DeliveryMethodEnum];
 
 const filtersSchema = z.object({
 	statusPaid: z.boolean().optional(),
@@ -43,15 +48,15 @@ const mockedOrders = [
 				id: "1",
 				productName: "Edit profile",
 				buyerName: "buyer1_fullname",
-				status: "Paid",
-				delivery: "Address",
+				status: SalesStatusEnum.Paid as SalesStatus,
+				delivery: DeliveryMethodEnum.Address as DeliveryMethod,
 			},
 			{
 				id: "2",
 				productName: "My Orders",
 				buyerName: "buyer2_fullname",
-				status: "Paid",
-				delivery: "Meetup",
+				status: SalesStatusEnum.Paid as SalesStatus,
+				delivery: DeliveryMethodEnum.Meetup as DeliveryMethod,
 			},
 		],
 	},
@@ -62,15 +67,15 @@ const mockedOrders = [
 				id: "3",
 				productName: "productName",
 				buyerName: "buyer1_fullname",
-				status: "Delivered",
-				delivery: "Address",
+				status: SalesStatusEnum.Delivered as SalesStatus,
+				delivery: DeliveryMethodEnum.Address as DeliveryMethod,
 			},
 			{
 				id: "4",
 				productName: "productName",
 				buyerName: "buyer2_fullname",
-				status: "Delivered",
-				delivery: "Meetup",
+				status: SalesStatusEnum.Delivered as SalesStatus,
+				delivery: DeliveryMethodEnum.Meetup as DeliveryMethod,
 			},
 		],
 	},
@@ -129,28 +134,28 @@ export default function MySales() {
 						activeFilters.statusDelivered,
 					];
 
-					const matchesStatus = activeStatusFilters.some(Boolean)
-						? (activeFilters.statusPaid &&
-								item.status === SalesStatusEnum.Paid) ||
-							(activeFilters.statusPrepared &&
-								item.status === SalesStatusEnum.Prepared) ||
-							(activeFilters.statusShipped &&
-								item.status === SalesStatusEnum.Shipped) ||
-							(activeFilters.statusDelivered &&
-								item.status === SalesStatusEnum.Delivered)
-						: true;
+					const matchesStatus =
+						!activeStatusFilters.some(Boolean) ??
+						(activeFilters.statusPaid &&
+							item.status === SalesStatusEnum.Paid) ??
+						(activeFilters.statusPrepared &&
+							item.status === SalesStatusEnum.Prepared) ??
+						(activeFilters.statusShipped &&
+							item.status === SalesStatusEnum.Shipped) ??
+						(activeFilters.statusDelivered &&
+							item.status === SalesStatusEnum.Delivered);
 
 					const activeDeliveryFilters = [
 						activeFilters.deliveryAddress,
 						activeFilters.deliveryMeetup,
 					];
 
-					const matchesDelivery = activeDeliveryFilters.some(Boolean)
-						? (activeFilters.deliveryAddress &&
-								item.delivery === DeliveryMethodEnum.Address) ||
-							(activeFilters.deliveryMeetup &&
-								item.delivery === DeliveryMethodEnum.Meetup)
-						: true;
+					const matchesDelivery =
+						!activeDeliveryFilters.some(Boolean) ??
+						(activeFilters.deliveryAddress &&
+							item.delivery === DeliveryMethodEnum.Address) ??
+						(activeFilters.deliveryMeetup &&
+							item.delivery === DeliveryMethodEnum.Meetup);
 
 					return matchesSearch && matchesStatus && matchesDelivery;
 				}),

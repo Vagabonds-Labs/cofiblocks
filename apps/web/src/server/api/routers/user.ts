@@ -32,7 +32,7 @@ export const userRouter = createTRPCRouter({
 		.input(z.object({ userId: z.number() }))
 		.query(async ({ ctx, input }) => {
 			return ctx.db.farm.findFirst({
-				where: { userId: input.userId },
+				where: { userId: input.userId.toString() },
 			});
 		}),
 

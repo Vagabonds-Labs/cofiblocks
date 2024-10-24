@@ -40,27 +40,27 @@ export default function Favorites() {
 	const handleAddToCart = (productId: number) => {
 		const cartId = 1;
 
-		addItem({ cartId, productId, quantity: 1 });
+		addItem({ cartId: cartId.toString(), productId, quantity: 1 });
 		setAddedProduct(productId);
 	};
 
 	return (
 		<ProfileOptionLayout title="Favorite products">
 			<div className="flex flex-col items-center gap-6 p-4 mx-auto">
-				{userFavoriteProducts.map(
-					({ id, title, description, imageUrl, imageAlt }) => (
-						<div key={id} className="w-full max-w-md flex justify-center">
-							<ProductCard
-								image={imageUrl}
-								title={title}
-								price={10.0}
-								available={100}
-								onClick={() => handleAddToCart(id)}
-								isAddingToShoppingCart={addedProduct === id}
-							/>
-						</div>
-					),
-				)}
+				{userFavoriteProducts.map(({ id, imageUrl }) => (
+					<div key={id} className="w-full max-w-md flex justify-center">
+						<ProductCard
+							image={imageUrl}
+							region="Region"
+							farmName="Farm Name"
+							variety="Variety"
+							price={10.0}
+							badgeText="Badge Text"
+							onClick={() => handleAddToCart(id)}
+							isAddingToShoppingCart={addedProduct === id}
+						/>
+					</div>
+				))}
 			</div>
 		</ProfileOptionLayout>
 	);

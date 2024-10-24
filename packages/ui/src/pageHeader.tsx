@@ -1,8 +1,8 @@
+import { ArrowLeftIcon, ShoppingCartIcon } from "@heroicons/react/24/outline";
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { v4 as uuidv4 } from "uuid";
 
 const BlockiesSvg = dynamic<{ address: string; size: number; scale: number }>(
 	() => import("blockies-react-svg"),
@@ -11,18 +11,22 @@ const BlockiesSvg = dynamic<{ address: string; size: number; scale: number }>(
 
 interface PageHeaderProps {
 	title: string;
-	leftIcon?: React.ReactNode;
-	rightIcons?: React.ReactNode[];
 	userAddress?: string;
 	onLogout?: () => void;
+	hideCart?: boolean;
+	showBackButton?: boolean;
+	onBackClick?: () => void;
+	showBlockie?: boolean;
 }
 
 function PageHeader({
 	title,
-	leftIcon,
-	rightIcons = [],
 	userAddress,
 	onLogout,
+	hideCart = false,
+	showBackButton = false,
+	onBackClick,
+	showBlockie = true,
 }: PageHeaderProps) {
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	const menuRef = useRef<HTMLDivElement>(null);
@@ -52,21 +56,27 @@ function PageHeader({
 	}, []);
 
 	return (
-		<div className="w-full max-w-[24.375rem] h-16 px-4 py-2 bg-surface-inverse flex justify-between items-center mx-auto">
+		<div className="w-full max-w-[24.375rem] h-16 py-2 bg-white flex justify-between items-center mx-auto space-x-4">
 			<div className="flex items-center">
+				{showBackButton && (
+					<button onClick={onBackClick} className="mr-2" type="button">
+						<ArrowLeftIcon className="w-6 h-6" />
+					</button>
+				)}
 				{userAddress && (
 					<div className="relative" ref={menuRef}>
 						<div
-							className="cursor-pointer "
+							className="cursor-pointer"
 							onClick={toggleMenu}
 							onKeyDown={handleKeyDown}
 							role="button"
 							tabIndex={0}
 						>
-							<div className="rounded-full overflow-hidden relative">
-								<BlockiesSvg address={userAddress} size={8} scale={5} />
-							</div>
-							<div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white z-10" />
+							{showBlockie && (
+								<div className="rounded-full overflow-hidden relative w-8 h-8">
+									<BlockiesSvg address={userAddress} size={8} scale={5} />
+								</div>
+							)}
 						</div>
 						{isMenuOpen && (
 							<div className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
@@ -76,6 +86,13 @@ function PageHeader({
 									aria-orientation="vertical"
 									aria-labelledby="options-menu"
 								>
+									<a
+										href="/user-profile"
+										className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+										role="menuitem"
+									>
+										{t("profile")}
+									</a>
 									<button
 										className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
 										onClick={onLogout}
@@ -90,18 +107,15 @@ function PageHeader({
 					</div>
 				)}
 			</div>
-			<div className="flex-grow text-center">
-				<div className="text-content-title text-2xl font-bold font-manrope leading-[2.125rem]">
-					{title}
-				</div>
+			<div className="flex-grow text-left">
+				<h1 className="text-2xl font-bold">{title}</h1>
 			</div>
-			<div className="flex items-center gap-8">
-				{rightIcons.map((icon) => (
-					<div key={uuidv4()} className="w-6 h-6">
-						{icon}
+			<div className="flex items-center space-x-4">
+				{!hideCart && (
+					<div className="w-6 h-6">
+						<ShoppingCartIcon className="w-6 h-6" />
 					</div>
-				))}
-				{leftIcon && <div className="w-6 h-6">{leftIcon}</div>}
+				)}
 			</div>
 		</div>
 	);

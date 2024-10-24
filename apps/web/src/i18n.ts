@@ -1,19 +1,22 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
+import enTranslation from "../public/locales/en/common.json";
+import esTranslation from "../public/locales/es/common.json";
+import ptTranslation from "../public/locales/pt/common.json";
 
-i18n.use(initReactI18next).init({
+void i18n.use(initReactI18next).init({
 	lng: "en",
 	debug: false,
 	fallbackLng: "en",
 	resources: {
 		en: {
-			translation: require("../public/locales/en/common.json"),
+			translation: enTranslation,
 		},
 		es: {
-			translation: require("../public/locales/es/common.json"),
+			translation: esTranslation,
 		},
 		pt: {
-			translation: require("../public/locales/pt/common.json"),
+			translation: ptTranslation,
 		},
 	},
 	interpolation: {

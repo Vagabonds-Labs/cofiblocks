@@ -141,6 +141,7 @@ model Farm {
   coordinates String
   website   String
   farmImage String
+  email     String
   userId    String
   user      User @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
