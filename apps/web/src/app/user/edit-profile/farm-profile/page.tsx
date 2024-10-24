@@ -41,11 +41,15 @@ function EditMyFarmProfile() {
 	}, [userFarm]);
 
 	const { mutate: updateFarm } = api.user.updateUserFarm.useMutation({
-		onSuccess: async () => {
-			await utils.user.getUser.invalidate({ userId: userId.toString() });
-			await utils.user.getUserFarm.invalidate({ userId });
+		onSuccess: () => {
+			void utils.user.getUser.invalidate({ userId: userId.toString() });
+			void utils.user.getUserFarm.invalidate({ userId });
 			// TODO: display notification
 			alert("Farm profile updated");
+		},
+		onError: (error) => {
+			console.error("Error updating farm profile:", error);
+			alert("An error occurred while updating the farm profile");
 		},
 	});
 
@@ -60,7 +64,7 @@ function EditMyFarmProfile() {
 		},
 	});
 
-	const onSubmit = async (data: FormData) => {
+	const onSubmit = (data: FormData) => {
 		if (!userFarm) {
 			// TODO: Display error in UI
 			alert("User farm not found. Please contact support.");
@@ -122,28 +126,45 @@ function EditMyFarmProfile() {
 						<InputField
 							label="Farm Name"
 							{...register("farmName")}
+							onChange={(value: string) => {
+								void register("farmName").onChange({ target: { value } });
+							}}
 							control={control}
 							className="mb-4"
 						/>
 						<InputField
 							label="Region"
 							{...register("region")}
+							onChange={(value: string) => {
+								void register("region").onChange({ target: { value } });
+							}}
 							control={control}
 							className="mb-4"
 						/>
 						<InputField
 							label="Altitude (meters)"
 							{...register("altitude", { valueAsNumber: true })}
+							onChange={(value: string) => {
+								void register("altitude").onChange({
+									target: { value: Number.parseFloat(value) },
+								});
+							}}
 							control={control}
 						/>
 						<InputField
 							label="Coordinates"
 							{...register("coordinates")}
+							onChange={(value: string) => {
+								void register("coordinates").onChange({ target: { value } });
+							}}
 							control={control}
 						/>
 						<InputField
 							label="Website"
 							{...register("website")}
+							onChange={(value: string) => {
+								void register("website").onChange({ target: { value } });
+							}}
 							control={control}
 						/>
 						<Button type="submit" className="w-full mt-4">

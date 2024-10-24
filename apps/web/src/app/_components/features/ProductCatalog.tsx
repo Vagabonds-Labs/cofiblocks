@@ -21,7 +21,7 @@ export default function ProductCatalog() {
 	const [query, setQuery] = useAtom(searchQueryAtom);
 
 	// Using an infinite query to fetch products with pagination
-	const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+	const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
 		api.product.getProducts.useInfiniteQuery(
 			{
 				limit: 3, // Fetch 3 products per request
