@@ -43,9 +43,14 @@ import { green } from "./helpers/colorize-log";
  */
 const deployScript = async (): Promise<void> => {
 	await deployContract({
-		contract: "CofiCollection",
+		contract: "cofi_collection.cairo",
+		contractName: "CofiCollection",
 		constructorArgs: {
-			owner: deployer.address,
+			default_admin: deployer.address,
+			pauser: deployer.address,
+			minter: deployer.address,
+			uri_setter: deployer.address,
+			upgrader: deployer.address,
 		},
 	});
 };

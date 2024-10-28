@@ -164,10 +164,10 @@ pub trait ICofiCollection<TContractState> {
 mod CofiCollection {
     use openzeppelin::{
         access::accesscontrol::{AccessControlComponent, DEFAULT_ADMIN_ROLE},
-        introspection::src5::SRC5Component, security::pausable::PausableComponent,
-        token::erc1155::ERC1155Component, upgrades::{UpgradeableComponent, interface::IUpgradeable}
+        introspection::src5::SRC5Component, security::pausable::PausableComponent
     };
     use starknet::{ClassHash, ContractAddress, get_caller_address};
+
     use super::{PAUSER_ROLE, MINTER_ROLE, URI_SETTER_ROLE, UPGRADER_ROLE};
 
     component!(path: ERC1155Component, storage: erc1155, event: ERC1155Event);

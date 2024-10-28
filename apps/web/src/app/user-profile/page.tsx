@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ProfileCard } from "~/app/_components/features/ProfileCard";
 import { ProfileOptions } from "~/app/_components/features/ProfileOptions";
-import Header from "~/app/_components/layout/Header";
 import Main from "~/app/_components/layout/Main";
 
 type Badge = "Lover" | "Contributor" | "Producer";
