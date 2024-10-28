@@ -16,16 +16,15 @@
 		"db:studio": "prisma studio",
 		"db:seed": "NODE_ENV=development prisma db seed",
 		"sn:chain": "cd apps/snfoundry && starknet-devnet --seed 0 --account-class cairo1",
-		"sn:deploy": "ts-node apps/snfoundry/scripts-ts/deploy-contract.ts",
-		"sn:deploy:reset": "cd apps/snfoundry && ts-node scripts-ts/helpers/deploy-wrapper.ts --reset",
+		"sn:deploy": "ts-node apps/snfoundry/scripts-ts/helpers/deploy-wrapper.ts",
+		"sn:deploy:no-reset": "cd apps/snfoundry && ts-node scripts-ts/helpers/deploy-wrapper.ts --reset false",
 		"sn:test": "cd apps/snfoundry/contracts && snforge test",
 		"sn:test-eslint": "cd apps/snfoundry && node eslint-contract-name/eslint-plugin-contract-names.test.js",
 		"sn:compile": "cd apps/snfoundry/contracts && scarb build",
 		"sn:format": "cd apps/snfoundry/contracts && scarb fmt",
 		"sn:format:check": "cd apps/snfoundry/contracts && scarb fmt --check",
 		"storybook": "cd apps/web/ storybook dev -p 6006",
-		"storybook:build": "cd apps/web. storybook build",
-		"deploy:contract": "ts-node apps/snfoundry/scripts-ts/deploy-contract.ts"
+		"storybook:build": "cd apps/web. storybook build"
 	},
 	"devDependencies": {
 		"@repo/ui": "*",

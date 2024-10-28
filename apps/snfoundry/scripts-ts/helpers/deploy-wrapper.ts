@@ -30,7 +30,7 @@ process.env.NO_RESET = !argv.reset ? "true" : "false";
 // Execute the deploy script without the reset option
 try {
 	execSync(
-		`cd contracts && scarb build && ts-node ../scripts-ts/deploy.ts --network ${process.env.NETWORK} --fee ${process.env.FEE_TOKEN} --no-reset ${process.env.NO_RESET} && ts-node ../scripts-ts/helpers/parse-deployments.ts && cd ..`,
+		`cd apps/snfoundry/contracts && scarb build && ts-node ../scripts-ts/deploy.ts --network ${process.env.NETWORK} --fee ${process.env.FEE_TOKEN} --no-reset ${process.env.NO_RESET} && ts-node ../scripts-ts/helpers/parse-deployments.ts && cd ../../..`,
 		{ stdio: "inherit" },
 	);
 } catch (error) {
