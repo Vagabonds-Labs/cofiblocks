@@ -164,7 +164,8 @@ pub trait ICofiCollection<TContractState> {
 mod CofiCollection {
     use openzeppelin::{
         access::accesscontrol::{AccessControlComponent, DEFAULT_ADMIN_ROLE},
-        introspection::src5::SRC5Component, security::pausable::PausableComponent
+        introspection::src5::SRC5Component, security::pausable::PausableComponent,
+        token::erc1155::ERC1155Component, upgrades::{UpgradeableComponent, interface::IUpgradeable}
     };
     use starknet::{ClassHash, ContractAddress, get_caller_address};
 
