@@ -3,7 +3,7 @@ import path from "node:path";
 import prettier from "prettier";
 import type { Abi, CompiledSierra } from "starknet";
 
-const TARGET_DIR = path.join(__dirname, "../../../nextjs/contracts");
+const TARGET_DIR = path.join(__dirname, "../../../web/contracts");
 const deploymentsDir = path.join(__dirname, "../../deployments");
 const files = fs.readdirSync(deploymentsDir);
 
@@ -52,9 +52,7 @@ const getContractDataFromDeployments = (): Record<
 							classHash: contractData.classHash,
 						},
 					};
-				} catch (e) {
-					console.error(`Error processing contract ${contractName}:`, e);
-				}
+				} catch (e) {}
 			}
 		}
 	}
@@ -74,7 +72,7 @@ const generateTsAbis = async () => {
 	);
 
 	if (!fs.existsSync(TARGET_DIR)) {
-		fs.mkdirSync(TARGET_DIR, { recursive: true });
+		fs.mkdirSync(TARGET_DIR);
 	}
 
 	const formattedContent = await prettier.format(
@@ -94,7 +92,5 @@ const generateTsAbis = async () => {
 	);
 };
 
-generateTsAbis().catch((error) => {
-	console.error("Error generating TypeScript ABIs:", error);
-	process.exit(1);
-});
+// Change the function call to handle the Promise
+generateTsAbis().catch(console.error);

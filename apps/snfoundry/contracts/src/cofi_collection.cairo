@@ -168,6 +168,7 @@ mod CofiCollection {
         token::erc1155::ERC1155Component, upgrades::{UpgradeableComponent, interface::IUpgradeable}
     };
     use starknet::{ClassHash, ContractAddress, get_caller_address};
+
     use super::{PAUSER_ROLE, MINTER_ROLE, URI_SETTER_ROLE, UPGRADER_ROLE};
 
     component!(path: ERC1155Component, storage: erc1155, event: ERC1155Event);
