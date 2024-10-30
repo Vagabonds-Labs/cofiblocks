@@ -1,19 +1,17 @@
-name: CI/CD Pipeline
+name: Database Migration Pipeline
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'apps/web/**'
-      - 'packages/**'
-      - 'prisma/**'
+      - 'prisma/**'  
   pull_request:
     branches:
       - main
 
 jobs:
-  deploy:
+  migrate:
     runs-on: ubuntu-latest
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -27,23 +25,8 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-
       - name: Install dependencies
-        run: bun install
+        run: npm install -g prisma
 
       - name: Run Prisma migrations
-        run: npx prisma migrate deploy
-
-      - name: Run build
-        run: npm run build
-
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v20
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: prisma migrate deploy
