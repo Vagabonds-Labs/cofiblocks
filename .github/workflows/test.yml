@@ -30,7 +30,7 @@ jobs:
       - uses: foundry-rs/setup-snfoundry@v3
       - uses: software-mansion/setup-scarb@v1
         with:
-          tool-versions: ./apps/snfoundry/.tool-versions
+          tool-versions: ./apps/snfoundry/contracts/.tool-versions
 
       - name: Check formatting
         run: cd apps/snfoundry/contracts && scarb fmt --check
