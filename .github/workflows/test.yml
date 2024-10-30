@@ -1,25 +1,59 @@
 name: CI
 
 on:
-  push:
   pull_request:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "0 0 * * *"  # Run daily at midnight
 
 jobs:
   test-contracts:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
-      - name: Install Scarb
-        run: curl --proto '=https' --tlsv1.2 -sSf https://docs.swmansion.com/scarb/install.sh | sh
-      
-      - name: Install SNFoundry
+
+      - name: Get latest Scarb version
+        id: scarb-version
         run: |
-          curl -L https://raw.githubusercontent.com/foundry-rs/starknet-foundry/master/scripts/install.sh | sh
-          export PATH="$HOME/.local/bin:$PATH"
-          snforge --version
+          snfoundry_version=$(curl -s https://api.github.com/repos/foundry-rs/starknet-foundry/releases/latest | grep tarball_url | awk -F '/' '{print $8}' | tr -d '",')
+          version=$(curl -s https://raw.githubusercontent.com/foundry-rs/starknet-foundry/$snfoundry_version/.tool-versions | awk '{print $2}')
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Scarb
+        uses: software-mansion/setup-scarb@v1
+        with:
+          scarb-version: ${{ steps.scarb-version.outputs.version }}
+
+      - name: Setup Starknet Foundry
+        uses: foundry-rs/setup-snfoundry@v2
+        with:
+          version: latest
 
       - name: Run tests
         run: |
           cd apps/snfoundry
           snforge test
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Get latest Scarb version
+        id: scarb-version
+        run: |
+          snfoundry_version=$(curl -s https://api.github.com/repos/foundry-rs/starknet-foundry/releases/latest | grep tarball_url | awk -F '/' '{print $8}' | tr -d '",')
+          version=$(curl -s https://raw.githubusercontent.com/foundry-rs/starknet-foundry/$snfoundry_version/.tool-versions | awk '{print $2}')
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Scarb
+        uses: software-mansion/setup-scarb@v1
+        with:
+          scarb-version: ${{ steps.scarb-version.outputs.version }}
+
+      - name: Check formatting
+        run: |
+          cd apps/snfoundry/contracts
+          scarb fmt --check
