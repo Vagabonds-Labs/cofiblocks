@@ -21,7 +21,7 @@ jobs:
           tool-versions: ./apps/snfoundry/contracts/.tool-versions
 
       - name: Run tests
-        run: cd apps/snfoundry && snforge test
+        run: cd apps/snfoundry/contracts && snforge test
 
   lint:
     runs-on: ubuntu-latest
