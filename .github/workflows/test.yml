@@ -16,7 +16,7 @@ jobs:
       - name: Install SNFoundry
         run: |
           curl -L https://raw.githubusercontent.com/foundry-rs/starknet-foundry/master/scripts/install.sh | sh
-          export PATH=$PATH:$HOME/.snfoundry/bin
+          export PATH="$HOME/.local/bin:$PATH"
           snforge --version
 
       - name: Run tests
