@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "0 0 * * *"  # Run daily at midnight
+
+permissions: read-all
+
+jobs:
+  test-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: foundry-rs/setup-snfoundry@v3
+      - uses: software-mansion/setup-scarb@v1
+        with:
+          tool-versions: ./apps/snfoundry/contracts/.tool-versions
+
+      - name: Run tests
+        run: cd apps/snfoundry/contracts && snforge test
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: foundry-rs/setup-snfoundry@v3
+      - uses: software-mansion/setup-scarb@v1
+        with:
+          tool-versions: ./apps/snfoundry/contracts/.tool-versions
+
+      - name: Check formatting
+        run: cd apps/snfoundry/contracts && scarb fmt --check

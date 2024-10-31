@@ -1,0 +1,32 @@
+name: Database Migration Pipeline
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'prisma/**'  
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install -g prisma
+
+      - name: Run Prisma migrations
+        run: prisma migrate deploy
