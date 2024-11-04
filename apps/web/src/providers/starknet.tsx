@@ -10,9 +10,9 @@ export default function StarknetProvider({
 }) {
 	const connectors = [
 		// TODO: add ArgentX
-		// new InjectedConnector({
-		// 	options: { id: "argentX" },
-		// }),
+		new InjectedConnector({
+			options: { id: "argentX" },
+		}),
 		new InjectedConnector({
 			options: { id: "braavos" },
 		}),
