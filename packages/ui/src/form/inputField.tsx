@@ -1,5 +1,5 @@
 import cs from "classnames";
-import type React from "react";
+import { Search } from "lucide-react";
 import { useController } from "react-hook-form";
 import type { Control, FieldPath, FieldValues } from "react-hook-form";
 
@@ -13,6 +13,7 @@ type InputFieldProps<T extends FieldValues> = {
 	inputClassName?: string;
 	disabled?: boolean;
 	onChange?: (value: string) => void;
+	showSearchIcon?: boolean;
 };
 
 function InputField<T extends FieldValues>({
@@ -25,6 +26,7 @@ function InputField<T extends FieldValues>({
 	inputClassName,
 	disabled,
 	onChange,
+	showSearchIcon = false,
 }: InputFieldProps<T>) {
 	const {
 		field,
@@ -42,7 +44,7 @@ function InputField<T extends FieldValues>({
 	};
 
 	return (
-		<div className={cs("flex flex-col gap-2 font-inter", className)}>
+		<div className={cs("flex flex-col font-inter", className)}>
 			<div className="flex justify-between items-center">
 				<label
 					htmlFor={name}
@@ -57,18 +59,26 @@ function InputField<T extends FieldValues>({
 				)}
 			</div>
 			<div className={cs("relative", inputClassName)}>
+				{showSearchIcon && (
+					<div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+						<Search size={20} />
+					</div>
+				)}
 				<input
 					{...field}
 					id={name}
 					type="text"
 					className={cs(
-						"w-full px-4 py-[13px] bg-white rounded-lg border text-base font-normal font-['Inter'] leading-normal focus:outline-none focus:ring-2 focus:ring-[#ffc222] focus:border-transparent",
+						"w-full rounded-lg border text-base font-normal font-['Inter'] leading-normal focus:outline-none focus:ring-2 focus:ring-[#ffc222] focus:border-transparent",
 						{
+							"pl-10 pr-4": showSearchIcon,
+							"px-4": !showSearchIcon,
 							"border-[#d32a1b]": error,
 							"border-[#c7ccd0]": !error,
 							"text-[#1f1f20]": field.value,
 							"text-[#788788]": !field.value,
 						},
+						"py-[13px]",
 					)}
 					placeholder={placeholder}
 					disabled={disabled}
