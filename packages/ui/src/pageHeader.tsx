@@ -10,13 +10,14 @@ const BlockiesSvg = dynamic<{ address: string; size: number; scale: number }>(
 );
 
 interface PageHeaderProps {
-	title: string;
+	title: string | React.ReactNode;
 	userAddress?: string;
 	onLogout?: () => void;
 	hideCart?: boolean;
 	showBackButton?: boolean;
 	onBackClick?: () => void;
 	showBlockie?: boolean;
+	rightActions?: React.ReactNode;
 }
 
 function PageHeader({
@@ -27,6 +28,7 @@ function PageHeader({
 	showBackButton = false,
 	onBackClick,
 	showBlockie = true,
+	rightActions,
 }: PageHeaderProps) {
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	const menuRef = useRef<HTMLDivElement>(null);
@@ -111,6 +113,7 @@ function PageHeader({
 				<h1 className="text-2xl font-bold">{title}</h1>
 			</div>
 			<div className="flex items-center space-x-4">
+				{rightActions}
 				{!hideCart && (
 					<div className="w-6 h-6">
 						<ShoppingCartIcon className="w-6 h-6" />
