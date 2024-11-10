@@ -134,6 +134,12 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 						</div>
 					)}
 
+					<div className="w-full my-6">
+						<div className="flex items-center relative">
+							<div className="h-[2px] w-full bg-gradient-to-r from-transparent via-surface-primary-soft to-transparent shadow-sm" />
+						</div>
+					</div>
+
 					<ProducerInfo
 						farmName={farmName}
 						rating={4}
