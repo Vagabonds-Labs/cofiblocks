@@ -8,6 +8,7 @@ interface Product {
 	farmName: string;
 	strength: string;
 	nftMetadata: string;
+	process?: string;
 	createdAt: Date;
 	updatedAt: Date;
 }
