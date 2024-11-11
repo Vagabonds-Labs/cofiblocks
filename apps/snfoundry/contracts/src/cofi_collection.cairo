@@ -91,6 +91,23 @@ pub trait ICofiCollection<TContractState> {
         data: Span<felt252>,
     );
 
+    /// Mints a new token item with a specific URI to a recipient.
+    ///
+    /// # Arguments
+    /// * `recipient` - The address that will receive the minted token.
+    /// * `token_id` - The ID of the token to mint.
+    /// * `value` - The amount of tokens to mint.
+    /// * `data` - Additional data to accompany the minting.
+    /// * `uri` - The URI containing metadata for this token.
+    fn mint_item(
+        ref self: TContractState,
+        recipient: ContractAddress,
+        token_id: u256,
+        value: u256,
+        data: Span<felt252>,
+        uri: ByteArray
+    );
+
     /// Burns `value` amount of `token_id` from `account`.
     ///
     /// # Arguments
@@ -324,6 +341,20 @@ mod CofiCollection {
         ) {
             self.accesscontrol.assert_only_role(MINTER_ROLE);
             self.erc1155.mint_with_acceptance_check(account, token_id, value, data);
+        }
+
+        #[external(v0)]
+        fn mint_item(
+            ref self: ContractState,
+            recipient: ContractAddress,
+            token_id: u256,
+            value: u256,
+            data: Span<felt252>,
+            uri: ByteArray
+        ) {
+            self.accesscontrol.assert_only_role(MINTER_ROLE);
+            self.erc1155.mint_with_acceptance_check(recipient, token_id, value, data);
+            self.erc1155._set_base_uri(uri);
         }
 
         #[external(v0)]

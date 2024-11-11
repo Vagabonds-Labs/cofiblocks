@@ -42,6 +42,8 @@ import { green } from "./helpers/colorize-log";
  * @returns {Promise<void>}
  */
 const deployScript = async (): Promise<void> => {
+	console.log("🚀 Deploying with address:", green(deployer.address));
+
 	await deployContract({
 		contract: "cofi_collection.cairo",
 		contractName: "CofiCollection",
