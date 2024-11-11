@@ -28,7 +28,7 @@ export function ChatWithSeller({
 						src={avatarSrc}
 						alt="Seller avatar"
 					/>
-					<div className="absolute bottom-0 right-0 w-2 h-2 bg-[#067C6D] rounded-full border border-white" />
+					<div className="absolute bottom-0 right-0 w-2 bg-success-default h-2 rounded-full border border-white" />
 				</div>
 				<div className="flex flex-col items-start">
 					<span className="text-content-title font-semibold text-base">
