@@ -1,6 +1,6 @@
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
 import { useAtom } from "jotai";
-import { X } from "lucide-react";
 import { useState } from "react";
 import {
 	isLoadingAtom,
@@ -95,7 +95,7 @@ export default function FilterModal({ isOpen, onClose }: FilterModalProps) {
 						)}
 					</div>
 					<button onClick={onClose} className="p-1" type="button">
-						<X size={24} />
+						<XMarkIcon className="h-6 w-6" />
 					</button>
 				</div>
 

@@ -1,7 +1,7 @@
+import { FunnelIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import InputField from "@repo/ui/form/inputField";
 import { useAtom } from "jotai";
-import { Filter } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -71,7 +71,7 @@ export default function SearchBar() {
 					onClick={() => setIsFilterOpen(true)}
 					className="bg-surface-secondary-default p-3.5 rounded-lg"
 				>
-					<Filter size={24} />
+					<FunnelIcon className="h-6 w-6" />
 				</button>
 			</div>
 			<FilterModal

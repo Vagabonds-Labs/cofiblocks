@@ -1,5 +1,5 @@
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import cs from "classnames";
-import { Search } from "lucide-react";
 import { useController } from "react-hook-form";
 import type { Control, FieldPath, FieldValues } from "react-hook-form";
 
@@ -61,7 +61,7 @@ function InputField<T extends FieldValues>({
 			<div className={cs("relative", inputClassName)}>
 				{showSearchIcon && (
 					<div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-						<Search size={20} />
+						<MagnifyingGlassIcon className="h-5 w-5" />
 					</div>
 				)}
 				<input
@@ -69,7 +69,7 @@ function InputField<T extends FieldValues>({
 					id={name}
 					type="text"
 					className={cs(
-						"w-full rounded-lg border text-base font-normal font-['Inter'] leading-normal focus:outline-none focus:ring-2 focus:ring-[#ffc222] focus:border-transparent",
+						"w-full px-4 py-[13px] bg-white rounded-lg border text-base font-normal font-['Inter'] leading-normal focus:outline-none focus:ring-2 focus:ring-[#ffc222] focus:border-transparent",
 						{
 							"pl-10 pr-4": showSearchIcon,
 							"px-4": !showSearchIcon,
