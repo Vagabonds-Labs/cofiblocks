@@ -1,22 +1,25 @@
 import { sepolia } from "@starknet-react/chains";
-import { StarknetConfig, publicProvider } from "@starknet-react/core";
+import {
+	StarknetConfig,
+	publicProvider,
+	useInjectedConnectors,
+} from "@starknet-react/core";
 import type { Connector } from "@starknet-react/core";
-import { InjectedConnector } from "starknetkit/injected";
+import { argent, braavos } from "@starknet-react/core";
 
 export default function StarknetProvider({
 	children,
 }: {
 	children: React.ReactNode;
 }) {
-	const connectors = [
-		// TODO: add ArgentX
-		// new InjectedConnector({
-		// 	options: { id: "argentX" },
-		// }),
-		new InjectedConnector({
-			options: { id: "braavos" },
-		}),
-	];
+	const { connectors } = useInjectedConnectors({
+		// Show these connectors if the user has no connector installed.
+		recommended: [argent(), braavos()],
+		// Hide recommended connectors if the user has any connector installed.
+		includeRecommended: "onlyIfNoConnectors",
+		// Randomize the order of the connectors.
+		order: "random",
+	});
 
 	return (
 		<StarknetConfig
