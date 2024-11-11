@@ -10,6 +10,7 @@ export const mockedProducts = [
 		region: "Alajuela",
 		farmName: "Beneficio Las Peñas",
 		strength: "Light",
+		process: "Honey",
 		nftMetadata: JSON.stringify({
 			description: "Descripción del Café de Especialidad 1.",
 			imageUrl: "/images/cafe1.webp",
@@ -25,6 +26,7 @@ export const mockedProducts = [
 		region: "Cartago",
 		farmName: "Beneficio Las Nubes",
 		strength: "Medium",
+		process: "Washed",
 		nftMetadata: JSON.stringify({
 			description: "Descripción del Café de Especialidad 2.",
 			imageUrl: "/images/cafe2.webp",
@@ -40,6 +42,7 @@ export const mockedProducts = [
 		region: "Heredia",
 		farmName: "Beneficio Monteverde",
 		strength: "Strong",
+		process: "Natural",
 		nftMetadata: JSON.stringify({
 			description: "Descripción del Café de Especialidad 3.",
 			imageUrl: "/images/cafe3.webp",

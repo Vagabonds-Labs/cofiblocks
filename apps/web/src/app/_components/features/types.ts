@@ -14,6 +14,7 @@ export type Product = {
 	region: string;
 	farmName: string;
 	strength: string;
+	process?: string;
 	createdAt: Date;
 	updatedAt: Date;
 };

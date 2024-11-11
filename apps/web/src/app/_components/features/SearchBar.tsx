@@ -39,8 +39,12 @@ export default function SearchBar() {
 		setIsLoading(isLoading);
 
 		if (data?.productsFound) {
-			setSearchResults(data.productsFound);
-			setQuantityProducts(data.productsFound.length);
+			const productsWithProcess = data.productsFound.map((product) => ({
+				...product,
+				process: product.process ?? "Natural",
+			}));
+			setSearchResults(productsWithProcess);
+			setQuantityProducts(productsWithProcess.length);
 		} else {
 			setSearchResults([]);
 			setQuantityProducts(0);

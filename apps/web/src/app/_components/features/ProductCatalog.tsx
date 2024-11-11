@@ -3,6 +3,7 @@ import { ProductCard } from "@repo/ui/productCard";
 import SkeletonLoader from "@repo/ui/skeleton";
 import { useAtom } from "jotai";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import {
 	isLoadingAtom,
@@ -19,6 +20,15 @@ export default function ProductCatalog() {
 	const [isLoadingResults, setIsLoading] = useAtom(isLoadingAtom);
 	const [quantity, setQuantityProducts] = useAtom(quantityOfProducts);
 	const [query, setQuery] = useAtom(searchQueryAtom);
+	const router = useRouter();
+
+	const utils = api.useUtils();
+
+	const { mutate: addItem } = api.shoppingCart.addItem.useMutation({
+		onSuccess: async () => {
+			await utils.shoppingCart.getItems.invalidate();
+		},
+	});
 
 	// Using an infinite query to fetch products with pagination
 	const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
@@ -34,7 +44,12 @@ export default function ProductCatalog() {
 	// Effect to update local state whenever new data is loaded
 	useEffect(() => {
 		if (data) {
-			const allProducts = data.pages.flatMap((page) => page.products); // Flatten the pages to get all products
+			const allProducts = data.pages.flatMap((page) =>
+				page.products.map((product) => ({
+					...product,
+					process: product.process ?? "Natural",
+				})),
+			);
 			setProducts(allProducts);
 		}
 	}, [data]);
@@ -57,8 +72,8 @@ export default function ProductCatalog() {
 	}, [handleScroll]);
 
 	// Placeholder for adding products to the cart
-	const handleAddToCart = (_productId: number) => {
-		// TODO: Add logic for adding product to cart.
+	const accessProductDetails = (productId: number) => {
+		router.push(`/product/${productId}`); // Navigate to the product details page
 	};
 
 	// Render each product
@@ -85,7 +100,7 @@ export default function ProductCatalog() {
 				price={product.price}
 				badgeText={product.strength}
 				isAddingToShoppingCart={false} // Disable shopping cart action for now
-				onClick={() => handleAddToCart(product.id)} // Trigger add-to-cart action
+				onClick={() => accessProductDetails(product.id)} // Trigger add-to-cart action
 			/>
 		);
 	};
@@ -115,7 +130,9 @@ export default function ProductCatalog() {
 									Clear search
 								</button>
 							</div>
-							{results.map(renderProduct)}
+							{results.map((product) => (
+								<div key={product.id}>{renderProduct(product)}</div>
+							))}
 						</div>
 					) : query ? (
 						<div className="flex flex-col justify-center items-center">
@@ -138,7 +155,9 @@ export default function ProductCatalog() {
 							</div>
 						</div>
 					) : (
-						products.map(renderProduct)
+						products.map((product) => (
+							<div key={product.id}>{renderProduct(product)}</div>
+						))
 					)}
 
 					{isFetchingNextPage && <SkeletonLoader />}
