@@ -413,3 +413,24 @@ fn test_uri() {
     let another_token_uri = cofi_collection.uri(another_token_id);
     assert(another_token_uri == base_uri, 'Incorrect token URI');
 }
+
+
+#[test]
+fn test_mint_item() {
+    let cofi_collection = deploy_cofi_collection();
+    let owner = OWNER();
+    let token_id = 1_u256;
+    let uri: ByteArray = "https://api.example.com/token/";
+    let value = 1_u256;
+    let data: Array<felt252> = array![];
+    let receiver = deploy_receiver();
+
+    start_cheat_caller_address(cofi_collection.contract_address, owner);
+    cofi_collection.mint_item(receiver, token_id, value, data.span(), uri.clone());
+
+    let balance = cofi_collection.balance_of(receiver, token_id);
+    assert(balance == value, 'Incorrect balance');
+
+    let token_uri = cofi_collection.uri(token_id);
+    assert(token_uri == uri, 'Incorrect token URI');
+}
