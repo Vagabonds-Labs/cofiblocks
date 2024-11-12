@@ -1,6 +1,7 @@
 "use client";
 
-import { api } from "~/trpc/react";
+import { useAtom } from "jotai";
+import { addItemAtom } from "~/store/cartAtom";
 
 interface Product {
 	id: number;
@@ -14,16 +15,16 @@ interface ProductListProps {
 }
 
 export default function ProductList({ products }: ProductListProps) {
-	const utils = api.useUtils();
+	const [, addItem] = useAtom(addItemAtom);
 
-	const { mutate: addToCart } = api.shoppingCart.addItem.useMutation({
-		onSuccess: async () => {
-			await utils.shoppingCart.getItems.invalidate();
-		},
-	});
-
-	const handleAddToCart = (productId: number) => {
-		addToCart({ cartId: "1", productId, quantity: 1 });
+	const handleAddToCart = (product: Product) => {
+		addItem({
+			id: String(product.id),
+			name: product.name,
+			quantity: 1,
+			price: product.price,
+			imageUrl: "/default-image.webp",
+		});
 	};
 
 	return (
@@ -38,7 +39,7 @@ export default function ProductList({ products }: ProductListProps) {
 							${product.price.toFixed(2)}
 						</p>
 						<button
-							onClick={() => handleAddToCart(product.id)}
+							onClick={() => handleAddToCart(product)}
 							className="w-full bg-primary text-white py-2 px-4 rounded hover:bg-primary-dark"
 							type="button"
 							aria-label={`Add ${product.name} to cart`}
