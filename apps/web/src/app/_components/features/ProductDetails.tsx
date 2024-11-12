@@ -4,14 +4,17 @@ import Button from "@repo/ui/button";
 import { ChatWithSeller } from "@repo/ui/chatWithSeller";
 import { DataCard } from "@repo/ui/dataCard";
 import PageHeader from "@repo/ui/pageHeader";
+import { useAtom, useAtomValue } from "jotai";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { addItemAtom, cartItemsAtom } from "~/store/cartAtom";
 import { ProducerInfo } from "./ProducerInfo";
 import { SelectionTypeCard } from "./SelectionTypeCard";
 
 interface ProductDetailsProps {
 	product: {
+		id: number;
 		image: string;
 		name: string;
 		region: string;
@@ -29,21 +32,38 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 	const {
 		image,
 		name,
-		region,
 		farmName,
 		roastLevel,
 		bagsAvailable,
 		price,
 		type,
-		description,
 		process,
 	} = product;
 	const [quantity, setQuantity] = useState(1);
 	const [isLiked, setIsLiked] = useState(false);
 	const router = useRouter();
+	const [isAddingToCart, setIsAddingToCart] = useState(false);
+	const [, addItem] = useAtom(addItemAtom);
+	const items = useAtomValue(cartItemsAtom);
+	const cartItemsCount = items.reduce(
+		(total, item) => total + item.quantity,
+		0,
+	);
 
 	const isSoldOut = type === "SoldOut";
 	const isFarmer = type === "Farmer";
+
+	const handleAddToCart = () => {
+		setIsAddingToCart(true);
+		addItem({
+			id: String(product.id),
+			name: product.name,
+			quantity: quantity,
+			price: product.price,
+			imageUrl: product.image,
+		});
+		setIsAddingToCart(false);
+	};
 
 	return (
 		<div className="flex flex-col items-center mx-auto">
@@ -52,7 +72,8 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 					title={<div className="truncate text-xl font-bold">{name}</div>}
 					showBackButton
 					onBackClick={() => router.back()}
-					hideCart={false}
+					showCart={true}
+					cartItemsCount={cartItemsCount}
 					rightActions={
 						<button
 							type="button"
@@ -129,7 +150,8 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 								quantity={quantity}
 								bagsAvailable={bagsAvailable}
 								onQuantityChange={setQuantity}
-								onAddToCart={() => void 0}
+								onAddToCart={handleAddToCart}
+								isAddingToCart={isAddingToCart}
 							/>
 						</div>
 					)}

@@ -22,14 +22,6 @@ export default function ProductCatalog() {
 	const [query, setQuery] = useAtom(searchQueryAtom);
 	const router = useRouter();
 
-	const utils = api.useUtils();
-
-	const { mutate: addItem } = api.shoppingCart.addItem.useMutation({
-		onSuccess: async () => {
-			await utils.shoppingCart.getItems.invalidate();
-		},
-	});
-
 	// Using an infinite query to fetch products with pagination
 	const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
 		api.product.getProducts.useInfiniteQuery(
@@ -99,7 +91,6 @@ export default function ProductCatalog() {
 				variety={product.name}
 				price={product.price}
 				badgeText={product.strength}
-				isAddingToShoppingCart={false} // Disable shopping cart action for now
 				onClick={() => accessProductDetails(product.id)} // Trigger add-to-cart action
 			/>
 		);

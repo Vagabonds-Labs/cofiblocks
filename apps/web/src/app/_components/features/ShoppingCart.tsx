@@ -1,6 +1,7 @@
 "use client";
 
 import { XMarkIcon } from "@heroicons/react/24/solid";
+import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
 
 interface ShoppingCartProps {
@@ -17,8 +18,8 @@ interface CartItem {
 }
 
 export default function ShoppingCart({ closeCart }: ShoppingCartProps) {
-	const cartId = "1"; // Assume you have the logic to get the cartId
-
+	const router = useRouter();
+	const cartId = "1";
 	const utils = api.useUtils();
 
 	const { mutate: removeItem } = api.shoppingCart.removeItem.useMutation({
@@ -29,6 +30,11 @@ export default function ShoppingCart({ closeCart }: ShoppingCartProps) {
 
 	const handleRemoveItem = (itemId: string) => {
 		removeItem({ itemId });
+	};
+
+	const handleCheckout = () => {
+		closeCart();
+		router.push("/shopping-cart");
 	};
 
 	const { data: cartItems, isLoading } = api.shoppingCart.getItems.useQuery({
@@ -48,7 +54,7 @@ export default function ShoppingCart({ closeCart }: ShoppingCartProps) {
 			) : (
 				<>
 					<div className="mt-4 flex flex-col gap-4">
-						{cartItems?.map((item: CartItem) => (
+						{cartItems?.items.map((item: CartItem) => (
 							<div key={item.id} className="flex items-center justify-between">
 								<p>{item.product.name}</p>
 								<p>${item.product.price}</p>
@@ -62,7 +68,7 @@ export default function ShoppingCart({ closeCart }: ShoppingCartProps) {
 						<p>Total</p>
 						<p>
 							$
-							{cartItems?.reduce(
+							{cartItems?.items.reduce(
 								(total: number, item: CartItem) =>
 									total + item.product.price * item.quantity,
 								0,
@@ -70,8 +76,9 @@ export default function ShoppingCart({ closeCart }: ShoppingCartProps) {
 						</p>
 					</div>
 					<button
-						className="mt-4 w-full rounded-xl bg-primary p-4 text-white"
+						className="mt-4 w-full rounded-lg bg-[#FFC222] py-3.5 px-4 text-base font-normal text-[#1F1F20]"
 						type="button"
+						onClick={handleCheckout}
 					>
 						Checkout
 					</button>
