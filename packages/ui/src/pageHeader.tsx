@@ -128,9 +128,11 @@ function PageHeader({
 						aria-label="Shopping cart"
 					>
 						<ShoppingCartIcon className="w-6 h-6" />
-						<span className="absolute top-0 right-0 bg-red-500 text-white rounded-full text-xs px-1">
-							{cartItemsCount}
-						</span>
+						{cartItemsCount && cartItemsCount > 0 ? (
+							<span className="absolute top-0 right-0 bg-red-500 text-white rounded-full text-xs px-1">
+								{cartItemsCount}
+							</span>
+						) : null}
 					</button>
 				)}
 			</div>

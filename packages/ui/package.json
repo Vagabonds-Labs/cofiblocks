@@ -22,7 +22,10 @@
 		"./tooltip": "./src/tooltip.tsx",
 		"./skeleton": "./src/skeleton.tsx",
 		"./particle": "./src/particle.tsx",
-		"./nftCard": "./src/nftCard.tsx"
+		"./nftCard": "./src/nftCard.tsx",
+		"./chatWithSeller": "./src/chatWithSeller.tsx",
+		"./dataCard": "./src/dataCard.tsx",
+		"./infoCard": "./src/infoCard.tsx"
 	},
 	"scripts": {
 		"lint": "eslint . --max-warnings 0",

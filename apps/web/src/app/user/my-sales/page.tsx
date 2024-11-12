@@ -134,28 +134,28 @@ export default function MySales() {
 						activeFilters.statusDelivered,
 					];
 
-					const matchesStatus =
-						!activeStatusFilters.some(Boolean) ??
-						(activeFilters.statusPaid &&
-							item.status === SalesStatusEnum.Paid) ??
-						(activeFilters.statusPrepared &&
-							item.status === SalesStatusEnum.Prepared) ??
-						(activeFilters.statusShipped &&
-							item.status === SalesStatusEnum.Shipped) ??
-						(activeFilters.statusDelivered &&
-							item.status === SalesStatusEnum.Delivered);
+					const matchesStatus = !activeStatusFilters.some(Boolean)
+						? true
+						: (activeFilters.statusPaid &&
+								item.status === SalesStatusEnum.Paid) ??
+							(activeFilters.statusPrepared &&
+								item.status === SalesStatusEnum.Prepared) ??
+							(activeFilters.statusShipped &&
+								item.status === SalesStatusEnum.Shipped) ??
+							(activeFilters.statusDelivered &&
+								item.status === SalesStatusEnum.Delivered);
 
 					const activeDeliveryFilters = [
 						activeFilters.deliveryAddress,
 						activeFilters.deliveryMeetup,
 					];
 
-					const matchesDelivery =
-						!activeDeliveryFilters.some(Boolean) ??
-						(activeFilters.deliveryAddress &&
-							item.delivery === DeliveryMethodEnum.Address) ??
-						(activeFilters.deliveryMeetup &&
-							item.delivery === DeliveryMethodEnum.Meetup);
+					const matchesDelivery = !activeDeliveryFilters.some(Boolean)
+						? true
+						: (activeFilters.deliveryAddress &&
+								item.delivery === DeliveryMethodEnum.Address) ??
+							(activeFilters.deliveryMeetup &&
+								item.delivery === DeliveryMethodEnum.Meetup);
 
 					return matchesSearch && matchesStatus && matchesDelivery;
 				}),
