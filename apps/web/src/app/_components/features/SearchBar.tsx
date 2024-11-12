@@ -1,7 +1,8 @@
+import { FunnelIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import InputField from "@repo/ui/form/inputField";
 import { useAtom } from "jotai";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import {
@@ -11,6 +12,7 @@ import {
 	searchResultsAtom,
 } from "~/atoms/productAtom";
 import { api } from "~/trpc/react";
+import FilterModal from "./FilterModal";
 
 const searchSchema = z.object({
 	region: z.string(),
@@ -23,6 +25,7 @@ export default function SearchBar() {
 	const [, setSearchResults] = useAtom(searchResultsAtom);
 	const [, setQuantityProducts] = useAtom(quantityOfProducts);
 	const [, setIsLoading] = useAtom(isLoadingAtom);
+	const [isFilterOpen, setIsFilterOpen] = useState(false);
 
 	const { control } = useForm<formData>({
 		resolver: zodResolver(searchSchema),
@@ -56,14 +59,29 @@ export default function SearchBar() {
 	};
 
 	return (
-		<div className="mb-2">
-			<InputField<formData>
-				name="region"
-				control={control}
-				label=""
-				placeholder="Search for your coffee"
-				onChange={(value: string) => handleInputChange(value)}
+		<>
+			<div className=" flex justify-center items-center mb-5">
+				<InputField<formData>
+					name="region"
+					control={control}
+					label=""
+					placeholder="Search for your coffee"
+					onChange={(value: string) => handleInputChange(value)}
+					className="gap-0 mr-3 w-3/4"
+					showSearchIcon={true}
+				/>
+				<button
+					type="button"
+					onClick={() => setIsFilterOpen(true)}
+					className="bg-surface-secondary-default p-3.5 rounded-lg"
+				>
+					<FunnelIcon className="h-6 w-6" />
+				</button>
+			</div>
+			<FilterModal
+				isOpen={isFilterOpen}
+				onClose={() => setIsFilterOpen(false)}
 			/>
-		</div>
+		</>
 	);
 }

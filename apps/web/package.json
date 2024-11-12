@@ -3,6 +3,10 @@
 	"version": "0.1.0",
 	"private": true,
 	"type": "module",
+	"prisma": {
+		"schema": "apps/web/prisma/schema.prisma",
+		"seed": "node apps/web/prisma/seed.js"
+	},
 	"scripts": {
 		"build": "next build",
 		"db:generate": "prisma migrate dev",
