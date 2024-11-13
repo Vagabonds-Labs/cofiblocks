@@ -68,13 +68,13 @@ mod Marketplace {
         #[substorage(v0)]
         upgradeable: UpgradeableComponent::Storage,
         listed_products: Map<u256, Product>,
-        // TODO: modify seller products to be a list of products (array of u256, which are token_ids)
-        seller_products: Map<ContractAddress, u256>,
+        // TODO: test mapping
+        seller_products: Map<ContractAddress, Vec<u256>>,
         cofi_collection_dispatcher: ICofiCollectionDispatcher,
         cofi_vault_address: ContractAddress,
         // TODO: make STRK contract address a constant to avoid storing it in the contract
         strk_token_dispatcher: IERC20Dispatcher,
-        // TODO: create a variable to store seller balances to then claim 
+        claim_balances: Map<ContractAddress, u256>,
 
     }
 
@@ -152,26 +152,27 @@ mod Marketplace {
 
     #[abi(embed_v0)]
     impl MarketplaceImpl of super::IMarketplace<ContractState> {
-        fn assign_seller_role(ref self: ContractState) {
+        fn assign_seller_role(ref self: ContractState, assignee: ContractAddress) {
             self.accesscontrol.assert_only_role(DEFAULT_ADMIN_ROLE);
-            self.accesscontrol._grant_role(PRODUCER, get_caller_address());
+            self.accesscontrol._grant_role(PRODUCER, assignee);
         }
     
-        fn assign_consumer_role(ref self: ContractState) {
+        fn assign_consumer_role(ref self: ContractState, assignee: ContractAddress) {
             self.accesscontrol.assert_only_role(DEFAULT_ADMIN_ROLE);
-            self.accesscontrol._grant_role(CONSUMER, get_caller_address());
+            self.accesscontrol._grant_role(CONSUMER, assignee);
         }
 
-        // TODO: create a function to assign admin 
+        fn assign_admin_role(ref self: ContractState, assignee: ContractAddress) {
+            self.accesscontrol.assert_only_role(DEFAULT_ADMIN_ROLE);
+            self.accesscontrol._grant_role(DEFAULT_ADMIN_ROLE, assignee);
+        } 
     
         fn buy_product(ref self: ContractState, token_id: u256, token_amount: u256) {
-            // TODO: check if caller does not have consumer role after finishing buy process, assign it
-            self.accesscontrol.assert_only_role(CONSUMER);
             let stock = self.listed_products.entry(token_id).read().stock;
             assert(stock >= token_amount, 'Not enough stock');
             let buyer = get_caller_address();
             let contract_address = get_contract_address();
-            // TODO: modify transfer to handle fees properly (ideal to use internal function)
+            // TODO: change transfer to use calculate_fee function and add it to the claim balances accordingly
             let token = self.strk_token_dispatcher.read();
             let price = self.listed_products.entry(token_id).read().price;
             token.transfer_from(buyer, contract_address, price);
@@ -180,14 +181,29 @@ mod Marketplace {
             let new_stock = stock - token_amount;
             self.update_stock(token_id, new_stock);
             self.emit(BuyProduct { token_id, amount: token_amount, price });
+            if (!self.accesscontrol.has_role(CONSUMER, get_caller_address())) {
+                self.accesscontrol._grant_role(CONSUMER, get_caller_address());
+            }
             // TODO: implement payment to producer (sending the fee) -> the fee should be stored in a variable in the smart contract
 
         }
 
-        // TODO: create a function to buy multiple products
+        fn buy_products(ref self: ContractState, token_ids: Span<u256>, token_amount: Span<u256>) {
+            assert!(token_ids.len() == token_amount.len(), "Token ids and amounts must all have the same length");
+            // TODO: Loop through token_ids to check if there is enough stock in all of them
+            let buyer = get_caller_address();
+            let contract_address = get_contract_address();
+            // TODO: change transfer to use calculate_fee function and add it to the claim balances accordingly
+            let token = self.strk_token_dispatcher.read();
+            // TODO: transfer the amount fromm the sum of the price of all the token_ids 
+            // TODO: update the stock for each token_id
+            if (!self.accesscontrol.has_role(CONSUMER, buyer)) {
+                self.accesscontrol._grant_role(CONSUMER, buyer);
+            }
+        }
     
         fn create_product(ref self: ContractState, token_id: u256, initial_stock: u256, price: u256) {
-            self.accesscontrol.assert_only_role(PRODUCER)
+            self.accesscontrol.assert_only_role(PRODUCER);
             let cofi_collection = self.cofi_collection_dispatcher.read();
             cofi_colletion.mint(get_contract_address(), token_id, initial_stock, array![0].span());
             let product = Product { stock: initial_stock, price };
@@ -196,7 +212,19 @@ mod Marketplace {
             self.emit(CreateProduct { token_id, initial_stock });
         }
 
-        // TODO: create a function to create multiple products (batch_mint)
+        fn create_products(ref self: ContractState, token_ids: Span<u256>, inital_stock: Span<u256>, price: Span<u256>) {
+            let len_token_ids = token_ids.len();
+            assert!(
+                len_token_ids == inital_stock.len() && len_token_ids == price.len(),
+                "Token ids, initial stock, and price must all have the same length"
+            );
+            self.accesscontrol.assert_only_role(PRODUCER);
+            let producer = get_caller_address();
+            let cofi_collection = self.cofi_collection_dispatcher.read();
+            cofi_collection.batch_mint(get_contract_address(), token_ids, initial_stock, array![0].span());
+            // TODO: loop through the spans and call initalize_product
+            
+        }
     
         fn delete_product(ref self: ContractState, token_id: u256) {
             self.accesscontrol.assert_only_role(PRODUCER);
@@ -211,10 +239,23 @@ mod Marketplace {
             self.emit(DeleteProduct { token_id });
         }
 
-        // TODO: create a function to delete multiple products (batch_burn)
+        fn delete_products(ref self: ContractState, token_ids: Span<u256>) {
+            self.accesscontrol.assert_only_role(PRODUCER);
+            let producer = get_caller_address();
+            // TODO: assert all the token_ids are from the producer (loop)
+            // TODO: Update all the token_ids properly calling update stock (loop) can be done in same loop
+            // TODO: cofi_colletion.batch_burn()
+        }
 
-        // TODO: create claim function (seller needs to claim their tokens)
-    
+        fn claim(ref self: ContractState) {
+            self.accesscontrol.assert_only_role(PRODUCER);
+            let producer = get_caller_address();
+            let claim_balance = self.claim_balance.entry(producer).read();
+            assert(claim_balance > 0, 'No tokens to claim');
+            strk_token_dispatcher.approve(producer, claim_balance);
+            let transfer = strk_token_dispatcher.transfer_from(get_contract_address(), producer, claim_balance);
+            assert(transfer, 'Error claiming');
+        }
     }
 
     // Function to only receive tokens from the CofiCollection contract
@@ -235,10 +276,27 @@ mod Marketplace {
         }
     }
 
+    fn initialize_product(ref self: ContractState, token_id: u256, producer: ContractAddress, stock: u256, price: u256) {
+        let product = Product { stock, price };
+        self.seller_products.entry(producer).write(token_id);
+        self.listed_products.entry(token_id).write(product);
+        self.emit(CreateProduct { token_id, initial_stock });
+    }
+
     fn update_stock(ref self: ContractState, token_id: u256, new_stock: u256) {
         self.listed_products.entry(token_id).write().stock = new_stock;
         self.emit(UpdateStock { token_id, new_stock });
     }    
+
+    // Amount is the total amount 
+    // BPS is the percentage you want to calculate. (Example: 2.5% = 250bps, 7,48% = 748bps)
+    // Use example: 
+    // Calculate the 3% fee of 250 STRK
+    // calculate_fee(250, 300) = 7.5
+    fn calculate_fee(amount: u256, bps: u256) {
+        assert((amount * bps) >= 10_000);
+        amount * bps / 10_000
+    }
 
 
 
