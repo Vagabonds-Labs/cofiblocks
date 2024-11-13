@@ -42,6 +42,7 @@ import { green } from "./helpers/colorize-log";
  * @returns {Promise<void>}
  */
 const deployScript = async (): Promise<void> => {
+	// Deploy CofiCollection
 	await deployContract({
 		contract: "cofi_collection.cairo",
 		contractName: "CofiCollection",
@@ -51,6 +52,19 @@ const deployScript = async (): Promise<void> => {
 			minter: deployer.address,
 			uri_setter: deployer.address,
 			upgrader: deployer.address,
+		},
+	});
+	// Deploy Marketplace
+	await deployContract({
+		contract: "Marketplace.cairo",
+		contractName: "Marketplace",
+		// TODO: incluide constructor args for deploy
+		// cofi_collection_address: ContractAddress
+		// cofi_vault_address: ContractAddress
+		// strk_contract: ContractAddress
+
+		constructorArgs: {
+			admin: deployer.address,
 		},
 	});
 };
