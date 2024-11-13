@@ -63,8 +63,10 @@ const deployScript = async (): Promise<void> => {
 		// cofi_collection_address: ContractAddress
 		// cofi_vault_address: ContractAddress
 		// strk_contract: ContractAddress
-
 		constructorArgs: {
+			cofi_collection_address: deployer.address,
+			cofi_vault_address: deployer.address,
+			strk_contract: deployer.address,
 			admin: deployer.address,
 		},
 	});
