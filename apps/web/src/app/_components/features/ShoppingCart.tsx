@@ -76,7 +76,7 @@ export default function ShoppingCart({ closeCart }: ShoppingCartProps) {
 						</p>
 					</div>
 					<button
-						className="mt-4 w-full rounded-lg bg-[#FFC222] py-3.5 px-4 text-base font-normal text-[#1F1F20]"
+						className="mt-4 w-full rounded-lg bg-primary py-3.5 px-4 text-base font-normal text-white"
 						type="button"
 						onClick={handleCheckout}
 					>
