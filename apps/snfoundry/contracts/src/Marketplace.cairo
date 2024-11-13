@@ -3,12 +3,16 @@
 
 #[starknet::interface]
 pub trait IMarketplace<ContractState> {
-    fn assign_seller_role(ref self: ContractState);
-    fn assign_consumer_role(ref self: ContractState);
-    fn buy_product(ref self: ContractState);
-    fn create_product(ref self: ContractState);
-    fn update_stock(ref self: ContractState);
-    fn delete_product(ref self: ContractState);
+    fn assign_seller_role(ref self: ContractState, assignee: ContractAddress);
+    fn assign_consumer_role(ref self: ContractState, assignee: ContractAddress);
+    fn assign_admin_role(ref self: ContractState, assignee: ContractAddress);
+    fn buy_product(ref self: ContractState, token_id: u256, token_amount: u256);
+    fn buy_products(ref self: ContractState, token_ids: Span<u256>, token_amount: Span<u256>);
+    fn create_product(ref self: ContractState, token_id: u256, initial_stock: u256, price: u256);
+    fn create_products(ref self: ContractState, token_ids: Span<u256>, initial_stock: Span<u256>, price: Span<u256>);
+    fn delete_product(ref self: ContractState, token_id: u256);
+    fn delete_products(ref self: ContractState, token_ids: Span<u256>);
+    fn claim(ref self: ContractState);
 }
 
 #[starknet::contract]
@@ -16,15 +20,14 @@ mod Marketplace {
     use openzeppelin::access::accesscontrol::AccessControlComponent;
     use openzeppelin::access::accesscontrol::DEFAULT_ADMIN_ROLE;
     use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
-    use openzeppelin::token:erc1155::ERC1155ReceiverComponent;
+    use openzeppelin::token::erc1155::ERC1155ReceiverComponent;
     use openzeppelin::introspection::src5::SRC5Component;
-    use openzeppelin::upgrade::UpgradeableComponent;
-    use openzeppelin::upgrade::interface::IUpgradeable;
+    use openzeppelin::upgrades::UpgradeableComponent;
+    use openzeppelin::upgrades::interface::IUpgradeable;
     use contracts::cofi_collection::{ICofiCollectionDispatcher, ICofiCollectionDispatcherTrait};
-    use starknet::ContractAddress;
-    use starknet::{get_caller_address, get_contract_address};
+    use starknet::{ContractAddress, get_caller_address, get_contract_address};
 
-    coomponent!(path: ERC1155ReceiverComponent, storage: erc1155_receiver, event: ERC1155ReceiverEvent);
+    component!(path: ERC1155ReceiverComponent, storage: erc1155_receiver, event: ERC1155ReceiverEvent);
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
     component!(path: AccessControlComponent, storage: accesscontrol, event: AccessControlEvent);
     component!(path: UpgradeableComponent, storage: upgradeable, event: UpgradeableEvent);
@@ -48,14 +51,14 @@ mod Marketplace {
     impl AccessControlInternalImpl = AccessControlComponent::InternalImpl<ContractState>;
     
     // Upgradeable
-    impl UpgradeableInternalImpl = UpgradeableComponent::InternalImpl<ContractState>
+    impl UpgradeableInternalImpl = UpgradeableComponent::InternalImpl<ContractState>;
 
     // Include Hash derive since it is being used as a mapping in Storage
     #[derive(Drop, Hash)]
     struct Product {
         stock: u256,
         price: u256,
-    }
+    };
 
     #[storage]
     struct Storage {
@@ -75,7 +78,6 @@ mod Marketplace {
         // TODO: make STRK contract address a constant to avoid storing it in the contract
         strk_token_dispatcher: IERC20Dispatcher,
         claim_balances: Map<ContractAddress, u256>,
-
     }
 
     #[event]
@@ -88,7 +90,7 @@ mod Marketplace {
         #[flat]
         AccessControlEvent: AccessControlComponent::Event,
         #[flat]
-        UpgradeableEevent: UpgradeableComponent::Event,
+        UpgradeableEvent: UpgradeableComponent::Event,
         DeleteProduct: DeleteProduct,
         CreateProduct: CreateProduct,
         UpdateStock: UpdateStock,
@@ -205,17 +207,17 @@ mod Marketplace {
         fn create_product(ref self: ContractState, token_id: u256, initial_stock: u256, price: u256) {
             self.accesscontrol.assert_only_role(PRODUCER);
             let cofi_collection = self.cofi_collection_dispatcher.read();
-            cofi_colletion.mint(get_contract_address(), token_id, initial_stock, array![0].span());
+            cofi_collection.mint(get_contract_address(), token_id, initial_stock, array![0].span());
             let product = Product { stock: initial_stock, price };
             self.seller_products.entry(get_caller_address()).write(token_id);
             self.listed_products.entry(token_id).write(product);
             self.emit(CreateProduct { token_id, initial_stock });
         }
 
-        fn create_products(ref self: ContractState, token_ids: Span<u256>, inital_stock: Span<u256>, price: Span<u256>) {
+        fn create_products(ref self: ContractState, token_ids: Span<u256>, initial_stock: Span<u256>, price: Span<u256>) {
             let len_token_ids = token_ids.len();
             assert!(
-                len_token_ids == inital_stock.len() && len_token_ids == price.len(),
+                len_token_ids == initial_stock.len() && len_token_ids == price.len(),
                 "Token ids, initial stock, and price must all have the same length"
             );
             self.accesscontrol.assert_only_role(PRODUCER);
@@ -250,7 +252,7 @@ mod Marketplace {
         fn claim(ref self: ContractState) {
             self.accesscontrol.assert_only_role(PRODUCER);
             let producer = get_caller_address();
-            let claim_balance = self.claim_balance.entry(producer).read();
+            let claim_balance = self.claim_balances.entry(producer).read();
             assert(claim_balance > 0, 'No tokens to claim');
             strk_token_dispatcher.approve(producer, claim_balance);
             let transfer = strk_token_dispatcher.transfer_from(get_contract_address(), producer, claim_balance);
