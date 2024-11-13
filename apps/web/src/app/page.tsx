@@ -10,7 +10,7 @@ import {
 	useDisconnect,
 	useSignTypedData,
 } from "@starknet-react/core";
-import { motion, useAnimation } from "framer-motion";
+import { type AnimationControls, motion, useAnimation } from "framer-motion";
 import { signIn, signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
@@ -38,13 +38,13 @@ export default function LoginPage() {
 
 	const { t } = useTranslation();
 
-	const handleConnectWallet = async (connector: Connector) => {
+	const handleConnectWallet = async (connector: Connector): Promise<void> => {
 		if (connector) {
 			connect({ connector });
 		}
 	};
 
-	const handleSignMessage = async () => {
+	const handleSignMessage = async (): Promise<void> => {
 		try {
 			const signature = await signTypedDataAsync();
 
@@ -59,32 +59,60 @@ export default function LoginPage() {
 		}
 	};
 
-	const handleDisconnectWallet = () => {
+	const handleDisconnectWallet = (): void => {
 		disconnect();
 		void signOut();
 	};
 
 	useEffect(() => {
-		const sequence = async () => {
-			try {
+		const animationSteps: Array<() => Promise<void>> = [
+			async () => {
 				await controls.start("gather");
+			},
+			async () => {
 				await backgroundControls.start({
 					scale: 1.1,
 					transition: { duration: 0.3 },
 				});
+			},
+			async () => {
 				await new Promise((resolve) => setTimeout(resolve, 200));
+			},
+			async () => {
 				await controls.start("explode");
+			},
+			async () => {
 				await backgroundControls.start({
 					scale: 1,
 					transition: { duration: 0.3 },
 				});
+			},
+			async () => {
 				setShowForm(true);
+			},
+		];
+
+		let mounted = true;
+
+		const runAnimation = async (): Promise<void> => {
+			try {
+				for (const step of animationSteps) {
+					if (!mounted) break;
+					await step();
+				}
 			} catch (error) {
 				console.error("Animation sequence error:", error);
 			}
 		};
-		void sequence();
-	}, [controls, backgroundControls]);
+
+		if (!showForm) {
+			void runAnimation();
+		}
+
+		return () => {
+			mounted = false;
+		};
+	}, [backgroundControls, controls, showForm]);
 
 	useEffect(() => {
 		if (session && address) {

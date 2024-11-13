@@ -1,6 +1,7 @@
 import { Account, type Signature } from "starknet";
 import { type TypedData, shortString } from "starknet";
-import type { WeierstrassSignatureType } from "starknet";
+import type { ArraySignatureType } from "starknet";
+
 import {
 	CHAIN_ID,
 	DOMAIN_NAME,
@@ -29,15 +30,9 @@ export const createMessageStructure = (message: string): TypedData => ({
 	},
 });
 
-export const parseSignatureString = (
-	signatureString: string,
-): WeierstrassSignatureType => {
+export const parseSignatureString = (signatureString: string) => {
 	try {
-		const sig = signatureString.split(",");
-		return {
-			r: BigInt(sig[1] ?? 0),
-			s: BigInt(sig[2] ?? 0),
-		} as WeierstrassSignatureType;
+		return signatureString.split(",").map((s) => BigInt(s));
 	} catch (error) {
 		console.error(
 			"Error parsing signature:",
@@ -71,11 +66,14 @@ export const validateCredentials = (
 export const verifySignature = async (
 	address: string,
 	message: TypedData,
-	signature: Signature,
+	signature: bigint[],
 ): Promise<boolean> => {
 	try {
 		const account = new Account(provider, address, SIGNER);
-		const isValid = await account.verifyMessage(message, signature);
+		const isValid = await account.verifyMessage(
+			message,
+			signature as unknown as ArraySignatureType,
+		);
 
 		return isValid;
 	} catch (error) {
