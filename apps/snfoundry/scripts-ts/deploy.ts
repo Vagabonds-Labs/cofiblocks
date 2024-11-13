@@ -55,6 +55,19 @@ const deployScript = async (): Promise<void> => {
 			upgrader: deployer.address,
 		},
 	});
+	// Deploy Marketplace
+	await deployContract({
+		contract: "Marketplace.cairo",
+		contractName: "Marketplace",
+		// TODO: incluide constructor args for deploy
+		// cofi_collection_address: ContractAddress
+		// cofi_vault_address: ContractAddress
+		// strk_contract: ContractAddress
+
+		constructorArgs: {
+			admin: deployer.address,
+		},
+	});
 };
 
 deployScript()
