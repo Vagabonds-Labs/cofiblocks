@@ -181,6 +181,9 @@ export default function ProductStatusDetails({
 		};
 
 		if (isProducer) {
+			if (orderStatus === (StatusStepsEnum.Delivered as string)) {
+				return;
+			}
 			return (
 				<div className="bg-surface-primary-soft p-4 rounded-lg flex items-center justify-between">
 					<LightBulbIcon className="w-8 h-8 mr-4" />
