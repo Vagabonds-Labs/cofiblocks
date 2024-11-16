@@ -3,11 +3,6 @@
 
 use starknet::ContractAddress;
 
-const PAUSER_ROLE: felt252 = selector!("PAUSER_ROLE");
-const MINTER_ROLE: felt252 = selector!("MINTER_ROLE");
-const URI_SETTER_ROLE: felt252 = selector!("URI_SETTER_ROLE");
-const UPGRADER_ROLE: felt252 = selector!("UPGRADER_ROLE");
-
 /// Interface for the CofiCollection contract, defining ERC1155 and related methods.
 #[starknet::interface]
 pub trait ICofiCollection<TContractState> {
@@ -179,35 +174,31 @@ pub trait ICofiCollection<TContractState> {
 
 #[starknet::contract]
 mod CofiCollection {
-    use openzeppelin::{
-        access::accesscontrol::{AccessControlComponent, DEFAULT_ADMIN_ROLE},
-        introspection::src5::SRC5Component, security::pausable::PausableComponent,
-        token::erc1155::ERC1155Component, upgrades::{UpgradeableComponent, interface::IUpgradeable}
-    };
+    use core::num::traits::Zero;
+    use openzeppelin::access::ownable::OwnableComponent;
+    use openzeppelin::introspection::src5::SRC5Component;
+    use openzeppelin::security::pausable::PausableComponent;
+    use openzeppelin::token::erc1155::ERC1155Component;
+    use openzeppelin::upgrades::UpgradeableComponent;
+    use openzeppelin::upgrades::interface::IUpgradeable;
     use starknet::{ClassHash, ContractAddress, get_caller_address};
-
-    use super::{PAUSER_ROLE, MINTER_ROLE, URI_SETTER_ROLE, UPGRADER_ROLE};
 
     component!(path: ERC1155Component, storage: erc1155, event: ERC1155Event);
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
-    component!(path: PausableComponent, storage: pausable, event: PausableEvent);
-    component!(path: AccessControlComponent, storage: accesscontrol, event: AccessControlEvent);
+    component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
     component!(path: UpgradeableComponent, storage: upgradeable, event: UpgradeableEvent);
+    component!(path: PausableComponent, storage: pausable, event: PausableEvent);
 
     #[abi(embed_v0)]
     impl ERC1155MixinImpl = ERC1155Component::ERC1155MixinImpl<ContractState>;
     #[abi(embed_v0)]
     impl PausableImpl = PausableComponent::PausableImpl<ContractState>;
     #[abi(embed_v0)]
-    impl AccessControlImpl =
-        AccessControlComponent::AccessControlImpl<ContractState>;
-    #[abi(embed_v0)]
-    impl AccessControlCamelImpl =
-        AccessControlComponent::AccessControlCamelImpl<ContractState>;
+    impl OwnableMixinImpl = OwnableComponent::OwnableMixinImpl<ContractState>;
 
     impl ERC1155InternalImpl = ERC1155Component::InternalImpl<ContractState>;
     impl PausableInternalImpl = PausableComponent::InternalImpl<ContractState>;
-    impl AccessControlInternalImpl = AccessControlComponent::InternalImpl<ContractState>;
+    impl OwnableInternalImpl = OwnableComponent::InternalImpl<ContractState>;
     impl UpgradeableInternalImpl = UpgradeableComponent::InternalImpl<ContractState>;
 
     #[storage]
@@ -219,7 +210,7 @@ mod CofiCollection {
         #[substorage(v0)]
         pausable: PausableComponent::Storage,
         #[substorage(v0)]
-        accesscontrol: AccessControlComponent::Storage,
+        ownable: OwnableComponent::Storage,
         #[substorage(v0)]
         upgradeable: UpgradeableComponent::Storage,
     }
@@ -234,28 +225,19 @@ mod CofiCollection {
         #[flat]
         PausableEvent: PausableComponent::Event,
         #[flat]
-        AccessControlEvent: AccessControlComponent::Event,
+        OwnableEvent: OwnableComponent::Event,
         #[flat]
         UpgradeableEvent: UpgradeableComponent::Event,
     }
 
     #[constructor]
-    fn constructor(
-        ref self: ContractState,
-        default_admin: ContractAddress,
-        pauser: ContractAddress,
-        minter: ContractAddress,
-        uri_setter: ContractAddress,
-        upgrader: ContractAddress,
-    ) {
+    fn constructor(ref self: ContractState) {
         self.erc1155.initializer("");
-        self.accesscontrol.initializer();
+    }
 
-        self.accesscontrol._grant_role(DEFAULT_ADMIN_ROLE, default_admin);
-        self.accesscontrol._grant_role(PAUSER_ROLE, pauser);
-        self.accesscontrol._grant_role(MINTER_ROLE, minter);
-        self.accesscontrol._grant_role(URI_SETTER_ROLE, uri_setter);
-        self.accesscontrol._grant_role(UPGRADER_ROLE, upgrader);
+    fn initialize(ref self: ContractState, owner: ContractAddress) {
+        assert(self.ownable.owner() == Zero::zero(), 'Already initialized');
+        self.ownable.initializer(owner);
     }
 
     impl ERC1155HooksImpl of ERC1155Component::ERC1155HooksTrait<ContractState> {
@@ -282,7 +264,7 @@ mod CofiCollection {
     #[abi(embed_v0)]
     impl UpgradeableImpl of IUpgradeable<ContractState> {
         fn upgrade(ref self: ContractState, new_class_hash: ClassHash) {
-            self.accesscontrol.assert_only_role(UPGRADER_ROLE);
+            self.ownable.assert_only_owner();
             self.upgradeable.upgrade(new_class_hash);
         }
     }
@@ -292,13 +274,13 @@ mod CofiCollection {
     impl ExternalImpl of ExternalTrait {
         #[external(v0)]
         fn pause(ref self: ContractState) {
-            self.accesscontrol.assert_only_role(PAUSER_ROLE);
+            self.ownable.assert_only_owner();
             self.pausable.pause();
         }
 
         #[external(v0)]
         fn unpause(ref self: ContractState) {
-            self.accesscontrol.assert_only_role(PAUSER_ROLE);
+            self.ownable.assert_only_owner();
             self.pausable.unpause();
         }
 
@@ -339,7 +321,7 @@ mod CofiCollection {
             value: u256,
             data: Span<felt252>,
         ) {
-            self.accesscontrol.assert_only_role(MINTER_ROLE);
+            self.ownable.assert_only_owner();
             self.erc1155.mint_with_acceptance_check(account, token_id, value, data);
         }
 
@@ -352,7 +334,7 @@ mod CofiCollection {
             data: Span<felt252>,
             uri: ByteArray
         ) {
-            self.accesscontrol.assert_only_role(MINTER_ROLE);
+            self.ownable.assert_only_owner();
             self.erc1155.mint_with_acceptance_check(recipient, token_id, value, data);
             self.erc1155._set_base_uri(uri);
         }
@@ -365,13 +347,13 @@ mod CofiCollection {
             values: Span<u256>,
             data: Span<felt252>,
         ) {
-            self.accesscontrol.assert_only_role(MINTER_ROLE);
+            self.ownable.assert_only_owner();
             self.erc1155.batch_mint_with_acceptance_check(account, token_ids, values, data);
         }
 
         #[external(v0)]
         fn set_base_uri(ref self: ContractState, base_uri: ByteArray) {
-            self.accesscontrol.assert_only_role(URI_SETTER_ROLE);
+            self.ownable.assert_only_owner();
             self.erc1155._set_base_uri(base_uri);
         }
     }
