@@ -1,35 +1,21 @@
 "use client";
 
 import { XMarkIcon } from "@heroicons/react/24/solid";
+import { useAtom, useAtomValue } from "jotai";
 import { useRouter } from "next/navigation";
-import { api } from "~/trpc/react";
+import { cartItemsAtom, removeItemAtom } from "~/store/cartAtom";
 
 interface ShoppingCartProps {
 	closeCart: () => void;
 }
 
-interface CartItem {
-	id: string;
-	product: {
-		name: string;
-		price: number;
-	};
-	quantity: number;
-}
-
 export default function ShoppingCart({ closeCart }: ShoppingCartProps) {
 	const router = useRouter();
-	const cartId = "1";
-	const utils = api.useUtils();
-
-	const { mutate: removeItem } = api.shoppingCart.removeItem.useMutation({
-		onSuccess: async () => {
-			await utils.shoppingCart.getItems.invalidate();
-		},
-	});
+	const items = useAtomValue(cartItemsAtom);
+	const [, removeItem] = useAtom(removeItemAtom);
 
 	const handleRemoveItem = (itemId: string) => {
-		removeItem({ itemId });
+		removeItem(itemId);
 	};
 
 	const handleCheckout = () => {
@@ -37,9 +23,10 @@ export default function ShoppingCart({ closeCart }: ShoppingCartProps) {
 		router.push("/shopping-cart");
 	};
 
-	const { data: cartItems, isLoading } = api.shoppingCart.getItems.useQuery({
-		cartId,
-	});
+	const totalPrice = items.reduce(
+		(total, item) => total + item.price * item.quantity,
+		0,
+	);
 
 	return (
 		<div className="absolute right-0 top-14 w-96 bg-white p-4 shadow-xl">
@@ -49,41 +36,28 @@ export default function ShoppingCart({ closeCart }: ShoppingCartProps) {
 					<XMarkIcon className="w-6 text-primary" />
 				</button>
 			</div>
-			{isLoading ? (
-				<div>Loading...</div>
-			) : (
-				<>
-					<div className="mt-4 flex flex-col gap-4">
-						{cartItems?.items.map((item: CartItem) => (
-							<div key={item.id} className="flex items-center justify-between">
-								<p>{item.product.name}</p>
-								<p>${item.product.price}</p>
-								<button onClick={() => handleRemoveItem(item.id)} type="button">
-									Remove
-								</button>
-							</div>
-						))}
+			<div className="mt-4 flex flex-col gap-4">
+				{items.map((item) => (
+					<div key={item.id} className="flex items-center justify-between">
+						<p>{item.name}</p>
+						<p>${item.price}</p>
+						<button onClick={() => handleRemoveItem(item.id)} type="button">
+							Remove
+						</button>
 					</div>
-					<div className="mt-4 flex justify-between">
-						<p>Total</p>
-						<p>
-							$
-							{cartItems?.items.reduce(
-								(total: number, item: CartItem) =>
-									total + item.product.price * item.quantity,
-								0,
-							)}
-						</p>
-					</div>
-					<button
-						className="mt-4 w-full rounded-lg bg-primary py-3.5 px-4 text-base font-normal text-white"
-						type="button"
-						onClick={handleCheckout}
-					>
-						Checkout
-					</button>
-				</>
-			)}
+				))}
+			</div>
+			<div className="mt-4 flex justify-between">
+				<p>Total</p>
+				<p>${totalPrice}</p>
+			</div>
+			<button
+				className="mt-4 w-full rounded-lg bg-primary py-3.5 px-4 text-base font-normal text-white"
+				type="button"
+				onClick={handleCheckout}
+			>
+				Checkout
+			</button>
 		</div>
 	);
 }

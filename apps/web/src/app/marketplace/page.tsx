@@ -2,13 +2,12 @@
 
 import Carousel from "@repo/ui/carousel";
 import { useAccount, useDisconnect } from "@starknet-react/core";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom } from "jotai";
 import { useTranslation } from "react-i18next";
 import ProductCatalog from "~/app/_components/features/ProductCatalog";
 import Header from "~/app/_components/layout/Header";
 import Main from "~/app/_components/layout/Main";
 import { searchQueryAtom } from "~/atoms/productAtom";
-import { cartItemsAtom } from "~/store/cartAtom";
 import SearchBar from "../_components/features/SearchBar";
 
 export default function Home() {
@@ -16,11 +15,6 @@ export default function Home() {
 	const { address } = useAccount();
 	const { disconnect } = useDisconnect();
 	const [query] = useAtom(searchQueryAtom);
-	const items = useAtomValue(cartItemsAtom);
-	const cartItemsCount = items.reduce(
-		(total, item) => total + item.quantity,
-		0,
-	);
 
 	const carouselData = [
 		{
