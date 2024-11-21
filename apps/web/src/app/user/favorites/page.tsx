@@ -1,9 +1,10 @@
 "use client";
 
 import { ProductCard } from "@repo/ui/productCard";
+import { useAtom, useAtomValue } from "jotai";
 import React from "react";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
-import { api } from "~/trpc/react";
+import { addItemAtom, cartItemsAtom } from "~/store/cartAtom";
 
 const userFavoriteProducts = [
 	{
@@ -28,19 +29,17 @@ export default function Favorites() {
 	// and avoid code duplication
 	const [addedProduct, setAddedProduct] = React.useState<number | null>(null);
 
-	const utils = api.useUtils();
-
-	const { mutate: addItem } = api.shoppingCart.addItem.useMutation({
-		onSuccess: async () => {
-			await utils.shoppingCart.getItems.invalidate();
-			setAddedProduct(null);
-		},
-	});
+	const items = useAtomValue(cartItemsAtom);
+	const [, addItem] = useAtom(addItemAtom);
 
 	const handleAddToCart = (productId: number) => {
-		const cartId = 1;
-
-		addItem({ cartId: cartId.toString(), productId, quantity: 1 });
+		addItem({
+			id: productId.toString(),
+			name: "Product Name",
+			quantity: 1,
+			price: 10.0,
+			imageUrl: "/default-image.webp",
+		});
 		setAddedProduct(productId);
 	};
 

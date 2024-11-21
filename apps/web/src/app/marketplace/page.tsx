@@ -39,7 +39,7 @@ export default function Home() {
 
 	return (
 		<Main>
-			<Header address={address} disconnect={disconnect} />
+			<Header address={address} disconnect={disconnect} showCart={true} />
 			<SearchBar />
 
 			{query.length <= 0 && (

@@ -12,7 +12,8 @@ interface ProductCardProps {
 	price: number;
 	badgeText: string;
 	onClick: () => void;
-	isAddingToShoppingCart: boolean;
+	onAddToCart?: () => void;
+	isAddingToShoppingCart?: boolean;
 }
 
 export function ProductCard({
@@ -23,7 +24,7 @@ export function ProductCard({
 	price,
 	badgeText,
 	onClick,
-	isAddingToShoppingCart,
+	onAddToCart,
 }: ProductCardProps) {
 	return (
 		<div className="max-w-sm rounded-2xl overflow-hidden shadow-lg border border-surface-border min-w-[22.375rem]">
@@ -51,7 +52,6 @@ export function ProductCard({
 						variant="secondary"
 						onClick={onClick}
 						icon={<ArrowRightIcon className="w-5 h-5" />}
-						disabled={isAddingToShoppingCart}
 					/>
 				</div>
 

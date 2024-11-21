@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import ProductDetails from "~/app/_components/features/ProductDetails";
 
 interface Product {
+	id: number;
 	image: string;
 	name: string;
 	region: string;
@@ -58,6 +59,7 @@ function ProductPage() {
 			const parsedMetadata = JSON.parse(data.nftMetadata) as NftMetadata;
 
 			const product: Product = {
+				id: Number(id),
 				image: parsedMetadata.imageUrl,
 				name: data.name,
 				region: data.region,
@@ -66,7 +68,7 @@ function ProductPage() {
 				bagsAvailable: data.bagsAvailable ?? 10,
 				price: data.price,
 				description: parsedMetadata.description,
-				type: "SoldOut",
+				type: "Buyer",
 				process: data.process ?? "Natural",
 			};
 

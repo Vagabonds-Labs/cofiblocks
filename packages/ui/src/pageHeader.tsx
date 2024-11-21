@@ -1,5 +1,6 @@
 import { ArrowLeftIcon, ShoppingCartIcon } from "@heroicons/react/24/outline";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
@@ -18,6 +19,8 @@ interface PageHeaderProps {
 	onBackClick?: () => void;
 	showBlockie?: boolean;
 	rightActions?: React.ReactNode;
+	showCart?: boolean;
+	cartItemsCount?: number;
 }
 
 function PageHeader({
@@ -29,10 +32,13 @@ function PageHeader({
 	onBackClick,
 	showBlockie = true,
 	rightActions,
+	showCart = true,
+	cartItemsCount,
 }: PageHeaderProps) {
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	const menuRef = useRef<HTMLDivElement>(null);
 	const { t } = useTranslation();
+	const router = useRouter();
 
 	const toggleMenu = () => {
 		setIsMenuOpen((prevState) => !prevState);
@@ -114,10 +120,20 @@ function PageHeader({
 			</div>
 			<div className="flex items-center space-x-4">
 				{rightActions}
-				{!hideCart && (
-					<div className="w-6 h-6">
+				{showCart && (
+					<button
+						type="button"
+						onClick={() => router.push("/shopping-cart")}
+						className="p-2 relative"
+						aria-label="Shopping cart"
+					>
 						<ShoppingCartIcon className="w-6 h-6" />
-					</div>
+						{cartItemsCount && cartItemsCount > 0 ? (
+							<span className="absolute top-0 right-0 bg-red-500 text-white rounded-full text-xs px-1">
+								{cartItemsCount}
+							</span>
+						) : null}
+					</button>
 				)}
 			</div>
 		</div>

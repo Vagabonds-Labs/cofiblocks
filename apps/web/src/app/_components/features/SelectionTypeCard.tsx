@@ -9,6 +9,7 @@ interface SelectionTypeCardProps {
 	bagsAvailable: number;
 	onQuantityChange: (quantity: number) => void;
 	onAddToCart: () => void;
+	isAddingToCart?: boolean;
 }
 
 export function SelectionTypeCard({
@@ -17,6 +18,7 @@ export function SelectionTypeCard({
 	bagsAvailable,
 	onQuantityChange,
 	onAddToCart,
+	isAddingToCart = false,
 }: SelectionTypeCardProps) {
 	const [selectedOption, setSelectedOption] = useState<"bean" | "grounded">(
 		"bean",
@@ -75,8 +77,8 @@ export function SelectionTypeCard({
 				</button>
 			</div>
 
-			<Button variant="primary" onClick={onAddToCart}>
-				Add to cart
+			<Button variant="primary" onClick={onAddToCart} disabled={isAddingToCart}>
+				{isAddingToCart ? "Adding to cart..." : "Add to cart"}
 			</Button>
 		</InfoCard>
 	);
