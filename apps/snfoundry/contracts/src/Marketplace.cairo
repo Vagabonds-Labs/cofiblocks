@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Compatible with OpenZeppelin Contracts for Cairo ^0.15.0
+use starknet::ContractAddress;
 
 #[starknet::interface]
 pub trait IMarketplace<ContractState> {
@@ -25,6 +26,9 @@ mod Marketplace {
     use openzeppelin::upgrades::UpgradeableComponent;
     use openzeppelin::upgrades::interface::IUpgradeable;
     use contracts::cofi_collection::{ICofiCollectionDispatcher, ICofiCollectionDispatcherTrait};
+    use starknet::storage::{
+        StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Map, Vec, VecTrait, MutableVecTrait
+    };
     use starknet::{ContractAddress, get_caller_address, get_contract_address};
 
     component!(path: ERC1155ReceiverComponent, storage: erc1155_receiver, event: ERC1155ReceiverEvent);
@@ -58,7 +62,7 @@ mod Marketplace {
     struct Product {
         stock: u256,
         price: u256,
-    };
+    }
 
     #[storage]
     struct Storage {
@@ -181,7 +185,7 @@ mod Marketplace {
             let cofi_collection = self.cofi_collection_dispatcher.read();
             cofi_collection.safe_transfer_from(contract_address, buyer, token_id, token_amount, array![0].span());
             let new_stock = stock - token_amount;
-            self.update_stock(token_id, new_stock);
+            update_stock(ref self, token_id, new_stock);
             self.emit(BuyProduct { token_id, amount: token_amount, price });
             if (!self.accesscontrol.has_role(CONSUMER, get_caller_address())) {
                 self.accesscontrol._grant_role(CONSUMER, get_caller_address());
@@ -209,7 +213,7 @@ mod Marketplace {
             let cofi_collection = self.cofi_collection_dispatcher.read();
             cofi_collection.mint(get_contract_address(), token_id, initial_stock, array![0].span());
             let product = Product { stock: initial_stock, price };
-            self.seller_products.entry(get_caller_address()).write(token_id);
+            self.seller_products.entry(get_caller_address()).append().write(token_id);
             self.listed_products.entry(token_id).write(product);
             self.emit(CreateProduct { token_id, initial_stock });
         }
@@ -236,7 +240,7 @@ mod Marketplace {
             let cofi_collection = self.cofi_collection_dispatcher.read();
             let token_holder = get_contract_address();
             let amount_tokens = cofi_collection.balance_of(token_holder, token_id);
-            update_stock(token_id, new_stock);
+            update_stock(ref self, token_id, new_stock);
             cofi_collection.burn(token_holder, token_id, amount_tokens);
             self.emit(DeleteProduct { token_id });
         }
@@ -254,8 +258,8 @@ mod Marketplace {
             let producer = get_caller_address();
             let claim_balance = self.claim_balances.entry(producer).read();
             assert(claim_balance > 0, 'No tokens to claim');
-            strk_token_dispatcher.approve(producer, claim_balance);
-            let transfer = strk_token_dispatcher.transfer_from(get_contract_address(), producer, claim_balance);
+            self.strk_token_dispatcher.approve(producer, claim_balance);
+            let transfer = self.strk_token_dispatcher.transfer_from(get_contract_address(), producer, claim_balance);
             assert(transfer, 'Error claiming');
         }
     }
@@ -280,9 +284,9 @@ mod Marketplace {
 
     fn initialize_product(ref self: ContractState, token_id: u256, producer: ContractAddress, stock: u256, price: u256) {
         let product = Product { stock, price };
-        self.seller_products.entry(producer).write(token_id);
+        self.seller_products.entry(producer).append().write(token_id);
         self.listed_products.entry(token_id).write(product);
-        self.emit(CreateProduct { token_id, initial_stock });
+        self.emit(CreateProduct { token_id, initial_stock: stock });
     }
 
     fn update_stock(ref self: ContractState, token_id: u256, new_stock: u256) {
@@ -295,8 +299,8 @@ mod Marketplace {
     // Use example: 
     // Calculate the 3% fee of 250 STRK
     // calculate_fee(250, 300) = 7.5
-    fn calculate_fee(amount: u256, bps: u256) {
-        assert((amount * bps) >= 10_000);
+    fn calculate_fee(amount: u256, bps: u256) -> u256 {
+        assert((amount * bps) >= 10_000, 'Fee too low');
         amount * bps / 10_000
     }
 
