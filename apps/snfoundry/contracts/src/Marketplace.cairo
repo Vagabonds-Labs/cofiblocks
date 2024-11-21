@@ -258,8 +258,9 @@ mod Marketplace {
             let producer = get_caller_address();
             let claim_balance = self.claim_balances.entry(producer).read();
             assert(claim_balance > 0, 'No tokens to claim');
-            self.strk_token_dispatcher.approve(producer, claim_balance);
-            let transfer = self.strk_token_dispatcher.transfer_from(get_contract_address(), producer, claim_balance);
+            let token = self.strk_token_dispatcher.read();
+            token.approve(producer, claim_balance);
+            let transfer = token.transfer_from(get_contract_address(), producer, claim_balance);
             assert(transfer, 'Error claiming');
         }
     }
