@@ -8,5 +8,15 @@
 	"featured": "Destacado",
 	"find_best_coffee": "Encuentra el mejor café",
 	"popular": "Popular",
-	"discover_unique_blends": "Descubre mezclas únicas"
+	"discover_unique_blends": "Descubre mezclas únicas",
+
+	"producing_since": "produciendo café desde {{since}}",
+	"bio_title": "Biografía",
+	"experiences_title": "Experiencias",
+	"good_practices_title": "Buenas prácticas",
+	"edit_button": "Editar",
+
+	"settings": "Configuración",
+	"language": "Idioma",
+	"apply": "Aplicar"
 }

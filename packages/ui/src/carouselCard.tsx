@@ -20,7 +20,7 @@ function CarouselCard({ tag, title, image }: CardProps) {
 		>
 			<div className="h-[3.875rem] flex flex-col justify-start items-start gap-2">
 				<Badge text={tag} variant="accent" size="md" />
-				<div className="w-[18.6875rem] text-white text-2xl font-bold font-manrope leading-[2.125rem] line-clamp-2">
+				<div className="max-w-full text-white text-2xl font-bold font-manrope leading-[2.125rem] line-clamp-2">
 					{title}
 				</div>
 			</div>
