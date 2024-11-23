@@ -35,7 +35,7 @@ export type SaleDetailsType = {
 	address?: string;
 };
 
-export enum SalesStatusType {
+export enum SalesStatus {
 	Paid = "Paid",
 	Prepared = "Prepared",
 	Shipped = "Shipped",
@@ -68,3 +68,18 @@ export const filtersSchema = z.object({
 });
 
 export type FormValues = z.infer<typeof filtersSchema>;
+
+export interface OrderItem {
+	id: string;
+	productName: string;
+	status: SalesStatus;
+	sellerName?: string;
+	buyerName?: string;
+	delivery?: DeliveryMethod;
+}
+
+export interface Order {
+	date: string;
+	items: OrderItem[];
+}
+
