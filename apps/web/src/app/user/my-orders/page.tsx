@@ -7,28 +7,10 @@ import CheckBox from "@repo/ui/form/checkBox";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import OrderListItem from "~/app/_components/features/OrderListItem";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
 import BottomModal from "~/app/_components/ui/BottomModal";
-
-const SalesStatusEnum = {
-	Paid: "Paid",
-	Prepared: "Prepared",
-	Shipped: "Shipped",
-	Delivered: "Delivered",
-} as const;
-
-type SalesStatus = (typeof SalesStatusEnum)[keyof typeof SalesStatusEnum];
-
-const filtersSchema = z.object({
-	statusPaid: z.boolean().optional(),
-	statusPrepared: z.boolean().optional(),
-	statusShipped: z.boolean().optional(),
-	statusDelivered: z.boolean().optional(),
-});
-
-type FormValues = z.infer<typeof filtersSchema>;
+import { type FormValues, SalesStatus, filtersSchema } from "~/types";
 
 const mockedOrders = [
 	{
@@ -38,13 +20,13 @@ const mockedOrders = [
 				id: "1",
 				productName: "Edit profile",
 				sellerName: "seller1_fullname",
-				status: SalesStatusEnum.Paid as SalesStatus,
+				status: SalesStatus.Paid,
 			},
 			{
 				id: "2",
 				productName: "My Orders",
 				sellerName: "seller2_fullname",
-				status: SalesStatusEnum.Paid as SalesStatus,
+				status: SalesStatus.Paid,
 			},
 		],
 	},
@@ -55,13 +37,13 @@ const mockedOrders = [
 				id: "3",
 				productName: "productName",
 				sellerName: "seller1_fullname",
-				status: SalesStatusEnum.Delivered as SalesStatus,
+				status: SalesStatus.Delivered,
 			},
 			{
 				id: "4",
 				productName: "productName",
 				sellerName: "seller2_fullname",
-				status: SalesStatusEnum.Delivered as SalesStatus,
+				status: SalesStatus.Delivered,
 			},
 		],
 	},
@@ -119,14 +101,13 @@ export default function MyOrders() {
 					];
 
 					const matchesStatus = activeStatusFilters.some(Boolean)
-						? (activeFilters.statusPaid &&
-								item.status === SalesStatusEnum.Paid) ??
+						? (activeFilters.statusPaid && item.status === SalesStatus.Paid) ??
 							(activeFilters.statusPrepared &&
-								item.status === SalesStatusEnum.Prepared) ??
+								item.status === SalesStatus.Prepared) ??
 							(activeFilters.statusShipped &&
-								item.status === SalesStatusEnum.Shipped) ??
+								item.status === SalesStatus.Shipped) ??
 							(activeFilters.statusDelivered &&
-								item.status === SalesStatusEnum.Delivered)
+								item.status === SalesStatus.Delivered)
 						: true;
 
 					return matchesSearch && matchesStatus;
@@ -197,26 +178,26 @@ export default function MyOrders() {
 					<div className="flex flex-col gap-2">
 						<>
 							<CheckBox
-								name={`status${SalesStatusEnum.Paid}`}
-								label={SalesStatusEnum.Paid}
+								name={`status${SalesStatus.Paid}`}
+								label={SalesStatus.Paid}
 								control={control}
 							/>
 							<hr className="my-2 border-surface-primary-soft" />
 							<CheckBox
-								name={`status${SalesStatusEnum.Prepared}`}
-								label={SalesStatusEnum.Prepared}
+								name={`status${SalesStatus.Prepared}`}
+								label={SalesStatus.Prepared}
 								control={control}
 							/>
 							<hr className="my-2 border-surface-primary-soft" />
 							<CheckBox
-								name={`status${SalesStatusEnum.Shipped}`}
-								label={SalesStatusEnum.Shipped}
+								name={`status${SalesStatus.Shipped}`}
+								label={SalesStatus.Shipped}
 								control={control}
 							/>
 							<hr className="my-2 border-surface-primary-soft" />
 							<CheckBox
-								name={`status${SalesStatusEnum.Delivered}`}
-								label={SalesStatusEnum.Delivered}
+								name={`status${SalesStatus.Delivered}`}
+								label={SalesStatus.Delivered}
 								control={control}
 							/>
 						</>
