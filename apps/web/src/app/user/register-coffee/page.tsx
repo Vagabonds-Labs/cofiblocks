@@ -12,6 +12,7 @@ import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
+import { RoastLevel } from "~/types";
 
 const schema = z.object({
 	roast: z.string().min(1, "Roast level is required"),
@@ -28,14 +29,6 @@ const schema = z.object({
 });
 
 type FormData = z.infer<typeof schema>;
-
-const RoastLevel = {
-	LIGHT: "Light",
-	MEDIUM: "Medium",
-	STRONG: "Strong",
-} as const;
-
-type RoastLevelType = (typeof RoastLevel)[keyof typeof RoastLevel];
 
 export default function RegisterCoffee() {
 	const handleImageUpload = () => {
@@ -152,7 +145,7 @@ export default function RegisterCoffee() {
 							Roast level
 						</label>
 						<div className="flex flex-col space-y-2">
-							{(Object.values(RoastLevel) as RoastLevelType[]).map((level) => (
+							{Object.values(RoastLevel).map((level) => (
 								<div
 									key={level}
 									className="flex items-center justify-between p-3 bg-surface-primary-soft rounded-lg cursor-pointer"
@@ -172,7 +165,7 @@ export default function RegisterCoffee() {
 											color="bg-surface-primary-default"
 										/>
 										<span
-											className={`text-sm font-bold ${getValues("roast") === level ? "text-content-title" : "text-content-body-default"}`}
+											className={`text-sm font-bold ${(getValues("roast") as RoastLevel) === level ? "text-content-title" : "text-content-body-default"}`}
 										>
 											{level}
 										</span>
