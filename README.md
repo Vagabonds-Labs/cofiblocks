@@ -2,39 +2,6 @@
 
 CofiBlocks is the first Collaborative Business connecting traditional coffee-growing communities in Costa Rica and worldwide directly with coffee lovers using Starknet blockchain technology. Our mission is to distribute benefits among all members, ensuring fair trade, community engagement, and technological innovation.
 
-## 🌍 What is a Collaborative Business?
-
-A Collaborative Business is an organization where customers, producers, and supporters become members. These members share responsibility, decision-making, and benefits (both monetary and otherwise). Our model represents an evolution of the cooperative and DAO (Decentralized Autonomous Organization) concepts, leveraging blockchain technology, smart contracts, and crypto assets (such as NFTs and social currencies).
-
-## 🌟 How Does It Work?
-
-### Cofi in Your Home
-Subscribers receive freshly roasted coffee delivered to their doorsteps monthly, ensuring they enjoy the finest brews while supporting local producers.
-
-### Cofi is Fair
-Producers receive fair payments upfront, allowing them to plan and understand demand ahead of time, thanks to our subscription model.
-
-### Cofi Art & NFTs
-In its pilot year, CofiBlocks will create a collection of NFTs featuring original artwork, distributed via coffee labels on each bag sold.
-
-### Cofi Complementary Currency
-Members of the CofiBlocks pilot community on the Cambiatus app can claim their COFI tokens—a complementary blockchain currency that ensures participation in the Collaborative Business's benefits.
-
-### Cofi Distribution
-At the end of the first year, all CofiBlocks members will receive a percentage of the pilot's financial results in cryptocurrency based on their accumulated COFI tokens. Members will also have the opportunity to participate in decision-making for future stages of the project.
-
-## 🔗 CofiBlocks & Cambiatus
-
-CofiBlocks is a proud member of Cambiatus's Social Currency and Collaborative Business Ecosystem.
-
-[Learn More About Cambiatus](https://cambiatus.com)
-
-## 🚀 CofiBlocks & Starknet
-
-We're building our Web3 marketplace using Starknet technology.
-
-[Explore on GitHub](https://github.com/Vagabonds-Labs/marketplace)
-
 ## 🛠️ Getting Started
 
 ### Prerequisites
