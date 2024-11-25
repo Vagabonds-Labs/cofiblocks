@@ -10,7 +10,7 @@ import { useForm } from "react-hook-form";
 import OrderListItem from "~/app/_components/features/OrderListItem";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
 import BottomModal from "~/app/_components/ui/BottomModal";
-import { type FormValues, SalesStatus, filtersSchema } from "~/types";
+import { type FormValues, SalesStatusType, filtersSchema } from "~/types";
 
 const mockedOrders = [
 	{
@@ -20,13 +20,13 @@ const mockedOrders = [
 				id: "1",
 				productName: "Edit profile",
 				sellerName: "seller1_fullname",
-				status: SalesStatus.Paid,
+				status: SalesStatusType.Paid,
 			},
 			{
 				id: "2",
 				productName: "My Orders",
 				sellerName: "seller2_fullname",
-				status: SalesStatus.Paid,
+				status: SalesStatusType.Paid,
 			},
 		],
 	},
@@ -37,13 +37,13 @@ const mockedOrders = [
 				id: "3",
 				productName: "productName",
 				sellerName: "seller1_fullname",
-				status: SalesStatus.Delivered,
+				status: SalesStatusType.Delivered,
 			},
 			{
 				id: "4",
 				productName: "productName",
 				sellerName: "seller2_fullname",
-				status: SalesStatus.Delivered,
+				status: SalesStatusType.Delivered,
 			},
 		],
 	},
@@ -101,13 +101,14 @@ export default function MyOrders() {
 					];
 
 					const matchesStatus = activeStatusFilters.some(Boolean)
-						? (activeFilters.statusPaid && item.status === SalesStatus.Paid) ??
+						? (activeFilters.statusPaid &&
+								item.status === SalesStatusType.Paid) ??
 							(activeFilters.statusPrepared &&
-								item.status === SalesStatus.Prepared) ??
+								item.status === SalesStatusType.Prepared) ??
 							(activeFilters.statusShipped &&
-								item.status === SalesStatus.Shipped) ??
+								item.status === SalesStatusType.Shipped) ??
 							(activeFilters.statusDelivered &&
-								item.status === SalesStatus.Delivered)
+								item.status === SalesStatusType.Delivered)
 						: true;
 
 					return matchesSearch && matchesStatus;
@@ -178,26 +179,26 @@ export default function MyOrders() {
 					<div className="flex flex-col gap-2">
 						<>
 							<CheckBox
-								name={`status${SalesStatus.Paid}`}
-								label={SalesStatus.Paid}
+								name={`status${SalesStatusType.Paid}`}
+								label={SalesStatusType.Paid}
 								control={control}
 							/>
 							<hr className="my-2 border-surface-primary-soft" />
 							<CheckBox
-								name={`status${SalesStatus.Prepared}`}
-								label={SalesStatus.Prepared}
+								name={`status${SalesStatusType.Prepared}`}
+								label={SalesStatusType.Prepared}
 								control={control}
 							/>
 							<hr className="my-2 border-surface-primary-soft" />
 							<CheckBox
-								name={`status${SalesStatus.Shipped}`}
-								label={SalesStatus.Shipped}
+								name={`status${SalesStatusType.Shipped}`}
+								label={SalesStatusType.Shipped}
 								control={control}
 							/>
 							<hr className="my-2 border-surface-primary-soft" />
 							<CheckBox
-								name={`status${SalesStatus.Delivered}`}
-								label={SalesStatus.Delivered}
+								name={`status${SalesStatusType.Delivered}`}
+								label={SalesStatusType.Delivered}
 								control={control}
 							/>
 						</>

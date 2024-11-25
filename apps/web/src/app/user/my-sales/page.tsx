@@ -11,34 +11,12 @@ import { z } from "zod";
 import OrderListItem from "~/app/_components/features/OrderListItem";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
 import BottomModal from "~/app/_components/ui/BottomModal";
-
-const SalesStatusEnum = {
-	Paid: "Paid",
-	Prepared: "Prepared",
-	Shipped: "Shipped",
-	Delivered: "Delivered",
-} as const;
-
-type SalesStatus = (typeof SalesStatusEnum)[keyof typeof SalesStatusEnum];
-
-const DeliveryMethodEnum = {
-	Address: "Address",
-	Meetup: "Meetup",
-} as const;
-
-type DeliveryMethod =
-	(typeof DeliveryMethodEnum)[keyof typeof DeliveryMethodEnum];
-
-const filtersSchema = z.object({
-	statusPaid: z.boolean().optional(),
-	statusPrepared: z.boolean().optional(),
-	statusShipped: z.boolean().optional(),
-	statusDelivered: z.boolean().optional(),
-	deliveryAddress: z.boolean().optional(),
-	deliveryMeetup: z.boolean().optional(),
-});
-
-type FormValues = z.infer<typeof filtersSchema>;
+import {
+	DeliveryMethod,
+	type FormValues,
+	SalesStatusType,
+	filtersSchema,
+} from "~/types";
 
 const mockedOrders = [
 	{
@@ -48,15 +26,15 @@ const mockedOrders = [
 				id: "1",
 				productName: "Edit profile",
 				buyerName: "buyer1_fullname",
-				status: SalesStatusEnum.Paid as SalesStatus,
-				delivery: DeliveryMethodEnum.Address as DeliveryMethod,
+				status: SalesStatusType.Paid,
+				delivery: DeliveryMethod.Address,
 			},
 			{
 				id: "2",
 				productName: "My Orders",
 				buyerName: "buyer2_fullname",
-				status: SalesStatusEnum.Paid as SalesStatus,
-				delivery: DeliveryMethodEnum.Meetup as DeliveryMethod,
+				status: SalesStatusType.Paid,
+				delivery: DeliveryMethod.Meetup,
 			},
 		],
 	},
@@ -67,15 +45,15 @@ const mockedOrders = [
 				id: "3",
 				productName: "productName",
 				buyerName: "buyer1_fullname",
-				status: SalesStatusEnum.Delivered as SalesStatus,
-				delivery: DeliveryMethodEnum.Address as DeliveryMethod,
+				status: SalesStatusType.Delivered,
+				delivery: DeliveryMethod.Address,
 			},
 			{
 				id: "4",
 				productName: "productName",
 				buyerName: "buyer2_fullname",
-				status: SalesStatusEnum.Delivered as SalesStatus,
-				delivery: DeliveryMethodEnum.Meetup as DeliveryMethod,
+				status: SalesStatusType.Delivered,
+				delivery: DeliveryMethod.Meetup,
 			},
 		],
 	},
@@ -137,13 +115,13 @@ export default function MySales() {
 					const matchesStatus = !activeStatusFilters.some(Boolean)
 						? true
 						: (activeFilters.statusPaid &&
-								item.status === SalesStatusEnum.Paid) ??
+								item.status === SalesStatusType.Paid) ??
 							(activeFilters.statusPrepared &&
-								item.status === SalesStatusEnum.Prepared) ??
+								item.status === SalesStatusType.Prepared) ??
 							(activeFilters.statusShipped &&
-								item.status === SalesStatusEnum.Shipped) ??
+								item.status === SalesStatusType.Shipped) ??
 							(activeFilters.statusDelivered &&
-								item.status === SalesStatusEnum.Delivered);
+								item.status === SalesStatusType.Delivered);
 
 					const activeDeliveryFilters = [
 						activeFilters.deliveryAddress,
@@ -153,9 +131,9 @@ export default function MySales() {
 					const matchesDelivery = !activeDeliveryFilters.some(Boolean)
 						? true
 						: (activeFilters.deliveryAddress &&
-								item.delivery === DeliveryMethodEnum.Address) ??
+								item.delivery === DeliveryMethod.Address) ??
 							(activeFilters.deliveryMeetup &&
-								item.delivery === DeliveryMethodEnum.Meetup);
+								item.delivery === DeliveryMethod.Meetup);
 
 					return matchesSearch && matchesStatus && matchesDelivery;
 				}),
@@ -225,14 +203,14 @@ export default function MySales() {
 					<div className="space-y-4">
 						<>
 							<CheckBox
-								name={`delivery${DeliveryMethodEnum.Address}`}
-								label={DeliveryMethodEnum.Address}
+								name={`delivery${DeliveryMethod.Address}`}
+								label={DeliveryMethod.Address}
 								control={control}
 							/>
 							<hr className="my-2 border-surface-primary-soft" />
 							<CheckBox
-								name={`delivery${DeliveryMethodEnum.Meetup}`}
-								label={DeliveryMethodEnum.Meetup}
+								name={`delivery${DeliveryMethod.Meetup}`}
+								label={DeliveryMethod.Meetup}
 								control={control}
 							/>
 						</>
@@ -243,26 +221,26 @@ export default function MySales() {
 					<div className="flex flex-col gap-2">
 						<>
 							<CheckBox
-								name={`status${SalesStatusEnum.Paid}`}
-								label={SalesStatusEnum.Paid}
+								name={`status${SalesStatusType.Paid}`}
+								label={SalesStatusType.Paid}
 								control={control}
 							/>
 							<hr className="my-2 border-surface-primary-soft" />
 							<CheckBox
-								name={`status${SalesStatusEnum.Prepared}`}
-								label={SalesStatusEnum.Prepared}
+								name={`status${SalesStatusType.Prepared}`}
+								label={SalesStatusType.Prepared}
 								control={control}
 							/>
 							<hr className="my-2 border-surface-primary-soft" />
 							<CheckBox
-								name={`status${SalesStatusEnum.Shipped}`}
-								label={SalesStatusEnum.Shipped}
+								name={`status${SalesStatusType.Shipped}`}
+								label={SalesStatusType.Shipped}
 								control={control}
 							/>
 							<hr className="my-2 border-surface-primary-soft" />
 							<CheckBox
-								name={`status${SalesStatusEnum.Delivered}`}
-								label={SalesStatusEnum.Delivered}
+								name={`status${SalesStatusType.Delivered}`}
+								label={SalesStatusType.Delivered}
 								control={control}
 							/>
 						</>
