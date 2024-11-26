@@ -247,7 +247,7 @@ We welcome contributions from the community! Here's how you can help:
 
 #
 
-5. **Push fork:** Push to your fork and submit a pull request on our `dev` branch. Please provide us with some explanation of why you made the changes you made. For new features make sure to explain a standard use case to us.
+5. **Push fork:** Push to your fork and submit a pull request on our `main` branch. Please provide us with some explanation of why you made the changes you made. For new features make sure to explain a standard use case to us.
 
 - Push your changes to your forked repository:
     ```bash
@@ -263,7 +263,7 @@ We welcome contributions from the community! Here's how you can help:
 
 #
 
-6. **Submit a Pull Request:** Submit a pull request to the `dev` branch of the Semaphore Stellar SDK repository.
+6. **Submit a Pull Request:** Submit a pull request to the `main` branch of the Semaphore Stellar SDK repository.
 
     - <a href="https://github.com/Vagabonds-Labs/cofiblocks/pulls" target="_blank"> Summit pull request</a>
 
