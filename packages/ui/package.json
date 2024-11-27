@@ -27,6 +27,7 @@
 		"./dataCard": "./src/dataCard.tsx",
 		"./infoCard": "./src/infoCard.tsx",
 		"./card": "./src/card.tsx",
+		"./separator": "./src/separator.tsx",
 		"./cardContent": "./src/cardContent.tsx"
 	},
 	"scripts": {

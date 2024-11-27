@@ -1,78 +1,83 @@
 "use client";
 
 import { MapPinIcon } from "@heroicons/react/24/outline";
+import Button from "@repo/ui/button";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface LocationSelectorProps {
-	onNext: (location: string) => void;
+	readonly onSelect: (location: string) => void;
 }
 
-export default function LocationSelector({ onNext }: LocationSelectorProps) {
+export default function LocationSelector({ onSelect }: LocationSelectorProps) {
+	const { t } = useTranslation();
 	const [selectedLocation, setSelectedLocation] = useState<string>("");
 
+	const locations = [
+		{ value: "gam", label: "I'm in GAM", price: "+ 20 USD" },
+		{ value: "outside", label: "I'm not in GAM", price: "+ 40 USD" },
+	];
+
+	const handleSelect = (location: string) => {
+		setSelectedLocation(location);
+		onSelect(location);
+	};
+
 	return (
-		<div className="p-4 flex flex-col min-h-[calc(100vh-120px)]">
-			<div className="flex-1">
-				<h2 className="text-lg font-medium mb-4">I&apos;m in</h2>
+		<div className="flex flex-col min-h-[calc(100vh-120px)] font-manrope">
+			<div className="flex-1 p-4">
+				<h2 className="text-lg font-medium mb-4 text-content-title">
+					{t("select_your_location")}
+				</h2>
 
 				<div className="space-y-3">
-					<button
-						type="button"
-						onClick={() => setSelectedLocation("gam")}
-						className={`w-full p-4 rounded-lg bg-[#F8F9FA] hover:bg-[#F0F1F2] transition-colors
-              flex items-center justify-between`}
-						aria-pressed={selectedLocation === "gam"}
-					>
-						<div className="flex items-center gap-3">
-							<MapPinIcon className="h-6 w-6 text-[#198754]" />
-							<div className="flex flex-col items-start">
-								<span className="text-base">I&apos;m in GAM</span>
-								<span className="text-sm text-gray-500">+ 20 USD</span>
+					{locations.map((location) => (
+						<Button
+							key={location.value}
+							variant="soft"
+							size="xl"
+							onClick={() => handleSelect(location.value)}
+							className="w-full justify-between p-4"
+							aria-pressed={selectedLocation === location.value}
+						>
+							<div className="flex items-center gap-3">
+								<MapPinIcon
+									className="h-6 w-6 text-success-default"
+									aria-hidden="true"
+								/>
+								<div className="text-left">
+									<span className="text-base text-content-body-default">
+										{location.label}
+									</span>
+									<p className="text-sm text-content-body-soft">
+										{location.price}
+									</p>
+								</div>
 							</div>
-						</div>
-						<div
-							className={`w-6 h-6 rounded-full border-2 ${
-								selectedLocation === "gam"
-									? "border-[#198754] bg-[#198754]"
-									: "border-gray-300"
-							}`}
-						/>
-					</button>
-
-					<button
-						type="button"
-						onClick={() => setSelectedLocation("outside")}
-						className={`w-full p-4 rounded-lg bg-[#F8F9FA] hover:bg-[#F0F1F2] transition-colors
-              flex items-center justify-between`}
-						aria-pressed={selectedLocation === "outside"}
-					>
-						<div className="flex items-center gap-3">
-							<MapPinIcon className="h-6 w-6 text-[#198754]" />
-							<div className="flex flex-col items-start">
-								<span className="text-base">I&apos;m not in GAM</span>
-								<span className="text-sm text-gray-500">+ 40 USD</span>
-							</div>
-						</div>
-						<div
-							className={`w-6 h-6 rounded-full border-2 ${
-								selectedLocation === "outside"
-									? "border-[#198754] bg-[#198754]"
-									: "border-gray-300"
-							}`}
-						/>
-					</button>
+							<div
+								className={`w-6 h-6 rounded-full border-2 ${
+									selectedLocation === location.value
+										? "border-surface-secondary-default bg-surface-secondary-default"
+										: "border-surface-border bg-transparent"
+								}`}
+								aria-hidden="true"
+							/>
+						</Button>
+					))}
 				</div>
 			</div>
 
-			<button
-				type="button"
-				onClick={() => selectedLocation && onNext(selectedLocation)}
-				disabled={!selectedLocation}
-				className="w-full p-4 bg-[#FFC107] hover:bg-[#FDB000] disabled:opacity-50 disabled:hover:bg-[#FFC107]
-          rounded-lg text-center font-medium transition-colors mt-auto"
-			>
-				Next
-			</button>
+			<div className="p-4">
+				<Button
+					variant="primary"
+					size="xl"
+					onClick={() => onSelect(selectedLocation)}
+					disabled={!selectedLocation}
+					className="w-full"
+				>
+					{t("next")}
+				</Button>
+			</div>
 		</div>
 	);
 }
