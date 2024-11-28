@@ -2,56 +2,6 @@
 
 CofiBlocks is the first Collaborative Business connecting traditional coffee-growing communities in Costa Rica and worldwide directly with coffee lovers using Starknet blockchain technology. Our mission is to distribute benefits among all members, ensuring fair trade, community engagement, and technological innovation.
 
-CofiBlocks se presenta como el primer Negocio Colaborativo que conecta a las comunidades tradicionales productoras de café en Costa Rica, y en todo el mundo, directamente con los amantes del café utilizando la tecnología blockchain Starknet. Nuestra misión es distribuir beneficios entre todos los miembros, asegurando el comercio justo, la participación de la comunidad y la innovación tecnológica.
-## 🌍 **What is a Collaborative Business?**
-
-A Collaborative Business is an organization where customers, producers, and supporters become members. These members share responsibility, decision-making, and benefits (both monetary and otherwise). Our model represents an evolution of the cooperative and DAO (Decentralized Autonomous Organization) concepts, leveraging blockchain technology, smart contracts, and crypto assets (such as NFTs and social currencies).
-
-## 📌 **Crucial concepts**
-
-1. **Collaborative Business**
-
-A model where multiple parties (individuals or companies) collaborate to create, operate, and benefit from a project or product. It relies on decentralization, shared decision-making, and fair profit distribution.
-
-2. **NFTs (Non-Fungible Tokens)**
-
-Unique digital assets based on blockchain, used to represent ownership of digital or physical items like art, music, or contracts. They are immutable, verifiable, and not directly interchangeable like cryptocurrencies.
-
-
-3. **COFI Tokens**
-
-Digital assets serving as the unit of value and participation within the CofiBlocks ecosystem. Likely used for transactions, incentives, and governance in the project.
-
-## 🌟 **How Does It Work?**
-
-- ### Cofi in Your Home
-```
-Subscribers receive freshly roasted coffee delivered to their doorsteps monthly, ensuring they enjoy the finest brews while supporting local producers.
-```
-
-- ### Cofi is Fair
-```
-Producers receive fair payments upfront, allowing them to plan and understand demand ahead of time, thanks to our subscription model.
-```
-
-- ### Cofi Art & NFTs
-```
-In its pilot year, CofiBlocks will create a collection of NFTs featuring original artwork, distributed via coffee labels on each bag sold.
-```
-
-- ### Cofi Complementary Currency
-```
-Members of the CofiBlocks pilot community on the Cambiatus app can claim their COFI tokens—a complementary blockchain currency that ensures participation in the Collaborative Business's benefits.
-```
-
-- ### Cofi Distribution
-
-```
-At the end of the first year, all CofiBlocks members will receive a percentage of the pilot's financial results in cryptocurrency based on their accumulated COFI tokens. Members will also have the opportunity to participate in decision-making for future stages of the project.
-```
-
-
-
 ## 🚀 Roadmap
 
 ### **2022-2023 Season**
@@ -62,10 +12,22 @@ We are preparing to launch our second season, featuring coffee from additional c
 
 **Want to bring CofiBlocks to your region?** 
 
-
-
 - [Contact Us ](mailto:info@cofiblocks.com)
 
+## 🌎 Movement
+```
+CofiBlocks is more than just a coffee marketplace; it's a movement for a more equitable and sustainable coffee future. With a strong foundation and a passionate community, CofiBlocks is poised to transform the way coffee is produced, distributed, and enjoyed worldwide. Whether you're a coffee enthusiast or a blockchain believer, CofiBlocks invites you to join their journey.
+```
+
+## 📌 Fundamental Links Info
+
+- [Learning about modern collaborative businesses with CofiBlocks](https://medium.com/cambiatus/conociendo-de-modernos-negocios-colaborativos-con-cofiblocks-88ed3ddfa88a)
+
+- [CofiBlocks: Innovating the Coffee Industry in Costa Rica with Web3](https://mirror.xyz/0xF574753688ABf9740660DFb02E84E4599CA6Eb87/QneFnlPqTRuV_3jt7Kd6foBfFokOKN6zNcJCqpj_xkw)
+
+
+
+- [Pitch Deck](https://docs.google.com/presentation/d/16zPeDC-6fMaCRRpaQCTPPIn_ZKdI0d9ZArkTxd2wmAA/edit#slide=id.p1)
 ## 👥 Meet the Team
 
 ### ☕ **FOUNDERS**
@@ -74,6 +36,8 @@ We are preparing to launch our second season, featuring coffee from additional c
 **Co-founder**
 
 Omar's journey from coffee picker to coffee tour guide in Poás de Alajuela inspired the creation of CofiBlocks. He brings firsthand knowledge of the challenges small producers face.
+
+- [History](https://www.youtube.com/watch?v=OjymLl3zKss)
 
 ### Karla Córdoba Brenes
 **Co-founder**
@@ -87,7 +51,7 @@ Ranulfo's background in blockchain development and collaborative economies helps
 
 #
 
-### 💻 **DEVS**
+### 💻 **MAINTAINERS**
 
 ### Alberto - Brolag
 **Full Stack Developer Web3**
@@ -107,28 +71,10 @@ Ranulfo's background in blockchain development and collaborative economies helps
 - [Randall GitHub](https://github.com/rvalenciano)
 - [Twitter](https://x.com/Ravf226)
 
-
-
-## 🔗 **CofiBlocks & Cambiatus**
-
-CofiBlocks is a proud member of Cambiatus's Social Currency and Collaborative Business Ecosystem.
-
-**Learn More About Cambiatus**
-
-- [Cambiatus](https://cambiatus.com)
-
-## 🚀 **CofiBlocks & Starknet**
-
-We're building our Web3 marketplace using Starknet technology.
-
-**Explore on GitHub**
-
-- [GitHub](https://github.com/Vagabonds-Labs/marketplace)
-
 ## 🎉 Join the Community
 
 - Website: [CofiBlocks Website](https://cofiblocks.com)
-- Twitter: [Follow us on Twitter](https://twitter.com/cofiblocks)
+- X: [Follow us on Twitter](https://twitter.com/cofiblocks)
 - Telegram ODHack: [Join our Telegram ODHACK Group](https://t.me/cofiblocksodhack)
 - Telegram for Devs: [Join our Telegram Devs Cofi Group](https://t.me/cofiblocksodhack)
 
