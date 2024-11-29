@@ -3,6 +3,7 @@
 import { ProductCard } from "@repo/ui/productCard";
 import { useAtom, useAtomValue } from "jotai";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
 import { addItemAtom, cartItemsAtom } from "~/store/cartAtom";
 
@@ -24,6 +25,8 @@ const userFavoriteProducts = [
 ];
 
 export default function Favorites() {
+	const { t } = useTranslation();
+
 	// TODO: Get favorites from the database
 	// TODO: Consider sending a "flag" to ProductCatalog to show favorites instead of all products to reuse the same component
 	// and avoid code duplication
@@ -44,17 +47,17 @@ export default function Favorites() {
 	};
 
 	return (
-		<ProfileOptionLayout title="Favorite products">
+		<ProfileOptionLayout title={t("favorite_products")}>
 			<div className="flex flex-col items-center gap-6 p-4 mx-auto">
 				{userFavoriteProducts.map(({ id, imageUrl }) => (
 					<div key={id} className="w-full max-w-md flex justify-center">
 						<ProductCard
 							image={imageUrl}
-							region="Region"
-							farmName="Farm Name"
-							variety="Variety"
+							region={t("region")}
+							farmName={t("farm_name")}
+							variety={t("variety")}
 							price={10.0}
-							badgeText="Badge Text"
+							badgeText={t("badge_text")}
 							onClick={() => handleAddToCart(id)}
 							isAddingToShoppingCart={addedProduct === id}
 						/>

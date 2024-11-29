@@ -1,11 +1,14 @@
+"use client";
+
 import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
 
 type EditProfileOption = {
 	imgUrl: string;
-	label: string;
+	labelKey: string;
 	href: string;
 	customClass?: string;
 	iconColor?: string;
@@ -14,24 +17,25 @@ type EditProfileOption = {
 const editProfileOptions: EditProfileOption[] = [
 	{
 		imgUrl: "/images/user-profile/avatar.svg",
-		label: "Edit my profile",
+		labelKey: "edit_my_profile",
 		href: "/user/edit-profile/my-profile",
 	},
 	{
 		imgUrl: "/images/user-profile/farm-avatar.svg",
-		label: "Edit my farm profile",
+		labelKey: "edit_my_farm_profile",
 		href: "/user/edit-profile/farm-profile",
 	},
 ];
 
 export default function EditProfile() {
+	const { t } = useTranslation();
 	const lastOptionIndex = editProfileOptions.length - 1;
 	return (
-		<ProfileOptionLayout title="Edit my profile">
+		<ProfileOptionLayout title={t("edit_my_profile")}>
 			<div className="bg-white overflow-hidden">
 				{editProfileOptions.map((option, index) => (
 					<Link
-						key={option.label}
+						key={option.href}
 						href={option.href}
 						className={`flex items-center justify-between p-4 hover:bg-surface-secondary-soft ${
 							lastOptionIndex !== index
@@ -42,12 +46,14 @@ export default function EditProfile() {
 						<div className="flex items-center">
 							<Image
 								src={option.imgUrl}
-								alt={option.label}
+								alt={t("profile_option_image_alt", {
+									label: t(option.labelKey),
+								})}
 								width={20}
 								height={20}
 								className="mr-3"
 							/>
-							<span className="text-content-body-default">{option.label}</span>
+							<span className="text-content-title">{t(option.labelKey)}</span>
 						</div>
 						<ChevronRightIcon
 							scale={16}

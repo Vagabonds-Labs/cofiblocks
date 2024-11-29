@@ -12,18 +12,20 @@ import OrderListItem from "~/app/_components/features/OrderListItem";
 import OrderListPriceItem from "~/app/_components/features/OrderListPriceItem";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
 
+import { useTranslation } from "react-i18next";
+
 const SalesStatusEnum = {
-	Paid: "Paid",
-	Prepared: "Prepared",
-	Shipped: "Shipped",
-	Delivered: "Delivered",
+	Paid: "paid",
+	Prepared: "prepared",
+	Shipped: "shipped",
+	delivered: "delivered",
 } as const;
 
 type SalesStatus = (typeof SalesStatusEnum)[keyof typeof SalesStatusEnum];
 
 const DeliveryMethodEnum = {
-	Address: "Address",
-	Meetup: "Meetup",
+	Address: "address",
+	Meetup: "meetup",
 } as const;
 
 type DeliveryMethod =
@@ -31,22 +33,22 @@ type DeliveryMethod =
 
 const mockedOrders = [
 	{
-		date: "October 18",
+		date: "october_18",
 		items: [
 			{
 				id: "1",
-				productName: "productName",
+				productName: "product_name_1",
 				buyerName: "buyer1_fullname",
-				status: SalesStatusEnum.Delivered as SalesStatus,
+				status: SalesStatusEnum.delivered as SalesStatus,
 				delivery: DeliveryMethodEnum.Address as DeliveryMethod,
 				price: 30,
 				claimed: false,
 			},
 			{
 				id: "2",
-				productName: "productName2",
+				productName: "product_name_2",
 				buyerName: "buyer2_fullname",
-				status: SalesStatusEnum.Delivered as SalesStatus,
+				status: SalesStatusEnum.delivered as SalesStatus,
 				delivery: DeliveryMethodEnum.Meetup as DeliveryMethod,
 				price: 30,
 				claimed: false,
@@ -54,22 +56,22 @@ const mockedOrders = [
 		],
 	},
 	{
-		date: "September 20",
+		date: "september_20",
 		items: [
 			{
 				id: "3",
-				productName: "productName3",
+				productName: "product_name_3",
 				buyerName: "buyer1_fullname",
-				status: SalesStatusEnum.Delivered as SalesStatus,
+				status: SalesStatusEnum.delivered as SalesStatus,
 				delivery: DeliveryMethodEnum.Address as DeliveryMethod,
 				price: 30,
 				claimed: true,
 			},
 			{
 				id: "4",
-				productName: "productName4",
+				productName: "product_name_4",
 				buyerName: "buyer2_fullname",
-				status: SalesStatusEnum.Delivered as SalesStatus,
+				status: SalesStatusEnum.delivered as SalesStatus,
 				delivery: DeliveryMethodEnum.Meetup as DeliveryMethod,
 				price: 30,
 				claimed: true,
@@ -84,6 +86,7 @@ export default function MyClaims() {
 	const [searchTerm, setSearchTerm] = useState("");
 	const [MoneyToClaim, setMoneyToClaim] = useState(0);
 	const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
+	const { t } = useTranslation();
 
 	const router = useRouter();
 
@@ -128,11 +131,11 @@ export default function MyClaims() {
 	};
 
 	return (
-		<ProfileOptionLayout title="My Claims">
+		<ProfileOptionLayout title={t("my_claims")}>
 			<div className="mb-4">
 				<div>
 					<h3 className="text-sm font-semibold text-gray-500 mb-2 flex items-center">
-						Total balance receivable
+						{t("total_balance_receivable")}
 						<InformationCircleIcon className="w-5 h-5 ml-2" />
 					</h3>
 				</div>
@@ -150,22 +153,21 @@ export default function MyClaims() {
 				{OrdersToClaim.map((orderGroup, index) => (
 					<div key={`${orderGroup.date}-${index}`}>
 						<h2 className="text-lg font-semibold text-gray-500 mb-2">
-							{orderGroup.date}
+							{t(orderGroup.date)}
 						</h2>
 						<div className="bg-white rounded-lg">
 							{orderGroup.items.map((order, orderIndex) => (
-								<>
+								<div key={order.id || orderIndex}>
 									<OrderListPriceItem
-										key={`${order.productName}-${orderIndex}`}
-										productName={order.productName}
-										name={order.buyerName}
+										productName={t(order.productName)}
+										name={t(order.buyerName)}
 										price={order.price}
 										onClick={() => handleItemClick(order.id)}
 									/>
 									{orderIndex < orderGroup.items.length - 1 && (
 										<hr className="my-2 border-surface-primary-soft" />
 									)}
-								</>
+								</div>
 							))}
 						</div>
 					</div>
@@ -176,12 +178,12 @@ export default function MyClaims() {
 					className="mx-auto mt-5 w-[90%] h-15 px-2"
 					onClick={() => router.push("/user/register-coffee")}
 				>
-					Receive {MoneyToClaim.toFixed(2)} USD
+					{t("recieve")} {MoneyToClaim.toFixed(2)} USD
 				</Button>
 			</div>
 			<div className="mb-6">
 				<h1 className="text-2xl font-semibold mb-2 flex items-center">
-					History
+					{t("history")}
 				</h1>
 			</div>
 			<div className="mb-6">
@@ -190,7 +192,7 @@ export default function MyClaims() {
 						<MagnifyingGlassIcon className="w-6 h-6 absolute left-3 top-1/2 transform -translate-y-1/2 text-content-body-default" />
 						<input
 							type="text"
-							placeholder="Search for seller's name"
+							placeholder={t("search_seller_placeholder")}
 							className="w-full pl-10 pr-4 py-3 px-[1rem] border border-surface-border rounded-[0.5rem] focus:outline-none focus:ring-2 focus:ring-blue-500 text-content-body-default placeholder-content-body-default"
 							value={searchTerm}
 							onChange={(e) => setSearchTerm(e.target.value)}
@@ -209,16 +211,16 @@ export default function MyClaims() {
 				{ClaimedOrders.map((orderGroup, index) => (
 					<div key={`${orderGroup.date}-${index}`}>
 						<h2 className="text-lg font-semibold text-gray-500 mb-2">
-							{orderGroup.date}
+							{t(orderGroup.date)}
 						</h2>
 						<div className="bg-white rounded-lg">
 							{orderGroup.items.map((order, orderIndex) => (
 								<>
 									<OrderListItem
 										key={`${order.productName}-${orderIndex}`}
-										productName={order.productName}
-										name={order.buyerName}
-										status={order.status}
+										productName={t(order.productName)}
+										name={t(order.buyerName)}
+										status={t(order.status)}
 										onClick={() => handleItemClick(order.id)}
 									/>
 									{orderIndex < orderGroup.items.length - 1 && (

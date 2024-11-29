@@ -5,6 +5,7 @@ import {
 } from "@heroicons/react/24/outline";
 import cx from "classnames";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import Button from "./button";
 
 type AlertProps = {
@@ -27,6 +28,8 @@ const alertIcons = {
 };
 
 function Alert({ message, description, type, onDismiss }: AlertProps) {
+	const { t } = useTranslation();
+
 	const alertVariants = {
 		hidden: { y: "-100%", opacity: 0 },
 		visible: {
@@ -64,12 +67,12 @@ function Alert({ message, description, type, onDismiss }: AlertProps) {
 			<div className="flex items-center">
 				<Icon className="w-10 h-10 mr-3" />
 				<div>
-					<h4 className="font-bold">{message}</h4>
-					<p>{description}</p>
+					<h4 className="font-bold">{t(message)}</h4>
+					<p>{t(description)}</p>
 				</div>
 			</div>
 			<Button variant="primary" size="sm" onClick={onDismiss}>
-				Dismiss
+				{t("dismiss_button")}
 			</Button>
 		</motion.div>
 	);

@@ -3,6 +3,7 @@
 import SkeletonLoader from "@repo/ui/skeleton";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import ProductDetails from "~/app/_components/features/ProductDetails";
 
 interface Product {
@@ -36,6 +37,7 @@ interface NftMetadata {
 }
 
 function ProductPage() {
+	const { t } = useTranslation();
 	const params = useParams();
 	const productId = typeof params.id === "string" ? params.id : params.id?.[0];
 	const [product, setProduct] = useState<Product | null>(null);
@@ -94,7 +96,7 @@ function ProductPage() {
 	if (!product) {
 		return (
 			<div className="min-h-screen w-full flex flex-col items-center justify-center">
-				<h1 className="text-2xl font-bold">Product not found</h1>
+				<h1 className="text-2xl font-bold">{t("product_not_found")}</h1>
 			</div>
 		);
 	}

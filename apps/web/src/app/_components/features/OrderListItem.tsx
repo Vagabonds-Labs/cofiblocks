@@ -3,6 +3,7 @@
 import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 
 interface OrderListItemProps {
 	productName: string;
@@ -17,6 +18,8 @@ export default function OrderListItem({
 	status,
 	onClick,
 }: OrderListItemProps) {
+	const { t } = useTranslation();
+
 	return (
 		<Link href="#" onClick={onClick} className="block">
 			<div
@@ -32,7 +35,7 @@ export default function OrderListItem({
 				<div className="flex items-center space-x-4">
 					<Image
 						src="/images/cafe2.webp"
-						alt="Product"
+						alt={t("product_image_alt", { productName })}
 						width={48}
 						height={48}
 						className="rounded-md object-cover"
@@ -45,12 +48,12 @@ export default function OrderListItem({
 				<div className="flex items-center space-x-2">
 					<span
 						className={`px-2 py-1 text-sm rounded-full ${
-							status === "Delivered"
+							status === t("delivered")
 								? "bg-surface-primary-default text-white"
 								: "bg-surface-primary-soft text-content-body-default"
 						}`}
 					>
-						{status}
+						{t(`order_status.${status.toLowerCase()}`)}
 					</span>
 					<ChevronRightIcon className="text-content-body-default w-5 h-5" />
 				</div>

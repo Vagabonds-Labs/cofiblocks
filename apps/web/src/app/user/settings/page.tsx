@@ -15,13 +15,6 @@ interface SettingsProps {
 	initialLanguage?: string;
 }
 
-// TODO: Move this to config file
-const languageMap: Record<string, string> = {
-	en: "English",
-	es: "Spanish",
-	pt: "Portuguese",
-};
-
 const languageSchema = z.object({
 	language: z.string(),
 });
@@ -31,18 +24,15 @@ type FormValues = z.infer<typeof languageSchema>;
 const LANGUAGE_KEY = "app_language";
 
 export default function Settings({ initialLanguage = "en" }: SettingsProps) {
-	const { i18n, t } = useTranslation("common");
-	const [language, setLanguage] = useState<string>(() => {
-		if (typeof window !== "undefined") {
-			return localStorage.getItem(LANGUAGE_KEY) ?? initialLanguage;
-		}
-		return initialLanguage;
-	});
+	const { i18n, t } = useTranslation();
+
+	// Set a default language that matches on both server and client
+	const [language, setLanguage] = useState<string>(initialLanguage);
 	const [isLanguageModalOpen, setLanguageModalOpen] = useState<boolean>(false);
 
-	const languagesKeys = Object.keys(languageMap);
+	const languages = ["en", "es", "pt"];
 
-	const { control, handleSubmit } = useForm<FormValues>({
+	const { control, handleSubmit, setValue } = useForm<FormValues>({
 		defaultValues: {
 			language: language,
 		},
@@ -50,12 +40,14 @@ export default function Settings({ initialLanguage = "en" }: SettingsProps) {
 	});
 
 	useEffect(() => {
+		// Update language from localStorage after component mounts
 		const savedLanguage = localStorage.getItem(LANGUAGE_KEY);
-		if (savedLanguage) {
-			void i18n.changeLanguage(savedLanguage);
+		if (savedLanguage && savedLanguage !== language) {
 			setLanguage(savedLanguage);
+			setValue("language", savedLanguage);
+			void i18n.changeLanguage(savedLanguage);
 		}
-	}, [i18n]);
+	}, [i18n, language, setValue]);
 
 	const openLanguageModal = () => setLanguageModalOpen(true);
 	const closeLanguageModal = () => setLanguageModalOpen(false);
@@ -88,7 +80,7 @@ export default function Settings({ initialLanguage = "en" }: SettingsProps) {
 					<span className="text-lg font-medium">{t("language")}</span>
 					<div className="flex items-center gap-2">
 						<span className="text-content-body-default">
-							{languageMap[language]}
+							{t(`language_name.${language}`)}
 						</span>
 						<ChevronRightIcon scale={16} className="w-5 h-5 ml-2" />
 					</div>
@@ -100,20 +92,20 @@ export default function Settings({ initialLanguage = "en" }: SettingsProps) {
 					</h3>
 					<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 						<div className="flex flex-col gap-2">
-							{languagesKeys.map((lang, index) => (
-								<>
-									<label key={lang} className="flex items-center gap-2">
+							{languages.map((lang, index) => (
+								<div key={lang}>
+									<label className="flex items-center gap-2">
 										<RadioButton
 											name="language"
-											label={languageMap[lang] ?? lang}
+											label={t(`language_name.${lang}`)}
 											value={lang}
 											control={control}
 										/>
 									</label>
-									{index < languagesKeys.length - 1 && (
+									{index < languages.length - 1 && (
 										<hr className="my-2 border-surface-border" />
 									)}
-								</>
+								</div>
 							))}
 						</div>
 						<Button type="submit" className="w-full">
