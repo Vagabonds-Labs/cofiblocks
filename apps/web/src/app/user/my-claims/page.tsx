@@ -11,25 +11,9 @@ import { useEffect, useState } from "react";
 import OrderListItem from "~/app/_components/features/OrderListItem";
 import OrderListPriceItem from "~/app/_components/features/OrderListPriceItem";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
+import { DeliveryMethod, SalesStatusType } from "~/types";
 
 import { useTranslation } from "react-i18next";
-
-const SalesStatusEnum = {
-	Paid: "paid",
-	Prepared: "prepared",
-	Shipped: "shipped",
-	delivered: "delivered",
-} as const;
-
-type SalesStatus = (typeof SalesStatusEnum)[keyof typeof SalesStatusEnum];
-
-const DeliveryMethodEnum = {
-	Address: "address",
-	Meetup: "meetup",
-} as const;
-
-type DeliveryMethod =
-	(typeof DeliveryMethodEnum)[keyof typeof DeliveryMethodEnum];
 
 const mockedOrders = [
 	{
@@ -39,8 +23,8 @@ const mockedOrders = [
 				id: "1",
 				productName: "product_name_1",
 				buyerName: "buyer1_fullname",
-				status: SalesStatusEnum.delivered as SalesStatus,
-				delivery: DeliveryMethodEnum.Address as DeliveryMethod,
+				status: SalesStatusType.Delivered,
+				delivery: DeliveryMethod.Address,
 				price: 30,
 				claimed: false,
 			},
@@ -48,8 +32,8 @@ const mockedOrders = [
 				id: "2",
 				productName: "product_name_2",
 				buyerName: "buyer2_fullname",
-				status: SalesStatusEnum.delivered as SalesStatus,
-				delivery: DeliveryMethodEnum.Meetup as DeliveryMethod,
+				status: SalesStatusType.Delivered,
+				delivery: DeliveryMethod.Meetup,
 				price: 30,
 				claimed: false,
 			},
@@ -62,8 +46,8 @@ const mockedOrders = [
 				id: "3",
 				productName: "product_name_3",
 				buyerName: "buyer1_fullname",
-				status: SalesStatusEnum.delivered as SalesStatus,
-				delivery: DeliveryMethodEnum.Address as DeliveryMethod,
+				status: SalesStatusType.Delivered,
+				delivery: DeliveryMethod.Address,
 				price: 30,
 				claimed: true,
 			},
@@ -71,8 +55,8 @@ const mockedOrders = [
 				id: "4",
 				productName: "product_name_4",
 				buyerName: "buyer2_fullname",
-				status: SalesStatusEnum.delivered as SalesStatus,
-				delivery: DeliveryMethodEnum.Meetup as DeliveryMethod,
+				status: SalesStatusType.Delivered,
+				delivery: DeliveryMethod.Meetup,
 				price: 30,
 				claimed: true,
 			},

@@ -8,28 +8,10 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { z } from "zod";
 import OrderListItem from "~/app/_components/features/OrderListItem";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
 import BottomModal from "~/app/_components/ui/BottomModal";
-
-const SalesStatusEnum = {
-	Paid: "paid",
-	Prepared: "prepared",
-	Shipped: "shipped",
-	Delivered: "delivered",
-} as const;
-
-type SalesStatus = (typeof SalesStatusEnum)[keyof typeof SalesStatusEnum];
-
-const filtersSchema = z.object({
-	statusPaid: z.boolean().optional(),
-	statusPrepared: z.boolean().optional(),
-	statusShipped: z.boolean().optional(),
-	statusDelivered: z.boolean().optional(),
-});
-
-type FormValues = z.infer<typeof filtersSchema>;
+import { type FormValues, SalesStatusType, filtersSchema } from "~/types";
 
 const mockedOrders = [
 	{
@@ -39,13 +21,13 @@ const mockedOrders = [
 				id: "1",
 				productName: "product_name_1",
 				sellerName: "Juan Pérez",
-				status: SalesStatusEnum.Paid as SalesStatus,
+				status: SalesStatusType.Paid,
 			},
 			{
 				id: "2",
 				productName: "product_name_2",
 				sellerName: "María García",
-				status: SalesStatusEnum.Paid as SalesStatus,
+				status: SalesStatusType.Paid,
 			},
 		],
 	},
@@ -56,13 +38,13 @@ const mockedOrders = [
 				id: "3",
 				productName: "product_name_3",
 				sellerName: "Juan Pérez",
-				status: SalesStatusEnum.Delivered as SalesStatus,
+				status: SalesStatusType.Delivered,
 			},
 			{
 				id: "4",
 				productName: "product_name_4",
 				sellerName: "María García",
-				status: SalesStatusEnum.Delivered as SalesStatus,
+				status: SalesStatusType.Delivered,
 			},
 		],
 	},
@@ -122,13 +104,13 @@ export default function MyOrders() {
 
 					const matchesStatus = activeStatusFilters.some(Boolean)
 						? (activeFilters.statusPaid &&
-								item.status === SalesStatusEnum.Paid) ??
+								item.status === SalesStatusType.Paid) ??
 							(activeFilters.statusPrepared &&
-								item.status === SalesStatusEnum.Prepared) ??
+								item.status === SalesStatusType.Prepared) ??
 							(activeFilters.statusShipped &&
-								item.status === SalesStatusEnum.Shipped) ??
+								item.status === SalesStatusType.Shipped) ??
 							(activeFilters.statusDelivered &&
-								item.status === SalesStatusEnum.Delivered)
+								item.status === SalesStatusType.Delivered)
 						: true;
 
 					return matchesSearch && matchesStatus;
@@ -197,29 +179,37 @@ export default function MyOrders() {
 						{t("status")}
 					</h3>
 					<div className="flex flex-col gap-2">
-						<CheckBox
-							name="statusPaid"
-							label={t("order_status.paid")}
-							control={control}
-						/>
-						<hr className="my-2 border-surface-primary-soft" />
-						<CheckBox
-							name="statusPrepared"
-							label={t("order_status.prepared")}
-							control={control}
-						/>
-						<hr className="my-2 border-surface-primary-soft" />
-						<CheckBox
-							name="statusShipped"
-							label={t("order_status.shipped")}
-							control={control}
-						/>
-						<hr className="my-2 border-surface-primary-soft" />
-						<CheckBox
-							name="statusDelivered"
-							label={t("order_status.delivered")}
-							control={control}
-						/>
+						<>
+							<CheckBox
+								name={`status${SalesStatusType.Paid}`}
+								label={t(`order_status.${SalesStatusType.Paid.toLowerCase()}`)}
+								control={control}
+							/>
+							<hr className="my-2 border-surface-primary-soft" />
+							<CheckBox
+								name={`status${SalesStatusType.Prepared}`}
+								label={t(
+									`order_status.${SalesStatusType.Prepared.toLowerCase()}`,
+								)}
+								control={control}
+							/>
+							<hr className="my-2 border-surface-primary-soft" />
+							<CheckBox
+								name={`status${SalesStatusType.Shipped}`}
+								label={t(
+									`order_status.${SalesStatusType.Shipped.toLowerCase()}`,
+								)}
+								control={control}
+							/>
+							<hr className="my-2 border-surface-primary-soft" />
+							<CheckBox
+								name={`status${SalesStatusType.Delivered}`}
+								label={t(
+									`order_status.${SalesStatusType.Delivered.toLowerCase()}`,
+								)}
+								control={control}
+							/>
+						</>
 					</div>
 					<Button type="submit" className="w-full !mt-6">
 						{t("apply")}

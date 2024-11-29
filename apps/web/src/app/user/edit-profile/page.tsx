@@ -5,14 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
-
-type EditProfileOption = {
-	imgUrl: string;
-	labelKey: string;
-	href: string;
-	customClass?: string;
-	iconColor?: string;
-};
+import type { EditProfileOption } from "~/types";
 
 const editProfileOptions: EditProfileOption[] = [
 	{

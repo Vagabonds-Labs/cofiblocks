@@ -5,23 +5,13 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import ProductStatusDetails from "~/app/_components/features/ProductStatusDetails";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
-
-type SaleDetails = {
-	productName: string;
-	status: string;
-	roast: string;
-	type: string;
-	quantity: string;
-	delivery: string;
-	totalPrice: string;
-	address?: string;
-};
+import type { SaleDetailsType } from "~/types";
 
 export default function MySaleDetails() {
 	const { id: saleId } = useParams();
 	const { t } = useTranslation();
 
-	const [saleDetails, setSaleDetails] = useState<SaleDetails | null>(null);
+	const [saleDetails, setSaleDetails] = useState<SaleDetailsType | null>(null);
 	// TODO: Fetch user role based on user id or from session/context/token
 	const [isProducer, setIsProducer] = useState<boolean>(false);
 
@@ -43,7 +33,7 @@ export default function MySaleDetails() {
 		setIsProducer(true);
 	}, [saleId, t]);
 
-	const updateSaleDetails = (productDetails: SaleDetails) => {
+	const updateSaleDetails = (productDetails: SaleDetailsType) => {
 		// TODO: Implement logic to update sale details
 		setSaleDetails(productDetails);
 	};

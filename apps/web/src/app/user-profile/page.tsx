@@ -8,28 +8,19 @@ import { useTranslation } from "react-i18next";
 import { ProfileCard } from "~/app/_components/features/ProfileCard";
 import { ProfileOptions } from "~/app/_components/features/ProfileOptions";
 import Main from "~/app/_components/layout/Main";
-
-type Badge = "lover" | "contributor" | "producer"; // Keep these lowercase for consistency
-
-type UserProfile = {
-	name: string;
-	country: string;
-	memberSince: number;
-	thumbnailUrl: string;
-	badges: Badge[];
-};
+import type { UserProfileType } from "~/types";
 
 export default function UserProfile() {
 	const { t } = useTranslation();
 	const { address } = useAccount();
 	const { disconnect } = useDisconnect();
 
-	const [user] = useState<UserProfile>({
+	const [user] = useState<UserProfileType>({
 		name: "John Doe",
 		country: "united_states",
 		memberSince: 2020,
 		thumbnailUrl: "/images/user-profile/avatar.svg",
-		badges: ["lover", "contributor"], // Use lowercase keys here
+		badges: ["lover", "contributor"],
 	});
 
 	const router = useRouter();

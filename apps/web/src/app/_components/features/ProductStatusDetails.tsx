@@ -6,15 +6,14 @@ import {
 	TruckIcon,
 	WalletIcon,
 } from "@heroicons/react/24/outline";
-import { LightBulbIcon } from "@heroicons/react/24/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
-import Button from "@repo/ui/button";
-import RadioButton from "@repo/ui/form/radioButton";
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import BottomModal from "~/app/_components/ui/BottomModal";
+import { ProductDetailsList } from "./ProductDetailsList";
+import { StatusBanner } from "./StatusBanner";
+import { StatusUpdateModal } from "./StatusUpdateModal";
 
 type ProductDetails = {
 	productName: string;
@@ -27,7 +26,7 @@ type ProductDetails = {
 	address?: string;
 };
 
-enum StatusStepsEnum {
+export enum StatusStepsEnum {
 	Paid = "Paid",
 	Shipped = "Shipped",
 	Prepared = "Prepared",
@@ -56,13 +55,12 @@ export default function ProductStatusDetails({
 	isProducer,
 	updateProductDetails,
 }: ProductStatusDetailsProps) {
-	const [isOrderStatusModalOpen, setIsOrderStatusModalOpen] =
-		useState<boolean>(false);
+	const [isOrderStatusModalOpen, setIsOrderStatusModalOpen] = useState(false);
 
-	const { control, handleSubmit, setValue } = useForm<FormValues>({
-		defaultValues: {
-			status: StatusStepsEnum.Paid,
-		},
+	const { control, handleSubmit, setValue } = useForm<{
+		status: StatusStepsEnum;
+	}>({
+		defaultValues: { status: StatusStepsEnum.Paid },
 		resolver: zodResolver(orderStatusSchema),
 	});
 
@@ -74,64 +72,69 @@ export default function ProductStatusDetails({
 
 	const statusStepsKeys = Object.keys(StatusStepsEnum);
 
-	const openOrderStatusModal = () => {
-		setIsOrderStatusModalOpen(true);
-	};
+	const openOrderStatusModal = () => setIsOrderStatusModalOpen(true);
+	const closeOrderStatusModal = () => setIsOrderStatusModalOpen(false);
 
-	const closeOrderStatusModal = () => {
-		setIsOrderStatusModalOpen(false);
-	};
-
-	const onSubmit = (data: FormValues) => {
+	const onSubmit = (data: { status: StatusStepsEnum }) => {
 		if (productDetails && updateProductDetails) {
-			updateProductDetails({
-				...productDetails,
-				status: data.status,
-			});
+			updateProductDetails({ ...productDetails, status: data.status });
 		}
-
 		closeOrderStatusModal();
 	};
 
+	const handleSubmitForm = handleSubmit(onSubmit);
+
 	if (!productDetails) return <div>Loading...</div>;
 
-	const ProductStatus = ({
-		productDetails,
-	}: { productDetails: ProductDetails }) => {
-		const stepsByDeliveryType = {
-			[DeliveryTypeEnum.Meetup]: [
-				StatusStepsEnum.Paid,
-				StatusStepsEnum.Prepared,
-				StatusStepsEnum.Delivered,
-			],
-			[DeliveryTypeEnum.Delivery]: [
-				StatusStepsEnum.Paid,
-				StatusStepsEnum.Shipped,
-				StatusStepsEnum.Delivered,
-			],
-		};
-		const statusSteps =
-			stepsByDeliveryType[productDetails.delivery as DeliveryTypeEnum];
-		const currentStepIndex = statusSteps.indexOf(
-			productDetails.status as StatusStepsEnum,
-		);
-		const stepIconMap = {
-			[StatusStepsEnum.Paid]: WalletIcon,
-			[StatusStepsEnum.Shipped]: TruckIcon,
-			[StatusStepsEnum.Prepared]: ShoppingBagIcon,
-			[StatusStepsEnum.Delivered]: CheckCircleIcon,
-		};
+	const stepsByDeliveryType = {
+		[DeliveryTypeEnum.Meetup]: [
+			StatusStepsEnum.Paid,
+			StatusStepsEnum.Prepared,
+			StatusStepsEnum.Delivered,
+		],
+		[DeliveryTypeEnum.Delivery]: [
+			StatusStepsEnum.Paid,
+			StatusStepsEnum.Shipped,
+			StatusStepsEnum.Delivered,
+		],
+	};
 
-		return (
-			<div className="flex items-center justify-between w-full">
+	const statusSteps =
+		stepsByDeliveryType[productDetails.delivery as DeliveryTypeEnum];
+	const currentStepIndex = statusSteps.indexOf(
+		productDetails.status as StatusStepsEnum,
+	);
+
+	const stepIconMap = {
+		[StatusStepsEnum.Paid]: WalletIcon,
+		[StatusStepsEnum.Shipped]: TruckIcon,
+		[StatusStepsEnum.Prepared]: ShoppingBagIcon,
+		[StatusStepsEnum.Delivered]: CheckCircleIcon,
+	};
+
+	return (
+		<div className="bg-white rounded-lg space-y-4">
+			<div className="my-8">
+				<StatusBanner
+					orderStatus={productDetails.status}
+					isProducer={isProducer}
+				/>
+			</div>
+
+			<div className="flex items-center space-x-4 !mb-10">
+				<Image
+					src="/images/cafe2.webp"
+					alt="Product"
+					width={48}
+					height={48}
+					className="rounded-md object-cover"
+				/>
+				<p className="font-semibold">{productDetails.productName}</p>
+			</div>
+
+			<div className="!my-8 flex items-center justify-between w-full">
 				{statusSteps.map((step, index) => (
-					<div
-						key={step}
-						className="flex items-center"
-						style={{
-							width: `${index < statusSteps.length - 1 ? "inherit" : "unset"}`,
-						}}
-					>
+					<div key={step} className="flex items-center">
 						<div className="flex flex-col items-center w-10">
 							<div
 								className={`w-8 h-8 rounded-full flex items-center justify-center ${
@@ -165,102 +168,12 @@ export default function ProductStatusDetails({
 					</div>
 				))}
 			</div>
-		);
-	};
 
-	const OrderStatusBanner = ({
-		orderStatus,
-		isProducer,
-	}: { orderStatus: string; isProducer: boolean }) => {
-		const statusText = {
-			[StatusStepsEnum.Paid]: "The Producer is already preparing your order",
-			[StatusStepsEnum.Shipped]: "The Producer has already shipped your order",
-			[StatusStepsEnum.Prepared]:
-				"The Producer has already prepared your order",
-			[StatusStepsEnum.Delivered]: "Your order has arrived. Enjoy your coffee",
-		};
-
-		if (isProducer) {
-			if (orderStatus === (StatusStepsEnum.Delivered as string)) {
-				return;
-			}
-			return (
-				<div className="bg-surface-primary-soft p-4 rounded-lg flex items-center justify-between">
-					<LightBulbIcon className="w-8 h-8 mr-4" />
-					<div>
-						<p className="text-success-content font-bold flex items-center">
-							New order
-						</p>
-						<p className="text-xs text-gray-600">
-							You have a new order. Let&apos;s start the preparations.
-						</p>
-					</div>
-					<button
-						className="bg-surface-secondary-default px-3 py-1 ml-4 rounded-lg"
-						type="button"
-					>
-						Tips
-					</button>
-				</div>
-			);
-		}
-
-		return (
-			<div className="bg-surface-primary-soft p-4 rounded-lg flex items-center justify-between">
-				<div>
-					<p className="text-success-content flex items-center">
-						<LightBulbIcon className="w-6 h-6 mr-4" />
-						{statusText[orderStatus as keyof typeof statusText] || ""}
-					</p>
-				</div>
-			</div>
-		);
-	};
-
-	return (
-		<div className="bg-white rounded-lg space-y-4">
-			<div className="my-8">
-				<OrderStatusBanner
-					orderStatus={productDetails.status}
-					isProducer={isProducer}
-				/>
-			</div>
-
-			<div className="flex items-center space-x-4 !mb-10">
-				<Image
-					src="/images/cafe2.webp"
-					alt="Product"
-					width={48}
-					height={48}
-					className="rounded-md object-cover"
-				/>
-				<p className="font-semibold">{productDetails.productName}</p>
-			</div>
-
-			<div className="!my-8">
-				<ProductStatus productDetails={productDetails} />
-			</div>
-
-			{isProducer && (
-				<button
-					type="button"
-					className="w-full !mb-2 p-2 bg-surface-secondary-default rounded-lg"
-					onClick={openOrderStatusModal}
-					onKeyDown={(e) => {
-						if (e.key === "Enter" || e.key === " ") {
-							openOrderStatusModal();
-						}
-					}}
-				>
-					Change status
-				</button>
-			)}
-
-			<div className="space-y-2">
-				{[
+			<ProductDetailsList
+				details={[
 					{ label: "Roast", value: productDetails.roast },
 					{ label: "Type", value: productDetails.type },
-					{ label: "Quantidade", value: productDetails.quantity },
+					{ label: "Quantity", value: productDetails.quantity },
 					{
 						label: "Delivery",
 						value:
@@ -270,55 +183,17 @@ export default function ProductStatusDetails({
 						address: productDetails.address,
 					},
 					{ label: "Total price", value: productDetails.totalPrice },
-				].map((item, index, array) => (
-					<React.Fragment key={item.label}>
-						<div className="flex justify-between items-start py-3">
-							<div className="w-3/4">
-								<p className="font-semibold">{item.label}</p>
-								{item.address && (
-									<p className="text-sm text-gray-500 mt-1 break-words">
-										{item.address}
-									</p>
-								)}
-							</div>
-							<p className="w-1/2 text-right break-words">{item.value}</p>
-						</div>
-						{index < array.length - 1 && <hr className="my-1" />}
-					</React.Fragment>
-				))}
-			</div>
+				]}
+			/>
 
 			{isProducer && (
-				<BottomModal
+				<StatusUpdateModal
 					isOpen={isOrderStatusModalOpen}
 					onClose={closeOrderStatusModal}
-				>
-					<h3 className="text-xl font-semibold mb-4 text-content-title">
-						Select the status
-					</h3>
-					<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-						<div className="flex flex-col gap-2">
-							{statusStepsKeys.map((status, index) => (
-								<React.Fragment key={status}>
-									<label className="flex items-center gap-2">
-										<RadioButton
-											name="status"
-											label={status}
-											value={status}
-											control={control}
-										/>
-									</label>
-									{index < statusStepsKeys.length - 1 && (
-										<hr className="my-2 border-surface-primary-soft" />
-									)}
-								</React.Fragment>
-							))}
-						</div>
-						<Button type="submit" className="w-full !mt-6">
-							Apply
-						</Button>
-					</form>
-				</BottomModal>
+					onSubmit={handleSubmitForm}
+					control={control}
+					statusStepsKeys={statusStepsKeys}
+				/>
 			)}
 		</div>
 	);

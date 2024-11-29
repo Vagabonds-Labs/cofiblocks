@@ -13,6 +13,7 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
+import { RoastLevel } from "~/types";
 
 const schema = z.object({
 	roast: z.string().min(1, "Roast level is required"),
@@ -29,14 +30,6 @@ const schema = z.object({
 });
 
 type FormData = z.infer<typeof schema>;
-
-const RoastLevel = {
-	LIGHT: "light",
-	MEDIUM: "medium",
-	STRONG: "strong",
-} as const;
-
-type RoastLevelType = (typeof RoastLevel)[keyof typeof RoastLevel];
 
 export default function RegisterCoffee() {
 	const { t } = useTranslation();
@@ -159,7 +152,7 @@ export default function RegisterCoffee() {
 							{t("roast_level")}
 						</label>
 						<div className="flex flex-col space-y-2">
-							{(Object.values(RoastLevel) as RoastLevelType[]).map((level) => (
+							{Object.values(RoastLevel).map((level) => (
 								<div
 									key={level}
 									className="flex items-center justify-between p-3 bg-surface-primary-soft rounded-lg cursor-pointer"
@@ -179,7 +172,7 @@ export default function RegisterCoffee() {
 											color="bg-surface-primary-default"
 										/>
 										<span
-											className={`text-sm font-bold ${getValues("roast") === level ? "text-content-title" : "text-content-body-default"}`}
+											className={`text-sm font-bold ${(getValues("roast") as RoastLevel) === level ? "text-content-title" : "text-content-body-default"}`}
 										>
 											{t(`strength.${level}`)}
 										</span>
@@ -242,11 +235,11 @@ export default function RegisterCoffee() {
 						<p className="text-[0.875rem] text-content-body-default">
 							{t("total_sales_value_per_bag")}
 						</p>
-						<p className="font-medium text-[0.875rem]">30USD</p>
+						<p className="font-medium text-[0.875rem]">30 USD</p>
 						<p className="mt-2 text-[0.875rem] text-content-body-default">
 							{t("producer_value_per_bag")}
 						</p>
-						<p className="font-medium text-[0.875rem]">25USD</p>
+						<p className="font-medium text-[0.875rem]">25 USD</p>
 					</div>
 					<div className="my-6">
 						<label className="text-content-body-default block mb-1">
