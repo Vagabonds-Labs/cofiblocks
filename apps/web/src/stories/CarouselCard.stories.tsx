@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import React from "react";
 import CarouselCard, {
 	type CardProps,
 } from "../../../../packages/ui/src/carouselCard";
 
 const meta: Meta<typeof CarouselCard> = {
 	title: "Components/CarouselCard",
+	tags: ["autodocs"],
 	component: CarouselCard,
 	parameters: {
 		controls: { expanded: true },
@@ -39,27 +39,4 @@ const defaultArgs: CardProps = {
 
 export const Default: Story = {
 	args: { ...defaultArgs },
-};
-
-export const LongTitle: Story = {
-	args: {
-		...defaultArgs,
-		title:
-			"Exploring the Intersection of Artificial Intelligence, Blockchain, and Quantum Computing in Modern Technology",
-	},
-};
-
-export const NoImage: Story = {
-	args: {
-		...defaultArgs,
-		image: "",
-		title: "A card with no image background",
-	},
-};
-
-export const CustomTag: Story = {
-	args: {
-		...defaultArgs,
-		tag: "Custom Tag",
-	},
 };

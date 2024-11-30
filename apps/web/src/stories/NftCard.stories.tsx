@@ -1,4 +1,3 @@
-import { ArrowRightIcon } from "@heroicons/react/24/solid";
 import NFTCard from "@repo/ui/nftCard";
 import { type Meta, StoryFn, type StoryObj } from "@storybook/react";
 import type React from "react";

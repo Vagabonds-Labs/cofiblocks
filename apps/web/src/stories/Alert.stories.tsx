@@ -5,7 +5,7 @@ import { useState } from "react";
 
 const meta: Meta<typeof Alert> = {
 	title: "Components/Alert",
-	tags: ["autofocus"],
+	tags: ["autodocs"],
 	component: Alert,
 	parameters: {
 		controls: { expanded: true },

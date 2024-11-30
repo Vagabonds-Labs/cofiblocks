@@ -1,14 +1,15 @@
-import type { Meta, StoryFn, StoryObj } from "@storybook/react";
-
-import { Button } from "./Button";
+import { ArrowRightIcon } from "@heroicons/react/24/solid";
+import Button from "@repo/ui/button";
+import type { Meta, StoryFn } from "@storybook/react";
 
 export default {
 	title: "Components/Button",
+	tags: ["autodocs"],
 	component: Button,
 	argTypes: {
 		variant: {
 			control: "select",
-			options: ["primary", "secondary", "danger"],
+			options: ["primary", "secondary"],
 			description: "Controls the button style variant",
 		},
 		size: {
@@ -33,22 +34,17 @@ export default {
 
 const Template: StoryFn<typeof Button> = (args) => <Button {...args} />;
 
-export const Default = Template.bind({});
-Default.args = {
-	children: "Click Me",
-};
-
-export const WithIcon = Template.bind({});
-WithIcon.args = {
-	children: "Add Item",
-	variant: "primary",
-	// icon: <FiPlus />,
-};
-
 export const Disabled = Template.bind({});
 Disabled.args = {
 	children: "Disabled",
 	disabled: true,
+};
+
+export const WithIcon = Template.bind({});
+WithIcon.args = {
+	children: "Icon",
+	variant: "primary",
+	icon: <ArrowRightIcon />,
 };
 
 export const Variants: StoryFn = () => (
