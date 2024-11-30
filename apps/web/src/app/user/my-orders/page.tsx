@@ -5,12 +5,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@repo/ui/button";
 import CheckBox from "@repo/ui/form/checkBox";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import OrderListItem from "~/app/_components/features/OrderListItem";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
 import BottomModal from "~/app/_components/ui/BottomModal";
-import { type FormValues, SalesStatusType, filtersSchema } from "~/types";
+import { useOrderFiltering } from "~/hooks/user/useOrderFiltering";
+import { type FormValues, SalesStatus, filtersSchema } from "~/types";
 
 const mockedOrders = [
 	{
@@ -20,13 +20,13 @@ const mockedOrders = [
 				id: "1",
 				productName: "Edit profile",
 				sellerName: "seller1_fullname",
-				status: SalesStatusType.Paid,
+				status: SalesStatus.Paid,
 			},
 			{
 				id: "2",
 				productName: "My Orders",
 				sellerName: "seller2_fullname",
-				status: SalesStatusType.Paid,
+				status: SalesStatus.Paid,
 			},
 		],
 	},
@@ -37,91 +37,49 @@ const mockedOrders = [
 				id: "3",
 				productName: "productName",
 				sellerName: "seller1_fullname",
-				status: SalesStatusType.Delivered,
+				status: SalesStatus.Delivered,
 			},
 			{
 				id: "4",
 				productName: "productName",
 				sellerName: "seller2_fullname",
-				status: SalesStatusType.Delivered,
+				status: SalesStatus.Delivered,
 			},
 		],
 	},
 ];
 
+const filtersDefaults = {
+	statusPaid: false,
+	statusPrepared: false,
+	statusShipped: false,
+	statusDelivered: false,
+};
+
 export default function MyOrders() {
-	const [searchTerm, setSearchTerm] = useState("");
-	const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
-	const [filteredOrders, setFilteredOrders] = useState(mockedOrders);
-	const [activeFilters, setActiveFilters] = useState<FormValues>({});
+	const {
+		searchTerm,
+		setSearchTerm,
+		isFiltersModalOpen,
+		openFiltersModal,
+		closeFiltersModal,
+		filteredOrders,
+		applyFilters,
+	} = useOrderFiltering({
+		orders: mockedOrders,
+		searchKey: "sellerName",
+		filters: filtersDefaults,
+	});
 	const router = useRouter();
-
-	const openFiltersModal = () => {
-		setIsFiltersModalOpen(true);
-	};
-
-	const closeFiltersModal = () => {
-		setIsFiltersModalOpen(false);
-	};
 
 	const { control, handleSubmit } = useForm<FormValues>({
 		resolver: zodResolver(filtersSchema),
-		defaultValues: {
-			statusPaid: false,
-			statusPrepared: false,
-			statusShipped: false,
-			statusDelivered: false,
-		},
+		defaultValues: filtersDefaults,
 	});
-
-	const onSubmit = (data: FormValues) => {
-		console.log(data);
-		setActiveFilters(data);
-		closeFiltersModal();
-	};
 
 	const handleItemClick = (id: string) => {
 		router.push(`/user/my-orders/${id}`);
 	};
-
-	useEffect(() => {
-		const newFilteredOrders = mockedOrders
-			.map((orderGroup) => ({
-				...orderGroup,
-				items: orderGroup.items.filter((item) => {
-					const matchesSearch = searchTerm
-						? item.sellerName.toLowerCase().includes(searchTerm.toLowerCase())
-						: true;
-
-					const activeStatusFilters = [
-						activeFilters.statusPaid,
-						activeFilters.statusPrepared,
-						activeFilters.statusShipped,
-						activeFilters.statusDelivered,
-					];
-
-					const matchesStatus = activeStatusFilters.some(Boolean)
-						? (activeFilters.statusPaid &&
-								item.status === SalesStatusType.Paid) ??
-							(activeFilters.statusPrepared &&
-								item.status === SalesStatusType.Prepared) ??
-							(activeFilters.statusShipped &&
-								item.status === SalesStatusType.Shipped) ??
-							(activeFilters.statusDelivered &&
-								item.status === SalesStatusType.Delivered)
-						: true;
-
-					return matchesSearch && matchesStatus;
-				}),
-			}))
-			.filter((orderGroup) => orderGroup.items.length > 0);
-
-		if (!searchTerm && !Object.values(activeFilters).some(Boolean)) {
-			setFilteredOrders(mockedOrders);
-		} else {
-			setFilteredOrders(newFilteredOrders);
-		}
-	}, [searchTerm, activeFilters]);
 
 	return (
 		<ProfileOptionLayout title="My orders">
@@ -157,7 +115,7 @@ export default function MyOrders() {
 									<OrderListItem
 										key={`${order.productName}-${orderIndex}`}
 										productName={order.productName}
-										name={order.sellerName}
+										name={order.sellerName ?? "unknown_seller"}
 										status={order.status}
 										onClick={() => handleItemClick(order.id)}
 									/>
@@ -172,33 +130,33 @@ export default function MyOrders() {
 			</div>
 
 			<BottomModal isOpen={isFiltersModalOpen} onClose={closeFiltersModal}>
-				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+				<form onSubmit={handleSubmit(applyFilters)} className="space-y-4">
 					<h3 className="text-xl font-semibold my-4 text-content-title">
 						Status
 					</h3>
 					<div className="flex flex-col gap-2">
 						<>
 							<CheckBox
-								name={`status${SalesStatusType.Paid}`}
-								label={SalesStatusType.Paid}
+								name={`status${SalesStatus.Paid}`}
+								label={SalesStatus.Paid}
 								control={control}
 							/>
 							<hr className="my-2 border-surface-primary-soft" />
 							<CheckBox
-								name={`status${SalesStatusType.Prepared}`}
-								label={SalesStatusType.Prepared}
+								name={`status${SalesStatus.Prepared}`}
+								label={SalesStatus.Prepared}
 								control={control}
 							/>
 							<hr className="my-2 border-surface-primary-soft" />
 							<CheckBox
-								name={`status${SalesStatusType.Shipped}`}
-								label={SalesStatusType.Shipped}
+								name={`status${SalesStatus.Shipped}`}
+								label={SalesStatus.Shipped}
 								control={control}
 							/>
 							<hr className="my-2 border-surface-primary-soft" />
 							<CheckBox
-								name={`status${SalesStatusType.Delivered}`}
-								label={SalesStatusType.Delivered}
+								name={`status${SalesStatus.Delivered}`}
+								label={SalesStatus.Delivered}
 								control={control}
 							/>
 						</>
