@@ -1,9 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-	DeliveryMethod,
-	type Order,
-	SalesStatus,
-} from "~/types";
+import { DeliveryMethod, type Order, SalesStatus } from "~/types";
 
 interface UseOrderFilteringProps {
 	orders: Order[];
