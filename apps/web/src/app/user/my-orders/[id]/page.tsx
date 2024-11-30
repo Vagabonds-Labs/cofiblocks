@@ -4,22 +4,14 @@ import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import ProductStatusDetails from "~/app/_components/features/ProductStatusDetails";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
-
-type OrderDetails = {
-	productName: string;
-	status: string;
-	roast: string;
-	type: string;
-	quantity: string;
-	delivery: string;
-	totalPrice: string;
-	address?: string;
-};
+import type { OrderDetailsType } from "~/types";
 
 export default function OrderDetails() {
 	const { id: orderId } = useParams();
 
-	const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
+	const [orderDetails, setOrderDetails] = useState<OrderDetailsType | null>(
+		null,
+	);
 	// TODO: Fetch user role based on user id or from session/context/token
 	const [isProducer, setIsProducer] = useState<boolean>(false);
 
@@ -42,7 +34,7 @@ export default function OrderDetails() {
 		setIsProducer(true);
 	}, [orderId]);
 
-	const updateProductDetails = (productDetails: OrderDetails) => {
+	const updateProductDetails = (productDetails: OrderDetailsType) => {
 		// TODO: Implement logic to update order details
 		setOrderDetails(productDetails);
 	};
