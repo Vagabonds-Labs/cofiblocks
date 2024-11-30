@@ -7,22 +7,13 @@ import { useState } from "react";
 import { ProfileCard } from "~/app/_components/features/ProfileCard";
 import { ProfileOptions } from "~/app/_components/features/ProfileOptions";
 import Main from "~/app/_components/layout/Main";
-
-type Badge = "Lover" | "Contributor" | "Producer";
-
-type UserProfile = {
-	name: string;
-	country: string;
-	memberSince: number;
-	thumbnailUrl: string;
-	badges: Badge[];
-};
+import type { UserProfileType } from "~/types";
 
 export default function UserProfile() {
 	const { address } = useAccount();
 	const { disconnect } = useDisconnect();
 
-	const [user] = useState<UserProfile>({
+	const [user] = useState<UserProfileType>({
 		name: "John Doe",
 		country: "United States",
 		memberSince: 2020,
