@@ -1,4 +1,5 @@
 import Button from "@repo/ui/button";
+import { useTranslation } from "react-i18next";
 import BottomModal from "~/app/_components/ui/BottomModal";
 
 interface FarmModalProps {
@@ -22,6 +23,8 @@ function FarmModal({
 	isEditable,
 	onEdit,
 }: FarmModalProps) {
+	const { t } = useTranslation("common");
+
 	return (
 		<BottomModal isOpen={isOpen} onClose={onClose}>
 			<div className="flex flex-col items-center w-full">
@@ -32,24 +35,28 @@ function FarmModal({
 								{farmData.name}
 							</h3>
 							<p className="text-sm text-content-body-default">
-								producing coffee since {farmData.since}
+								{t("producing_since", { since: farmData.since })}
 							</p>
 						</div>
 
 						<div>
-							<h4 className="text-base font-semibold mb-2">Bio</h4>
+							<h4 className="text-base font-semibold mb-2">{t("bio_title")}</h4>
 							<p className="text-base text-content-title">{farmData.bio}</p>
 						</div>
 
 						<div>
-							<h4 className="text-base font-semibold mb-2">Experiences</h4>
+							<h4 className="text-base font-semibold mb-2">
+								{t("experiences_title")}
+							</h4>
 							<p className="text-base text-content-title">
 								{farmData.experiences}
 							</p>
 						</div>
 
 						<div>
-							<h4 className="text-base font-semibold mb-2">Good practices</h4>
+							<h4 className="text-base font-semibold mb-2">
+								{t("good_practices_title")}
+							</h4>
 							<p className="text-base text-content-title">
 								{farmData.goodPractices}
 							</p>
@@ -57,7 +64,7 @@ function FarmModal({
 
 						{isEditable && (
 							<Button onClick={onEdit} className="w-full">
-								Edit
+								{t("edit_button")}
 							</Button>
 						)}
 					</div>

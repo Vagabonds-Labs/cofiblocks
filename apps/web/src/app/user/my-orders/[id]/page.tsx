@@ -2,11 +2,13 @@
 
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import ProductStatusDetails from "~/app/_components/features/ProductStatusDetails";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
 import type { OrderDetailsType } from "~/types";
 
 export default function OrderDetails() {
+	const { t } = useTranslation();
 	const { id: orderId } = useParams();
 
 	const [orderDetails, setOrderDetails] = useState<OrderDetailsType | null>(
@@ -19,20 +21,20 @@ export default function OrderDetails() {
 		// TODO: Fetch order details based on orderId
 		if (orderId) {
 			setOrderDetails({
-				productName: "Sample Product",
-				status: "Paid",
-				roast: "strong",
-				type: "grounded",
-				quantity: "5 bags",
-				delivery: "Delivery",
+				productName: t("sample_product"),
+				status: t("paid"),
+				roast: t("strong"),
+				type: t("grounded"),
+				quantity: `5 ${t("bags")}`,
+				delivery: t("delivery"),
 				address: "Av Portugal 375, ap 410 São Paulo/SP CEP 66010-100",
-				totalPrice: "50 USD",
+				totalPrice: `50 ${t("usd")}`,
 			});
 		}
 
 		// TODO: Fetch user role based on user id or from session/context/token
 		setIsProducer(true);
-	}, [orderId]);
+	}, [orderId, t]);
 
 	const updateProductDetails = (productDetails: OrderDetailsType) => {
 		// TODO: Implement logic to update order details

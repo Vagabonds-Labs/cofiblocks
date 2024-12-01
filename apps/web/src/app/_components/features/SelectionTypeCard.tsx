@@ -2,6 +2,7 @@ import Button from "@repo/ui/button";
 import { InfoCard } from "@repo/ui/infoCard";
 import { Text } from "@repo/ui/typography";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface SelectionTypeCardProps {
 	price: number;
@@ -24,15 +25,17 @@ export function SelectionTypeCard({
 		"bean",
 	);
 
+	const { t } = useTranslation();
+
 	const coffeeOptions = [
 		{
-			label: "Bean",
+			label: t("coffee_type.bean"),
 			iconSrc: "/images/product-details/Menu-4.svg",
 			selected: selectedOption === "bean",
 			onClick: () => setSelectedOption("bean"),
 		},
 		{
-			label: "Grounded",
+			label: t("coffee_type.grounded"),
 			iconSrc: "/images/product-details/Menu-4.svg",
 			selected: selectedOption === "grounded",
 			onClick: () => setSelectedOption("grounded"),
@@ -40,16 +43,18 @@ export function SelectionTypeCard({
 	];
 
 	return (
-		<InfoCard title="Select Coffee Type" options={coffeeOptions}>
+		<InfoCard title={t("select_coffee_type")} options={coffeeOptions}>
 			<div className="flex flex-col">
 				<Text className="text-sm text-content-body-default">
-					Unit price (340g): {price} USD
+					{t("unit_price", { weight: "340g" })}: {price} USD
 				</Text>
 				<div>
 					<span className="text-2xl font-bold text-content-title">
 						{price * quantity} USD
 					</span>
-					<span className="text-sm text-content-body-default ml-1">/total</span>
+					<span className="text-sm text-content-body-default ml-1">
+						/{t("total")}
+					</span>
 				</div>
 			</div>
 
@@ -78,7 +83,7 @@ export function SelectionTypeCard({
 			</div>
 
 			<Button variant="primary" onClick={onAddToCart} disabled={isAddingToCart}>
-				{isAddingToCart ? "Adding to cart..." : "Add to cart"}
+				{isAddingToCart ? t("adding_to_cart") : t("add_to_cart")}
 			</Button>
 		</InfoCard>
 	);

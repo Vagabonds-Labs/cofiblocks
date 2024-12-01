@@ -5,6 +5,7 @@ import { useAtom, useAtomValue } from "jotai";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { cartItemsAtom, removeItemAtom } from "~/store/cartAtom";
 import type { CartItem } from "~/store/cartAtom";
 
@@ -19,6 +20,7 @@ function DeleteConfirmationModal({
 	onConfirm,
 	onCancel,
 }: DeleteModalProps) {
+	const { t } = useTranslation();
 	if (!isOpen) return null;
 
 	return (
@@ -26,7 +28,7 @@ function DeleteConfirmationModal({
 			<div className="bg-white p-6 rounded-lg max-w-sm w-full mx-4 flex flex-col gap-4">
 				<div className="h-[34px] flex items-center">
 					<h3 className="text-2xl font-bold text-content-title leading-[34px]">
-						Do you want to remove?
+						{t("remove_confirmation_title")}
 					</h3>
 				</div>
 				<button
@@ -35,7 +37,7 @@ function DeleteConfirmationModal({
 					className="w-full h-[52px] bg-surface-secondary-default rounded-lg border border-surface-secondary-default flex justify-center items-center"
 				>
 					<span className="text-content-title text-base font-normal">
-						Yes, remove
+						{t("remove_confirmation_yes")}
 					</span>
 				</button>
 				<button
@@ -44,7 +46,7 @@ function DeleteConfirmationModal({
 					className="w-full h-[52px] bg-surface-primary-soft rounded-lg border border-surface-primary-soft flex justify-center items-center"
 				>
 					<span className="text-content-title text-base font-normal">
-						Cancel
+						{t("cancel")}
 					</span>
 				</button>
 			</div>
@@ -57,7 +59,7 @@ export default function ShoppingCart() {
 	const items = useAtomValue(cartItemsAtom);
 	const [, removeItem] = useAtom(removeItemAtom);
 	const [itemToDelete, setItemToDelete] = useState<CartItem | null>(null);
-
+	const { t } = useTranslation();
 	const handleRemove = (item: CartItem) => {
 		setItemToDelete(item);
 	};
@@ -89,13 +91,13 @@ export default function ShoppingCart() {
 				>
 					<ArrowLeftIcon className="h-6 w-6" />
 				</button>
-				<h1 className="text-xl font-semibold">My cart</h1>
+				<h1 className="text-xl font-semibold">{t("shopping_cart_title")}</h1>
 			</div>
 
 			<div className="px-4">
 				{items.length === 0 ? (
 					<div className="py-8 text-center text-gray-500">
-						Your cart is empty
+						{t("cart_empty_message")}
 					</div>
 				) : (
 					items.map((item) => (
@@ -112,9 +114,9 @@ export default function ShoppingCart() {
 									className="rounded-lg object-cover bg-gray-100"
 								/>
 								<div>
-									<h3 className="font-medium text-gray-900">{item.name}</h3>
+									<h3 className="font-medium text-gray-900">{t(item.name)}</h3>
 									<p className="text-gray-400 text-sm">
-										quantity: {item.quantity}
+										{t("quantity_label")}: {item.quantity}
 									</p>
 								</div>
 							</div>
@@ -140,7 +142,9 @@ export default function ShoppingCart() {
 				<>
 					<div className="px-4 py-4">
 						<div className="flex items-center justify-between">
-							<span className="font-semibold text-gray-900">TOTAL</span>
+							<span className="font-semibold text-gray-900">
+								{t("total_label")}
+							</span>
 							<span className="font-semibold text-gray-900">
 								{totalPrice} USD
 							</span>
@@ -151,7 +155,9 @@ export default function ShoppingCart() {
 							type="button"
 							className="w-full py-3.5 px-4 bg-surface-secondary-default rounded-lg border border-surface-secondary-defaul flex justify-center items-center"
 						>
-							<span className="text-[#1F1F20] text-base font-normal">Buy</span>
+							<span className="text-[#1F1F20] text-base font-normal">
+								{t("buy_button")}
+							</span>
 						</button>
 					</div>
 				</>
