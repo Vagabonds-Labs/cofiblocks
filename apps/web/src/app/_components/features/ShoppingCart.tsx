@@ -3,6 +3,7 @@
 import { XMarkIcon } from "@heroicons/react/24/solid";
 import { useAtom, useAtomValue } from "jotai";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import { cartItemsAtom, removeItemAtom } from "~/store/cartAtom";
 
 interface ShoppingCartProps {
@@ -10,6 +11,7 @@ interface ShoppingCartProps {
 }
 
 export default function ShoppingCart({ closeCart }: ShoppingCartProps) {
+	const { t } = useTranslation();
 	const router = useRouter();
 	const items = useAtomValue(cartItemsAtom);
 	const [, removeItem] = useAtom(removeItemAtom);
@@ -31,7 +33,7 @@ export default function ShoppingCart({ closeCart }: ShoppingCartProps) {
 	return (
 		<div className="absolute right-0 top-14 w-96 bg-white p-4 shadow-xl">
 			<div className="flex items-center justify-between">
-				<h3 className="text-xl font-bold">Shopping Cart</h3>
+				<h3 className="text-xl font-bold">{t("shopping_cart")}</h3>
 				<button onClick={closeCart} type="button">
 					<XMarkIcon className="w-6 text-primary" />
 				</button>
@@ -42,7 +44,7 @@ export default function ShoppingCart({ closeCart }: ShoppingCartProps) {
 						<p>{item.name}</p>
 						<p>${item.price}</p>
 						<button onClick={() => handleRemoveItem(item.id)} type="button">
-							Remove
+							{t("remove")}
 						</button>
 					</div>
 				))}

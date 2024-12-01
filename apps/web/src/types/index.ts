@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export type Badge = "Lover" | "Contributor" | "Producer";
+export type Badge = "lover" | "contributor" | "producer";
 
 export type UserProfileType = {
 	name: string;
@@ -12,16 +12,16 @@ export type UserProfileType = {
 
 export type EditProfileOption = {
 	imgUrl: string;
-	label: string;
+	labelKey: string;
 	href: string;
 	customClass?: string;
 	iconColor?: string;
 };
 
 export enum RoastLevel {
-	LIGHT = "Light",
-	MEDIUM = "Medium",
-	STRONG = "Strong",
+	LIGHT = "light",
+	MEDIUM = "medium",
+	STRONG = "strong",
 }
 
 export type SaleDetailsType = {

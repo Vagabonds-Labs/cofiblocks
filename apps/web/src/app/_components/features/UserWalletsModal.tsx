@@ -1,6 +1,7 @@
 import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import BottomModal from "~/app/_components/ui/BottomModal";
 
 interface UserWalletsModalProps {
@@ -16,6 +17,7 @@ interface Wallet {
 
 function UserWalletsModal({ isOpen, onClose }: UserWalletsModalProps) {
 	const [wallets, setWallets] = useState<Wallet[]>([]);
+	const { t } = useTranslation();
 
 	useEffect(() => {
 		// TODO: Implement wallet fetching logic
@@ -37,7 +39,7 @@ function UserWalletsModal({ isOpen, onClose }: UserWalletsModalProps) {
 	return (
 		<BottomModal isOpen={isOpen} onClose={onClose}>
 			<h3 className="text-xl font-semibold mb-4 text-content-title text-center">
-				Wallets
+				{t("wallets")}
 			</h3>
 			<div className="flex flex-col gap-2">
 				{wallets.map((wallet) => (
