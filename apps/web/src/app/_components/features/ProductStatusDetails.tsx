@@ -42,8 +42,6 @@ const orderStatusSchema = z.object({
 	status: z.nativeEnum(StatusStepsEnum),
 });
 
-type FormValues = z.infer<typeof orderStatusSchema>;
-
 interface ProductStatusDetailsProps {
 	productDetails: ProductDetails;
 	isProducer: boolean;
@@ -72,7 +70,6 @@ export default function ProductStatusDetails({
 
 	const statusStepsKeys = Object.keys(StatusStepsEnum);
 
-	const openOrderStatusModal = () => setIsOrderStatusModalOpen(true);
 	const closeOrderStatusModal = () => setIsOrderStatusModalOpen(false);
 
 	const onSubmit = (data: { status: StatusStepsEnum }) => {

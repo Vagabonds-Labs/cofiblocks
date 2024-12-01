@@ -5,20 +5,15 @@ import esTranslation from "../public/locales/es/common.json";
 import ptTranslation from "../public/locales/pt/common.json";
 
 void i18n.use(initReactI18next).init({
-	lng: "en",
-	debug: false,
-	fallbackLng: "en",
 	resources: {
-		en: {
-			translation: enTranslation,
-		},
-		es: {
-			translation: esTranslation,
-		},
-		pt: {
-			translation: ptTranslation,
-		},
+		en: { common: enTranslation },
+		es: { common: esTranslation },
+		pt: { common: ptTranslation },
 	},
+	lng: "en",
+	fallbackLng: "en",
+	defaultNS: "common",
+	debug: true,
 	interpolation: {
 		escapeValue: false,
 	},

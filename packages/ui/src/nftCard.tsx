@@ -1,5 +1,6 @@
 import { ArrowRightIcon } from "@heroicons/react/24/solid";
 import Button from "@repo/ui/button";
+import { useTranslation } from "react-i18next";
 
 interface NFTMetadata {
 	imageSrc: string;
@@ -12,6 +13,7 @@ interface NFTCardProps {
 }
 
 function NFTCard({ title, nftMetadata, onDetailsClick }: NFTCardProps) {
+	const { t } = useTranslation();
 	return (
 		<div className="bg-surface-primary-soft rounded-[1rem] shadow-md flex overflow-hidden">
 			<img
@@ -29,7 +31,7 @@ function NFTCard({ title, nftMetadata, onDetailsClick }: NFTCardProps) {
 					onClick={onDetailsClick}
 					className="flex items-center gap-2"
 				>
-					Details
+					{t("details")}
 					<ArrowRightIcon className="h-5 w-5" />
 				</Button>
 			</div>

@@ -1,6 +1,7 @@
 import Image from "next/image";
+import { useTranslation } from "react-i18next";
 
-type Badge = "Lover" | "Contributor" | "Producer";
+type Badge = "lover" | "contributor" | "producer";
 
 type UserProfile = {
 	name: string;
@@ -15,7 +16,10 @@ type ProfileCardProps = {
 };
 
 function ProfileCard({ user }: ProfileCardProps) {
-	const allBadges: Badge[] = ["Lover", "Contributor", "Producer"];
+	const { t } = useTranslation();
+
+	// Define all badges and their translation keys
+	const allBadges: Badge[] = ["lover", "contributor", "producer"];
 
 	return (
 		<div className="overflow-hidden mb-6 bg-[url('/images/user-profile/bg-coffee-beans.svg')] pt-9 bg-repeat-y bg-top">
@@ -32,7 +36,9 @@ function ProfileCard({ user }: ProfileCardProps) {
 					<div className="flex flex-col space-y-2">
 						<h2 className="text-2xl font-semibold h-[1.875rem]">{user.name}</h2>
 						<p className="h-5">{user.country}</p>
-						<p className="h-5">Since {user.memberSince}</p>
+						<p className="h-5">
+							{t("since")} {user.memberSince}
+						</p>
 					</div>
 				</div>
 			</div>
@@ -40,13 +46,16 @@ function ProfileCard({ user }: ProfileCardProps) {
 				{allBadges.map((badge) => (
 					<div key={badge} className="flex flex-col items-center">
 						<Image
-							src={`/images/user-profile/badges/${badge.toLowerCase()}.svg`}
+							src={`/images/user-profile/badges/${badge}.svg`}
 							alt={badge}
 							width={40}
 							height={40}
-							className={`${user.badges.includes(badge) ? "" : "grayscale"} mb-1`}
+							className={`${
+								user.badges.includes(badge) ? "" : "grayscale"
+							} mb-1`}
 						/>
-						<p className="text-sm">{badge}</p>
+						{/* Translate the badge name */}
+						<p className="text-sm">{t(badge)}</p>
 					</div>
 				))}
 			</div>

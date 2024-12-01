@@ -5,6 +5,7 @@ import { useAtom } from "jotai";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
 	isLoadingAtom,
 	quantityOfProducts,
@@ -15,6 +16,7 @@ import { api } from "~/trpc/react";
 import type { NftMetadata, Product } from "./types";
 
 export default function ProductCatalog() {
+	const { t } = useTranslation();
 	const [products, setProducts] = useState<Product[]>([]);
 	const [results, setSearchResults] = useAtom(searchResultsAtom);
 	const [isLoadingResults, setIsLoading] = useAtom(isLoadingAtom);
@@ -22,18 +24,16 @@ export default function ProductCatalog() {
 	const [query, setQuery] = useAtom(searchQueryAtom);
 	const router = useRouter();
 
-	// Using an infinite query to fetch products with pagination
 	const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
 		api.product.getProducts.useInfiniteQuery(
 			{
-				limit: 3, // Fetch 3 products per request
+				limit: 3,
 			},
 			{
 				getNextPageParam: (lastPage) => lastPage.nextCursor,
 			},
 		);
 
-	// Effect to update local state whenever new data is loaded
 	useEffect(() => {
 		if (data) {
 			const allProducts = data.pages.flatMap((page) =>
@@ -46,52 +46,48 @@ export default function ProductCatalog() {
 		}
 	}, [data]);
 
-	// Handle infinite scroll for fetching more products as the user scrolls down
 	const handleScroll = useCallback(() => {
 		if (
-			window.innerHeight + window.scrollY >= document.body.offsetHeight - 100 && // Check if near bottom
+			window.innerHeight + window.scrollY >= document.body.offsetHeight - 100 &&
 			!isFetchingNextPage &&
 			hasNextPage
 		) {
-			void fetchNextPage(); // Fetch the next set of products
+			void fetchNextPage();
 		}
 	}, [isFetchingNextPage, hasNextPage, fetchNextPage]);
 
-	// Attach and detach scroll event listeners
 	useEffect(() => {
 		window.addEventListener("scroll", handleScroll);
 		return () => window.removeEventListener("scroll", handleScroll);
 	}, [handleScroll]);
 
-	// Placeholder for adding products to the cart
 	const accessProductDetails = (productId: number) => {
-		router.push(`/product/${productId}`); // Navigate to the product details page
+		router.push(`/product/${productId}`);
 	};
 
-	// Render each product
 	const renderProduct = (product: Product) => {
 		let metadata: NftMetadata | null = null;
 
 		if (typeof product.nftMetadata === "string") {
 			try {
-				metadata = JSON.parse(product.nftMetadata) as NftMetadata; // Try to parse if it's a JSON string
+				metadata = JSON.parse(product.nftMetadata) as NftMetadata;
 			} catch {
-				metadata = null; // Fallback in case of an error
+				metadata = null;
 			}
 		} else {
-			metadata = product.nftMetadata as NftMetadata; // Assign directly if it's already an object
+			metadata = product.nftMetadata as NftMetadata;
 		}
 
 		return (
 			<ProductCard
 				key={product.id}
-				image={metadata?.imageUrl ?? "/default-image.webp"} // Fallback image
+				image={metadata?.imageUrl ?? "/default-image.webp"}
 				region={product.region}
 				farmName={product.farmName}
-				variety={product.name}
+				variety={t(product.name)}
 				price={product.price}
-				badgeText={product.strength}
-				onClick={() => accessProductDetails(product.id)} // Trigger add-to-cart action
+				badgeText={t(`strength.${product.strength.toLowerCase()}`)}
+				onClick={() => accessProductDetails(product.id)}
 			/>
 		);
 	};
@@ -112,13 +108,13 @@ export default function ProductCatalog() {
 					{results.length > 0 ? (
 						<div>
 							<div className="flex justify-between mb-2">
-								<div>{quantity} products found</div>
+								<div>{t("products_found", { count: quantity })}</div>
 								<button
 									type="button"
 									className="underline cursor-pointer"
 									onClick={() => clearSearch()}
 								>
-									Clear search
+									{t("clear_search")}
 								</button>
 							</div>
 							{results.map((product) => (
@@ -132,7 +128,7 @@ export default function ProductCatalog() {
 									src="/images/NoResultsImage.png"
 									width={700}
 									height={700}
-									alt="No results"
+									alt={t("no_results_image_alt")}
 								/>
 							</div>
 							<div className="flex justify-center mt-4">
@@ -141,7 +137,7 @@ export default function ProductCatalog() {
 									size="sm"
 									onClick={() => clearSearch()}
 								>
-									Clear search
+									{t("clear_search")}
 								</Button>
 							</div>
 						</div>

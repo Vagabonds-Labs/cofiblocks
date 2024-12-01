@@ -4,6 +4,7 @@ import InputField from "@repo/ui/form/inputField";
 import { useAtom } from "jotai";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import {
 	isLoadingAtom,
@@ -26,6 +27,7 @@ export default function SearchBar() {
 	const [, setQuantityProducts] = useAtom(quantityOfProducts);
 	const [, setIsLoading] = useAtom(isLoadingAtom);
 	const [isFilterOpen, setIsFilterOpen] = useState(false);
+	const { t } = useTranslation();
 
 	const { control } = useForm<formData>({
 		resolver: zodResolver(searchSchema),
@@ -44,7 +46,7 @@ export default function SearchBar() {
 		if (data?.productsFound) {
 			const productsWithProcess = data.productsFound.map((product) => ({
 				...product,
-				process: product.process ?? "Natural",
+				process: product.process ?? t("natural_process"),
 			}));
 			setSearchResults(productsWithProcess);
 			setQuantityProducts(productsWithProcess.length);
@@ -52,7 +54,7 @@ export default function SearchBar() {
 			setSearchResults([]);
 			setQuantityProducts(0);
 		}
-	}, [data, isLoading, setIsLoading, setQuantityProducts, setSearchResults]);
+	}, [data, isLoading, setIsLoading, setQuantityProducts, setSearchResults, t]);
 
 	const handleInputChange = (value: string) => {
 		setQuery(value);
@@ -65,7 +67,7 @@ export default function SearchBar() {
 					name="region"
 					control={control}
 					label=""
-					placeholder="Search for your coffee"
+					placeholder={t("search_placeholder")}
 					onChange={(value: string) => handleInputChange(value)}
 					className="gap-0 mr-3 w-3/4"
 					showSearchIcon={true}
@@ -74,6 +76,7 @@ export default function SearchBar() {
 					type="button"
 					onClick={() => setIsFilterOpen(true)}
 					className="bg-surface-secondary-default p-3.5 rounded-lg"
+					aria-label={t("open_filters")}
 				>
 					<FunnelIcon className="h-6 w-6" />
 				</button>
