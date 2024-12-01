@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 import OrderListItem from "~/app/_components/features/OrderListItem";
 import OrderListPriceItem from "~/app/_components/features/OrderListPriceItem";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
-import { DeliveryMethod, SalesStatusType } from "~/types";
+import { DeliveryMethod, SalesStatus } from "~/types";
 
 import { useTranslation } from "react-i18next";
 
@@ -23,7 +23,7 @@ const mockedOrders = [
 				id: "1",
 				productName: "product_name_1",
 				buyerName: "buyer1_fullname",
-				status: SalesStatusType.Delivered,
+				status: SalesStatus.Delivered,
 				delivery: DeliveryMethod.Address,
 				price: 30,
 				claimed: false,
@@ -32,7 +32,7 @@ const mockedOrders = [
 				id: "2",
 				productName: "product_name_2",
 				buyerName: "buyer2_fullname",
-				status: SalesStatusType.Delivered,
+				status: SalesStatus.Delivered,
 				delivery: DeliveryMethod.Meetup,
 				price: 30,
 				claimed: false,
@@ -46,7 +46,7 @@ const mockedOrders = [
 				id: "3",
 				productName: "product_name_3",
 				buyerName: "buyer1_fullname",
-				status: SalesStatusType.Delivered,
+				status: SalesStatus.Delivered,
 				delivery: DeliveryMethod.Address,
 				price: 30,
 				claimed: true,
@@ -55,7 +55,7 @@ const mockedOrders = [
 				id: "4",
 				productName: "product_name_4",
 				buyerName: "buyer2_fullname",
-				status: SalesStatusType.Delivered,
+				status: SalesStatus.Delivered,
 				delivery: DeliveryMethod.Meetup,
 				price: 30,
 				claimed: true,
