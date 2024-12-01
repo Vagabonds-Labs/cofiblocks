@@ -72,61 +72,61 @@ We welcome contributions from the community! Here's how you can help:
 # 📌 Update your Fork and Local Repository
 
 ### 🔒 Set up the original repository as upstream (only once)
-- **Check your remote**
+- **Check your remote.**
 ```bash
 git remote -v
 ```
 
-- **If you don't see `upstream`, add it**
+- **If you don't see `upstream`, add it.**
 ```bash
 git remote add upstream https://github.com/Vagabonds-Labs/cofiblocks.git
 ```
 #
 
 ### 🔩 Update your Fork
-1. **Bring the latest changes from the original repository**
+1. **Bring the latest changes from the original repository.**
     ```bash
     git fetch upstream
     ```
-2. **Switch to the `main` branch of your local repository**
+2. **Switch to the `main` branch of your local repository.**
     ```bash
     git checkout main
     ```
-3. **Merge `upstream/main` changes to your local branch**
+3. **Merge `upstream/main` changes to your local branch.**
     ```bash
     git merge upstream/main
     ```
-4. **Upload the changes to your fork in GitHub**
+4. **Upload the changes to your fork in GitHub.**
     ```bash
     git push origin main
     ```
 #
 
 ### 🔧 Update other branches
-- **Change to the branch you want to update**
+- **Change to the branch you want to update.**
 ```bash
 git checkout name-of-your-rama
 ```
-- **Take an overflow with the updated `main` branch**
+- **Take an overflow with the updated `main` branch.**
 ```bash
 git rebase main
 ```
-- **Upload the changes to your fork**
+- **Upload the changes to your fork.**
 ```bash
 git push origin name-of-your-rama --force
 ```
 
 ## 🎯 **Common mistakes**
-1. **Local changes without saving**
+1. **Local changes without saving.**
     - Save changes temporarily
     ```bash
     git stash
     ```
-2. **Then update and recover your changes**
+2. **Then update and recover your changes.**
     ```bash
     git stash pop
     ```
-3. **Untracked files causing conflict**
+3. **Untracked files causing conflict.**
     - Delete them if you don't need them
     ```bash
     rm filename
