@@ -127,8 +127,8 @@ volumes:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/Vagabonds-Labs/marketplace.git
-   cd marketplace
+   git clone https://github.com/Vagabonds-Labs/codfiblocks.git
+   cd codfiblocks
    ```
 
    - Run `docker compose up`, to access the database.
