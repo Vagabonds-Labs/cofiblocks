@@ -1,91 +1,36 @@
 # **CONTRIBUTING GUIDE BY COFIBLOCKS** ☕
 
-Thank you for your interest in contributing to CofiBlocks! We appreciate your time and effort in making our project better.
+Thank you for your interest in contributing to **CofiBlocks**! This document outlines the steps to get started, guidelines for contributions, and how to collaborate effectively with the team.
 
-This guide will help you get started with contributing to our project. Please note that we have a code of conduct, which we expect all contributors to adhere to.
+---
 
-## 📝 **Contributing**
+## 🚀 Contribution Guideline
 
-We welcome contributions from the community! Here's how you can help:
+### Getting Started
+- 🔍 Visit the [Issues](https://github.com/Vagabonds-Labs/cofiblocks/issues) tab to see ongoing work or feature requests
+- 💬 If you find an issue that interests you, comment to express your interest
+- 📝 For new ideas, create a detailed issue with clear descriptions
 
-1. **Clone and Fork Repo**: Click the **Fork** button in the top-right corner to create a copy of the repository under your account.
+### Creating New Issues
+- 🐛 For bugs, include steps to reproduce
+- ✨ For features, describe the enhancement clearly
 
-    - <a href="https://github.com/Vagabonds-Labs/cofiblocks" target="_blank"> HERE</a>
+### Start Working
+  - Once an issue is assigned to you, proceed with the technical steps described below.
 
-#
+---
 
-2. **Clone the Fork:** 
-    - Clone the forked repository to your local machine by running the following command:
+## 🛠 How To Contribute
 
-    ```bash
-   git clone https://github.com/YOUR_USERNAME/REPOSITORY_NAME.git
-   ```
+1. Fork the repository to your GitHub account first.
 
-    - Replace `YOUR_USERNAME` and `REPOSITORY_NAME` with your GitHub username and the repository name.
+2. Clone the repository in your local machine:
+```bash
+git clone https://github.com/YOUR_USERNAME/cofiblocks.git
+cd marketplace
+```
 
-#
-
-3. **Create a new branch or use the main branch:** When modifying contracts kindly make sure the formatting is correct and all tests pass successfully.
-
-    - Create a branch name based on the type of change (e.g., `feat/name-related-issue`, `docs/name-related-issue`).
-
-    ```
-    git checkout -b branch-name
-    ```
-    - One of ideas on how to implement it for the branch name:
-
-        > `docs/update-readme` or `fix/bottom-bug`.
-
-#
-
-4. **Commit:** Commit your changes.
-
-    1. **git add (file-name)**
-    2. **git commit -m "[type] description"**
-
-    - Example: 
-    ```
-    git add Create_Documentation
-
-    git commit -m "[docs]: update documentation"
-    ```
-
-#
-
-5. **Push fork:** Push to your fork and submit a pull request on our `main` branch. Please provide us with some explanation of why you made the changes you made. For new features make sure to explain a standard use case to us.
-
-- Push your changes to your forked repository:
-    ```bash
-   git push origin your-branch-name
-   ```
-   > Replace `your-branch-name` with the name of your branch.
-
-- Example: 
-
-    ```bash
-    git push origin fix/bug-fix
-    ```
-
-#
-
-6. **Submit a Pull Request:** Submit a pull request to the `main` branch of the Semaphore Stellar SDK repository.
-
-    - <a href="https://github.com/Vagabonds-Labs/cofiblocks/pulls" target="_blank"> Summit pull request</a>
-
-# **📁 Commits**
-
-You can do a regular commit by following the next:
-
-``` [type] significant message ```
-
-- <a href="https://www.conventionalcommits.org/en/v1.0.0/" target="_blank">Learn more about conventional commits</a>
-
-### Type
-
-Add changes you worked on the issue
-
-**Examples:**
-
+2. Create and switch to your branch: 
 ```bash
 git commit -m "[docs]: update documentation"
 ``` 
