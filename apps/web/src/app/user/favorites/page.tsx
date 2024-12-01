@@ -1,11 +1,11 @@
 "use client";
 
 import { ProductCard } from "@repo/ui/productCard";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom } from "jotai";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
-import { addItemAtom, cartItemsAtom } from "~/store/cartAtom";
+import { addItemAtom } from "~/store/cartAtom";
 
 const userFavoriteProducts = [
 	{
@@ -32,7 +32,6 @@ export default function Favorites() {
 	// and avoid code duplication
 	const [addedProduct, setAddedProduct] = React.useState<number | null>(null);
 
-	const items = useAtomValue(cartItemsAtom);
 	const [, addItem] = useAtom(addItemAtom);
 
 	const handleAddToCart = (productId: number) => {

@@ -1,7 +1,7 @@
 import Button from "@repo/ui/button";
 import RadioButton from "@repo/ui/form/radioButton";
-import React, { BaseSyntheticEvent, type FormEvent } from "react";
-import { type Control, useForm } from "react-hook-form";
+import React, { type FormEvent } from "react";
+import type { Control } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import BottomModal from "~/app/_components/ui/BottomModal";
 import type { StatusStepsEnum } from "./ProductStatusDetails";

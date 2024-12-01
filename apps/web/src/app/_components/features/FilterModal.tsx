@@ -52,6 +52,7 @@ export default function FilterModal({ isOpen, onClose }: FilterModalProps) {
 				setQuantityProducts(0);
 			}
 		} catch (error) {
+			console.error(error);
 			setSearchResults([]);
 			setQuantityProducts(0);
 		} finally {

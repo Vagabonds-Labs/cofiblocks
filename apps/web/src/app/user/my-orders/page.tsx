@@ -20,13 +20,13 @@ const mockedOrders = [
 			{
 				id: "1",
 				productName: "product_name_1",
-				sellerName: "Juan Pérez",
+				sellerName: "seller1_fullname",
 				status: SalesStatus.Paid,
 			},
 			{
 				id: "2",
 				productName: "product_name_2",
-				sellerName: "María García",
+				sellerName: "seller2_fullname",
 				status: SalesStatus.Paid,
 			},
 		],
@@ -37,13 +37,13 @@ const mockedOrders = [
 			{
 				id: "3",
 				productName: "product_name_3",
-				sellerName: "Juan Pérez",
+				sellerName: "seller1_fullname",
 				status: SalesStatus.Delivered,
 			},
 			{
 				id: "4",
 				productName: "product_name_4",
-				sellerName: "María García",
+				sellerName: "seller2_fullname",
 				status: SalesStatus.Delivered,
 			},
 		],

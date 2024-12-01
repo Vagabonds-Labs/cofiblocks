@@ -10,7 +10,7 @@ import {
 	useDisconnect,
 	useSignTypedData,
 } from "@starknet-react/core";
-import { type AnimationControls, motion, useAnimation } from "framer-motion";
+import { motion, useAnimation } from "framer-motion";
 import { signIn, signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";

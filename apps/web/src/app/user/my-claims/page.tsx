@@ -69,7 +69,7 @@ export default function MyClaims() {
 	const [ClaimedOrders, setClaimedOrders] = useState(mockedOrders);
 	const [searchTerm, setSearchTerm] = useState("");
 	const [MoneyToClaim, setMoneyToClaim] = useState(0);
-	const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
+	const [, setIsFiltersModalOpen] = useState(false);
 	const { t } = useTranslation();
 
 	const router = useRouter();

@@ -187,6 +187,16 @@
 	"user_farm_not_found": "User farm not found. Please contact support.",
 	"implement_image_upload": "Implement image upload logic",
 
+	"New": "New",
+	"welcome Coffee Lover": "Welcome Coffee Lover",
+	"Featured": "Featured",
+	"Find Best Coffee": "Encontre o Melhor Café",
+	"Popular": "Popular",
+	"Discover Unique Blends": "Discover Unique Blends",
+	"Paid": "Paid",
+	"Delivered": "Delivered",
+	"delivered": "Delivered",
+
 	"user_profile": "User Profile",
 	"lover": "Lover",
 	"contributor": "Contributor",
@@ -232,6 +242,8 @@
 
 	"buyer1_fullname": "Buyer 1",
 	"buyer2_fullname": "Buyer 2",
+	"seller1_fullname": "Seller 1",
+	"seller2_fullname": "Seller 2",
 	"delivery_method_label": "Delivery method",
 	"delivery_method": {
 		"address": "Address",
