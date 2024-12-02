@@ -1,9 +1,7 @@
 "use client";
 
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
-import Button from "@repo/ui/button";
 import { useAccount } from "@starknet-react/core";
-import Image from "next/image";
 import Link from "next/link";
 import { useReducer, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -17,10 +15,10 @@ import OrderReview from "~/app/_components/features/checkout/OrderReview";
 
 export default function CheckoutPage() {
 	const { t } = useTranslation();
-	useAccount();
+	const { address } = useAccount();
 
 	const [state, dispatch] = useReducer(CheckoutReducer, initialState);
-	const [isLoading] = useState(false);
+	const [isLoading, setIsLoading] = useState(false);
 
 	const handleNextStep = (method?: string, location?: string) => {
 		if (state.checkoutStep === "delivery") {
@@ -33,8 +31,6 @@ export default function CheckoutPage() {
 			}
 		} else if (state.checkoutStep === "address") {
 			dispatch({ type: "SET_STEP", payload: "review" });
-		} else if (state.checkoutStep === "review") {
-			dispatch({ type: "SET_STEP", payload: "payment" });
 		}
 	};
 
@@ -48,14 +44,32 @@ export default function CheckoutPage() {
 		dispatch({ type: "SET_STEP", payload: "review" });
 	};
 
+	const handleCurrencySelect = (currency: string) => {
+		setIsLoading(true);
+		// Simulate API call or blockchain transaction
+		setTimeout(() => {
+			dispatch({ type: "SET_CURRENCY", payload: currency });
+			dispatch({ type: "CONFIRM_ORDER" });
+			setIsLoading(false);
+		}, 2000);
+	};
+
 	const deliveryPrice = state.deliveryLocation === "gam" ? 20 : 40;
+
+	if (!address) {
+		return (
+			<div className="flex items-center justify-center min-h-screen">
+				<p className="text-lg">{t("connect_wallet_to_checkout")}</p>
+			</div>
+		);
+	}
 
 	return (
 		<div className="max-w-md mx-auto bg-white min-h-screen">
 			<Link href="/shopping-cart">
 				<div className="flex items-center gap-2 p-3 rounded-lg mb-6">
 					<ArrowLeftIcon className="h-5 w-5" />
-					<span className="text-xl">My Cart</span>
+					<span className="text-xl">{t("my_cart")}</span>
 				</div>
 			</Link>
 			{isLoading ? (
@@ -74,40 +88,13 @@ export default function CheckoutPage() {
 
 					{state.checkoutStep === "review" && (
 						<OrderReview
-							onNext={() => handleNextStep()}
+							onNext={handleNextStep}
 							deliveryAddress={state.deliveryAddress}
 							deliveryMethod={state.deliveryMethod}
 							deliveryPrice={deliveryPrice}
+							onCurrencySelect={handleCurrencySelect}
+							isConfirmed={state.isConfirmed}
 						/>
-					)}
-
-					{state.checkoutStep === "payment" && (
-						<div className="flex flex-col justify-center items-center p-4">
-							<div>
-								<Image
-									src="/images/PaymentConfirmation.png"
-									width={700}
-									height={700}
-									alt="Payment confirmation"
-								/>
-							</div>
-							<div className="text-center mt-4">
-								<h2 className="text-2xl font-bold mb-2">
-									{t("payment_confirmed")}
-								</h2>
-								<p>{t("thank_you_for_your_purchase")}</p>
-							</div>
-							<div className="flex justify-center mt-4">
-								<Button
-									onClick={() =>
-										dispatch({ type: "SET_STEP", payload: "delivery" })
-									}
-									className="w-full p-4 bg-yellow-400 rounded-lg text-center font-medium"
-								>
-									{t("return_to_delivery")}
-								</Button>
-							</div>
-						</div>
 					)}
 				</>
 			)}
