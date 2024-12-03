@@ -93,7 +93,7 @@ export default function OrderReview({
 							<div className="flex justify-between py-2">
 								<span className="text-gray-600">{t("product_price")}</span>
 								<span>
-									{item.price * item.quantity} {selectedCurrency}
+									{(item.price * item.quantity).toFixed(2)} {selectedCurrency}
 								</span>
 							</div>
 							<Separator />
@@ -119,7 +119,7 @@ export default function OrderReview({
 					<div className="flex justify-between py-2">
 						<span className="text-gray-600">{t("delivery_price")}</span>
 						<span>
-							+{deliveryPrice} {selectedCurrency}
+							+{deliveryPrice.toFixed(2)} {selectedCurrency}
 						</span>
 					</div>
 					<Separator />
@@ -128,7 +128,7 @@ export default function OrderReview({
 						<span className="text-gray-600">{t("total_price")}</span>
 						<div className="flex items-center gap-2">
 							<span>
-								{totalPrice} {selectedCurrency}
+								{totalPrice.toFixed(2)} {selectedCurrency}
 							</span>
 							<ArrowDownIcon className="h-4 w-4 text-yellow-500" />
 						</div>

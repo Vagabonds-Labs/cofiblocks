@@ -9,25 +9,31 @@ import {
 } from "@heroicons/react/24/outline";
 import Button from "@repo/ui/button";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { SelectableOption } from "./SelectableOption";
 
 interface DeliveryMethodProps {
-	readonly onNext: (method: string, location?: string) => void;
+	readonly onNext: (method: string, price: number, location?: string) => void;
 }
 
 export default function DeliveryMethod({ onNext }: DeliveryMethodProps) {
+	const { t } = useTranslation();
 	const [selectedMethod, setSelectedMethod] = useState<string>("");
 	const [selectedLocation, setSelectedLocation] = useState<string>("");
+	//const [deliveryPrice, setDeliveryPrice] = useState<number>(0);
 
 	const locations = [
-		{ value: "gam", label: "I'm in GAM", price: "+ 20 USD" },
-		{ value: "outside", label: "I'm not in GAM", price: "+ 40 USD" },
+		{ value: "gam", label: t("im_in_gam"), price: 20 },
+		{ value: "outside", label: t("im_not_in_gam"), price: 40 },
 	];
 
 	const handleNext = () => {
 		if (selectedMethod === "home" && selectedLocation) {
-			onNext(selectedMethod, selectedLocation);
+			const price =
+				locations.find((loc) => loc.value === selectedLocation)?.price ?? 0;
+			onNext(selectedMethod, price, selectedLocation);
 		} else if (selectedMethod === "meetup") {
-			onNext(selectedMethod);
+			onNext(selectedMethod, 0);
 		}
 	};
 
@@ -35,113 +41,65 @@ export default function DeliveryMethod({ onNext }: DeliveryMethodProps) {
 		<div className="flex flex-col min-h-[calc(100vh-120px)] font-manrope">
 			<div className="flex-1 p-4">
 				<h2 className="text-lg font-medium mb-4 text-content-title">
-					Delivery method
+					{t("delivery_method")}
 				</h2>
 
 				<div className="space-y-3">
-					<Button
-						variant="soft"
-						size="xl"
-						onClick={() => {
-							setSelectedMethod("home");
-							setSelectedLocation("");
-						}}
-						className="w-full justify-between p-4"
-						aria-pressed={selectedMethod === "home"}
-					>
-						<div className="flex items-center gap-3">
+					<SelectableOption
+						icon={
 							<TruckIcon
 								className="h-6 w-6 text-success-default"
 								aria-hidden="true"
 							/>
-							<div className="text-left">
-								<span className="text-base text-content-body-default">
-									Send it to my home
-								</span>
-								<p className="text-sm text-content-body-soft">+ 20 USD</p>
-							</div>
-						</div>
-						<div
-							className={`w-6 h-6 rounded-full border-2 ${
-								selectedMethod === "home"
-									? "border-surface-secondary-default bg-surface-secondary-default"
-									: "border-surface-border bg-transparent"
-							}`}
-							aria-hidden="true"
-						/>
-					</Button>
-
-					<Button
-						variant="soft"
-						size="xl"
+						}
+						label={t("send_to_my_home")}
+						sublabel={t("plus_20_usd")}
+						isSelected={selectedMethod === "home"}
 						onClick={() => {
-							setSelectedMethod("meetup");
+							setSelectedMethod("home");
 							setSelectedLocation("");
 						}}
-						className="w-full justify-between p-4"
-						aria-pressed={selectedMethod === "meetup"}
-					>
-						<div className="flex items-center gap-3">
+					/>
+
+					<SelectableOption
+						icon={
 							<UsersIcon
 								className="h-6 w-6 text-success-default"
 								aria-hidden="true"
 							/>
-							<div className="text-left">
-								<span className="text-base text-content-body-default">
-									Pick up at meetup
-								</span>
-								<p className="text-sm text-content-body-soft">Free</p>
-							</div>
-						</div>
-						<div
-							className={`w-6 h-6 rounded-full border-2 ${
-								selectedMethod === "meetup"
-									? "border-surface-secondary-default bg-surface-secondary-default"
-									: "border-surface-border bg-transparent"
-							}`}
-							aria-hidden="true"
-						/>
-					</Button>
+						}
+						label={t("pick_up_at_meetup")}
+						sublabel={t("free")}
+						isSelected={selectedMethod === "meetup"}
+						onClick={() => {
+							setSelectedMethod("meetup");
+							setSelectedLocation("");
+						}}
+					/>
 				</div>
 
 				{selectedMethod === "home" && (
 					<div className="mt-4">
 						<h3 className="text-lg font-medium mb-4 text-content-title">
-							I&apos;m in
+							{t("im_in")}
 						</h3>
 						<div className="space-y-3">
 							{locations.map((location) => (
-								<Button
+								<SelectableOption
 									key={location.value}
-									variant="soft"
-									size="xl"
-									onClick={() => setSelectedLocation(location.value)}
-									className="w-full justify-between p-4"
-									aria-pressed={selectedLocation === location.value}
-								>
-									<div className="flex items-center gap-3">
+									icon={
 										<MapPinIcon
 											className="h-6 w-6 text-success-default"
 											aria-hidden="true"
 										/>
-										<div className="text-left">
-											<span className="text-base text-content-body-default">
-												{location.label}
-											</span>
-											<p className="text-sm text-content-body-soft">
-												{location.price}
-											</p>
-										</div>
-									</div>
-									<div
-										className={`w-6 h-6 rounded-full border-2 ${
-											selectedLocation === location.value
-												? "border-surface-secondary-default bg-surface-secondary-default"
-												: "border-surface-border bg-transparent"
-										}`}
-										aria-hidden="true"
-									/>
-								</Button>
+									}
+									label={location.label}
+									sublabel={`+ ${location.price} USD`}
+									isSelected={selectedLocation === location.value}
+									onClick={() => {
+										setSelectedLocation(location.value);
+									}}
+								/>
 							))}
 						</div>
 					</div>
@@ -160,7 +118,7 @@ export default function DeliveryMethod({ onNext }: DeliveryMethodProps) {
 							aria-hidden="true"
 						/>
 						<span className="text-content-body-default">
-							Check our meetup calendar
+							{t("check_meetup_calendar")}
 						</span>
 					</div>
 					<ChevronRightIcon
@@ -180,7 +138,7 @@ export default function DeliveryMethod({ onNext }: DeliveryMethodProps) {
 					}
 					className="w-full"
 				>
-					Next
+					{t("next")}
 				</Button>
 			</div>
 		</div>

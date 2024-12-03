@@ -1,5 +1,5 @@
-export type CheckoutState = {
-	checkoutStep: string;
+export interface CheckoutState {
+	checkoutStep: "delivery" | "address" | "review";
 	deliveryMethod: string;
 	deliveryLocation: string;
 	deliveryAddress: {
@@ -9,14 +9,19 @@ export type CheckoutState = {
 		zipCode: string;
 	};
 	selectedCurrency: string;
-};
+	deliveryPrice: number;
+	isConfirmed: boolean;
+}
 
 export type CheckoutAction =
-	| { type: "SET_STEP"; payload: string }
+	| { type: "SET_STEP"; payload: CheckoutState["checkoutStep"] }
 	| { type: "SET_DELIVERY_METHOD"; payload: string }
 	| { type: "SET_DELIVERY_LOCATION"; payload: string }
 	| { type: "SET_DELIVERY_ADDRESS"; payload: CheckoutState["deliveryAddress"] }
-	| { type: "SET_CURRENCY"; payload: string };
+	| { type: "SET_SELECTED_CURRENCY"; payload: string }
+	| { type: "SET_CURRENCY"; payload: string }
+	| { type: "SET_DELIVERY_PRICE"; payload: number }
+	| { type: "CONFIRM_ORDER" };
 
 export const initialState: CheckoutState = {
 	checkoutStep: "delivery",
@@ -29,6 +34,8 @@ export const initialState: CheckoutState = {
 		zipCode: "",
 	},
 	selectedCurrency: "USD",
+	deliveryPrice: 0,
+	isConfirmed: false,
 };
 
 export function CheckoutReducer(
@@ -44,8 +51,14 @@ export function CheckoutReducer(
 			return { ...state, deliveryLocation: action.payload };
 		case "SET_DELIVERY_ADDRESS":
 			return { ...state, deliveryAddress: action.payload };
+		case "SET_SELECTED_CURRENCY":
+			return { ...state, selectedCurrency: action.payload };
 		case "SET_CURRENCY":
 			return { ...state, selectedCurrency: action.payload };
+		case "SET_DELIVERY_PRICE":
+			return { ...state, deliveryPrice: action.payload };
+		case "CONFIRM_ORDER":
+			return { ...state, isConfirmed: true };
 		default:
 			return state;
 	}

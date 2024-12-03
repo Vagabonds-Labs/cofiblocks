@@ -3,7 +3,7 @@
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { useAccount } from "@starknet-react/core";
 import Link from "next/link";
-import { useReducer, useState } from "react";
+import { useReducer } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	CheckoutReducer,
@@ -16,13 +16,12 @@ import OrderReview from "~/app/_components/features/checkout/OrderReview";
 export default function CheckoutPage() {
 	const { t } = useTranslation();
 	const { address } = useAccount();
-
 	const [state, dispatch] = useReducer(CheckoutReducer, initialState);
-	const [isLoading, setIsLoading] = useState(false);
 
-	const handleNextStep = (method?: string, location?: string) => {
+	const handleNextStep = (method: string, price: number, location?: string) => {
 		if (state.checkoutStep === "delivery") {
-			dispatch({ type: "SET_DELIVERY_METHOD", payload: method ?? "" });
+			dispatch({ type: "SET_DELIVERY_METHOD", payload: method });
+			dispatch({ type: "SET_DELIVERY_PRICE", payload: price });
 			if (method === "home") {
 				dispatch({ type: "SET_DELIVERY_LOCATION", payload: location ?? "" });
 				dispatch({ type: "SET_STEP", payload: "address" });
@@ -45,16 +44,12 @@ export default function CheckoutPage() {
 	};
 
 	const handleCurrencySelect = (currency: string) => {
-		setIsLoading(true);
-		// Simulate API call or blockchain transaction
-		setTimeout(() => {
-			dispatch({ type: "SET_CURRENCY", payload: currency });
-			dispatch({ type: "CONFIRM_ORDER" });
-			setIsLoading(false);
-		}, 2000);
+		dispatch({ type: "SET_CURRENCY", payload: currency });
 	};
 
-	const deliveryPrice = state.deliveryLocation === "gam" ? 20 : 40;
+	const handleOrderReviewNext = () => {
+		dispatch({ type: "CONFIRM_ORDER" });
+	};
 
 	if (!address) {
 		return (
@@ -72,31 +67,21 @@ export default function CheckoutPage() {
 					<span className="text-xl">{t("my_cart")}</span>
 				</div>
 			</Link>
-			{isLoading ? (
-				<div className="flex justify-center items-center h-64">
-					<div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900" />
-				</div>
-			) : (
-				<>
-					{state.checkoutStep === "delivery" && (
-						<DeliveryMethod onNext={handleNextStep} />
-					)}
-
-					{state.checkoutStep === "address" && (
-						<DeliveryAddress onNext={handleAddressSubmit} />
-					)}
-
-					{state.checkoutStep === "review" && (
-						<OrderReview
-							onNext={handleNextStep}
-							deliveryAddress={state.deliveryAddress}
-							deliveryMethod={state.deliveryMethod}
-							deliveryPrice={deliveryPrice}
-							onCurrencySelect={handleCurrencySelect}
-							isConfirmed={state.isConfirmed}
-						/>
-					)}
-				</>
+			{state.checkoutStep === "delivery" && (
+				<DeliveryMethod onNext={handleNextStep} />
+			)}
+			{state.checkoutStep === "address" && (
+				<DeliveryAddress onNext={handleAddressSubmit} />
+			)}
+			{state.checkoutStep === "review" && (
+				<OrderReview
+					onNext={handleOrderReviewNext}
+					onCurrencySelect={handleCurrencySelect}
+					deliveryAddress={state.deliveryAddress}
+					deliveryMethod={state.deliveryMethod}
+					deliveryPrice={state.deliveryPrice}
+					isConfirmed={state.isConfirmed}
+				/>
 			)}
 		</div>
 	);

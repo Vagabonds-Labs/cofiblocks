@@ -4,6 +4,7 @@ import { MapPinIcon } from "@heroicons/react/24/outline";
 import Button from "@repo/ui/button";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { SelectableOption } from "./SelectableOption";
 
 interface LocationSelectorProps {
 	readonly onSelect: (location: string) => void;
@@ -14,8 +15,8 @@ export default function LocationSelector({ onSelect }: LocationSelectorProps) {
 	const [selectedLocation, setSelectedLocation] = useState<string>("");
 
 	const locations = [
-		{ value: "gam", label: "I'm in GAM", price: "+ 20 USD" },
-		{ value: "outside", label: "I'm not in GAM", price: "+ 40 USD" },
+		{ value: "gam", label: t("im_in_gam"), price: t("plus_20_usd") },
+		{ value: "outside", label: t("im_not_in_gam"), price: t("plus_40_usd") },
 	];
 
 	const handleSelect = (location: string) => {
@@ -32,37 +33,19 @@ export default function LocationSelector({ onSelect }: LocationSelectorProps) {
 
 				<div className="space-y-3">
 					{locations.map((location) => (
-						<Button
+						<SelectableOption
 							key={location.value}
-							variant="soft"
-							size="xl"
-							onClick={() => handleSelect(location.value)}
-							className="w-full justify-between p-4"
-							aria-pressed={selectedLocation === location.value}
-						>
-							<div className="flex items-center gap-3">
+							icon={
 								<MapPinIcon
 									className="h-6 w-6 text-success-default"
 									aria-hidden="true"
 								/>
-								<div className="text-left">
-									<span className="text-base text-content-body-default">
-										{location.label}
-									</span>
-									<p className="text-sm text-content-body-soft">
-										{location.price}
-									</p>
-								</div>
-							</div>
-							<div
-								className={`w-6 h-6 rounded-full border-2 ${
-									selectedLocation === location.value
-										? "border-surface-secondary-default bg-surface-secondary-default"
-										: "border-surface-border bg-transparent"
-								}`}
-								aria-hidden="true"
-							/>
-						</Button>
+							}
+							label={location.label}
+							sublabel={location.price}
+							isSelected={selectedLocation === location.value}
+							onClick={() => handleSelect(location.value)}
+						/>
 					))}
 				</div>
 			</div>
