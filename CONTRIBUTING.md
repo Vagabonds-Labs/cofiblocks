@@ -65,7 +65,7 @@ We welcome contributions from the community! Here's how you can help:
     git push origin fix/bug-fix
     ```
 
-6. **Submit a Pull Request:** Submit a pull request to the `main` branch of the Semaphore Stellar SDK repository.
+6. **Submit a Pull Request:** Submit a pull request to the `main` branch of the CofiBlocks repository.
 
     - <a href="https://github.com/Vagabonds-Labs/cofiblocks/pulls" target="_blank"> Summit pull request</a>
 
