@@ -25,9 +25,8 @@ CofiBlocks is more than just a coffee marketplace; it's a movement for a more eq
 
 - [CofiBlocks: Innovating the Coffee Industry in Costa Rica with Web3](https://mirror.xyz/0xF574753688ABf9740660DFb02E84E4599CA6Eb87/QneFnlPqTRuV_3jt7Kd6foBfFokOKN6zNcJCqpj_xkw)
 
-
-
 - [Pitch Deck](https://docs.google.com/presentation/d/16zPeDC-6fMaCRRpaQCTPPIn_ZKdI0d9ZArkTxd2wmAA/edit#slide=id.p1)
+
 ## 👥 Meet the Team
 
 ### ☕ **FOUNDERS**
@@ -127,8 +126,8 @@ volumes:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/Vagabonds-Labs/marketplace.git
-   cd marketplace
+   git clone https://github.com/Vagabonds-Labs/cofiblocks.git
+   cd cofiblocks
    ```
 
    - Run `docker compose up`, to access the database.
