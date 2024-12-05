@@ -1,13 +1,22 @@
+"use client";
+
+import Button from "@repo/ui/button";
 import { motion } from "framer-motion";
-import Button from "./button";
+import type { ReactNode } from "react";
 
 type ModalProps = {
 	isOpen: boolean;
 	onClose: () => void;
-	buttons: Array<{ label: string; onClick: () => void }>;
+	title?: string;
+	children: ReactNode;
+	buttons?: Array<{
+		label: string;
+		onClick: () => void;
+		variant?: "primary" | "secondary";
+	}>;
 };
 
-function Modal({ isOpen, onClose, buttons }: ModalProps) {
+function Modal({ isOpen, onClose, title, children, buttons = [] }: ModalProps) {
 	if (!isOpen) return null;
 
 	const modalVariants = {
@@ -33,34 +42,30 @@ function Modal({ isOpen, onClose, buttons }: ModalProps) {
 				animate="visible"
 				exit="exit"
 			>
-				<div className="text-center">
-					<h2 className="text-xl font-bold mb-4">Hello!</h2>
-					<p className="mb-6">
-						Press ESC key or click the button below to close
-					</p>
-
-					<div className="space-y-4">
-						{buttons.map((button, index) => (
-							<Button
-								key={`modal-button-${button.label}-${index}`}
-								className="w-full"
-								onClick={button.onClick}
-								variant="primary"
-								size="md"
-							>
-								{button.label}
-							</Button>
-						))}
-					</div>
-
-					<Button
-						className="mt-6"
-						onClick={onClose}
-						variant="secondary"
-						size="sm"
-					>
-						Close
-					</Button>
+				{title && <h2 className="text-xl font-bold mb-4">{title}</h2>}
+				<div className="mb-6">{children}</div>
+				<div className="space-y-2">
+					{buttons.map((button, index) => (
+						<Button
+							key={`modal-button-${button.label}-${index}`}
+							className="w-full"
+							onClick={button.onClick}
+							variant={button.variant || "primary"}
+							size="md"
+						>
+							{button.label}
+						</Button>
+					))}
+					{buttons.length === 0 && (
+						<Button
+							className="w-full"
+							onClick={onClose}
+							variant="secondary"
+							size="md"
+						>
+							Close
+						</Button>
+					)}
 				</div>
 			</motion.div>
 		</div>
