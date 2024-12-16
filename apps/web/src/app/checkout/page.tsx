@@ -10,7 +10,7 @@ import {
 	initialState,
 } from "~/app/_components/features/checkout/CheckoutReducer";
 import DeliveryAddress from "~/app/_components/features/checkout/DeliveryAddress";
-import DeliveryMethod from "~/app/_components/features/checkout/DeliveryMethod";
+import DeliveryMethod from "~/app/_components/features/checkout/Deliverymethod";
 import OrderReview from "~/app/_components/features/checkout/OrderReview";
 
 export default function CheckoutPage() {

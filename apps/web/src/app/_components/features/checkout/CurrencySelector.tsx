@@ -10,12 +10,7 @@ interface CurrencySelectorProps {
 	readonly onSelect: (currency: string) => void;
 }
 
-const currencies = [
-	{ id: "usd", name: "USD" },
-	{ id: "usdt", name: "USDT" },
-	{ id: "btc", name: "BTC" },
-	{ id: "strk", name: "STRK" },
-];
+const currencies = [{ id: "strk", name: "STRK" }];
 
 export function CurrencySelector({
 	isOpen,
