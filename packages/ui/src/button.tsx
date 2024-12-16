@@ -18,6 +18,18 @@ const buttonVariants = cva(
 					"focus:ring-2 focus:ring-surface-secondary-soft focus:ring-opacity-50",
 					"disabled:bg-surface-disable disabled:text-surface-border disabled:border-surface-border",
 				],
+				soft: [
+					"bg-surface-primary-soft text-content-title border-surface-primary-soft",
+					"hover:bg-surface-primary-soft hover:border-surface-primary-soft",
+					"focus:ring-2 focus:ring-surface-primary-soft focus:ring-opacity-50",
+					"disabled:bg-surface-disable disabled:text-surface-border disabled:border-surface-border",
+				],
+				transparent: [
+					"bg-transparent text-content-title border-transparent",
+					"hover:bg-surface-secondary-soft hover:border-surface-secondary-soft",
+					"focus:ring-2 focus:ring-surface-secondary-soft focus:ring-opacity-50",
+					"disabled:bg-transparent disabled:text-surface-border disabled:border-transparent",
+				],
 			},
 			size: {
 				xl: "h-16 px-8 py-4 text-base",
