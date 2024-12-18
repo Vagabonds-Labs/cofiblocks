@@ -9,6 +9,8 @@ import Header from "~/app/_components/layout/Header";
 import Main from "~/app/_components/layout/Main";
 import { searchQueryAtom } from "~/atoms/productAtom";
 import SearchBar from "../_components/features/SearchBar";
+import Button from "@repo/ui/button";
+import Link from "next/link";
 
 export default function Home() {
 	const { t } = useTranslation();
@@ -41,6 +43,11 @@ export default function Home() {
 		<Main>
 			<Header address={address} disconnect={disconnect} showCart={true} />
 			<SearchBar />
+			<Button className="ml-6 my-5" type="button">
+				<Link href={'/user/register-coffee'}>
+					Add Listing
+				</Link>
+			</Button>
 
 			{query.length <= 0 && (
 				<>
