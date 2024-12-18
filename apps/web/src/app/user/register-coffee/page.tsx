@@ -8,12 +8,9 @@ import { ClockIcon } from "@heroicons/react/24/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@repo/ui/button";
 import RadioButton from "@repo/ui/form/radioButton";
-import { useAccount, useContract, useContractWrite, useWaitForTransaction } from "@starknet-react/core";
 import Image from "next/image";
-import { FormEvent, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { CallData } from "starknet";
 import { z } from "zod";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
 import { RoastLevel } from "~/types";
@@ -40,7 +37,7 @@ export default function RegisterCoffee() {
 		alert(t("implement_image_upload"));
 	};
 
-	const { register, handleSubmit, control, getValues, setValue } =
+	const { register, handleSubmit, control, getValues, setValue, formState: {errors} } =
 		useForm<FormData>({
 			resolver: zodResolver(schema),
 			defaultValues: {
@@ -49,89 +46,14 @@ export default function RegisterCoffee() {
 			},
 		});
 
-	const { address } = useAccount();
-
-	const ABI = undefined; // Define the ABI here or remove line if you import from another file
-	const { contract } = useContract({ abi: ABI, address });
-	
-	const calls = useMemo(() => {
-		if (!contract || typeof contract === undefined) return;
-	
-		const { bagsAvailable: initial_stock, price, roast, description, variety, coffeeScore, image } = getValues();
-		const newDataSpan = [roast, description, variety, coffeeScore, image];
-		const parsedPrice = Number.parseFloat(price);
-	
-		// @ts-expect-error I have already done type safety for the contract above, it still gives an error here
-		return contract?.populateTransaction?.["create_product"](
-		CallData.compile([initial_stock, parsedPrice, newDataSpan])
-		);
-	}, [contract, getValues]);
-	
-	const { writeAsync, data: writeData, isPending: writeIsPending } = useContractWrite({ calls });
-	
-	const { isLoading: waitIsLoading, data: waitData } = useWaitForTransaction({
-		hash: writeData?.transaction_hash,
-		watch: true,
-	});
-	
 	const onSubmit = async (data: FormData) => {
-		console.log('Submit button clicked') // Debugging steps, will be removed
-		if (!calls) {
-			console.log('Calls not defined') // Debugging steps, will be removed
-			return
+		const submissionData = {
+			...data,
+			price: Number.parseFloat(data.price),
 		};
-	
-		try {
-			await writeAsync();
-			console.log("Submission successful", data);
-		} catch (error) {
-			console.error("Error during submission", error);
-		}
-	};	  
-
-	// const onSubmit = async (data: FormData, event) => {
-	// 	const submissionData = {
-	// 		...data,
-	// 		price: Number.parseFloat(data.price),
-	// 	};
-	// 	const { 
-	// 		bagsAvailable: initial_stock, price: cost, roast, description, variety, coffeeScore, image
-	// 	 } = data
-	// 	const newDataSpan = [roast, description, variety, coffeeScore, image]
-
-	// 	const ABI = undefined
-	// 	const price = Number.parseFloat(cost)
-
-	// 	const { contract } = useContract({
-	// 		abi: ABI,
-	// 		address,
-	// 	})
-
-	// 	const calls = useMemo(() => {
-	// 		// if (!contract?.populateTransaction) return
-	// 		return contract?.populateTransaction["create_product"](
-	// 			CallData.compile([initial_stock, price, newDataSpan])
-	// 		)
-	// 	}, [contract, address, initial_stock, price, newDataSpan])
-
-	// 	const {
-	// 		writeAsync, data: writeData, isPending: writeIsPending
-	// 	} = useContractWrite({
-	// 		calls
-	// 	})
-
-	// 	const {
-	// 		isLoading: waitIsLoading, data: waitData
-	// 	} = useWaitForTransaction({
-	// 		hash: writeData?.transaction_hash,
-	// 		watch: true
-	// 	})
-
-	// 	event?.preventDefault()
-	// 	await writeAsync()
-	// 	// TODO: Implement coffee registration logic
-	// 	console.log(submissionData);
-	// };
+		// TODO: Implement coffee registration logic
+		console.log(submissionData);
+	};
 
 	return (
 		<ProfileOptionLayout
@@ -168,6 +90,7 @@ export default function RegisterCoffee() {
 							className="w-full border border-surface-border rounded p-2"
 							placeholder={t("type_here")}
 						/>
+						{errors.variety && <p className="text-red-500">{errors.variety.message}</p>}
 					</div>
 					<div className="my-2">
 						<label className="text-content-body-default block mb-1">
@@ -178,6 +101,7 @@ export default function RegisterCoffee() {
 							className="w-full border border-surface-border rounded p-2"
 							placeholder={t("type_here")}
 						/>
+						{errors.description && <p className="text-red-500">{errors.description.message}</p>}
 					</div>
 					<div className="mb-2">
 						<label className="text-content-body-default block mb-1">
@@ -224,6 +148,7 @@ export default function RegisterCoffee() {
 							className="w-full border border-surface-border rounded p-2"
 							placeholder={t("score_placeholder")}
 						/>
+						{errors.coffeeScore && <p className="text-red-500">{errors.coffeeScore.message}</p>}
 					</div>
 					<div className="my-6">
 						<label className="text-content-body-default block mb-2">
@@ -308,6 +233,7 @@ export default function RegisterCoffee() {
 								}
 							}}
 						/>
+						{errors.price && <p className="text-red-500">{errors.price.message}</p>}
 					</div>
 					<div className="my-6 p-6 rounded bg-surface-primary-soft">
 						<p className="text-[0.875rem] text-content-body-default">
@@ -366,6 +292,7 @@ export default function RegisterCoffee() {
 								+
 							</Button>
 						</div>
+						{errors.bagsAvailable && <p className="text-red-500">{errors.bagsAvailable.message}</p>}
 					</div>
 					<Button type="submit" className="py-6 rounded w-full">
 						{t("save_and_publish")}
