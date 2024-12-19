@@ -56,24 +56,24 @@ Ranulfo's background in blockchain development and collaborative economies helps
 **Full Stack Developer Web3**
 
 - [Brolag GitHub](https://github.com/brolag)
-- [Twitter](https://x.com/brolag)
+- [X](https://x.com/brolag)
 
 ### Erick - Evgongora
 **Full Stack Developer Web3**
 
 - [Erick GitHub](https://github.com/evgongora)
-- [Twitter](https://x.com/3rickDev)
+- [X](https://x.com/3rickDev)
 
 ### Randall Valenciano
 **Full Stack Developer Web3**
 
 - [Randall GitHub](https://github.com/rvalenciano)
-- [Twitter](https://x.com/Ravf226)
+- [X](https://x.com/Ravf226)
 
 ## 🎉 Join the Community
 
 - Website: [CofiBlocks Website](https://cofiblocks.com)
-- X: [Follow us on Twitter](https://twitter.com/cofiblocks)
+- X: [Follow us on Twitter](https://x.com/cofiblocks)
 - Telegram ODHack: [Join our Telegram ODHACK Group](https://t.me/cofiblocksodhack)
 - Telegram for Devs: [Join our Telegram Devs Cofi Group](https://t.me/cofiblocksodhack)
 
