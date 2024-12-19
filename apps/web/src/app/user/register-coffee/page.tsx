@@ -37,7 +37,7 @@ export default function RegisterCoffee() {
 		alert(t("implement_image_upload"));
 	};
 
-	const { register, handleSubmit, control, getValues, setValue } =
+	const { register, handleSubmit, control, getValues, setValue, formState: {errors} } =
 		useForm<FormData>({
 			resolver: zodResolver(schema),
 			defaultValues: {
@@ -90,6 +90,7 @@ export default function RegisterCoffee() {
 							className="w-full border border-surface-border rounded p-2"
 							placeholder={t("type_here")}
 						/>
+						{errors.variety && <p className="text-red-500">{errors.variety.message}</p>}
 					</div>
 					<div className="my-2">
 						<label className="text-content-body-default block mb-1">
@@ -100,6 +101,7 @@ export default function RegisterCoffee() {
 							className="w-full border border-surface-border rounded p-2"
 							placeholder={t("type_here")}
 						/>
+						{errors.description && <p className="text-red-500">{errors.description.message}</p>}
 					</div>
 					<div className="mb-2">
 						<label className="text-content-body-default block mb-1">
@@ -146,6 +148,7 @@ export default function RegisterCoffee() {
 							className="w-full border border-surface-border rounded p-2"
 							placeholder={t("score_placeholder")}
 						/>
+						{errors.coffeeScore && <p className="text-red-500">{errors.coffeeScore.message}</p>}
 					</div>
 					<div className="my-6">
 						<label className="text-content-body-default block mb-2">
@@ -230,6 +233,7 @@ export default function RegisterCoffee() {
 								}
 							}}
 						/>
+						{errors.price && <p className="text-red-500">{errors.price.message}</p>}
 					</div>
 					<div className="my-6 p-6 rounded bg-surface-primary-soft">
 						<p className="text-[0.875rem] text-content-body-default">
@@ -288,6 +292,7 @@ export default function RegisterCoffee() {
 								+
 							</Button>
 						</div>
+						{errors.bagsAvailable && <p className="text-red-500">{errors.bagsAvailable.message}</p>}
 					</div>
 					<Button type="submit" className="py-6 rounded w-full">
 						{t("save_and_publish")}
