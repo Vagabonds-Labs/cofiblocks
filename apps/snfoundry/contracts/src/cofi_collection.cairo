@@ -256,6 +256,7 @@ mod CofiCollection {
         self.accesscontrol._grant_role(MINTER_ROLE, minter);
         self.accesscontrol._grant_role(URI_SETTER_ROLE, uri_setter);
         self.accesscontrol._grant_role(UPGRADER_ROLE, upgrader);
+        self.erc1155._set_base_uri("ipfs://");
     }
 
     impl ERC1155HooksImpl of ERC1155Component::ERC1155HooksTrait<ContractState> {
