@@ -28,6 +28,10 @@ export const ETHTokenAddress =
 export const DAITokenAddress =
 	"0x00da114221cb83fa859dbdb4c44beeaa0bb37c7537ad5ae66fe5e0efd20e6eb3";
 
+// Cairo SEPOLIA Contract Addresses
+export const marketPlaceAddress =
+	"0x0281e75afbc71a25d26fa173c5d35b5d22517cf756c9989017c2d37a3fa5308b";
+
 // Argent Related Constants
 export const ARGENT_DUMMY_CONTRACT_ADDRESS =
 	"0x001c515f991f706039696a54f6f33730e9b0e8cc5d04187b13c2c714401acfd4";
