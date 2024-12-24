@@ -1,2 +1,2 @@
-// TODO: Pinata IPFS storage function write
-// to enable storage of files and their metadata
+// TODO: Pinata IPFS storage function to write files
+// to enable their storage as well as storage of their metadata
