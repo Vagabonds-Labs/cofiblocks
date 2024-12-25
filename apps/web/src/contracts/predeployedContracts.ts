@@ -4,52 +4,52 @@
  */
 
 import {
-  devnetEthClassHash,
-  devnetStrkClassHash,
-  universalEthAddress,
-  sepoliaMainnetEthClassHash,
-  universalStrkAddress,
-  sepoliaMainnetStrkClassHash,
-  universalErc20Abi,
+	devnetEthClassHash,
+	devnetStrkClassHash,
+	sepoliaMainnetEthClassHash,
+	sepoliaMainnetStrkClassHash,
+	universalErc20Abi,
+	universalEthAddress,
+	universalStrkAddress,
 } from "../utils/Constants";
 
 const preDeployedContracts = {
-  devnet: {
-    Eth: {
-      address: universalEthAddress,
-      abi: universalErc20Abi,
-      classHash: devnetEthClassHash,
-    },
-    Strk: {
-      address: universalStrkAddress,
-      abi: universalErc20Abi,
-      classHash: devnetStrkClassHash,
-    },
-  },
-  sepolia: {
-    Eth: {
-      address: universalEthAddress,
-      abi: universalErc20Abi,
-      classHash: sepoliaMainnetEthClassHash,
-    },
-    Strk: {
-      address: universalStrkAddress,
-      abi: universalErc20Abi,
-      classHash: sepoliaMainnetStrkClassHash,
-    },
-  },
-  mainnet: {
-    Eth: {
-      address: universalEthAddress,
-      abi: universalErc20Abi,
-      classHash: sepoliaMainnetEthClassHash,
-    },
-    Strk: {
-      address: universalStrkAddress,
-      abi: universalErc20Abi,
-      classHash: sepoliaMainnetStrkClassHash,
-    },
-  },
+	devnet: {
+		Eth: {
+			address: universalEthAddress,
+			abi: universalErc20Abi,
+			classHash: devnetEthClassHash,
+		},
+		Strk: {
+			address: universalStrkAddress,
+			abi: universalErc20Abi,
+			classHash: devnetStrkClassHash,
+		},
+	},
+	sepolia: {
+		Eth: {
+			address: universalEthAddress,
+			abi: universalErc20Abi,
+			classHash: sepoliaMainnetEthClassHash,
+		},
+		Strk: {
+			address: universalStrkAddress,
+			abi: universalErc20Abi,
+			classHash: sepoliaMainnetStrkClassHash,
+		},
+	},
+	mainnet: {
+		Eth: {
+			address: universalEthAddress,
+			abi: universalErc20Abi,
+			classHash: sepoliaMainnetEthClassHash,
+		},
+		Strk: {
+			address: universalStrkAddress,
+			abi: universalErc20Abi,
+			classHash: sepoliaMainnetStrkClassHash,
+		},
+	},
 } as const;
 
 export default preDeployedContracts;
