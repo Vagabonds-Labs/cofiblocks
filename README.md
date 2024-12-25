@@ -243,4 +243,12 @@ To streamline our development process and maintain consistency across the projec
 
 - [Prompt Guide](docs/prompt-guide.md).
 
+### **Onboarding Documentation**
+
+To facilitate better onboarding and understanding of the project structure, we have added detailed markdown files in key folders of the project. These markdown files provide comprehensive overviews of the folders, their contents, and their purposes.
+
+These markdown files are designed to help new developers quickly understand the structure and functionality of each part of the project, ensuring a smoother onboarding process.
+
+**For full details and usage instructions, please refer to the respective markdown files in each folder.**
+
 #

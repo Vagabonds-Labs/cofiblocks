@@ -17,6 +17,7 @@
 		"postinstall": "prisma generate",
 		"lint": "next lint",
 		"start": "next start",
+		"storybook": "npm run dev:storybook",
 		"dev:storybook": "storybook dev -p 6006",
 		"build:storybook": "storybook build"
 	},
