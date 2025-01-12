@@ -4,8 +4,8 @@
 	"private": true,
 	"type": "module",
 	"prisma": {
-		"schema": "apps/web/prisma/schema.prisma",
-		"seed": "node apps/web/prisma/seed.js"
+		"schema": "./prisma/schema.prisma",
+		"seed": "./prisma/seed.js"
 	},
 	"scripts": {
 		"build": "next build",
