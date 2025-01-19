@@ -175,6 +175,9 @@ pub trait ICofiCollection<TContractState> {
 
     /// Unpauses all token transfers.
     fn unpause(ref self: TContractState);
+
+    // Update minter after deployment
+    fn set_minter(ref self: TContractState, minter: ContractAddress);
 }
 
 #[starknet::contract]
@@ -374,6 +377,12 @@ mod CofiCollection {
         fn set_base_uri(ref self: ContractState, base_uri: ByteArray) {
             self.accesscontrol.assert_only_role(URI_SETTER_ROLE);
             self.erc1155._set_base_uri(base_uri);
+        }
+
+        #[external(v0)]
+        fn set_minter(ref self: ContractState, minter: ContractAddress) {
+            self.accesscontrol.assert_only_role(DEFAULT_ADMIN_ROLE);
+            self.accesscontrol._grant_role(MINTER_ROLE, minter);
         }
     }
 }
