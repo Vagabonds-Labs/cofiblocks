@@ -39,7 +39,7 @@ export default function ProductCatalog() {
 			const allProducts = data.pages.flatMap((page) =>
 				page.products.map((product) => ({
 					...product,
-					process: product.process ?? "Natural",
+					process: "Natural",
 				})),
 			);
 			setProducts(allProducts);
@@ -81,12 +81,12 @@ export default function ProductCatalog() {
 		return (
 			<ProductCard
 				key={product.id}
-				image={metadata?.imageUrl ?? "/default-image.webp"}
-				region={product.region}
-				farmName={product.farmName}
+				image={metadata?.imageUrl ?? "/images/cafe1.webp"}
+				region={metadata?.region ?? ""}
+				farmName={metadata?.farmName ?? ""}
 				variety={t(product.name)}
 				price={product.price}
-				badgeText={t(`strength.${product.strength.toLowerCase()}`)}
+				badgeText={t(`strength.${metadata?.strength.toLowerCase()}`)}
 				onClick={() => accessProductDetails(product.id)}
 			/>
 		);

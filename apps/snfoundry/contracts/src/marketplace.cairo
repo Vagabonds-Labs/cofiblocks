@@ -13,9 +13,12 @@ pub trait IMarketplace<ContractState> {
     fn create_product(
         ref self: ContractState, initial_stock: u256, price: u256, data: Span<felt252>
     ) -> u256;
-    fn create_products(ref self: ContractState, initial_stock: Span<u256>, price: Span<u256>) -> Span<u256>;
+    fn create_products(
+        ref self: ContractState, initial_stock: Span<u256>, price: Span<u256>
+    ) -> Span<u256>;
     fn delete_product(ref self: ContractState, token_id: u256);
     fn delete_products(ref self: ContractState, token_ids: Span<u256>);
+    fn claim_balance(self: @ContractState, producer: ContractAddress) -> u256;
     fn claim(ref self: ContractState);
 }
 
@@ -197,19 +200,19 @@ mod Marketplace {
             let buyer = get_caller_address();
             let contract_address = get_contract_address();
             let strk_token_dispatcher = IERC20Dispatcher {
-                 contract_address: contract_address_const::<STRK_TOKEN_ADDRESS>()
+                contract_address: contract_address_const::<STRK_TOKEN_ADDRESS>()
             };
             // Get payment from buyer
             let mut producer_fee = self.listed_product_price.read(token_id) * token_amount;
             let mut total_price = producer_fee
                 + self.calculate_fee(producer_fee, self.market_fee.read());
             assert(
-                 strk_token_dispatcher.balance_of(get_caller_address()) >= total_price,
-                 'insufficient funds'
+                strk_token_dispatcher.balance_of(get_caller_address()) >= total_price,
+                'insufficient funds'
             );
             assert(
-                 strk_token_dispatcher.allowance(buyer, contract_address) >= total_price,
-                 'insufficient allowance'
+                strk_token_dispatcher.allowance(buyer, contract_address) >= total_price,
+                'insufficient allowance'
             );
             strk_token_dispatcher.transfer_from(buyer, contract_address, total_price);
 
@@ -336,7 +339,9 @@ mod Marketplace {
             token_id
         }
 
-        fn create_products(ref self: ContractState, initial_stock: Span<u256>, price: Span<u256>) -> Span<u256> {
+        fn create_products(
+            ref self: ContractState, initial_stock: Span<u256>, price: Span<u256>
+        ) -> Span<u256> {
             assert(initial_stock.len() == price.len(), 'wrong len of arrays');
             self.accesscontrol.assert_only_role(PRODUCER);
             let producer = get_caller_address();
@@ -425,6 +430,10 @@ mod Marketplace {
                 self.emit(DeleteProduct { token_id });
                 token_idx += 1;
             };
+        }
+
+        fn claim_balance(self: @ContractState, producer: ContractAddress) -> u256 {
+            self.claim_balances.read(producer)
         }
 
         fn claim(ref self: ContractState) {

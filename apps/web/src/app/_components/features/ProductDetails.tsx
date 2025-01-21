@@ -16,6 +16,7 @@ import { SelectionTypeCard } from "./SelectionTypeCard";
 interface ProductDetailsProps {
 	product: {
 		id: number;
+		tokenId: number;
 		image: string;
 		name: string;
 		region: string;
@@ -59,6 +60,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 		setIsAddingToCart(true);
 		addItem({
 			id: String(product.id),
+			tokenId: product.tokenId,
 			name: product.name,
 			quantity: quantity,
 			price: product.price,

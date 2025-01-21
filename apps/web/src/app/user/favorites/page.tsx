@@ -37,6 +37,7 @@ export default function Favorites() {
 	const handleAddToCart = (productId: number) => {
 		addItem({
 			id: productId.toString(),
+			tokenId: productId,
 			name: "Product Name",
 			quantity: 1,
 			price: 10.0,

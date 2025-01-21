@@ -15,7 +15,13 @@ import { api } from "~/trpc/react";
 const schema = z.object({
 	farmName: z.string().min(1, "farm_name_required"),
 	region: z.string().min(1, "region_required"),
-	altitude: z.number().min(0, "altitude_positive"),
+	altitude: z.union([
+		z.number().min(0, "altitude_positive"),
+		z
+			.string()
+			.transform((val) => Number(val))
+			.refine((val) => !Number.isNaN(val) && val >= 0, "Not a valid number"),
+	]),
 	coordinates: z
 		.string()
 		.regex(/^-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?$/, "coordinates_invalid"),
@@ -72,7 +78,7 @@ function EditMyFarmProfile() {
 
 		updateFarm({
 			farmId: userFarm.id,
-			altitude: data.altitude,
+			altitude: Number(data.altitude),
 			name: data.farmName,
 			region: data.region,
 			coordinates: data.coordinates,

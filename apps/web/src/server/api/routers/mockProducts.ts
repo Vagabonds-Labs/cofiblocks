@@ -5,6 +5,7 @@
 export const mockedProducts = [
 	{
 		id: 1,
+		tokenId: 1,
 		name: "product_name_1",
 		price: 15.99,
 		region: "Alajuela",
@@ -21,6 +22,7 @@ export const mockedProducts = [
 	},
 	{
 		id: 2,
+		tokenId: 2,
 		name: "product_name_2",
 		price: 17.99,
 		region: "Cartago",
@@ -37,6 +39,7 @@ export const mockedProducts = [
 	},
 	{
 		id: 3,
+		tokenId: 3,
 		name: "product_name_3",
 		price: 19.99,
 		region: "Heredia",
@@ -53,6 +56,7 @@ export const mockedProducts = [
 	},
 	{
 		id: 4,
+		tokenId: 4,
 		name: "product_name_4",
 		price: 16.99,
 		region: "Guanacaste",
@@ -68,6 +72,7 @@ export const mockedProducts = [
 	},
 	{
 		id: 5,
+		tokenId: 5,
 		name: "product_name_5",
 		price: 18.99,
 		region: "Puntarenas",
@@ -83,6 +88,7 @@ export const mockedProducts = [
 	},
 	{
 		id: 6,
+		tokenId: 6,
 		name: "product_name_6",
 		price: 20.99,
 		region: "San José",
@@ -98,6 +104,7 @@ export const mockedProducts = [
 	},
 	{
 		id: 7,
+		tokenId: 7,
 		name: "product_name_7",
 		price: 14.99,
 		region: "Limón",

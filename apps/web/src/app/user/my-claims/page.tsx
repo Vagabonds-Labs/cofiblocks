@@ -6,11 +6,17 @@ import {
 	MagnifyingGlassIcon,
 } from "@heroicons/react/24/solid";
 import Button from "@repo/ui/button";
-import { useRouter } from "next/navigation";
+import { useAccount, useProvider } from "@starknet-react/core";
 import { useEffect, useState } from "react";
 import OrderListItem from "~/app/_components/features/OrderListItem";
 import OrderListPriceItem from "~/app/_components/features/OrderListPriceItem";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
+import {
+	ContractsInterface,
+	useCofiCollectionContract,
+	useMarketplaceContract,
+	useStarkContract,
+} from "~/services/contractsInterface";
 import { DeliveryMethod, SalesStatus } from "~/types";
 
 import { useTranslation } from "react-i18next";
@@ -72,7 +78,14 @@ export default function MyClaims() {
 	const [, setIsFiltersModalOpen] = useState(false);
 	const { t } = useTranslation();
 
-	const router = useRouter();
+	const { provider } = useProvider();
+	const contracts = new ContractsInterface(
+		useAccount(),
+		useCofiCollectionContract(),
+		useMarketplaceContract(),
+		useStarkContract(),
+		provider,
+	);
 
 	useEffect(() => {
 		const unclaimedOrders = mockedOrders
@@ -108,6 +121,12 @@ export default function MyClaims() {
 
 	const openFiltersModal = () => {
 		setIsFiltersModalOpen(true);
+	};
+
+	const handleClaim = async () => {
+		console.log("claiming");
+		const tx = await contracts.claim();
+		alert(`Claimed success with tx: ${tx}`);
 	};
 
 	const handleItemClick = (id: string) => {
@@ -160,7 +179,7 @@ export default function MyClaims() {
 			<div className="mb-6">
 				<Button
 					className="mx-auto mt-5 w-[90%] h-15 px-2"
-					onClick={() => router.push("/user/register-coffee")}
+					onClick={() => handleClaim()}
 				>
 					{t("recieve")} {MoneyToClaim.toFixed(2)} USD
 				</Button>

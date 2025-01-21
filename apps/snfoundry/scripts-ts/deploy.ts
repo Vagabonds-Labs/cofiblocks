@@ -1,4 +1,4 @@
-import { addAddressPadding } from "starknet";
+import { addAddressPadding, byteArray } from "starknet";
 import {
 	deployContract,
 	deployer,
@@ -42,41 +42,75 @@ import { green } from "./helpers/colorize-log";
  *
  * @returns {Promise<void>}
  */
-const deployScript = async (): Promise<void> => {
-	console.log("🚀 Deploying with address:", green(deployer.address));
 
-	// await deployContract({
-	// 	contract: "cofi_collection.cairo",
-	// 	contractName: "CofiCollection",
-	// 	constructorArgs: {
-	// 		default_admin: deployer.address,
-	// 		pauser: deployer.address,
-	// 		minter: deployer.address,
-	// 		uri_setter: deployer.address,
-	// 		upgrader: deployer.address,
-	// 	},
-	// });
-	// Deploy Marketplace
-	await deployContract({
+const string_to_byte_array = (str: string): string[] => {
+	const byte_array = byteArray.byteArrayFromString(str);
+	const result = [`0x${byte_array.data.length.toString(16)}`];
+	for (let i = 0; i < byte_array.data.length; i++) {
+		result.push(byte_array.data[i].toString());
+	}
+	if (byte_array.pending_word) {
+		result.push(byte_array.pending_word.toString());
+	}
+	result.push(`0x${byte_array.pending_word_len.toString(16)}`);
+	return result;
+};
+
+const deployScript = async (): Promise<void> => {
+	console.log("🚀 Creating deployment calls...");
+
+	const { address: cofiCollectionAddress } = await deployContract({
+		contract: "cofi_collection.cairo",
+		contractName: "CofiCollection",
+		constructorArgs: {
+			default_admin: deployer.address,
+			pauser: deployer.address,
+			minter: deployer.address,
+			uri_setter: deployer.address,
+			upgrader: deployer.address,
+		},
+	});
+
+	const { address: marketplaceAddress } = await deployContract({
 		contract: "marketplace.cairo",
 		contractName: "Marketplace",
-		// TODO: incluide constructor args for deploy
-		// cofi_collection_address: ContractAddress
-		// cofi_vault_address: ContractAddress
-		// strk_contract: ContractAddress
 		constructorArgs: {
-			cofi_collection_address: addAddressPadding(
-				"0x0448d8cc3403303a76d89a56b7e8ecf9aa9fcd41e7bb66d10f4be5b67b2f8aab",
-			),
+			cofi_collection_address: cofiCollectionAddress,
 			admin: deployer.address,
 			market_fee: BigInt(300000),
 		},
 	});
+
+	console.log(
+		"CofiCollection will be deployed at:",
+		green(cofiCollectionAddress),
+	);
+	console.log("Marketplace will be deployed at:", green(marketplaceAddress));
+	await executeDeployCalls();
+
+	console.log("🚀 Setting marketplace as minter and setting base uri...");
+	const base_uri_txt = process.env.TOKEN_METADATA_URL || "";
+	console.log("Base URI:", base_uri_txt);
+	const transactions = [
+		{
+			contractAddress: cofiCollectionAddress,
+			entrypoint: "set_minter",
+			calldata: {
+				minter: marketplaceAddress,
+			},
+		},
+		{
+			contractAddress: cofiCollectionAddress,
+			entrypoint: "set_base_uri",
+			calldata: string_to_byte_array(base_uri_txt),
+		},
+	];
+	const { transaction_hash } = await deployer.execute(transactions);
+	console.log("🚀 Final transactions hash", transaction_hash);
 };
 
 deployScript()
 	.then(async () => {
-		await executeDeployCalls();
 		exportDeployments();
 
 		console.log(green("All Setup Done"));
