@@ -5,7 +5,7 @@ import {
 	executeDeployCalls,
 	exportDeployments,
 } from "./deploy-contract";
-import { green } from "./helpers/colorize-log";
+import { green, yellow } from "./helpers/colorize-log";
 
 /**
  * Deploy a contract using the specified parameters.
@@ -77,7 +77,7 @@ const deployScript = async (): Promise<void> => {
 		constructorArgs: {
 			cofi_collection_address: cofiCollectionAddress,
 			admin: deployer.address,
-			market_fee: BigInt(300000),
+			market_fee: BigInt(250), // 2.5 %
 		},
 	});
 
@@ -107,6 +107,11 @@ const deployScript = async (): Promise<void> => {
 	];
 	const { transaction_hash } = await deployer.execute(transactions);
 	console.log("🚀 Final transactions hash", transaction_hash);
+	console.log(
+		yellow(
+			"Make sure to update the contracts metadata in web app!! See README.md",
+		),
+	);
 };
 
 deployScript()

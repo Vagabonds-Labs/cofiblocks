@@ -81,7 +81,7 @@ export default function RegisterCoffee() {
 				name: submissionData.variety,
 				price: submissionData.price,
 				description: submissionData.description,
-				image: submissionData.image ?? "",
+				image: submissionData.image ?? "/images/cafe1.webp",
 				strength: submissionData.roast,
 				region: "",
 				farmName: "",

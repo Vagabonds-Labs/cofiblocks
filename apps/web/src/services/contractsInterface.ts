@@ -131,7 +131,24 @@ class ContractsInterface {
 			"balanceOf",
 			CallData.compile([address, token_id, "0x0"]),
 		);
+
 		return balance;
+	}
+
+	async get_claim_balance() {
+		const address = this.get_user_address();
+		if (!this.marketplaceContract) {
+			throw new Error("Cofi collection contract is not loaded");
+		}
+		const balance_result = await this.marketplaceContract.call(
+			"claim_balance",
+			CallData.compile([address]),
+		);
+		const balance = BigInt(Number(balance_result));
+
+		const stark_price_usd = await this.getStarkPrice();
+		const total = (Number(balance) / 1000000000000000000) * stark_price_usd;
+		return total;
 	}
 
 	async register_product(price_usd: number, initial_stock: number) {
@@ -208,6 +225,10 @@ class ContractsInterface {
 				"0x0",
 			]),
 		);
+		// wait for allowance to complete to avoid errors
+		await this.provider.waitForTransaction(tx.transaction_hash, {
+			retryInterval: 100,
+		});
 		return tx.transaction_hash;
 	}
 

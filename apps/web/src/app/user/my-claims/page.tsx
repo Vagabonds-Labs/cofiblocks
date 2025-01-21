@@ -75,6 +75,7 @@ export default function MyClaims() {
 	const [ClaimedOrders, setClaimedOrders] = useState(mockedOrders);
 	const [searchTerm, setSearchTerm] = useState("");
 	const [MoneyToClaim, setMoneyToClaim] = useState(0);
+	const [checked, setChecked] = useState(false);
 	const [, setIsFiltersModalOpen] = useState(false);
 	const { t } = useTranslation();
 
@@ -88,35 +89,31 @@ export default function MyClaims() {
 	);
 
 	useEffect(() => {
-		const unclaimedOrders = mockedOrders
-			.map((orderGroup) => ({
-				...orderGroup,
-				items: orderGroup.items.filter((item) => !item.claimed),
-			}))
-			.filter((orderGroup) => orderGroup.items.length > 0);
+		const fetchData = () => {
+			const unclaimedOrders = mockedOrders
+				.map((orderGroup) => ({
+					...orderGroup,
+					items: orderGroup.items.filter((item) => !item.claimed),
+				}))
+				.filter((orderGroup) => orderGroup.items.length > 0);
 
-		setOrdersToClaim(unclaimedOrders);
+			setOrdersToClaim(unclaimedOrders);
 
-		const totalMoneyToClaim = unclaimedOrders.reduce((total, orderGroup) => {
-			return (
-				total +
-				orderGroup.items.reduce(
-					(groupTotal, item) => groupTotal + item.price,
-					0,
-				)
-			);
-		}, 0);
+			const totalMoneyToClaim = 0;
 
-		setMoneyToClaim(totalMoneyToClaim);
+			setMoneyToClaim(totalMoneyToClaim);
 
-		const claimedOrders = mockedOrders
-			.map((orderGroup) => ({
-				...orderGroup,
-				items: orderGroup.items.filter((item) => item.claimed),
-			}))
-			.filter((orderGroup) => orderGroup.items.length > 0);
+			const claimedOrders = mockedOrders
+				.map((orderGroup) => ({
+					...orderGroup,
+					items: orderGroup.items.filter((item) => item.claimed),
+				}))
+				.filter((orderGroup) => orderGroup.items.length > 0);
 
-		setClaimedOrders(claimedOrders);
+			setClaimedOrders(claimedOrders);
+		};
+
+		fetchData();
 	}, []);
 
 	const openFiltersModal = () => {
@@ -124,6 +121,12 @@ export default function MyClaims() {
 	};
 
 	const handleClaim = async () => {
+		if (!checked) {
+			const total = await contracts.get_claim_balance();
+			setMoneyToClaim(Number(total));
+			setChecked(true);
+			return;
+		}
 		console.log("claiming");
 		const tx = await contracts.claim();
 		alert(`Claimed success with tx: ${tx}`);
@@ -181,7 +184,9 @@ export default function MyClaims() {
 					className="mx-auto mt-5 w-[90%] h-15 px-2"
 					onClick={() => handleClaim()}
 				>
-					{t("recieve")} {MoneyToClaim.toFixed(2)} USD
+					{!checked
+						? "Check balance"
+						: `${t("recieve")} ${MoneyToClaim.toFixed(2)} USD`}
 				</Button>
 			</div>
 			<div className="mb-6">

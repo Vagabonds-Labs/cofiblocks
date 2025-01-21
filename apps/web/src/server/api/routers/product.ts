@@ -70,13 +70,7 @@ export const productRouter = createTRPCRouter({
 				name: z.string().min(1),
 				price: z.number().min(0),
 				description: z.string().min(1),
-				image: z
-					.string()
-					.optional()
-					.refine(
-						(val) => val === "" || z.string().url().safeParse(val).success,
-						{ message: "Invalid URL" },
-					),
+				image: z.string().optional(),
 				strength: z.string().min(1),
 				region: z.string().optional(),
 				farmName: z.string().optional(),
