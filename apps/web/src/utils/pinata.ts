@@ -1,11 +1,11 @@
-"server only"
+"server only";
 
-import { PinataSDK } from 'pinata-web3'
+import { PinataSDK } from "pinata-web3";
 
 export const pinata = new PinataSDK({
-    pinataJwt: `${process.env.PINATA_JWT}`,
-    pinataGateway: `${process.env.NEXT_PUBLIC_GATEWAY_URL}`
-})
+	pinataJwt: `${process.env.PINATA_JWT}`,
+	pinataGateway: `${process.env.NEXT_PUBLIC_GATEWAY_URL}`,
+});
 
 // To get the client side form implementation of file uploads to pinata:
 // Visit the url: https://docs.pinata.cloud/frameworks/next-js-ipfs#create-client-side-form

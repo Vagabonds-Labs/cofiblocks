@@ -4,16 +4,17 @@ export type NftMetadata = {
 	imageUrl: string;
 	imageAlt: string;
 	description: string;
+	strength: string;
+	farmName: string;
+	region: string;
 };
 
 export type Product = {
 	id: number;
+	tokenId: number;
 	name: string;
 	price: number;
 	nftMetadata: Prisma.JsonValue | NftMetadata;
-	region: string;
-	farmName: string;
-	strength: string;
 	process?: string;
 	createdAt: Date;
 	updatedAt: Date;

@@ -1,29 +1,54 @@
-# Create T3 App
+# CofiBlocks Web
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+## Running the Application
 
-## What's next? How do I make an app with this?
+Follow the steps below to set up and run the CofiBlocks web application.
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+### 1. Set Up Environment Variables
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+Create a `.env` file by copying the example configuration:
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+```bash
+cp .env.example .env
+```
 
-## Learn More
+Then, fill in the required values in the `.env` file:
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+- **`DATABASE_URL`**: The database connection URL.
+  - Example for a local MySQL setup:
+    ```
+    mysql://root:root@127.0.0.1:3306/web
+    ```
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+### 2. Start the Database
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+Ensure Docker is running and execute the script to start the database:
 
-## How do I deploy this?
+```bash
+./start-database.sh
+```
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+### 3. Generate Database Migrations
+
+Run the following command to generate the required database migrations:
+
+```bash
+bun db:generate
+```
+
+### 4. Generate Prisma Client
+
+Execute the command to generate the Prisma client:
+
+```bash
+bun postinstall
+```
+
+### 5. Start the Application
+
+To run the application in development mode, use:
+
+```bash
+bun turbo dev
+```
+

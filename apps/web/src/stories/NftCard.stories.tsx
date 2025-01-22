@@ -1,5 +1,5 @@
 import NFTCard from "@repo/ui/nftCard";
-import { type Meta, StoryFn, type StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react";
 import type React from "react";
 
 export default {

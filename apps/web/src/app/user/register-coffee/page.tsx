@@ -8,11 +8,20 @@ import { ClockIcon } from "@heroicons/react/24/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@repo/ui/button";
 import RadioButton from "@repo/ui/form/radioButton";
+import { useAccount, useProvider } from "@starknet-react/core";
 import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
+import {
+	ContractsError,
+	ContractsInterface,
+	useCofiCollectionContract,
+	useMarketplaceContract,
+	useStarkContract,
+} from "~/services/contractsInterface";
+import { api } from "~/trpc/react";
 import { RoastLevel } from "~/types";
 
 const schema = z.object({
@@ -33,6 +42,15 @@ type FormData = z.infer<typeof schema>;
 
 export default function RegisterCoffee() {
 	const { t } = useTranslation();
+	const { provider } = useProvider();
+	const contracts = new ContractsInterface(
+		useAccount(),
+		useCofiCollectionContract(),
+		useMarketplaceContract(),
+		useStarkContract(),
+		provider,
+	);
+	const mutation = api.product.createProduct.useMutation();
 	const handleImageUpload = () => {
 		alert(t("implement_image_upload"));
 	};
@@ -53,6 +71,34 @@ export default function RegisterCoffee() {
 		};
 		// TODO: Implement coffee registration logic
 		console.log(submissionData);
+		try {
+			const token_id = await contracts.register_product(
+				submissionData.price,
+				submissionData.bagsAvailable,
+			);
+			await mutation.mutateAsync({
+				tokenId: token_id,
+				name: submissionData.variety,
+				price: submissionData.price,
+				description: submissionData.description,
+				image: submissionData.image ?? "/images/cafe1.webp",
+				strength: submissionData.roast,
+				region: "",
+				farmName: "",
+			});
+			alert("Product registered successfully");
+		} catch (error) {
+			if (error instanceof ContractsError) {
+				if (error.code === ContractsError.USER_MISSING_ROLE) {
+					alert("User is not registered as a seller");
+				} else if (error.code === ContractsError.USER_NOT_CONNECTED) {
+					alert("User is disconnected");
+				}
+			} else {
+				console.log("error registering", error);
+				alert("An error occurred while registering the product");
+			}
+		}
 	};
 
 	return (

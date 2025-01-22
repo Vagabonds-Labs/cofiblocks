@@ -8,6 +8,7 @@ import ProductDetails from "~/app/_components/features/ProductDetails";
 
 interface Product {
 	id: number;
+	tokenId: number;
 	image: string;
 	name: string;
 	region: string;
@@ -21,19 +22,21 @@ interface Product {
 }
 
 interface ApiResponse {
-	nftMetadata: string;
+	id: number;
+	tokenId: number;
+	nftMetadata: NftMetadata;
 	name: string;
-	region: string;
-	farmName: string;
-	strength: string;
 	bagsAvailable: number;
 	price: number;
-	process?: string;
+	//process?: string;
 }
 
 interface NftMetadata {
 	imageUrl: string;
 	description: string;
+	region: string;
+	farmName: string;
+	strength: string;
 }
 
 function ProductPage() {
@@ -58,20 +61,24 @@ function ProductPage() {
 			}
 			const data = (await response.json()) as ApiResponse;
 
-			const parsedMetadata = JSON.parse(data.nftMetadata) as NftMetadata;
+			const parsedMetadata: NftMetadata =
+				typeof data.nftMetadata === "string"
+					? (JSON.parse(data.nftMetadata) as NftMetadata)
+					: data.nftMetadata;
 
 			const product: Product = {
 				id: Number(id),
+				tokenId: data.tokenId,
 				image: parsedMetadata.imageUrl,
 				name: data.name,
-				region: data.region,
-				farmName: data.farmName,
-				roastLevel: data.strength,
+				region: parsedMetadata.region,
+				farmName: parsedMetadata.farmName,
+				roastLevel: parsedMetadata.strength,
 				bagsAvailable: data.bagsAvailable ?? 10,
 				price: data.price,
 				description: parsedMetadata.description,
 				type: "Buyer",
-				process: data.process ?? "Natural",
+				process: "Natural",
 			};
 
 			setProduct(product);

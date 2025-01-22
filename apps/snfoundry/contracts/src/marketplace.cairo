@@ -12,10 +12,13 @@ pub trait IMarketplace<ContractState> {
     fn buy_products(ref self: ContractState, token_ids: Span<u256>, token_amount: Span<u256>);
     fn create_product(
         ref self: ContractState, initial_stock: u256, price: u256, data: Span<felt252>
-    );
-    fn create_products(ref self: ContractState, initial_stock: Span<u256>, price: Span<u256>);
+    ) -> u256;
+    fn create_products(
+        ref self: ContractState, initial_stock: Span<u256>, price: Span<u256>
+    ) -> Span<u256>;
     fn delete_product(ref self: ContractState, token_id: u256);
     fn delete_products(ref self: ContractState, token_ids: Span<u256>);
+    fn claim_balance(self: @ContractState, producer: ContractAddress) -> u256;
     fn claim(ref self: ContractState);
 }
 
@@ -207,6 +210,10 @@ mod Marketplace {
                 strk_token_dispatcher.balance_of(get_caller_address()) >= total_price,
                 'insufficient funds'
             );
+            assert(
+                strk_token_dispatcher.allowance(buyer, contract_address) >= total_price,
+                'insufficient allowance'
+            );
             strk_token_dispatcher.transfer_from(buyer, contract_address, total_price);
 
             // Transfer the nft products
@@ -317,7 +324,7 @@ mod Marketplace {
         /// * `data` - Additional context or metadata for the token transfer process
         fn create_product(
             ref self: ContractState, initial_stock: u256, price: u256, data: Span<felt252>
-        ) {
+        ) -> u256 {
             self.accesscontrol.assert_only_role(PRODUCER);
             let token_id = self.current_token_id.read();
             let cofi_collection = ICofiCollectionDispatcher {
@@ -326,13 +333,15 @@ mod Marketplace {
             cofi_collection.mint(get_contract_address(), token_id, initial_stock, data);
 
             let producer = get_caller_address();
-            self.seller_products.write(token_id, producer);
 
             self.current_token_id.write(token_id + 1);
             self.initialize_product(token_id, producer, initial_stock, price);
+            token_id
         }
 
-        fn create_products(ref self: ContractState, initial_stock: Span<u256>, price: Span<u256>) {
+        fn create_products(
+            ref self: ContractState, initial_stock: Span<u256>, price: Span<u256>
+        ) -> Span<u256> {
             assert(initial_stock.len() == price.len(), 'wrong len of arrays');
             self.accesscontrol.assert_only_role(PRODUCER);
             let producer = get_caller_address();
@@ -372,6 +381,7 @@ mod Marketplace {
                     );
                 token_idx += 1;
             };
+            token_ids.span()
         }
 
         fn delete_product(ref self: ContractState, token_id: u256) {
@@ -418,7 +428,12 @@ mod Marketplace {
                 self.update_stock(token_id, 0);
                 cofi_collection.burn(token_holder, token_id, amount_tokens);
                 self.emit(DeleteProduct { token_id });
+                token_idx += 1;
             };
+        }
+
+        fn claim_balance(self: @ContractState, producer: ContractAddress) -> u256 {
+            self.claim_balances.read(producer)
         }
 
         fn claim(ref self: ContractState) {
@@ -429,9 +444,7 @@ mod Marketplace {
             let strk_token_dispatcher = IERC20Dispatcher {
                 contract_address: contract_address_const::<STRK_TOKEN_ADDRESS>()
             };
-            strk_token_dispatcher.approve(producer, claim_balance);
-            let transfer = strk_token_dispatcher
-                .transfer_from(get_contract_address(), producer, claim_balance);
+            let transfer = strk_token_dispatcher.transfer(producer, claim_balance);
             assert(transfer, 'Error claiming');
 
             self.claim_balances.write(producer, 0);
@@ -448,7 +461,7 @@ mod Marketplace {
             price: u256
         ) {
             //let product = Product { stock, price };
-            //self.seller_products.entry(producer).write(token_id);
+            self.seller_products.write(token_id, producer);
             self.listed_product_stock.write(token_id, stock);
             self.listed_product_price.write(token_id, price);
             self.emit(CreateProduct { token_id, initial_stock: stock });

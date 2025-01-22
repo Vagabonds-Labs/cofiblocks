@@ -3,6 +3,7 @@ import { atomWithStorage } from "jotai/utils";
 
 export interface CartItem {
 	id: string;
+	tokenId: number;
 	name: string;
 	quantity: number;
 	price: number;

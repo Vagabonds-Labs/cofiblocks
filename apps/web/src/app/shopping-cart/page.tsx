@@ -1,6 +1,8 @@
 "use client";
 
 import { ArrowLeftIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { useAccount } from "@starknet-react/core";
+import { useProvider } from "@starknet-react/core";
 import { useAtom, useAtomValue } from "jotai";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -8,6 +10,14 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { cartItemsAtom, removeItemAtom } from "~/store/cartAtom";
 import type { CartItem } from "~/store/cartAtom";
+import {
+	ContractsError,
+	ContractsInterface,
+	useCofiCollectionContract,
+	useMarketplaceContract,
+	useStarkContract,
+} from "../../services/contractsInterface";
+//import { api } from "~/trpc/server";
 
 interface DeleteModalProps {
 	isOpen: boolean;
@@ -59,6 +69,14 @@ export default function ShoppingCart() {
 	const items = useAtomValue(cartItemsAtom);
 	const [, removeItem] = useAtom(removeItemAtom);
 	const [itemToDelete, setItemToDelete] = useState<CartItem | null>(null);
+	const { provider } = useProvider();
+	const contract = new ContractsInterface(
+		useAccount(),
+		useCofiCollectionContract(),
+		useMarketplaceContract(),
+		useStarkContract(),
+		provider,
+	);
 	const { t } = useTranslation();
 	const handleRemove = (item: CartItem) => {
 		setItemToDelete(item);
@@ -73,6 +91,28 @@ export default function ShoppingCart() {
 
 	const cancelDelete = () => {
 		setItemToDelete(null);
+	};
+
+	const handleBuy = async () => {
+		const token_ids = items.map((item) => item.tokenId);
+		const token_amounts = items.map((item) => item.quantity);
+		console.log("buying items", token_ids, token_amounts, totalPrice);
+		try {
+			const tx_hash = await contract.buy_product(
+				token_ids,
+				token_amounts,
+				totalPrice,
+			);
+			alert(`Items bought successfully tx hash: ${tx_hash}`);
+			for (const item of items) {
+				removeItem(item.id);
+			}
+		} catch (error) {
+			if (error instanceof ContractsError) {
+				alert(error.message);
+			}
+			console.error("Error buying items:", error);
+		}
 	};
 
 	const totalPrice = items.reduce(
@@ -153,6 +193,7 @@ export default function ShoppingCart() {
 					<div className="fixed bottom-0 left-0 right-0 bg-white max-w-md mx-auto px-4 pb-4 pt-2">
 						<button
 							type="button"
+							onClick={() => handleBuy()}
 							className="w-full py-3.5 px-4 bg-surface-secondary-default rounded-lg border border-surface-secondary-defaul flex justify-center items-center"
 						>
 							<span className="text-[#1F1F20] text-base font-normal">

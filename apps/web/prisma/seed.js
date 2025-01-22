@@ -107,6 +107,7 @@ async function main() {
 			prisma.product.create({
 				data: {
 					name: card.title,
+					tokenId: index + 1,
 					price: 15.99 + index * 2, // Randomize price for realism
 					nftMetadata: JSON.stringify({
 						description: card.description,
