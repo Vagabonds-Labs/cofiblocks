@@ -1,7 +1,6 @@
 import { HeartIcon } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartSolidIcon } from "@heroicons/react/24/solid";
 import Button from "@repo/ui/button";
-import { ChatWithSeller } from "@repo/ui/chatWithSeller";
 import { DataCard } from "@repo/ui/dataCard";
 import PageHeader from "@repo/ui/pageHeader";
 import { useAtom, useAtomValue } from "jotai";
@@ -70,7 +69,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 	};
 
 	return (
-		<div className="flex flex-col items-center mx-auto">
+		<div className="mx-auto flex flex-col items-center">
 			<div className="w-full max-w-[24.375rem]">
 				<PageHeader
 					title={
@@ -105,26 +104,19 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 					alt={name}
 					width={358}
 					height={358}
-					className="object-cover w-full h-full"
+					className="h-full w-full object-cover"
 				/>
 			</div>
 
 			<div className="w-full max-w-[24.375rem] px-4">
 				<div>
-					<h2 className="text-2xl font-bold mt-6 mx-4 text-left">
+					<h2 className="mx-4 mt-6 text-left text-2xl font-bold">
 						{t(product.name)}
 					</h2>
-					<p className="text-content-body-default mt-2 mx-4 text-left">
+					<p className="mx-4 mt-2 text-left text-content-body-default">
 						{t(product.description)}
 					</p>
-					<div className="mt-6">
-						<ChatWithSeller
-							name="John Doe"
-							description={t("chat_with_seller")}
-							onClick={() => console.log("Open chat")}
-						/>
-					</div>
-					<div className="grid grid-cols-2 gap-4 mt-6">
+					<div className="mt-6 grid grid-cols-2 gap-4">
 						<DataCard
 							label={t("roast_level")}
 							value={t(`strength.${roastLevel.toLowerCase()}`)}
@@ -136,7 +128,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 							iconSrc="/images/product-details/Flame.svg"
 						/>
 					</div>
-					<div className="grid grid-cols-2 gap-4 mt-4">
+					<div className="mt-4 grid grid-cols-2 gap-4">
 						<DataCard
 							label={t("bags_available")}
 							value={
@@ -166,8 +158,8 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 						</div>
 					)}
 
-					<div className="w-full my-6">
-						<div className="flex items-center relative">
+					<div className="my-6 w-full">
+						<div className="relative flex items-center">
 							<div className="h-[2px] w-full bg-gradient-to-r from-transparent via-surface-primary-soft to-transparent shadow-sm" />
 						</div>
 					</div>
@@ -182,7 +174,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 						isEditable={true}
 					/>
 
-					<Button className="w-full mt-1 mb-6" onClick={() => void 0}>
+					<Button className="mb-6 mt-1 w-full" onClick={() => void 0}>
 						<div className="text-base font-normal">{t("edit_my_farm")}</div>
 					</Button>
 				</div>
