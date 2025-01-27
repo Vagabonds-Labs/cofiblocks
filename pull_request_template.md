@@ -1,34 +1,41 @@
 ## Description
 
-<!-- Please include a summary of the changes and the related issue. Highlight any major changes that impact existing functionality. -->
+<!-- A brief description of what this pull request does. Why is this change being made? -->
 
-## Checklist
+## Related Issue
 
-- [ ] The title of the PR is clear and descriptive.
-- [ ] All tests have been run and passed.
-- [ ] Code follows project conventions (Biome formatting, linting).
-- [ ] Documentation has been updated as needed.
-- [ ] Commit messages follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) style.
+<!-- Link to the issue this pull request addresses (if applicable). -->
+Fixes #<issue-number>
 
 ## Type of Change
 
-- [ ] Bugfix
-- [ ] Feature
+- [ ] Bug fix
+- [ ] New feature
 - [ ] Refactor
-- [ ] Chore
-- [ ] Documentation
-- [ ] Test
+- [ ] Documentation update
+- [ ] Other (please describe)
 
-## Testing
+## How Has This Been Tested?
 
-### Manual Testing
-<!-- Describe the steps that need to be taken for manual testing. -->
+<!-- Describe the testing that has been done to verify this change works. -->
+- [ ] Unit tests
+- [ ] Integration tests
+- [ ] Manual tests
+- [ ] Other (please describe)
 
-### Automated Tests
-- [ ] Unit tests added or updated
-- [ ] Integration tests added or updated
-- [ ] E2E tests added or updated
+## Checklist:
+
+- [ ] I have read the contributing guidelines.
+- [ ] I have updated the documentation (if applicable).
+- [ ] My changes do not break existing functionality.
+- [ ] I have added tests that cover my changes (if applicable).
+- [ ] All new and existing tests pass.
+- [ ] I have included screenshots or GIFs to demonstrate the changes (if applicable).
+
+## Screenshots (if applicable)
+
+<!-- Include screenshots or GIFs of the visual changes or outputs. -->
 
 ## Additional Notes
 
-<!-- Add any additional context or screenshots here if needed. -->
+<!-- Provide any additional context or notes about the pull request. -->
