@@ -16,6 +16,8 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
       - ./apps/web/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - cofiblocks-network
 
   prisma:
     build:
@@ -33,6 +35,8 @@ services:
       db:
         condition: service_healthy
     command: sh -c "bunx prisma generate && bunx prisma migrate dev && bunx prisma studio"
+    networks:
+      - cofiblocks-network
 
   web:
     build:
@@ -56,6 +60,8 @@ services:
     depends_on:
       - prisma
     command: sh -c "bun run dev"
+    networks:
+      - cofiblocks-network
 
   storybook:
     build:
@@ -68,7 +74,11 @@ services:
     depends_on:
       - prisma
     command: sh -c "bun run dev:storybook"
+    networks:
+      - cofiblocks-network
 
 volumes:
   mysql-data:
 
+networks:
+  cofiblocks-network:
