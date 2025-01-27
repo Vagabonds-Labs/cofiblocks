@@ -31,10 +31,13 @@ services:
     working_dir: /app
     volumes:
       - ./apps/web/:/app
+      - ./node_modules:/app/node_modules  # Mount node_modules to ensure dependencies persist
+      # - ./apps/web/node_modules:/app/node_modules:ro  # Avoid overwriting node_modules to allow proper installation
+      
     depends_on:
       db:
         condition: service_healthy
-    command: sh -c "bunx prisma generate && bunx prisma migrate dev && bunx prisma studio"
+    command: sh -c "bun prisma generate && bun prisma migrate dev && bun prisma studio"
     networks:
       - cofiblocks-network
 
@@ -82,3 +85,4 @@ volumes:
 
 networks:
   cofiblocks-network:
+    driver: bridge
