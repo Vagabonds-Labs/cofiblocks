@@ -1,11 +1,14 @@
+//The Modal component is a pop-up dialog used to
+// present information or actions in a focused manner.
 import Modal from "@repo/ui/modal";
 import type { Meta, StoryFn } from "@storybook/react";
 import React from "react";
 import TestIcon from "./assets/youtube.svg";
 
+//This meta object configures the Modal for Storybook
 export default {
-	title: "Components/Modal",
-	tags: ["autodocs"],
+	title: "Components/Modal", //organizes components under the "Modal component"
+	tags: ["autodocs"], //automates documentation generation
 	component: Modal,
 	argTypes: {
 		isOpen: {
@@ -45,6 +48,7 @@ const Template: StoryFn = (args) => (
 	/>
 );
 
+//The default modal configuration with basic buttons.
 export const Default = Template.bind({});
 Default.args = {
 	isOpen: true,
@@ -52,6 +56,7 @@ Default.args = {
 	buttons,
 };
 
+//This modal includes buttons with icons (e.g., accept and decline buttons).
 export const Icons = Template.bind({});
 Icons.args = {
 	isOpen: true,
@@ -66,6 +71,7 @@ Icons.args = {
 	],
 };
 
+//This modal is displayed without any buttons, useful for informational modals or alerts.
 export const NoButtons = Template.bind({});
 NoButtons.args = {
 	isOpen: true,

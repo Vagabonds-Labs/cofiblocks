@@ -1,10 +1,12 @@
+//This IconButton component is a button designed to display an icon with various sizes, styles, and states.
 import { ArrowRightIcon, HomeIcon } from "@heroicons/react/24/solid";
 import IconButton from "@repo/ui/iconButton";
 import type { Meta, StoryFn } from "@storybook/react";
 
+//This meta object configures the IconButton for Storybook
 export default {
-	title: "Components/IconButton",
-	tags: ["autodocs"],
+	title: "Components/IconButton", //organizes components under the "IconButton component"
+	tags: ["autodocs"], //automates documentation generation
 	component: IconButton,
 	argTypes: {
 		variant: {
@@ -34,6 +36,7 @@ export default {
 
 const Template: StoryFn<typeof IconButton> = (args) => <IconButton {...args} />;
 
+//Shows the IconButton with a HomeIcon.
 export const WithHomeIcon = Template.bind({});
 WithHomeIcon.args = {
 	icon: <HomeIcon />,
@@ -41,6 +44,7 @@ WithHomeIcon.args = {
 	size: "lg",
 };
 
+//Shows the IconButton in a disabled state
 export const Disabled = Template.bind({});
 Disabled.args = {
 	icon: <ArrowRightIcon />,
@@ -49,6 +53,7 @@ Disabled.args = {
 	disabled: true,
 };
 
+//shows both primary and secondary variants of the IconButton
 export const Variants: StoryFn = () => (
 	<div style={{ display: "flex", gap: "1rem" }}>
 		<IconButton variant="primary" size="md" icon={<ArrowRightIcon />}>
@@ -60,6 +65,7 @@ export const Variants: StoryFn = () => (
 	</div>
 );
 
+//Demonstrates all size options for the IconButton.
 export const Sizes: StoryFn = () => (
 	<div style={{ display: "flex", gap: "1rem" }}>
 		<IconButton variant="primary" size="sm" icon={<ArrowRightIcon />}>
@@ -76,3 +82,16 @@ export const Sizes: StoryFn = () => (
 		</IconButton>
 	</div>
 );
+
+//To make the IconButton accessible, you can use [role="group"] explicitly for non-button elements styled as buttons.
+// and [aria-disabled="true"] when the button is disabled to communicate its state to assistive technologies..
+//example as seen below:
+
+<IconButton
+	icon={<HomeIcon />}
+	variant="primary"
+	size="md"
+	aria-label="Navigate to home"
+	disabled={true}
+	aria-disabled="true"
+/>;

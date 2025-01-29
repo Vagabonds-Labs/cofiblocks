@@ -1,3 +1,5 @@
+//These Typography components (H1, H2, H3, H4, Text, TextSecondary, TextLegend)
+// provide a set of styled text elements for headings, paragraphs, and supplementary content.
 import {
 	H1,
 	H2,
@@ -10,9 +12,10 @@ import {
 import type { Meta } from "@storybook/react";
 import React from "react";
 
+//This meta object configures the Typography for Storybook
 export default {
-	title: "Components/Typography",
-	tags: ["autodocs"],
+	title: "Components/Typography", //organizes components under the "Typography component"
+	tags: ["autodocs"], //automates documentation generation
 	argTypes: {
 		className: {
 			control: "text",
@@ -42,3 +45,18 @@ export const TypographyShowcase = ({ className = "", isSemiBold = false }) => (
 		<TextLegend className={className}>This is legend text.</TextLegend>
 	</div>
 );
+
+//Usage Examples
+//Basic Typography
+<TypographyShowcase />;
+
+//Custom Styling
+<TypographyShowcase className="text-blue-600" />;
+
+//Semi-Bold Text
+<Text isSemiBold>This is a semi-bold paragraph.</Text>;
+
+//In the aria attributes and accessibilities,
+// you should use H1, H2, H3, and H4 for headings to convey the structure of
+// the content to assistive technologies. If the Typography components are used
+// as interactive elements, add role, aria-label, or aria-describedby attributes as appropriate.

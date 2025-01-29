@@ -1,10 +1,12 @@
+//Th is a  DataCard component  that displays a label, value, and optional icon in a card format
 import { DataCard } from "@repo/ui/dataCard";
 import type { Meta, StoryFn } from "@storybook/react";
 import React from "react";
 
+//This meta object configures the dataCard for Storybook
 export default {
-	title: "Components/DataCard",
-	tags: ["autodocs"],
+	title: "Components/DataCard", //organizes components under the "dataCard component"
+	tags: ["autodocs"], //automates documentation generation
 	component: DataCard,
 	argTypes: {
 		label: {
@@ -37,6 +39,7 @@ const Template: StoryFn<typeof DataCard> = (args) => (
 	</div>
 );
 
+//This showcases the default appearance of the DataCard.
 export const Default = Template.bind({});
 Default.args = {
 	label: "Default Label",
@@ -45,6 +48,7 @@ Default.args = {
 	variant: "default",
 };
 
+//This demonstrates the error variant of the DataCard.
 export const ErrorCard = Template.bind({});
 ErrorCard.args = {
 	label: "Error Label",
@@ -53,6 +57,7 @@ ErrorCard.args = {
 	variant: "error",
 };
 
+//This displays a custom icon in the DataCard.
 export const CustomIcon = Template.bind({});
 CustomIcon.args = {
 	label: "Custom Icon Label",
@@ -60,3 +65,19 @@ CustomIcon.args = {
 	iconSrc: "https://via.placeholder.com/250",
 	variant: "default",
 };
+
+//To make the DataCard accessible, you can use [role="group"] to signify that the card groups related content.
+// and also use aria-labelledby for the label and aria-describedby for the value to associate them with the card.
+//example as seen below:
+<div
+	role="group"
+	aria-labelledby="data-card-label"
+	aria-describedby="data-card-value"
+>
+	<DataCard
+		label="Accessible Label"
+		value="Accessible Value"
+		iconSrc="https://via.placeholder.com/250"
+		variant="default"
+	/>
+</div>;

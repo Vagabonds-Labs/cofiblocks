@@ -1,10 +1,13 @@
+//The NFTCard component is used to display details about an NFT (Non-Fungible Token).
+// It includes metadata such as the image, title, and a button to view more details
 import NFTCard from "@repo/ui/nftCard";
 import type { Meta, StoryObj } from "@storybook/react";
 import type React from "react";
 
+///This meta object configures the NFTcard for Storybook
 export default {
-	title: "Components/NFTCard",
-	tags: ["autodocs"],
+	title: "Components/NFTCard", //organizes components under the "NFTcard component"
+	tags: ["autodocs"], //automates documentation generation
 	component: NFTCard,
 	argTypes: {
 		onDetailsClick: { action: "clicked" },
@@ -30,7 +33,7 @@ export const Template: Story = (
 ) => {
 	return <NFTCard {...args} />;
 };
-
+//The default story with the basic NFT metadata
 Template.args = {
 	title: "Interactive NFT",
 	nftMetadata: {
