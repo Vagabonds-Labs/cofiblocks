@@ -62,15 +62,7 @@ function EditMyProfile() {
 			userId,
 			name: data.fullName,
 			physicalAddress: data.physicalAddress,
-			image: image ?? undefined,
 		});
-	};
-
-	const handleImageUpload = () => {
-		void (async () => {
-			alert(t("implement_image_upload"));
-			setImage(null);
-		})();
 	};
 
 	return (
@@ -82,31 +74,6 @@ function EditMyProfile() {
 				<div>{t("loading")}</div>
 			) : (
 				<>
-					<div className="mb-6 text-center">
-						<div className="w-32 h-32 mx-auto mb-2 bg-gray-200 rounded-[3.125rem] overflow-hidden">
-							{image ? (
-								<Image
-									src={image}
-									alt={t("profile_image")}
-									width={128}
-									height={128}
-									className="w-full h-full object-cover"
-								/>
-							) : (
-								<div className="w-full h-full flex items-center justify-center text-gray-400">
-									{t("no_image")}
-								</div>
-							)}
-						</div>
-						<Button
-							className="mx-auto mt-4 w-46 h-10 px-2"
-							onClick={handleImageUpload}
-						>
-							<CameraIcon className="w-6 h-6 mr-2" />
-							{t("choose_photo")}
-						</Button>
-					</div>
-
 					<form onSubmit={handleSubmit(onSubmit)}>
 						<InputField
 							label={t("full_name")}
@@ -125,7 +92,7 @@ function EditMyProfile() {
 							}}
 							control={control}
 							className="mb-4"
-							disabled
+							// disabled
 							inputClassName="cursor-not-allowed"
 						/>
 						<InputField
