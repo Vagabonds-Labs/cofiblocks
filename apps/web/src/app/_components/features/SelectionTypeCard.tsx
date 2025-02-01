@@ -2,6 +2,7 @@ import Button from "@repo/ui/button";
 import { InfoCard } from "@repo/ui/infoCard";
 import { Text } from "@repo/ui/typography";
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 
 interface SelectionTypeCardProps {
@@ -41,6 +42,11 @@ export function SelectionTypeCard({
 			onClick: () => setSelectedOption("grounded"),
 		},
 	];
+
+	const handleAddToCart = () => {
+		onAddToCart();
+		toast.success("Product added to cart successfully!");
+	};
 
 	return (
 		<InfoCard title={t("select_coffee_type")} options={coffeeOptions}>
@@ -82,7 +88,11 @@ export function SelectionTypeCard({
 				</button>
 			</div>
 
-			<Button variant="primary" onClick={onAddToCart} disabled={isAddingToCart}>
+			<Button
+				variant="primary"
+				onClick={handleAddToCart}
+				disabled={isAddingToCart}
+			>
 				{isAddingToCart ? t("adding_to_cart") : t("add_to_cart")}
 			</Button>
 		</InfoCard>
