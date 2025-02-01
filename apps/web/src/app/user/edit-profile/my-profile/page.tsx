@@ -25,7 +25,7 @@ function EditMyProfile() {
 	const { t } = useTranslation();
 	const [image, setImage] = useState<string | null>(null);
 
-	const userId = "1"; // Assume you have the logic to get the userId
+	const userId = "cm2wbxug00000kkm7tvhlujf2"; // Assume you have the logic to get the userId
 
 	const { data: user, isLoading } = api.user.getUser.useQuery({
 		userId,
@@ -61,6 +61,7 @@ function EditMyProfile() {
 		void updateProfile({
 			userId,
 			name: data.fullName,
+			email: data.email,
 			physicalAddress: data.physicalAddress,
 		});
 	};
