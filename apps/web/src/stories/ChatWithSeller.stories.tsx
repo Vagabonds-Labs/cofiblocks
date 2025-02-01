@@ -1,10 +1,12 @@
+//The ChatWithSeller component is a reusable UI element for initiating a chat with a seller
 import { ChatWithSeller } from "@repo/ui/chatWithSeller";
 import type { Meta, StoryFn } from "@storybook/react";
 import React from "react";
 
+//This meta object configures the ChatWithSeller for Storybook.
 export default {
-	title: "Components/ChatWithSeller",
-	tags: ["autodocs"],
+	title: "Components/ChatWithSeller", //organizes components under the "ChatWithSeller component"
+	tags: ["autodocs"], //automates documentation generation
 	component: ChatWithSeller,
 	argTypes: {
 		name: {
@@ -35,6 +37,7 @@ const Template: StoryFn<typeof ChatWithSeller> = (args) => (
 	</div>
 );
 
+//This template showcases a default/typical ChatWithSeller setup.
 export const Default = Template.bind({});
 Default.args = {
 	name: "Jane Doe",
@@ -42,3 +45,13 @@ Default.args = {
 	avatarSrc: "/images/user-profile/avatar.svg",
 	onClick: () => alert("Navigating to chat..."),
 };
+
+//This component is made accessible by ensuring that the seller's name and description are announced by screen readers
+// using aria-labelledby and aria-describedby.Example as shown below
+<ChatWithSeller
+	name="Jane Doe"
+	description="Click to chat with the seller"
+	avatarSrc="/images/user-profile/avatar.svg"
+	aria-labelledby="chat-with-seller-name"
+	aria-describedby="chat-with-seller-description"
+/>;

@@ -1,9 +1,12 @@
+//Thia Tooltip component provides contextual information
+// when users hover over, focus on, or tap on an element
 import Tooltip from "@repo/ui/tooltip";
 import type { Meta } from "@storybook/react";
 
+//This meta object configures the Tooltip for Storybook
 export default {
-	title: "Components/Tooltip",
-	tags: ["autodocs"],
+	title: "Components/Tooltip", //organizes components under the "Tooltip component"
+	tags: ["autodocs"], //automates documentation generation
 	component: Tooltip,
 	argTypes: {
 		content: {
