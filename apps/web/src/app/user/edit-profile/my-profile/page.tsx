@@ -1,10 +1,8 @@
 "use client";
 
-import { CameraIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@repo/ui/button";
 import InputField from "@repo/ui/form/inputField";
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -23,19 +21,29 @@ type FormData = z.infer<typeof schema>;
 function EditMyProfile() {
 	const utils = api.useUtils();
 	const { t } = useTranslation();
-	const [image, setImage] = useState<string | null>(null);
 
-	const userId = "cm2wbxug00000kkm7tvhlujf2"; // Assume you have the logic to get the userId
+	const userId = "cm2wbxug00000kkm7tvhlujf2";
 
-	const { data: user, isLoading } = api.user.getUser.useQuery({
-		userId,
+	const { data: user, isLoading } = api.user.getUser.useQuery({ userId });
+
+	const { register, handleSubmit, control, reset } = useForm<FormData>({
+		resolver: zodResolver(schema),
+		defaultValues: {
+			fullName: "",
+			email: "",
+			physicalAddress: "",
+		},
 	});
 
 	useEffect(() => {
-		if (user?.image) {
-			setImage(user.image);
+		if (user) {
+			reset({
+				fullName: user.name ?? "",
+				email: user.email ?? "",
+				physicalAddress: user.physicalAddress ?? "",
+			});
 		}
-	}, [user]);
+	}, [user, reset]);
 
 	const { mutate: updateProfile } = api.user.updateUserProfile.useMutation({
 		onSuccess: async () => {
@@ -45,15 +53,6 @@ function EditMyProfile() {
 			} catch (error) {
 				console.error(t("invalidate_user_data_failed"), error);
 			}
-		},
-	});
-
-	const { register, handleSubmit, control } = useForm<FormData>({
-		resolver: zodResolver(schema),
-		defaultValues: {
-			fullName: user?.name ?? "",
-			email: user?.email ?? "",
-			physicalAddress: user?.physicalAddress ?? "",
 		},
 	});
 
@@ -78,32 +77,20 @@ function EditMyProfile() {
 					<form onSubmit={handleSubmit(onSubmit)}>
 						<InputField
 							label={t("full_name")}
-							{...register("fullName")}
-							onChange={(value: string) => {
-								void register("fullName").onChange({ target: { value } });
-							}}
+							name="fullName"
 							control={control}
 							className="mb-4"
 						/>
 						<InputField
 							label={t("email")}
-							{...register("email")}
-							onChange={(value: string) => {
-								void register("email").onChange({ target: { value } });
-							}}
+							name="email"
 							control={control}
 							className="mb-4"
-							// disabled
 							inputClassName="cursor-not-allowed"
 						/>
 						<InputField
 							label={t("physical_address")}
-							{...register("physicalAddress")}
-							onChange={(value: string) => {
-								void register("physicalAddress").onChange({
-									target: { value },
-								});
-							}}
+							name="physicalAddress"
 							control={control}
 							className="mb-4"
 						/>
