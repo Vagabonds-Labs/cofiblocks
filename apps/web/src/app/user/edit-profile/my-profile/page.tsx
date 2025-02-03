@@ -1,10 +1,8 @@
 "use client";
 
-import { CameraIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@repo/ui/button";
 import InputField from "@repo/ui/form/inputField";
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -23,19 +21,29 @@ type FormData = z.infer<typeof schema>;
 function EditMyProfile() {
 	const utils = api.useUtils();
 	const { t } = useTranslation();
-	const [image, setImage] = useState<string | null>(null);
 
-	const userId = "1"; // Assume you have the logic to get the userId
+	const userId = "cm2wbxug00000kkm7tvhlujf2";
 
-	const { data: user, isLoading } = api.user.getUser.useQuery({
-		userId,
+	const { data: user, isLoading } = api.user.getUser.useQuery({ userId });
+
+	const { register, handleSubmit, control, reset } = useForm<FormData>({
+		resolver: zodResolver(schema),
+		defaultValues: {
+			fullName: "",
+			email: "",
+			physicalAddress: "",
+		},
 	});
 
 	useEffect(() => {
-		if (user?.image) {
-			setImage(user.image);
+		if (user) {
+			reset({
+				fullName: user.name ?? "",
+				email: user.email ?? "",
+				physicalAddress: user.physicalAddress ?? "",
+			});
 		}
-	}, [user]);
+	}, [user, reset]);
 
 	const { mutate: updateProfile } = api.user.updateUserProfile.useMutation({
 		onSuccess: async () => {
@@ -48,29 +56,13 @@ function EditMyProfile() {
 		},
 	});
 
-	const { register, handleSubmit, control } = useForm<FormData>({
-		resolver: zodResolver(schema),
-		defaultValues: {
-			fullName: user?.name ?? "",
-			email: user?.email ?? "",
-			physicalAddress: user?.physicalAddress ?? "",
-		},
-	});
-
 	const onSubmit = (data: FormData) => {
 		void updateProfile({
 			userId,
 			name: data.fullName,
+			email: data.email,
 			physicalAddress: data.physicalAddress,
-			image: image ?? undefined,
 		});
-	};
-
-	const handleImageUpload = () => {
-		void (async () => {
-			alert(t("implement_image_upload"));
-			setImage(null);
-		})();
 	};
 
 	return (
@@ -82,60 +74,23 @@ function EditMyProfile() {
 				<div>{t("loading")}</div>
 			) : (
 				<>
-					<div className="mb-6 text-center">
-						<div className="w-32 h-32 mx-auto mb-2 bg-gray-200 rounded-[3.125rem] overflow-hidden">
-							{image ? (
-								<Image
-									src={image}
-									alt={t("profile_image")}
-									width={128}
-									height={128}
-									className="w-full h-full object-cover"
-								/>
-							) : (
-								<div className="w-full h-full flex items-center justify-center text-gray-400">
-									{t("no_image")}
-								</div>
-							)}
-						</div>
-						<Button
-							className="mx-auto mt-4 w-46 h-10 px-2"
-							onClick={handleImageUpload}
-						>
-							<CameraIcon className="w-6 h-6 mr-2" />
-							{t("choose_photo")}
-						</Button>
-					</div>
-
 					<form onSubmit={handleSubmit(onSubmit)}>
 						<InputField
 							label={t("full_name")}
-							{...register("fullName")}
-							onChange={(value: string) => {
-								void register("fullName").onChange({ target: { value } });
-							}}
+							name="fullName"
 							control={control}
 							className="mb-4"
 						/>
 						<InputField
 							label={t("email")}
-							{...register("email")}
-							onChange={(value: string) => {
-								void register("email").onChange({ target: { value } });
-							}}
+							name="email"
 							control={control}
 							className="mb-4"
-							disabled
 							inputClassName="cursor-not-allowed"
 						/>
 						<InputField
 							label={t("physical_address")}
-							{...register("physicalAddress")}
-							onChange={(value: string) => {
-								void register("physicalAddress").onChange({
-									target: { value },
-								});
-							}}
+							name="physicalAddress"
 							control={control}
 							className="mb-4"
 						/>
