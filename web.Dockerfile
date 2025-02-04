@@ -19,7 +19,12 @@ COPY packages/ui ./packages/ui/
 COPY ./apps/web/prisma ./apps/web/prisma
 
 # Install all dependencies using bun
-RUN bun install
+RUN bun install --ignore-scripts
+
+# Ensures proper platform SWC binaries are downloaded for Next.js
+RUN bun run postinstall || true
+
+RUN bun prisma generate --schema=apps/web/prisma/schema.prisma
 
 # Stage 2: Pre-release (copy from install stage)
 FROM base AS prerelease

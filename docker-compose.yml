@@ -45,7 +45,6 @@ services:
       context: .
       dockerfile: ./web.Dockerfile
     container_name: web
-    platform: linux/amd64
     working_dir: /app
     stdin_open: true
     tty: true
