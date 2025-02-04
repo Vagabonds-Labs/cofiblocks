@@ -36,7 +36,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: sh -c "bun prisma generate && bun prisma migrate dev && bun prisma studio"
+    command: sh -c "bun prisma generate && bun prisma migrate deploy && bun prisma studio"
     networks:
       - cofiblocks-network
 
