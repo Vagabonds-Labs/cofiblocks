@@ -60,49 +60,103 @@ CofiBlocks is more than just a coffee marketplace; it's a movement for a more eq
 
 ## 🛠️ **Getting Started**
 
-### **Prerequisites**  
-- Node.js (>= 18)  
-- Bun package manager (bun@1.1.24)  
-- Prisma  
-
+### **Prerequisites**
+- Node.js (>= 18)
+- Bun package manager (bun@1.1.24)
+- Prisma
+### **Crate file**
+`/cofiblocks/apps/web/sql/init.sql`
+- And REPLACE MYSQL_USER with your mysql user in the .env
+```bash
+GRANT CREATE ON *.* TO '<MYSQL_USER>'@'%';
+GRANT ALL PRIVILEGES ON *.* TO '<MYSQL_USER>'@'%';
+```
+### **Docker-compose.yml**
+Add this to your docker-compose.yml file:
+```bash
+version: '3.8'
+services:
+  db:
+    image: mysql:8.4
+    container_name: mysql
+    restart: always
+    env_file:
+      - ./apps/web/.env
+    ports:
+      - '3306:3306'
+    healthcheck:
+      test: ['CMD-SHELL', 'mysqladmin ping -h 127.0.0.1 --password="$$(cat /run/secrets/db-password)" --silent']
+      interval: 3s
+      retries: 5
+      start_period: 30s
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./apps/web/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+volumes:
+  mysql-data:
+```
 ### **Installation**
-1. Clone the repository:  
+1. Clone the repository:
    ```bash
    git clone https://github.com/Vagabonds-Labs/cofiblocks.git
    cd cofiblocks
-   ```  
-2. Install dependencies:  
+   ```
+   - Run `docker compose up`, to access the database.
+2. Install dependencies:
    ```bash
    bun install
-   ```  
-3. Configure the environment variables:  
-   - Rename `.env.example` to `.env` and populate it with the following:  
-     ```bash
-     MYSQL_ROOT_PASSWORD=
-     MYSQL_DATABASE=
-     MYSQL_USER=
-     MYSQL_PASSWORD=
-
-     DATABASE_URL="mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@localhost:3306/${MYSQL_DATABASE}?connect_timeout=10"
-     ```  
-4. Start the database:  
+   ```
+3. Rename
    ```bash
-   docker compose up
-   ```  
-5. Generate the Prisma client:  
+   mv .env.example to .env 
+   ```
+   **And add this in your .env file:**
+      ```bash
+      MYSQL_ROOT_PASSWORD=
+      MYSQL_DATABASE=
+      MYSQL_USER=
+      MYSQL_PASSWORD=
+      DATABASE_URL="mysql://${MYSQL_USER}:${MYSQL_PASSWORD
+      }@localhost:3306/${MYSQL_DATABASE}?
+      connect_timeout=10"
+      ```
+      **Important:**
+      - Add and run `docker compose up` in this part.
+4. Generate the Prisma client:
    ```bash
    bun prisma generate
-   ```  
-6. Start the development server:  
+   ```
+5. Run the development server:
    ```bash
    bun turbo dev
-   ```  
+   ```
+**Make sure the values in the .env file are configured correctly for your environment.**
+### **Project Structure**
+The project is organized using workspaces:
+- `apps/` - Contains the main web application.
+- `packages/` - Shared packages and utilities.
 
-### **Troubleshooting Tips**  
-- **Database Connectivity Issues**: Ensure the database credentials in `.env` are correct.  
-- **Docker Errors**: Verify that Docker is running and the `docker-compose.yml` file is configured properly.
+Key scripts include:
+- `build`: Build the project.
+- `dev`: Start the development server.
+- `db:migrate`: Apply database migrations.
+- `db:seed`: Seed the database with initial data.
 
----
+### **Key Technologies**
+1. **StarkNet**
+   ```bash
+   StarkNet is a decentralized, permissionless Layer 2 solution for Ethereum. It uses ZK-STARKs (zero-knowledge proofs) to enable fast and cost-efficient transactions while ensuring security and scalability. Developers can deploy smart contracts, and users benefit from significantly reduced gas fees compared to Ethereum's mainnet.
+   ```
+2. **Prisma**
+   ```bash
+   Prisma is a modern database toolkit for Node.js and TypeScript. It provides an ORM (Object-Relational Mapping) that simplifies working with databases, allowing developers to define models and query data in a type-safe way. Prisma supports multiple databases, including PostgreSQL, MySQL, and MongoDB
+   ```
+3. **Bun**
+   ```bash
+   Bun is an all-in-one JavaScript runtime that competes with Node.js and Deno. It’s built for performance and includes a fast bundler, transpiler, and package manager. Bun aims to speed up development workflows, reduce dependency on third-party tools, and execute JavaScript and TypeScript quickly. It’s designed to handle server-side apps, scripts, and front-end tooling.
+   ```
+## 📚 **Code of Conduct**
+We are committed to creating a welcoming and inclusive environment. Please read our [Community Guidelines](COMMUNITY_GUIDELINES.md) to ensure a positive experience for everyone involved.
 
 ## 📚 **Development Resources**
 
