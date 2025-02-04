@@ -3,37 +3,56 @@ ARG BUN_VERSION=1.1.13
 ARG NODE_VERSION=20.12.2
 FROM imbios/bun-node:${BUN_VERSION}-${NODE_VERSION}-slim AS base
 
-WORKDIR /usr/src/app
-
+# Stage 1: Install Dependencies
 FROM base AS install
+
+# Create the /temp/dev directory to install dependencies
 RUN mkdir -p /temp/dev
 WORKDIR /temp/dev
-COPY ./apps/web/package.json ./apps/web/bun.lockb ./
-COPY ./packages/eslint-config/ ./node_modules/@repo/eslint-config/
-COPY ./packages/typescript-config/ ./node_modules/@repo/typescript-config/
-COPY ./packages/ui/ ./node_modules/@repo/ui/
-COPY ./apps/web/prisma/ ./prisma/
 
+# Copy necessary files from the web and packages directories
+COPY package.json bun.lock ./
+COPY apps/web/package.json apps/web/bun.lockb ./apps/web/
+COPY packages/eslint-config/ ./packages/eslint-config/
+COPY packages/typescript-config/ ./packages/typescript-config/
+COPY packages/ui ./packages/ui/
+COPY ./apps/web/prisma ./apps/web/prisma
 
-# TODO: Remove the || true to use trustedDependencies so bun
-# can install the dependencies without error
+# Install all dependencies using bun
 RUN bun install
-# RUN bun install --frozen-lockfile || true
-# RUN bun pm trust --all
 
-RUN bun link @repo/ui
-
+# Stage 2: Pre-release (copy from install stage)
 FROM base AS prerelease
-COPY --from=install /temp/dev/node_modules node_modules
-COPY --from=install /temp/dev/prisma prisma
-# COPY . .
 
-# FROM base AS release
-# COPY --from=install /temp/dev/node_modules node_modules
-# COPY --from=prerelease /usr/src/app/index.ts .
-# COPY --from=prerelease /usr/src/app/package.json .
+WORKDIR /usr/src/app
 
-COPY ./apps/web/ .
+# Copy node_modules and prisma from the install stage
+COPY --from=install /temp/dev/node_modules ./node_modules
+COPY --from=install /temp/dev/apps/web/prisma ./apps/web/prisma
+COPY --from=install /temp/dev/apps/web/package.json ./apps/web/package.json
+COPY --from=install /temp/dev/bun.lockb ./bun.lockb
 
+# Copy the entire workspace (important for monorepos)
+COPY . .
 
-CMD ["bun", "run", "dev"]
+# Stage 3: Release (final stage)
+FROM base AS release
+WORKDIR /usr/src/app
+
+# Copy everything from the previous stage (pre-release) to the final release stage
+COPY --from=prerelease /usr/src/app /usr/src/app
+
+# Ensure dependencies are available
+RUN bun install
+
+# Ensure the correct symlink before running the app
+RUN rm -rf node_modules/@repo/ui && ln -s /usr/src/app/packages/ui node_modules/@repo/ui
+
+# Set environment variables
+ENV PORT=3000
+
+# Expose port 3000 for the app
+EXPOSE 3000
+
+# Command to start the app using bun
+CMD ["bun", "run", "dev", "--hostname", "0.0.0.0"]

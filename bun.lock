@@ -62,7 +62,7 @@
       "dependencies": {
         "@auth/prisma-adapter": "^1.6.0",
         "@prisma/client": "^6.2.1",
-        "@repo/ui": "*",
+        "@repo/ui": "workspace:*",
         "@starknet-react/chains": "^0.1.7",
         "@starknet-react/core": "^2.9.0",
         "@t3-oss/env-nextjs": "^0.10.1",
