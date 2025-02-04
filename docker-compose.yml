@@ -48,6 +48,8 @@ services:
     working_dir: /app
     stdin_open: true
     tty: true
+    environment:
+      - NODE_PATH=/usr/src/app/node_modules
     volumes:
       - ./apps/web/:/app
       - ./packages/ui:/app/packages/ui
