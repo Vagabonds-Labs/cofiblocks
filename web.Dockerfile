@@ -45,14 +45,15 @@ COPY --from=prerelease /usr/src/app /usr/src/app
 # Ensure dependencies are available
 RUN bun install
 
-# Ensure the correct symlink before running the app
-RUN rm -rf node_modules/@repo/ui && ln -s /usr/src/app/packages/ui node_modules/@repo/ui
-
 # Set environment variables
 ENV PORT=3000
 
 # Expose port 3000 for the app
 EXPOSE 3000
+
+COPY entrypoint.sh /usr/src/app/entrypoint.sh
+RUN chmod +x /usr/src/app/entrypoint.sh
+ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
 
 # Command to start the app using bun
 CMD ["bun", "run", "dev", "--hostname", "0.0.0.0"]
