@@ -32,7 +32,6 @@ services:
     volumes:
       - ./apps/web/:/app
       - ./node_modules:/app/node_modules  # Mount node_modules to ensure dependencies persist
-      # - ./apps/web/node_modules:/app/node_modules:ro  # Avoid overwriting node_modules to allow proper installation
       
     depends_on:
       db:
@@ -52,17 +51,13 @@ services:
     tty: true
     volumes:
       - ./apps/web/:/app
-      - /app/node_modules
-      - /app/ui
-      - /app/eslint-config
-      - /app/tslint-config
+      - ./packages/ui:/app/packages/ui
     ports:
       - "3000:3000"
     env_file:
       - ./apps/web/.env
     depends_on:
       - prisma
-    command: sh -c "bun run dev"
     networks:
       - cofiblocks-network
 
