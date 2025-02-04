@@ -19,7 +19,7 @@ COPY packages/ui ./packages/ui/
 COPY ./apps/web/prisma ./apps/web/prisma
 
 # Install all dependencies using bun
-RUN bun install --ignore-scripts
+RUN bun install --ignore-scripts --no-cache --force
 
 # Ensures proper platform SWC binaries are downloaded for Next.js
 RUN bun run postinstall || true
@@ -48,7 +48,7 @@ WORKDIR /usr/src/app
 COPY --from=prerelease /usr/src/app /usr/src/app
 
 # Ensure dependencies are available
-RUN bun install
+RUN bun install --no-cache --force
 
 # Set environment variables
 ENV PORT=3000
