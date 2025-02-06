@@ -7,7 +7,7 @@ const configExternalContracts = {
 	sepolia: {
 		Marketplace: {
 			address:
-				"0xdda31f5e1f8316230739226265d62c2d869ad989ad0e51be592dce30776918",
+				"0x3fc6df11c8e7eb7adf78ca9febce62cafddd0caef1214a0843839609539a180",
 			classHash:
 				"0x44eb6074fa74a9dbddb65c52394cd1bab274e3bc22e1fc36c26c37686d1e440",
 			abi: [
@@ -587,7 +587,7 @@ const configExternalContracts = {
 		},
 		CofiCollection: {
 			address:
-				"0x1b0409734a9924cf829943a4d65925957d34f041af627a1d8a6d5be69ab532d",
+				"0x375a9b9236e5c02e95de236811259ff7877832ad65f752cb1fabd4d2127f930",
 			classHash:
 				"0x7a108607024be2054d1558cbfd5de3fe264afe9e025bc7653b1bc5fc76d1af0",
 			abi: [
