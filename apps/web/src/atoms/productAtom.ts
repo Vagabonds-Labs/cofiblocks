@@ -2,6 +2,7 @@ import { atom } from "jotai";
 
 interface Product {
 	id: number;
+	tokenId: number;
 	name: string;
 	price: number;
 	region: string;

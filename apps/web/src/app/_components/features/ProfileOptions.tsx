@@ -15,6 +15,7 @@ import { cva } from "class-variance-authority";
 import cx from "classnames";
 import Link from "next/link";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { LogoutModal } from "~/app/_components/features/LogoutModal";
 import { UserWalletsModal } from "~/app/_components/features/UserWalletsModal";
 
@@ -59,6 +60,7 @@ const iconStyles = cva("w-5 h-5 mr-3", {
 });
 
 function ProfileOptions({ address: _ }: ProfileOptionsProps) {
+	const { t } = useTranslation();
 	const [isLogoutModalOpen, setIsLogoutModalOpen] = useState<boolean>(false);
 	const [isWalletModalOpen, setIsWalletModalOpen] = useState<boolean>(false);
 
@@ -79,22 +81,26 @@ function ProfileOptions({ address: _ }: ProfileOptionsProps) {
 	};
 
 	const profileOptions: ProfileOption[] = [
-		{ icon: UserIcon, label: "Edit profile", href: "/user/edit-profile" },
-		{ icon: TicketIcon, label: "My Coffee", href: "/user/my-coffee" },
-		{ icon: TruckIcon, label: "My Sales", href: "/user/my-sales" },
-		{ icon: CurrencyDollarIcon, label: "My Claims", href: "/user/my-claims" },
-		{ icon: ShoppingCartIcon, label: "My Orders", href: "/user/my-orders" },
-		{ icon: HeartIcon, label: "Favorite products", href: "/user/favorites" },
-		{ icon: CubeIcon, label: "My collectibles", href: "/user/collectibles" },
-		{ icon: WalletIcon, label: "Wallet", onClick: openWalletModal },
+		{ icon: UserIcon, label: t("edit_profile"), href: "/user/edit-profile" },
+		{ icon: TicketIcon, label: t("my_coffee"), href: "/user/my-coffee" },
+		{ icon: TruckIcon, label: t("my_sales"), href: "/user/my-sales" },
+		{
+			icon: CurrencyDollarIcon,
+			label: t("my_claims"),
+			href: "/user/my-claims",
+		},
+		{ icon: ShoppingCartIcon, label: t("my_orders"), href: "/user/my-orders" },
+		{ icon: HeartIcon, label: t("favorite_products"), href: "/user/favorites" },
+		{ icon: CubeIcon, label: t("my_collectibles"), href: "/user/collectibles" },
+		{ icon: WalletIcon, label: t("wallet"), onClick: openWalletModal },
 		{
 			icon: AdjustmentsHorizontalIcon,
-			label: "Settings",
+			label: t("settings"),
 			href: "/user/settings",
 		},
 		{
 			icon: NoSymbolIcon,
-			label: "Log out",
+			label: t("log_out"),
 			customClass: "text-error-default",
 			iconColor: "text-error-default",
 			onClick: openLogoutModal,

@@ -1,13 +1,13 @@
 import { HeartIcon } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartSolidIcon } from "@heroicons/react/24/solid";
 import Button from "@repo/ui/button";
-import { ChatWithSeller } from "@repo/ui/chatWithSeller";
 import { DataCard } from "@repo/ui/dataCard";
 import PageHeader from "@repo/ui/pageHeader";
 import { useAtom, useAtomValue } from "jotai";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { addItemAtom, cartItemsAtom } from "~/store/cartAtom";
 import { ProducerInfo } from "./ProducerInfo";
 import { SelectionTypeCard } from "./SelectionTypeCard";
@@ -15,6 +15,7 @@ import { SelectionTypeCard } from "./SelectionTypeCard";
 interface ProductDetailsProps {
 	product: {
 		id: number;
+		tokenId: number;
 		image: string;
 		name: string;
 		region: string;
@@ -39,6 +40,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 		type,
 		process,
 	} = product;
+	const { t } = useTranslation();
 	const [quantity, setQuantity] = useState(1);
 	const [isLiked, setIsLiked] = useState(false);
 	const router = useRouter();
@@ -57,6 +59,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 		setIsAddingToCart(true);
 		addItem({
 			id: String(product.id),
+			tokenId: product.tokenId,
 			name: product.name,
 			quantity: quantity,
 			price: product.price,
@@ -66,10 +69,12 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 	};
 
 	return (
-		<div className="flex flex-col items-center mx-auto">
+		<div className="mx-auto flex flex-col items-center">
 			<div className="w-full max-w-[24.375rem]">
 				<PageHeader
-					title={<div className="truncate text-xl font-bold">{name}</div>}
+					title={
+						<div className="truncate text-xl font-bold">{t(product.name)}</div>
+					}
 					showBackButton
 					onBackClick={() => router.back()}
 					showCart={true}
@@ -80,7 +85,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 							onClick={() => setIsLiked(!isLiked)}
 							className="p-2"
 							aria-label={
-								isLiked ? "Remove from favorites" : "Add to favorites"
+								isLiked ? t("remove_from_favorites") : t("add_to_favorites")
 							}
 						>
 							{isLiked ? (
@@ -99,45 +104,42 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 					alt={name}
 					width={358}
 					height={358}
-					className="object-cover w-full h-full"
+					className="h-full w-full object-cover"
 				/>
 			</div>
 
 			<div className="w-full max-w-[24.375rem] px-4">
 				<div>
-					<h2 className="text-2xl font-bold mt-6 mx-4 text-left">{name}</h2>
-					<p className="text-content-body-default mt-2 mx-4 text-left">
-						{product.description}
+					<h2 className="mx-4 mt-6 text-left text-2xl font-bold">
+						{t(product.name)}
+					</h2>
+					<p className="mx-4 mt-2 text-left text-content-body-default">
+						{t(product.description)}
 					</p>
-					<div className="mt-6">
-						<ChatWithSeller
-							name="John Doe"
-							description="chat with the seller"
-							onClick={() => console.log("Open chat")}
-						/>
-					</div>
-					<div className="grid grid-cols-2 gap-4 mt-6">
+					<div className="mt-6 grid grid-cols-2 gap-4">
 						<DataCard
-							label="Roast Level"
-							value={roastLevel}
+							label={t("roast_level")}
+							value={t(`strength.${roastLevel.toLowerCase()}`)}
 							iconSrc="/images/product-details/SandClock.svg"
 						/>
 						<DataCard
-							label="Process"
-							value={process}
+							label={t("process")}
+							value={t(`processes.${process.toLowerCase()}`)}
 							iconSrc="/images/product-details/Flame.svg"
 						/>
 					</div>
-					<div className="grid grid-cols-2 gap-4 mt-4">
+					<div className="mt-4 grid grid-cols-2 gap-4">
 						<DataCard
-							label="Bags Available"
-							value={isSoldOut ? "SOLD OUT" : `${bagsAvailable} bags`}
+							label={t("bags_available")}
+							value={
+								isSoldOut ? t("sold_out") : `${bagsAvailable} ${t("bags")}`
+							}
 							iconSrc="/images/product-details/Shopping-bag.svg"
 							variant={isSoldOut ? "error" : "default"}
 						/>
 						<DataCard
-							label="Unit price (340g)"
-							value={isSoldOut ? "SOLD OUT" : `${price} USD`}
+							label={t("unit_price", { weight: "340g" })}
+							value={isSoldOut ? t("sold_out") : `${price} USD`}
 							iconSrc="/images/product-details/Discount-2.svg"
 							variant={isSoldOut ? "error" : "default"}
 						/>
@@ -156,8 +158,8 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 						</div>
 					)}
 
-					<div className="w-full my-6">
-						<div className="flex items-center relative">
+					<div className="my-6 w-full">
+						<div className="relative flex items-center">
 							<div className="h-[2px] w-full bg-gradient-to-r from-transparent via-surface-primary-soft to-transparent shadow-sm" />
 						</div>
 					</div>
@@ -172,8 +174,8 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 						isEditable={true}
 					/>
 
-					<Button className="w-full mt-1 mb-6" onClick={() => void 0}>
-						<div className="text-base font-normal">Edit my farm</div>
+					<Button className="mb-6 mt-1 w-full" onClick={() => void 0}>
+						<div className="text-base font-normal">{t("edit_my_farm")}</div>
 					</Button>
 				</div>
 			</div>

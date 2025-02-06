@@ -7,30 +7,37 @@ import InputField from "@repo/ui/form/inputField";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
 import { api } from "~/trpc/react";
 
 const schema = z.object({
-	farmName: z.string().min(1, "Farm name is required"),
-	region: z.string().min(1, "Region is required"),
-	altitude: z.number().min(0, "Altitude must be a positive number"),
+	farmName: z.string().min(1, "farm_name_required"),
+	region: z.string().min(1, "region_required"),
+	altitude: z.union([
+		z.number().min(0, "altitude_positive"),
+		z
+			.string()
+			.transform((val) => Number(val))
+			.refine((val) => !Number.isNaN(val) && val >= 0, "Not a valid number"),
+	]),
 	coordinates: z
 		.string()
-		.regex(/^-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?$/, "Invalid coordinates format"),
-	website: z.string().url("Invalid URL").optional().or(z.literal("")),
+		.regex(/^-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?$/, "coordinates_invalid"),
+	website: z.string().url("url_invalid").optional().or(z.literal("")),
 });
 
 type FormData = z.infer<typeof schema>;
 
 function EditMyFarmProfile() {
 	const utils = api.useUtils();
+	const { t } = useTranslation();
 	const [image, setImage] = useState<string | null>(null);
 
 	const userId = 1; // Assume you have the logic to get the userId
 
 	const { data: userFarm, isLoading } = api.user.getUserFarm.useQuery({
-		// TODO: get user id from session or prop
 		userId,
 	});
 
@@ -44,12 +51,11 @@ function EditMyFarmProfile() {
 		onSuccess: () => {
 			void utils.user.getUser.invalidate({ userId: userId.toString() });
 			void utils.user.getUserFarm.invalidate({ userId });
-			// TODO: display notification
-			alert("Farm profile updated");
+			alert(t("farm_profile_updated"));
 		},
 		onError: (error) => {
 			console.error("Error updating farm profile:", error);
-			alert("An error occurred while updating the farm profile");
+			alert(t("error_updating_farm"));
 		},
 	});
 
@@ -66,14 +72,13 @@ function EditMyFarmProfile() {
 
 	const onSubmit = (data: FormData) => {
 		if (!userFarm) {
-			// TODO: Display error in UI
-			alert("User farm not found. Please contact support.");
+			alert(t("user_farm_not_found"));
 			return;
 		}
 
 		updateFarm({
 			farmId: userFarm.id,
-			altitude: data.altitude,
+			altitude: Number(data.altitude),
 			name: data.farmName,
 			region: data.region,
 			coordinates: data.coordinates,
@@ -83,18 +88,17 @@ function EditMyFarmProfile() {
 	};
 
 	const handleImageUpload = () => {
-		// TODO: Implement image upload logic
-		alert("Implement image upload logic");
+		alert(t("implement_image_upload"));
 		setImage(null);
 	};
 
 	return (
 		<ProfileOptionLayout
-			title="Edit my farm profile"
+			title={t("edit_my_farm_profile")}
 			backLink="/user/edit-profile"
 		>
 			{isLoading ? (
-				<div>Loading...</div>
+				<div>{t("loading")}</div>
 			) : (
 				<>
 					<div className="mb-6 text-center">
@@ -102,14 +106,14 @@ function EditMyFarmProfile() {
 							{image ? (
 								<Image
 									src={image}
-									alt="Farm Profile"
+									alt={t("farm_profile_image")}
 									width={128}
 									height={128}
 									className="object-cover"
 								/>
 							) : (
 								<div className="w-full h-full flex items-center justify-center text-gray-400">
-									No Image
+									{t("no_image")}
 								</div>
 							)}
 						</div>
@@ -118,13 +122,13 @@ function EditMyFarmProfile() {
 							onClick={handleImageUpload}
 						>
 							<CameraIcon className="w-6 h-6 mr-2" />
-							Choose photo
+							{t("choose_photo")}
 						</Button>
 					</div>
 
 					<form onSubmit={handleSubmit(onSubmit)}>
 						<InputField
-							label="Farm Name"
+							label={t("farm_name")}
 							{...register("farmName")}
 							onChange={(value: string) => {
 								void register("farmName").onChange({ target: { value } });
@@ -133,7 +137,7 @@ function EditMyFarmProfile() {
 							className="mb-4"
 						/>
 						<InputField
-							label="Region"
+							label={t("region")}
 							{...register("region")}
 							onChange={(value: string) => {
 								void register("region").onChange({ target: { value } });
@@ -142,7 +146,7 @@ function EditMyFarmProfile() {
 							className="mb-4"
 						/>
 						<InputField
-							label="Altitude (meters)"
+							label={t("altitude_meters")}
 							{...register("altitude", { valueAsNumber: true })}
 							onChange={(value: string) => {
 								void register("altitude").onChange({
@@ -152,7 +156,7 @@ function EditMyFarmProfile() {
 							control={control}
 						/>
 						<InputField
-							label="Coordinates"
+							label={t("coordinates")}
 							{...register("coordinates")}
 							onChange={(value: string) => {
 								void register("coordinates").onChange({ target: { value } });
@@ -160,7 +164,7 @@ function EditMyFarmProfile() {
 							control={control}
 						/>
 						<InputField
-							label="Website"
+							label={t("website")}
 							{...register("website")}
 							onChange={(value: string) => {
 								void register("website").onChange({ target: { value } });
@@ -168,7 +172,7 @@ function EditMyFarmProfile() {
 							control={control}
 						/>
 						<Button type="submit" className="w-full mt-4">
-							Save Changes
+							{t("save_changes")}
 						</Button>
 					</form>
 				</>

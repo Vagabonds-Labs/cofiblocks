@@ -8,10 +8,21 @@ import { ClockIcon } from "@heroicons/react/24/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@repo/ui/button";
 import RadioButton from "@repo/ui/form/radioButton";
+import { useAccount, useProvider } from "@starknet-react/core";
 import Image from "next/image";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
+import {
+	ContractsError,
+	ContractsInterface,
+	useCofiCollectionContract,
+	useMarketplaceContract,
+	useStarkContract,
+} from "~/services/contractsInterface";
+import { api } from "~/trpc/react";
+import { RoastLevel } from "~/types";
 
 const schema = z.object({
 	roast: z.string().min(1, "Roast level is required"),
@@ -29,17 +40,19 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-const RoastLevel = {
-	LIGHT: "Light",
-	MEDIUM: "Medium",
-	STRONG: "Strong",
-} as const;
-
-type RoastLevelType = (typeof RoastLevel)[keyof typeof RoastLevel];
-
 export default function RegisterCoffee() {
+	const { t } = useTranslation();
+	const { provider } = useProvider();
+	const contracts = new ContractsInterface(
+		useAccount(),
+		useCofiCollectionContract(),
+		useMarketplaceContract(),
+		useStarkContract(),
+		provider,
+	);
+	const mutation = api.product.createProduct.useMutation();
 	const handleImageUpload = () => {
-		alert("Implement image upload");
+		alert(t("implement_image_upload"));
 	};
 
 	const { register, handleSubmit, control, getValues, setValue } =
@@ -58,10 +71,41 @@ export default function RegisterCoffee() {
 		};
 		// TODO: Implement coffee registration logic
 		console.log(submissionData);
+		try {
+			const token_id = await contracts.register_product(
+				submissionData.price,
+				submissionData.bagsAvailable,
+			);
+			await mutation.mutateAsync({
+				tokenId: token_id,
+				name: submissionData.variety,
+				price: submissionData.price,
+				description: submissionData.description,
+				image: submissionData.image ?? "/images/cafe1.webp",
+				strength: submissionData.roast,
+				region: "",
+				farmName: "",
+			});
+			alert("Product registered successfully");
+		} catch (error) {
+			if (error instanceof ContractsError) {
+				if (error.code === ContractsError.USER_MISSING_ROLE) {
+					alert("User is not registered as a seller");
+				} else if (error.code === ContractsError.USER_NOT_CONNECTED) {
+					alert("User is disconnected");
+				}
+			} else {
+				console.log("error registering", error);
+				alert("An error occurred while registering the product");
+			}
+		}
 	};
 
 	return (
-		<ProfileOptionLayout title="Register my coffee" backLink="/user/my-coffee">
+		<ProfileOptionLayout
+			title={t("register_coffee")}
+			backLink="/user/my-coffee"
+		>
 			<div className="p-6 bg-white rounded-lg">
 				<form onSubmit={handleSubmit(onSubmit)}>
 					<div className="flex flex-col items-center my-6">
@@ -79,34 +123,36 @@ export default function RegisterCoffee() {
 							type="button"
 						>
 							<CameraIcon className="w-6 h-6 mr-2" />
-							Choose coffee photo
+							{t("choose_coffee_photo")}
 						</Button>
 					</div>
 					<div className="my-4">
 						<label className="text-content-body-default block mb-1">
-							Coffee variety
+							{t("coffee_variety")}
 						</label>
 						<input
 							{...register("variety")}
 							type="text"
 							className="w-full border border-surface-border rounded p-2"
-							placeholder="Type here"
+							placeholder={t("type_here")}
 						/>
 					</div>
 					<div className="my-2">
 						<label className="text-content-body-default block mb-1">
-							Coffee description
+							{t("coffee_description")}
 						</label>
 						<textarea
 							{...register("description")}
 							className="w-full border border-surface-border rounded p-2"
-							placeholder="Type here"
+							placeholder={t("type_here")}
 						/>
 					</div>
 					<div className="mb-2">
 						<label className="text-content-body-default block mb-1">
-							Coffee Score{" "}
-							<span className="text-content-body-soft">(not mandatory)</span>
+							{t("coffee_score")}{" "}
+							<span className="text-content-body-soft">
+								({t("not_mandatory")})
+							</span>
 						</label>
 						<input
 							{...register("coffeeScore", {
@@ -144,15 +190,15 @@ export default function RegisterCoffee() {
 								);
 							}}
 							className="w-full border border-surface-border rounded p-2"
-							placeholder="Enter a score between 0 and 100"
+							placeholder={t("score_placeholder")}
 						/>
 					</div>
 					<div className="my-6">
 						<label className="text-content-body-default block mb-2">
-							Roast level
+							{t("roast_level")}
 						</label>
 						<div className="flex flex-col space-y-2">
-							{(Object.values(RoastLevel) as RoastLevelType[]).map((level) => (
+							{Object.values(RoastLevel).map((level) => (
 								<div
 									key={level}
 									className="flex items-center justify-between p-3 bg-surface-primary-soft rounded-lg cursor-pointer"
@@ -172,9 +218,9 @@ export default function RegisterCoffee() {
 											color="bg-surface-primary-default"
 										/>
 										<span
-											className={`text-sm font-bold ${getValues("roast") === level ? "text-content-title" : "text-content-body-default"}`}
+											className={`text-sm font-bold ${(getValues("roast") as RoastLevel) === level ? "text-content-title" : "text-content-body-default"}`}
 										>
-											{level}
+											{t(`strength.${level}`)}
 										</span>
 									</div>
 									<RadioButton
@@ -191,20 +237,20 @@ export default function RegisterCoffee() {
 						<div className="flex items-center font-medium">
 							<ArrowPathRoundedSquareIcon className="w-6 h-6 mr-2" />
 							<label className="text-content-body-default">
-								Operating fee per bag
+								{t("operating_fee")}
 							</label>
 						</div>
 						<p className="text-content-body-default">$20.00</p>
 					</div>
 					<div className="my-4">
 						<label className="text-content-body-default block mb-1">
-							Price per bag (USD)
+							{t("price_per_bag")} (USD)
 						</label>
 						<input
 							{...register("price")}
 							type="text"
 							className="w-full border border-surface-border rounded p-2"
-							placeholder="Enter price (e.g. 25.99)"
+							placeholder={t("enter_price_placeholder")}
 							onKeyPress={(event) => {
 								if (!/[0-9.]/.test(event.key)) {
 									event.preventDefault();
@@ -233,17 +279,17 @@ export default function RegisterCoffee() {
 					</div>
 					<div className="my-6 p-6 rounded bg-surface-primary-soft">
 						<p className="text-[0.875rem] text-content-body-default">
-							Total sales value (product + fee) per bag:
+							{t("total_sales_value_per_bag")}
 						</p>
-						<p className="font-medium text-[0.875rem]">30USD</p>
+						<p className="font-medium text-[0.875rem]">30 USD</p>
 						<p className="mt-2 text-[0.875rem] text-content-body-default">
-							Value allocated to the producer per bag:
+							{t("producer_value_per_bag")}
 						</p>
-						<p className="font-medium text-[0.875rem]">25USD</p>
+						<p className="font-medium text-[0.875rem]">25 USD</p>
 					</div>
 					<div className="my-6">
 						<label className="text-content-body-default block mb-1">
-							Bags available (340g)
+							{t("bags_available")} (340g)
 						</label>
 						<div className="flex items-center justify-between rounded-lg p-2 border border-surface-border">
 							<Button
@@ -290,7 +336,7 @@ export default function RegisterCoffee() {
 						</div>
 					</div>
 					<Button type="submit" className="py-6 rounded w-full">
-						Save and publish
+						{t("save_and_publish")}
 					</Button>
 				</form>
 			</div>

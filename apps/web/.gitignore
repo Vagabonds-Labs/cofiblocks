@@ -46,3 +46,7 @@ yarn-error.log*
 .idea
 *storybook.log
 storybook-static
+
+# prompts
+instructions/
+instructions/*

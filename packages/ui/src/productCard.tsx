@@ -1,5 +1,6 @@
 import { ArrowRightIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
+import { useTranslation } from "react-i18next";
 import Badge from "./badge";
 import IconButton from "./iconButton";
 import { H4, Text } from "./typography";
@@ -26,12 +27,14 @@ export function ProductCard({
 	onClick,
 	onAddToCart,
 }: ProductCardProps) {
+	const { t } = useTranslation();
+
 	return (
 		<div className="max-w-sm rounded-2xl overflow-hidden shadow-lg border border-surface-border min-w-[22.375rem]">
 			<div className="relative">
 				<Image
 					src={image}
-					alt="Product Image"
+					alt={t("product_image_alt")} // Localized alt text
 					width={358}
 					height={188}
 					className="object-cover w-full h-48 rounded-t-2xl"
@@ -42,7 +45,8 @@ export function ProductCard({
 			</div>
 			<div className="px-4 py-4 bg-surface-primary-soft rounded-b-2xl">
 				<Text className="text-sm text-content-body-default">
-					{region} by {farmName}
+					{t("region_by_farm", { region, farmName })}{" "}
+					{/* Localized region and farm */}
 				</Text>
 
 				<div className="flex items-center justify-between">
@@ -57,7 +61,9 @@ export function ProductCard({
 
 				<div className="flex justify-between items-center">
 					<Text className="text-xl font-semibold text-surface-primary-default">
-						{price} USD <span className="text-sm font-semibold"> /unit</span>
+						{t("price_with_currency", { price })} {/* Localized price */}
+						<span className="text-sm font-semibold"> {t("per_unit")}</span>{" "}
+						{/* Localized unit */}
 					</Text>
 				</div>
 			</div>

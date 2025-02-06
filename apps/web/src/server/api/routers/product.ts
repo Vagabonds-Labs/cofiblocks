@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { db } from "~/server/db";
 import { mockedProducts } from "./mockProducts";
 
 // TODO: Replace mockedProducts with real data fetched from the blockchain in the near future.
@@ -18,26 +19,109 @@ export const productRouter = createTRPCRouter({
 				cursor: z.number().optional(),
 			}),
 		)
-		.query(({ input }) => {
+		.query(async ({ input }) => {
 			const { limit, cursor } = input;
 
-			let startIndex = 0;
-			if (cursor) {
-				const index = mockedProducts.findIndex(
-					(product) => product.id === cursor,
-				);
-				startIndex = index >= 0 ? index + 1 : 0;
-			}
+			// Fetch products from the database using Prisma
+			const products = await db.product.findMany({
+				take: limit, // Limit the number of products
+				skip: cursor ? 1 : 0, // Skip if cursor is provided
+				cursor: cursor ? { id: cursor } : undefined, // Cursor-based pagination
+				orderBy: { id: "asc" }, // Order products by ID ascending
+			});
 
-			const products = mockedProducts.slice(startIndex, startIndex + limit);
+			// Determine next cursor for pagination
 			const nextCursor =
 				products.length === limit ? products[products.length - 1]?.id : null;
 
 			return {
-				products,
+				products: products,
 				nextCursor,
 			};
 		}),
+
+	getProductById: publicProcedure
+		.input(
+			z.object({
+				id: z.number().min(1),
+			}),
+		)
+		.query(async ({ input }) => {
+			try {
+				const product = await db.product.findUnique({
+					where: { id: input.id },
+				});
+
+				if (!product) {
+					throw new Error("Product not found");
+				}
+
+				return product;
+			} catch (error) {
+				console.error("Error fetching product:", error);
+				throw new Error("Failed to fetch product");
+			}
+		}),
+
+	createProduct: publicProcedure
+		.input(
+			z.object({
+				tokenId: z.number(),
+				name: z.string().min(1),
+				price: z.number().min(0),
+				description: z.string().min(1),
+				image: z.string().optional(),
+				strength: z.string().min(1),
+				region: z.string().optional(),
+				farmName: z.string().optional(),
+			}),
+		)
+		.mutation(async ({ input }) => {
+			try {
+				const newProduct = await db.product.create({
+					data: {
+						tokenId: input.tokenId,
+						name: input.name,
+						price: input.price,
+						nftMetadata: JSON.stringify({
+							description: input.description,
+							imageUrl: input.image,
+							imageAlt: input.image,
+							region: input.region ?? "",
+							farmName: input.farmName ?? "",
+							strength: input.strength,
+						}),
+					},
+				});
+				return { success: true, product: newProduct };
+			} catch (error) {
+				console.error("Error creating product:", error);
+				throw new Error("Failed to create product");
+			}
+		}),
+
+	// updateProductStock: publicProcedure
+	// 	.input(
+	// 		z.object({
+	// 			id: z.number().min(1),
+	// 			buy_amount: z.number().min(0),
+	// 		}),
+	// 	)
+	// 	.mutation(async ({ input }) => {
+	// 		try {
+	// 			const updatedProduct = await db.product.update({
+	// 				where: { id: input.id },
+	// 				data: {
+	// 					orderItems: {order}
+	// 				},
+	// 			});
+
+	// 			return { success: true, product: updatedProduct };
+	// 		} catch (error) {
+	// 			console.error("Error updating product stock:", error);
+	// 			throw new Error("Failed to update product stock");
+	// 		}
+	// 	}),
 
 	searchProductCatalog: publicProcedure
 		.input(

@@ -2,6 +2,7 @@ import { XMarkIcon } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
 import { useAtom } from "jotai";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
 	isLoadingAtom,
 	quantityOfProducts,
@@ -15,6 +16,7 @@ interface FilterModalProps {
 }
 
 export default function FilterModal({ isOpen, onClose }: FilterModalProps) {
+	const { t } = useTranslation();
 	const [selectedStrength, setSelectedStrength] = useState("");
 	const [selectedRegion, setSelectedRegion] = useState("");
 	const [selectedOrder, setSelectedOrder] = useState("");
@@ -39,13 +41,18 @@ export default function FilterModal({ isOpen, onClose }: FilterModalProps) {
 			const { data } = await refetch();
 
 			if (data?.productsFound) {
-				setSearchResults(data.productsFound);
-				setQuantityProducts(data.productsFound.length);
+				const products = data.productsFound.map((product) => ({
+					...product,
+					region: product.region,
+				}));
+				setSearchResults(products);
+				setQuantityProducts(products.length);
 			} else {
 				setSearchResults([]);
 				setQuantityProducts(0);
 			}
 		} catch (error) {
+			console.error(error);
 			setSearchResults([]);
 			setQuantityProducts(0);
 		} finally {
@@ -83,14 +90,14 @@ export default function FilterModal({ isOpen, onClose }: FilterModalProps) {
 			>
 				<div className="p-4 flex justify-between items-center top-0 bg-white z-10">
 					<div className="flex justify-between items-center gap-4">
-						<h2 className="text-xl font-semibold">Filter by</h2>
+						<h2 className="text-xl font-semibold">{t("filter_by")}</h2>
 						{hasActiveFilters && (
 							<button
 								type="button"
 								onClick={handleClear}
 								className="text-gray-500 hover:text-gray-700"
 							>
-								Clear
+								{t("clear")}
 							</button>
 						)}
 					</div>
@@ -101,7 +108,7 @@ export default function FilterModal({ isOpen, onClose }: FilterModalProps) {
 
 				<div className="p-4 space-y-6 overflow-y-auto">
 					<div className="space-y-3">
-						<h3 className="font-medium">Roast level</h3>
+						<h3 className="font-medium">{t("roast_level")}</h3>
 						<div className="space-y-2">
 							{["Light", "Medium", "Strong"].map((strength) => (
 								<label
@@ -118,14 +125,14 @@ export default function FilterModal({ isOpen, onClose }: FilterModalProps) {
 										}
 										className="w-5 h-5 rounded mr-1"
 									/>
-									<span>{strength}</span>
+									<span>{t(`strength.${strength.toLowerCase()}`)}</span>
 								</label>
 							))}
 						</div>
 					</div>
 
 					<div className="space-y-3">
-						<h3 className="font-medium">Region</h3>
+						<h3 className="font-medium">{t("region")}</h3>
 						<div className="space-y-2">
 							{["Region A", "Region B", "Region C"].map((region) => (
 								<label
@@ -140,14 +147,16 @@ export default function FilterModal({ isOpen, onClose }: FilterModalProps) {
 										}
 										className="w-5 h-5 rounded mr-1"
 									/>
-									<span>{region}</span>
+									<span>
+										{t(`regions.${region.replace(" ", "_").toLowerCase()}`)}
+									</span>
 								</label>
 							))}
 						</div>
 					</div>
 
 					<div className="space-y-3">
-						<h3 className="font-medium">Order by</h3>
+						<h3 className="font-medium">{t("order_by")}</h3>
 						<div className="space-y-2">
 							{["Highest price", "Lowest price"].map((order) => (
 								<label
@@ -161,7 +170,9 @@ export default function FilterModal({ isOpen, onClose }: FilterModalProps) {
 										onChange={() => setSelectedOrder(order)}
 										className="w-5 h-5 rounded mr-1"
 									/>
-									<span>{order}</span>
+									<span>
+										{t(`order.${order.toLowerCase().replace(" ", "_")}`)}
+									</span>
 								</label>
 							))}
 						</div>
@@ -174,7 +185,7 @@ export default function FilterModal({ isOpen, onClose }: FilterModalProps) {
 						onClick={handleApply}
 						className="w-full bg-surface-secondary-default text-black py-3 px-4 rounded-lg font-medium hover:bg-yellow-500 transition-colors"
 					>
-						Apply
+						{t("apply")}
 					</button>
 				</div>
 			</motion.div>

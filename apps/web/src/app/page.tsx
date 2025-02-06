@@ -10,7 +10,7 @@ import {
 	useDisconnect,
 	useSignTypedData,
 } from "@starknet-react/core";
-import { type AnimationControls, motion, useAnimation } from "framer-motion";
+import { motion, useAnimation } from "framer-motion";
 import { signIn, signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
@@ -55,7 +55,7 @@ export default function LoginPage() {
 				signature,
 			});
 		} catch (err) {
-			console.error("Error signing message:", err);
+			console.error(t("error_signing_message"), err);
 		}
 	};
 
@@ -161,7 +161,7 @@ export default function LoginPage() {
 										onClick={handleSignMessage}
 										variant="primary"
 										size="lg"
-										className="w-full max-w-[15rem] px-4 py-3  text-content-title text-base font-medium font-inter rounded-lg border border-surface-secondary-default transition-all duration-300 hover:bg-surface-secondary-hover"
+										className="w-full max-w-[15rem] px-4 py-3 text-content-title text-base font-medium font-inter rounded-lg border border-surface-secondary-default transition-all duration-300 hover:bg-surface-secondary-hover"
 									>
 										{t("sign")}
 									</Button>
@@ -183,14 +183,16 @@ export default function LoginPage() {
 													onClick={() => handleConnectWallet(connector)}
 													variant="primary"
 													size="lg"
-													className="w-full max-w-[15rem] px-4 py-3  text-content-title text-base font-medium font-inter rounded-lg border border-surface-secondary-default transition-all duration-300 hover:bg-surface-secondary-hover"
+													className="w-full max-w-[15rem] px-4 py-3 text-content-title text-base font-medium font-inter rounded-lg border border-surface-secondary-default transition-all duration-300 hover:bg-surface-secondary-hover"
 												>
 													<div className="flex items-center space-x-2">
 														<span>
-															Connect{" "}
-															{connector.id === "argentX"
-																? "Argent X"
-																: connector.name}
+															{t("connect_wallet", {
+																walletName:
+																	connector.id === "argentX"
+																		? t("argent_x")
+																		: connector.name,
+															})}
 														</span>
 													</div>
 												</Button>
@@ -200,12 +202,6 @@ export default function LoginPage() {
 								</>
 							)}
 						</div>
-						{/* <Link
-							href="/sell"
-							className="block text-center text-content-title text-base font-normal font-inter underline transition-colors duration-300 hover:text-content-title-hover"
-						>
-							Sell My Coffee
-						</Link> */}
 					</motion.div>
 				</motion.div>
 			</motion.div>

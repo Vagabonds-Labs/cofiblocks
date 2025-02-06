@@ -5,6 +5,7 @@ import { addItemAtom } from "~/store/cartAtom";
 
 interface Product {
 	id: number;
+	tokenId: number;
 	name: string;
 	price: number;
 	description: string;
@@ -20,6 +21,7 @@ export default function ProductList({ products }: ProductListProps) {
 	const handleAddToCart = (product: Product) => {
 		addItem({
 			id: String(product.id),
+			tokenId: product.tokenId,
 			name: product.name,
 			quantity: 1,
 			price: product.price,

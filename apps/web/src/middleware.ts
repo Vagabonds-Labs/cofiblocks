@@ -1,19 +1,15 @@
 import { getToken } from "next-auth/jwt";
-import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-
-export { withAuth } from "next-auth/middleware";
+import type { NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
-	const url = request.nextUrl.clone();
+	const pathname = request.nextUrl.pathname;
 	const token = await getToken({ req: request });
 
-	if (!token && url.pathname !== "/") {
-		url.pathname = "/";
-		return NextResponse.redirect(url);
-	}
+	// Clone the URL for potential modifications
+	const url = request.nextUrl.clone();
 
-	if (token && url.pathname === "/") {
+	if (token && pathname === "/") {
 		url.pathname = "/marketplace";
 		return NextResponse.redirect(url);
 	}
@@ -28,10 +24,8 @@ export const config = {
 		 * - api (API routes)
 		 * - _next/static (static files)
 		 * - _next/image (image optimization files)
-		 * - _next/data (data files)
 		 * - favicon.ico (favicon file)
-		 * - public files (including images)
 		 */
-		"/((?!api|_next/static|_next/image|_next/data|favicon.ico|.*\\.(?:jpg|jpeg|gif|png|svg|ico)).*)",
+		"/((?!api|_next/static|_next/image|favicon.ico).*)",
 	],
 };
