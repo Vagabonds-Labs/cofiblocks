@@ -22,15 +22,13 @@ const languageSchema = z.object({
 type FormValues = z.infer<typeof languageSchema>;
 
 const LANGUAGE_KEY = "app_language";
+const SUPPORTED_LANGUAGES = ["en", "es", "pt"];
 
 export default function Settings({ initialLanguage = "en" }: SettingsProps) {
 	const { i18n, t } = useTranslation();
 
-	// Set a default language that matches on both server and client
 	const [language, setLanguage] = useState<string>(initialLanguage);
 	const [isLanguageModalOpen, setLanguageModalOpen] = useState<boolean>(false);
-
-	const languages = ["en", "es", "pt"];
 
 	const { control, handleSubmit, setValue } = useForm<FormValues>({
 		defaultValues: {
@@ -40,14 +38,12 @@ export default function Settings({ initialLanguage = "en" }: SettingsProps) {
 	});
 
 	useEffect(() => {
-		// Update language from localStorage after component mounts
-		const savedLanguage = localStorage.getItem(LANGUAGE_KEY);
-		if (savedLanguage && savedLanguage !== language) {
-			setLanguage(savedLanguage);
-			setValue("language", savedLanguage);
-			void i18n.changeLanguage(savedLanguage);
-		}
-	}, [i18n, language, setValue]);
+		const detectedLanguage =
+			SUPPORTED_LANGUAGES.find((lang) => i18n.language.includes(lang)) ?? "en";
+		setLanguage(detectedLanguage);
+		setValue("language", detectedLanguage);
+		localStorage.setItem(LANGUAGE_KEY, detectedLanguage);
+	}, [i18n.language, setValue]);
 
 	const openLanguageModal = () => setLanguageModalOpen(true);
 	const closeLanguageModal = () => setLanguageModalOpen(false);
@@ -58,7 +54,7 @@ export default function Settings({ initialLanguage = "en" }: SettingsProps) {
 
 	const onSubmit = async (data: FormValues) => {
 		setLanguage(data.language);
-		await i18n.changeLanguage(data.language);
+		void i18n.changeLanguage(data.language);
 		localStorage.setItem(LANGUAGE_KEY, data.language);
 		closeLanguageModal();
 	};
@@ -92,7 +88,7 @@ export default function Settings({ initialLanguage = "en" }: SettingsProps) {
 					</h3>
 					<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 						<div className="flex flex-col gap-2">
-							{languages.map((lang, index) => (
+							{SUPPORTED_LANGUAGES.map((lang, index) => (
 								<div key={lang}>
 									<label className="flex items-center gap-2">
 										<RadioButton
@@ -102,7 +98,7 @@ export default function Settings({ initialLanguage = "en" }: SettingsProps) {
 											control={control}
 										/>
 									</label>
-									{index < languages.length - 1 && (
+									{index < SUPPORTED_LANGUAGES.length - 1 && (
 										<hr className="my-2 border-surface-border" />
 									)}
 								</div>

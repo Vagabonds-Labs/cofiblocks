@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Toaster } from "react-hot-toast";
 import "~/styles/globals.css";
 import "~/i18n";
@@ -16,16 +16,15 @@ export default function RootLayout({
 	children: React.ReactNode;
 }) {
 	useEffect(() => {
-		const savedLanguage = localStorage.getItem("app_language");
-		if (savedLanguage) {
-			void i18n.changeLanguage(savedLanguage);
-		}
+		const savedLanguage =
+			localStorage.getItem("app_language") ?? i18n.language ?? "en";
+		void i18n.changeLanguage(savedLanguage);
 	}, []);
 
 	return (
 		<html
-			suppressHydrationWarning
-			lang="en"
+			suppressHydrationWarning={true}
+			lang={i18n.language}
 			data-theme="cofiblocks"
 			className={`${GeistSans.variable}`}
 		>
