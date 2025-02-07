@@ -1,0 +1,12 @@
+{
+	"CofiCollection": {
+		"classHash": "0x7a108607024be2054d1558cbfd5de3fe264afe9e025bc7653b1bc5fc76d1af0",
+		"address": "0x520803b8b8d9d33ba65f3fbb482b7614f047347ef5ee7584f963660096488fe",
+		"contract": "cofi_collection.cairo"
+	},
+	"Marketplace": {
+		"classHash": "0x44eb6074fa74a9dbddb65c52394cd1bab274e3bc22e1fc36c26c37686d1e440",
+		"address": "0x3b154f45cea15666efdcbfcf63b29c379bb4e6164163e9d84c2f78cb1eca57d",
+		"contract": "marketplace.cairo"
+	}
+}
