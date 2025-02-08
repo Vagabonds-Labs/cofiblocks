@@ -34,7 +34,7 @@ export default function UserProfile() {
 					onLogout={disconnect}
 					showBackButton
 					onBackClick={() => router.back()}
-					showBlockie={false}
+					showAvatar={true}
 				/>
 				<ProfileCard
 					user={{

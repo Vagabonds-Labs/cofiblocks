@@ -4,11 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
-
-const BlockiesSvg = dynamic<{ address: string; size: number; scale: number }>(
-	() => import("blockies-react-svg"),
-	{ ssr: false },
-);
+import Avatar from "./avatar";
 
 interface PageHeaderProps {
 	title: string | React.ReactNode;
@@ -17,10 +13,11 @@ interface PageHeaderProps {
 	hideCart?: boolean;
 	showBackButton?: boolean;
 	onBackClick?: () => void;
-	showBlockie?: boolean;
+	showAvatar?: boolean;
 	rightActions?: React.ReactNode;
 	showCart?: boolean;
 	cartItemsCount?: number;
+	fallbackIcon?: string;
 }
 
 function PageHeader({
@@ -30,10 +27,11 @@ function PageHeader({
 	hideCart = false,
 	showBackButton = false,
 	onBackClick,
-	showBlockie = true,
+	showAvatar = true,
 	rightActions,
 	showCart = true,
 	cartItemsCount,
+	fallbackIcon,
 }: PageHeaderProps) {
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	const menuRef = useRef<HTMLDivElement>(null);
@@ -80,11 +78,11 @@ function PageHeader({
 							role="button"
 							tabIndex={0}
 						>
-							{showBlockie && (
-								<div className="rounded-full overflow-hidden relative w-8 h-8">
-									<BlockiesSvg address={userAddress} size={8} scale={5} />
-								</div>
-							)}
+							<Avatar
+								userAddress={userAddress}
+								showAvatar={showAvatar}
+								fallbackIcon={fallbackIcon}
+							/>
 						</div>
 						{isMenuOpen && (
 							<div className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
