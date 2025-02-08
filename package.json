@@ -1,63 +1,68 @@
 {
-	"name": "cofiblocks",
-	"private": true,
-	"prisma": {
-		"schema": "apps/web/prisma/schema.prisma",
-		"seed": "node apps/web/prisma/seed.js"
-	},
-	"scripts": {
-		"build": "turbo run build",
-		"dev": "turbo dev",
-		"format": "biome check .",
-		"format:fix": "biome check . --write",
-		"db:generate": "prisma migrate dev",
-		"db:migrate": "prisma migrate deploy",
-		"db:push": "prisma db push",
-		"db:studio": "prisma studio",
-		"db:seed": "NODE_ENV=development prisma db seed",
-		"sn:chain": "cd apps/snfoundry && starknet-devnet --seed 0 --account-class cairo1",
-		"sn:deploy": "ts-node apps/snfoundry/scripts-ts/helpers/deploy-wrapper.ts",
-		"sn:deploy:no-reset": "cd apps/snfoundry && ts-node scripts-ts/helpers/deploy-wrapper.ts --reset false",
-		"sn:test": "cd apps/snfoundry/contracts && snforge test",
-		"sn:test-eslint": "cd apps/snfoundry && node eslint-contract-name/eslint-plugin-contract-names.test.js",
-		"sn:compile": "cd apps/snfoundry/contracts && scarb build",
-		"sn:format": "cd apps/snfoundry/contracts && scarb fmt",
-		"sn:format:check": "cd apps/snfoundry/contracts && scarb fmt --check",
-		"storybook": "cd apps/web/ storybook dev -p 6006",
-		"storybook:build": "cd apps/web. storybook build"
-	},
-	"devDependencies": {
-		"@repo/ui": "*",
-		"@biomejs/biome": "1.8.3",
-		"prettier": "^3.2.5",
-		"turbo": "^2.0.14",
-		"typescript": "^5.4.5"
-	},
-	"engines": {
-		"node": ">=18"
-	},
-	"packageManager": "bun@1.1.24",
-	"workspaces": ["apps/*", "packages/*"],
-	"dependencies": {
-		"@argent/starknet-react-webwallet-connector": "^6.6.0",
-		"@heroicons/react": "^2.1.5",
-		"@hookform/resolvers": "^3.9.0",
-		"@starknet-react/chains": "^3.0.0",
-		"@starknet-react/core": "^3.0.0",
-		"@storybook/react": "^8.3.0",
-		"@trpc/next": "^10.45.2",
-		"blockies-react-svg": "^0.0.13",
-		"chalk": "^5.3.0",
-		"class-variance-authority": "^0.7.0",
-		"classnames": "^2.5.1",
-		"framer-motion": "^11.5.4",
-		"install": "^0.13.0",
-		"jotai": "^2.10.0",
-		"lefthook": "^1.7.15",
-		"react-hook-form": "^7.53.0",
-		"starknetkit": "^2.3.0",
-		"usehooks-ts": "^3.1.0",
-		"uuid": "^10.0.0",
-		"zod": "^3.23.8"
-	}
+  "name": "cofiblocks",
+  "private": true,
+  "prisma": {
+    "schema": "apps/web/prisma/schema.prisma",
+    "seed": "node apps/web/prisma/seed.js"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo dev",
+    "format": "biome check .",
+    "format:fix": "biome check . --write",
+    "db:generate": "prisma migrate dev",
+    "db:migrate": "prisma migrate deploy",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio",
+    "db:seed": "NODE_ENV=development prisma db seed",
+    "sn:chain": "cd apps/snfoundry && starknet-devnet --seed 0 --account-class cairo1",
+    "sn:deploy": "ts-node apps/snfoundry/scripts-ts/helpers/deploy-wrapper.ts",
+    "sn:deploy:no-reset": "cd apps/snfoundry && ts-node scripts-ts/helpers/deploy-wrapper.ts --reset false",
+    "sn:test": "cd apps/snfoundry/contracts && snforge test",
+    "sn:test-eslint": "cd apps/snfoundry && node eslint-contract-name/eslint-plugin-contract-names.test.js",
+    "sn:compile": "cd apps/snfoundry/contracts && scarb build",
+    "sn:format": "cd apps/snfoundry/contracts && scarb fmt",
+    "sn:format:check": "cd apps/snfoundry/contracts && scarb fmt --check",
+    "storybook": "cd apps/web/ storybook dev -p 6006",
+    "storybook:build": "cd apps/web. storybook build"
+  },
+  "devDependencies": {
+    "@repo/ui": "*",
+    "@biomejs/biome": "1.8.3",
+    "prettier": "^3.2.5",
+    "turbo": "^2.0.14",
+    "typescript": "^5.4.5"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "packageManager": "bun@1.1.24",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "dependencies": {
+    "@argent/starknet-react-webwallet-connector": "^6.6.0",
+    "@dicebear/collection": "^9.2.2",
+    "@dicebear/core": "^9.2.2",
+    "@heroicons/react": "^2.1.5",
+    "@hookform/resolvers": "^3.9.0",
+    "@starknet-react/chains": "^3.0.0",
+    "@starknet-react/core": "^3.0.0",
+    "@storybook/react": "^8.3.0",
+    "@trpc/next": "^10.45.2",
+    "blockies-react-svg": "^0.0.13",
+    "chalk": "^5.3.0",
+    "class-variance-authority": "^0.7.0",
+    "classnames": "^2.5.1",
+    "framer-motion": "^11.5.4",
+    "install": "^0.13.0",
+    "jotai": "^2.10.0",
+    "lefthook": "^1.7.15",
+    "react-hook-form": "^7.53.0",
+    "starknetkit": "^2.3.0",
+    "usehooks-ts": "^3.1.0",
+    "uuid": "^10.0.0",
+    "zod": "^3.23.8"
+  }
 }
