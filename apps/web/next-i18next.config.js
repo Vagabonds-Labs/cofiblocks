@@ -4,4 +4,8 @@ export default {
 		locales: ["en", "es", "pt"],
 		localeDetection: true,
 	},
+	detection: {
+		order: ["cookie", "localStorage", "navigator", "querystring"],
+		caches: ["cookie", "localStorage"],
+	},
 };

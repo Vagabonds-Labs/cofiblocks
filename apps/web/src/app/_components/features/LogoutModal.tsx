@@ -1,7 +1,7 @@
 import Button from "@repo/ui/button";
 import { useRouter } from "next/navigation";
-import { useTranslation } from "react-i18next";
 import BottomModal from "~/app/_components/ui/BottomModal";
+import { useTranslation } from "~/i18n";
 
 interface LogoutModalProps {
 	isOpen: boolean;

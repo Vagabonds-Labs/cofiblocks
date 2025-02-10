@@ -4,10 +4,10 @@ import PageHeader from "@repo/ui/pageHeader";
 import { useAccount, useDisconnect } from "@starknet-react/core";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
 import { ProfileCard } from "~/app/_components/features/ProfileCard";
 import { ProfileOptions } from "~/app/_components/features/ProfileOptions";
 import Main from "~/app/_components/layout/Main";
+import { useTranslation } from "~/i18n";
 import type { UserProfileType } from "~/types";
 
 export default function UserProfile() {

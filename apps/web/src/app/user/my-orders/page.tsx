@@ -6,11 +6,11 @@ import Button from "@repo/ui/button";
 import CheckBox from "@repo/ui/form/checkBox";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { useTranslation } from "react-i18next";
 import OrderListItem from "~/app/_components/features/OrderListItem";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
 import BottomModal from "~/app/_components/ui/BottomModal";
 import { useOrderFiltering } from "~/hooks/user/useOrderFiltering";
+import { useTranslation } from "~/i18n";
 import { type FormValues, SalesStatus, filtersSchema } from "~/types";
 
 const mockedOrders = [

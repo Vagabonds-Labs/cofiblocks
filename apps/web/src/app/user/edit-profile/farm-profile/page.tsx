@@ -7,9 +7,9 @@ import InputField from "@repo/ui/form/inputField";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
+import { useTranslation } from "~/i18n";
 import { api } from "~/trpc/react";
 
 const schema = z.object({

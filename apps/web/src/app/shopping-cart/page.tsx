@@ -7,7 +7,7 @@ import { useAtom, useAtomValue } from "jotai";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "~/i18n";
 import { cartItemsAtom, removeItemAtom } from "~/store/cartAtom";
 import type { CartItem } from "~/store/cartAtom";
 import {

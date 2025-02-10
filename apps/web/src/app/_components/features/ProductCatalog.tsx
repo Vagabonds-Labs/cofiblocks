@@ -5,13 +5,13 @@ import { useAtom } from "jotai";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
 import {
 	isLoadingAtom,
 	quantityOfProducts,
 	searchQueryAtom,
 	searchResultsAtom,
 } from "~/atoms/productAtom";
+import { useTranslation } from "~/i18n";
 import { api } from "~/trpc/react";
 import type { NftMetadata, Product } from "./types";
 

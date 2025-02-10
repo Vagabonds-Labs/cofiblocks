@@ -3,8 +3,8 @@
 import Button from "@repo/ui/button";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useTranslation } from "react-i18next";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
+import { useTranslation } from "~/i18n";
 
 export default function MyCoffee() {
 	const { t } = useTranslation();

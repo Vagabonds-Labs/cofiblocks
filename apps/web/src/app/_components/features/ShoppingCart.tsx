@@ -3,7 +3,7 @@
 import { XMarkIcon } from "@heroicons/react/24/solid";
 import { useAtom, useAtomValue } from "jotai";
 import { useRouter } from "next/navigation";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "~/i18n";
 import { cartItemsAtom, removeItemAtom } from "~/store/cartAtom";
 
 interface ShoppingCartProps {

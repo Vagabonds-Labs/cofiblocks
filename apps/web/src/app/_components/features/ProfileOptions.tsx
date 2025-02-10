@@ -15,9 +15,9 @@ import { cva } from "class-variance-authority";
 import cx from "classnames";
 import Link from "next/link";
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
 import { LogoutModal } from "~/app/_components/features/LogoutModal";
 import { UserWalletsModal } from "~/app/_components/features/UserWalletsModal";
+import { useTranslation } from "~/i18n";
 
 type ProfileOption = {
 	icon: React.ElementType;

@@ -1,8 +1,8 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
 import { cva } from "class-variance-authority";
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
 import { v4 as uuidv4 } from "uuid";
+import { useTranslation } from "~/i18n";
 import CarouselCard, { type CardProps } from "./carouselCard";
 
 interface CarouselProps {

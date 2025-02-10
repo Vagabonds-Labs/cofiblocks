@@ -3,8 +3,8 @@
 import { ProductCard } from "@repo/ui/productCard";
 import { useAtom } from "jotai";
 import React from "react";
-import { useTranslation } from "react-i18next";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
+import { useTranslation } from "~/i18n";
 import { addItemAtom } from "~/store/cartAtom";
 
 const userFavoriteProducts = [
