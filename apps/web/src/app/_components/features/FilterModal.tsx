@@ -2,12 +2,12 @@ import { XMarkIcon } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
 import { useAtom } from "jotai";
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
 import {
 	isLoadingAtom,
 	quantityOfProducts,
 	searchResultsAtom,
 } from "~/atoms/productAtom";
+import { useTranslation } from "~/i18n";
 import { api } from "~/trpc/react";
 
 interface FilterModalProps {

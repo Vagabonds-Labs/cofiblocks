@@ -1,8 +1,8 @@
 "use client";
 
 import NFTCard from "@repo/ui/nftCard";
-import { useTranslation } from "react-i18next";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
+import { useTranslation } from "~/i18n";
 
 // TODO: Load collectibles from database and/or blockchain
 const collectibles = [

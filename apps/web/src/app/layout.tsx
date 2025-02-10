@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Toaster } from "react-hot-toast";
 import "~/styles/globals.css";
 import "~/i18n";
@@ -28,7 +28,7 @@ export default function RootLayout({
 			data-theme="cofiblocks"
 			className={`${GeistSans.variable}`}
 		>
-			<body>
+			<body suppressHydrationWarning={true}>
 				<SessionProvider>
 					<StarknetProvider>
 						<TRPCReactProvider>{children}</TRPCReactProvider>

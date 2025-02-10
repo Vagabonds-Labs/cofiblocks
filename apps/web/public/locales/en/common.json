@@ -1,6 +1,7 @@
 {
 	"welcome_to": "Welcome to",
 	"sign": "Sign",
+	"profile": "Profile",
 	"disconnect": "Disconnect",
 	"connect_wallet": "Connect {{walletName}}",
 	"argent_x": "Argent X",

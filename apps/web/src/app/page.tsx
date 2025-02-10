@@ -15,9 +15,9 @@ import { signIn, signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
 import LoginAnimation from "~/app/_components/ui/LoginAnimation";
 import { MESSAGE } from "~/constants";
+import { useTranslation } from "~/i18n";
 import {
 	containerVariants,
 	formContainerVariants,

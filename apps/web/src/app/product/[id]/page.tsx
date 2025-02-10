@@ -3,8 +3,8 @@
 import SkeletonLoader from "@repo/ui/skeleton";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
 import ProductDetails from "~/app/_components/features/ProductDetails";
+import { useTranslation } from "~/i18n";
 
 interface Product {
 	id: number;

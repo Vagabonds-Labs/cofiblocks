@@ -1,8 +1,8 @@
 import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
 import BottomModal from "~/app/_components/ui/BottomModal";
+import { useTranslation } from "~/i18n";
 
 interface UserWalletsModalProps {
 	isOpen: boolean;

@@ -1,6 +1,7 @@
 {
 	"welcome_to": "Bienvenido a",
 	"sign": "Firmar",
+	"profile": "Perfil",
 	"disconnect": "Desconectar",
 	"connect_wallet": "Conectar {{walletName}}",
 	"argent_x": "Argent X",

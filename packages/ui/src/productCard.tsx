@@ -1,6 +1,6 @@
 import { ArrowRightIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "~/i18n";
 import Badge from "./badge";
 import IconButton from "./iconButton";
 import { H4, Text } from "./typography";

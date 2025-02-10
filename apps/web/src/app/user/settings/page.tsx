@@ -6,10 +6,10 @@ import Button from "@repo/ui/button";
 import RadioButton from "@repo/ui/form/radioButton";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
 import BottomModal from "~/app/_components/ui/BottomModal";
+import { useTranslation } from "~/i18n";
 
 interface SettingsProps {
 	initialLanguage?: string;

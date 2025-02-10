@@ -3,11 +3,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@repo/ui/button";
 import InputField from "@repo/ui/form/inputField";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
+import { useTranslation } from "~/i18n";
 import { api } from "~/trpc/react";
 
 const schema = z.object({
@@ -26,7 +26,7 @@ function EditMyProfile() {
 
 	const { data: user, isLoading } = api.user.getUser.useQuery({ userId });
 
-	const { register, handleSubmit, control, reset } = useForm<FormData>({
+	const { handleSubmit, control, reset } = useForm<FormData>({
 		resolver: zodResolver(schema),
 		defaultValues: {
 			fullName: "",

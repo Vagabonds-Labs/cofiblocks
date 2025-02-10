@@ -19,7 +19,7 @@ import {
 } from "~/services/contractsInterface";
 import { DeliveryMethod, SalesStatus } from "~/types";
 
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "~/i18n";
 
 const mockedOrders = [
 	{
