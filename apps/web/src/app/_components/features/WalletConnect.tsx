@@ -9,8 +9,6 @@ import {
 	useSignTypedData,
 } from "@starknet-react/core";
 import { signIn, signOut } from "next-auth/react";
-import { useSession } from "next-auth/react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";

@@ -27,12 +27,7 @@ function EditMyProfile() {
 	const { data: session } = useSession();
 	const router = useRouter();
 
-	const {
-		handleSubmit,
-		formState: { errors },
-		control,
-		reset,
-	} = useForm<FormData>({
+	const { handleSubmit, control, reset } = useForm<FormData>({
 		resolver: zodResolver(schema),
 		defaultValues: {
 			fullName: "",

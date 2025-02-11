@@ -1,6 +1,7 @@
 //This ProductCard component displays product details in a card format
 import { ProductCard } from "@repo/ui/productCard";
 import type { Meta, StoryFn } from "@storybook/react";
+import Image from "next/image";
 
 //This meta object configures the ProductCard for Storybook
 export default {
@@ -125,7 +126,11 @@ AddToCart.args = {
 </span>;
 // You should use meaningful alt text for the product image.
 // If the image is decorative or missing, provide an empty alt="".
-<img
-	src="https://via.placeholder.com/358x188"
-	alt="Arabica Coffee from Sunrise Farms"
-/>;
+<div className="relative w-full h-48">
+	<Image
+		src={Default.args.image ?? "https://via.placeholder.com/358x188"}
+		alt={Default.args.variety ?? "Product image"}
+		fill
+		className="object-cover rounded-t-lg"
+	/>
+</div>;
