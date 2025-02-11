@@ -11,9 +11,16 @@ interface HeaderProps {
 	disconnect: () => void;
 	showCart?: boolean;
 	onConnect?: () => void;
+	profileOptions?: React.ReactNode;
 }
 
-function Header({ address, disconnect, showCart, onConnect }: HeaderProps) {
+function Header({
+	address,
+	disconnect,
+	showCart,
+	onConnect,
+	profileOptions,
+}: HeaderProps) {
 	const router = useRouter();
 	const items = useAtomValue(cartItemsAtom);
 	const cartItemsCount = showCart
@@ -34,6 +41,7 @@ function Header({ address, disconnect, showCart, onConnect }: HeaderProps) {
 			showCart={showCart}
 			cartItemsCount={cartItemsCount}
 			onConnect={onConnect}
+			profileOptions={profileOptions}
 		/>
 	);
 }

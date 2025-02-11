@@ -3,6 +3,7 @@
 import { useAccount, useDisconnect } from "@starknet-react/core";
 import { useState } from "react";
 import ProductDetails from "~/app/_components/features/ProductDetails";
+import { ProfileOptions } from "~/app/_components/features/ProfileOptions";
 import WalletConnect from "~/app/_components/features/WalletConnect";
 import Header from "~/app/_components/layout/Header";
 import Main from "~/app/_components/layout/Main";
@@ -44,6 +45,9 @@ export default function ProductPage() {
 					disconnect={disconnect}
 					showCart={true}
 					onConnect={handleConnect}
+					profileOptions={
+						address ? <ProfileOptions address={address} /> : undefined
+					}
 				/>
 				<div className="flex-grow px-4 md:px-6 lg:px-8 pt-24">
 					<ProductDetails

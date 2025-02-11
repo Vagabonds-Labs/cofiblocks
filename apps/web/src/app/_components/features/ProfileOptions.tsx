@@ -30,6 +30,7 @@ type ProfileOption = {
 
 interface ProfileOptionsProps {
 	address?: string;
+	className?: string;
 }
 
 const optionStyles = cva(
@@ -59,7 +60,7 @@ const iconStyles = cva("w-5 h-5 mr-3", {
 	},
 });
 
-function ProfileOptions({ address: _ }: ProfileOptionsProps) {
+function ProfileOptions({ address: _, className }: ProfileOptionsProps) {
 	const { t } = useTranslation();
 	const [isLogoutModalOpen, setIsLogoutModalOpen] = useState<boolean>(false);
 	const [isWalletModalOpen, setIsWalletModalOpen] = useState<boolean>(false);
@@ -109,7 +110,7 @@ function ProfileOptions({ address: _ }: ProfileOptionsProps) {
 
 	return (
 		<>
-			<div className="bg-surface-inverse rounded-lg overflow-hidden">
+			<div className={cx("bg-white rounded-lg overflow-hidden", className)}>
 				{profileOptions.map((option, index) => (
 					<div key={option.label}>
 						<div

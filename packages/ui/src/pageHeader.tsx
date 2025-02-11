@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
 import Button from "./button";
+import { HamburgerMenu } from "./hamburgerMenu";
 
 const BlockiesSvg = dynamic<{ address: string; size: number; scale: number }>(
 	() => import("blockies-react-svg"),
@@ -25,6 +26,7 @@ interface PageHeaderProps {
 	showCart?: boolean;
 	cartItemsCount?: number;
 	onConnect?: () => void;
+	profileOptions?: React.ReactNode;
 }
 
 function PageHeader({
@@ -39,26 +41,32 @@ function PageHeader({
 	showCart = true,
 	cartItemsCount,
 	onConnect,
+	profileOptions,
 }: PageHeaderProps) {
-	const [isMenuOpen, setIsMenuOpen] = useState(false);
+	const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+	const [isHamburgerMenuOpen, setIsHamburgerMenuOpen] = useState(false);
 	const menuRef = useRef<HTMLDivElement>(null);
 	const { t } = useTranslation();
 	const router = useRouter();
 
-	const toggleMenu = () => {
-		setIsMenuOpen((prevState) => !prevState);
+	const toggleProfileMenu = () => {
+		setIsProfileMenuOpen((prevState: boolean) => !prevState);
+	};
+
+	const toggleHamburgerMenu = () => {
+		setIsHamburgerMenuOpen((prevState: boolean) => !prevState);
 	};
 
 	const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
 		if (event.key === "Enter" || event.key === " ") {
-			toggleMenu();
+			toggleProfileMenu();
 		}
 	};
 
 	useEffect(() => {
 		function handleClickOutside(event: MouseEvent) {
 			if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-				setIsMenuOpen(false);
+				setIsProfileMenuOpen(false);
 			}
 		}
 
@@ -124,49 +132,59 @@ function PageHeader({
 					</button>
 				)}
 				{userAddress && (
-					<div className="relative" ref={menuRef}>
-						<div
-							className="cursor-pointer p-1 hover:bg-gray-100 rounded-full transition-colors"
-							onClick={toggleMenu}
-							onKeyDown={handleKeyDown}
-							role="button"
-							tabIndex={0}
-							aria-label="Open user menu"
-							aria-expanded={isMenuOpen}
-							aria-haspopup="true"
-						>
-							{showBlockie && (
-								<div className="rounded-full overflow-hidden relative w-10 h-10 ring-2 ring-surface-primary-default">
-									<BlockiesSvg address={userAddress} size={10} scale={4} />
+					<div className="flex items-center space-x-4">
+						{profileOptions && (
+							<HamburgerMenu
+								isOpen={isHamburgerMenuOpen}
+								onToggle={toggleHamburgerMenu}
+							>
+								{profileOptions}
+							</HamburgerMenu>
+						)}
+						<div className="relative" ref={menuRef}>
+							<div
+								className="cursor-pointer p-1 hover:bg-gray-100 rounded-full transition-colors"
+								onClick={toggleProfileMenu}
+								onKeyDown={handleKeyDown}
+								role="button"
+								tabIndex={0}
+								aria-label="Open user menu"
+								aria-expanded={isProfileMenuOpen}
+								aria-haspopup="true"
+							>
+								{showBlockie && (
+									<div className="rounded-full overflow-hidden relative w-10 h-10 ring-2 ring-surface-primary-default">
+										<BlockiesSvg address={userAddress} size={10} scale={4} />
+									</div>
+								)}
+							</div>
+							{isProfileMenuOpen && (
+								<div className="absolute right-0 mt-2 w-48 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
+									<div
+										className="py-1"
+										role="menu"
+										aria-orientation="vertical"
+										aria-labelledby="options-menu"
+									>
+										<Link
+											href="/user-profile"
+											className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left transition-colors"
+											role="menuitem"
+										>
+											{t("Profile")}
+										</Link>
+										<button
+											className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left transition-colors"
+											onClick={onLogout}
+											role="menuitem"
+											type="button"
+										>
+											{t("disconnect")}
+										</button>
+									</div>
 								</div>
 							)}
 						</div>
-						{isMenuOpen && (
-							<div className="absolute right-0 mt-2 w-48 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
-								<div
-									className="py-1"
-									role="menu"
-									aria-orientation="vertical"
-									aria-labelledby="options-menu"
-								>
-									<Link
-										href="/user-profile"
-										className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left transition-colors"
-										role="menuitem"
-									>
-										{t("Profile")}
-									</Link>
-									<button
-										className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left transition-colors"
-										onClick={onLogout}
-										role="menuitem"
-										type="button"
-									>
-										{t("disconnect")}
-									</button>
-								</div>
-							</div>
-						)}
 					</div>
 				)}
 			</div>

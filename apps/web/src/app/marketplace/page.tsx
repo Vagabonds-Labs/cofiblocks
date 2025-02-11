@@ -5,6 +5,7 @@ import { useAccount, useDisconnect } from "@starknet-react/core";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import ProductCatalog from "~/app/_components/features/ProductCatalog";
+import { ProfileOptions } from "~/app/_components/features/ProfileOptions";
 import WalletConnect from "~/app/_components/features/WalletConnect";
 import Header from "~/app/_components/layout/Header";
 import Main from "~/app/_components/layout/Main";
@@ -53,6 +54,9 @@ export default function Home() {
 					disconnect={disconnect}
 					showCart={true}
 					onConnect={handleConnect}
+					profileOptions={
+						address ? <ProfileOptions address={address} /> : undefined
+					}
 				/>
 				<div className="flex-grow">
 					{/* Hero Section */}

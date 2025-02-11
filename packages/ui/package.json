@@ -4,6 +4,7 @@
 	"private": true,
 	"exports": {
 		"./button": "./src/button.tsx",
+		"./hamburgerMenu": "./src/hamburgerMenu.tsx",
 		"./iconButton": "./src/iconButton.tsx",
 		"./productCard": "./src/productCard.tsx",
 		"./code": "./src/code.tsx",

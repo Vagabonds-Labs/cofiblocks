@@ -5,6 +5,7 @@ import { useAccount, useDisconnect } from "@starknet-react/core";
 import Link from "next/link";
 import Header from "~/app/_components/layout/Header";
 import Main from "~/app/_components/layout/Main";
+import { ProfileOptions } from "./ProfileOptions";
 
 type ProfileOptionLayoutProps = {
 	title: string;
@@ -22,7 +23,13 @@ function ProfileOptionLayout({
 
 	return (
 		<Main>
-			<Header address={address} disconnect={disconnect} />
+			<Header
+				address={address}
+				disconnect={disconnect}
+				profileOptions={
+					address ? <ProfileOptions address={address} /> : undefined
+				}
+			/>
 			<div className="container mx-auto px-4 py-8">
 				<div className="flex items-center mb-6">
 					<Link href={backLink ?? "/user-profile"} className="mr-4">

@@ -75,9 +75,13 @@ export default function UserProfile() {
 	return (
 		<Main>
 			<div className="container mx-auto px-4 py-8">
-				<Header address={address} disconnect={disconnect} />
+				<Header
+					address={address}
+					disconnect={disconnect}
+					profileOptions={<ProfileOptions address={address} />}
+				/>
 				<ProfileCard user={userProfile} />
-				<ProfileOptions />
+				<ProfileOptions address={address} />
 			</div>
 		</Main>
 	);
