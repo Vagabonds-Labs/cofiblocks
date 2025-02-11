@@ -1,6 +1,7 @@
 "use client";
 
 import "../i18n";
+import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import Button from "@repo/ui/button";
 import { H1, Text } from "@repo/ui/typography";
 import {
@@ -13,6 +14,7 @@ import {
 import { motion, useAnimation } from "framer-motion";
 import { signIn, signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -181,19 +183,20 @@ export default function LoginPage() {
 												<Button
 													key={connector.id}
 													onClick={() => handleConnectWallet(connector)}
-													variant="primary"
-													size="lg"
-													className="w-full max-w-[15rem] px-4 py-3 text-content-title text-base font-medium font-inter rounded-lg border border-surface-secondary-default transition-all duration-300 hover:bg-surface-secondary-hover"
+													className="w-full"
 												>
-													<div className="flex items-center space-x-2">
-														<span>
-															{t("connect_wallet", {
-																walletName:
-																	connector.id === "argentX"
-																		? t("argent_x")
-																		: connector.name,
-															})}
-														</span>
+													<div className="flex items-center justify-between">
+														<div className="flex items-center">
+															<Image
+																src={`/images/wallets/${connector.id}.svg`}
+																alt={connector.id}
+																width={24}
+																height={24}
+																className="mr-2"
+															/>
+															<span>{t(`wallets.${connector.id}`)}</span>
+														</div>
+														<ChevronRightIcon className="h-5 w-5" />
 													</div>
 												</Button>
 											))}

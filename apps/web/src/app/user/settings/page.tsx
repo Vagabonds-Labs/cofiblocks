@@ -11,10 +11,6 @@ import { z } from "zod";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
 import BottomModal from "~/app/_components/ui/BottomModal";
 
-interface SettingsProps {
-	initialLanguage?: string;
-}
-
 const languageSchema = z.object({
 	language: z.string(),
 });
@@ -23,11 +19,11 @@ type FormValues = z.infer<typeof languageSchema>;
 
 const LANGUAGE_KEY = "app_language";
 
-export default function Settings({ initialLanguage = "en" }: SettingsProps) {
+export default function Settings() {
 	const { i18n, t } = useTranslation();
 
-	// Set a default language that matches on both server and client
-	const [language, setLanguage] = useState<string>(initialLanguage);
+	// Set a default language
+	const [language, setLanguage] = useState<string>("en");
 	const [isLanguageModalOpen, setLanguageModalOpen] = useState<boolean>(false);
 
 	const languages = ["en", "es", "pt"];
@@ -94,13 +90,18 @@ export default function Settings({ initialLanguage = "en" }: SettingsProps) {
 						<div className="flex flex-col gap-2">
 							{languages.map((lang, index) => (
 								<div key={lang}>
-									<label className="flex items-center gap-2">
-										<RadioButton
+									<label
+										htmlFor={`lang-${lang}`}
+										className="flex items-center gap-2"
+									>
+										<RadioButton<FormValues>
+											id={`lang-${lang}`}
 											name="language"
-											label={t(`language_name.${lang}`)}
 											value={lang}
 											control={control}
+											label={t(`languages.${lang}`)}
 										/>
+										<span>{t(`languages.${lang}`)}</span>
 									</label>
 									{index < languages.length - 1 && (
 										<hr className="my-2 border-surface-border" />

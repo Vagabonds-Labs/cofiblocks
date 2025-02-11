@@ -127,10 +127,14 @@ export default function RegisterCoffee() {
 						</Button>
 					</div>
 					<div className="my-4">
-						<label className="text-content-body-default block mb-1">
+						<label
+							htmlFor="variety"
+							className="text-content-body-default block mb-1"
+						>
 							{t("coffee_variety")}
 						</label>
 						<input
+							id="variety"
 							{...register("variety")}
 							type="text"
 							className="w-full border border-surface-border rounded p-2"
@@ -138,23 +142,31 @@ export default function RegisterCoffee() {
 						/>
 					</div>
 					<div className="my-2">
-						<label className="text-content-body-default block mb-1">
+						<label
+							htmlFor="description"
+							className="text-content-body-default block mb-1"
+						>
 							{t("coffee_description")}
 						</label>
 						<textarea
+							id="description"
 							{...register("description")}
 							className="w-full border border-surface-border rounded p-2"
 							placeholder={t("type_here")}
 						/>
 					</div>
 					<div className="mb-2">
-						<label className="text-content-body-default block mb-1">
+						<label
+							htmlFor="coffeeScore"
+							className="text-content-body-default block mb-1"
+						>
 							{t("coffee_score")}{" "}
 							<span className="text-content-body-soft">
 								({t("not_mandatory")})
 							</span>
 						</label>
 						<input
+							id="coffeeScore"
 							{...register("coffeeScore", {
 								valueAsNumber: true,
 								min: { value: 0, message: "Score must be at least 0" },
@@ -194,7 +206,10 @@ export default function RegisterCoffee() {
 						/>
 					</div>
 					<div className="my-6">
-						<label className="text-content-body-default block mb-2">
+						<label
+							htmlFor="roastLevel"
+							className="text-content-body-default block mb-2"
+						>
 							{t("roast_level")}
 						</label>
 						<div className="flex flex-col space-y-2">
@@ -236,17 +251,21 @@ export default function RegisterCoffee() {
 					<div className="my-8 flex justify-between items-center">
 						<div className="flex items-center font-medium">
 							<ArrowPathRoundedSquareIcon className="w-6 h-6 mr-2" />
-							<label className="text-content-body-default">
+							<span className="text-content-body-default">
 								{t("operating_fee")}
-							</label>
+							</span>
 						</div>
 						<p className="text-content-body-default">$20.00</p>
 					</div>
 					<div className="my-4">
-						<label className="text-content-body-default block mb-1">
+						<label
+							htmlFor="price"
+							className="text-content-body-default block mb-1"
+						>
 							{t("price_per_bag")} (USD)
 						</label>
 						<input
+							id="price"
 							{...register("price")}
 							type="text"
 							className="w-full border border-surface-border rounded p-2"
@@ -288,7 +307,10 @@ export default function RegisterCoffee() {
 						<p className="font-medium text-[0.875rem]">25 USD</p>
 					</div>
 					<div className="my-6">
-						<label className="text-content-body-default block mb-1">
+						<label
+							htmlFor="bagsAvailable"
+							className="text-content-body-default block mb-1"
+						>
 							{t("bags_available")} (340g)
 						</label>
 						<div className="flex items-center justify-between rounded-lg p-2 border border-surface-border">
@@ -307,6 +329,7 @@ export default function RegisterCoffee() {
 								-
 							</Button>
 							<input
+								id="bagsAvailable"
 								type="text"
 								className="w-16 text-center bg-transparent text-content-body-default text-lg"
 								{...register("bagsAvailable", {

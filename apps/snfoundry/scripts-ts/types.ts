@@ -29,7 +29,7 @@ export class DeploymentError extends Error {
 		public type: DeploymentErrorType,
 		message: string,
 		public txHash?: string,
-		public contractAddress?: string
+		public contractAddress?: string,
 	) {
 		super(message);
 		this.name = "DeploymentError";
@@ -45,7 +45,7 @@ export interface RetryConfig {
 
 export interface TransactionQueueItem {
 	id: string;
-	execute: () => Promise<any>;
+	execute: () => Promise<unknown>;
 	priority: number;
 	network: keyof Networks;
 	dependencies?: string[];

@@ -40,8 +40,10 @@
 	"workspaces": ["apps/*", "packages/*"],
 	"dependencies": {
 		"@argent/starknet-react-webwallet-connector": "^6.6.0",
+		"@auth/prisma-adapter": "^2.7.4",
 		"@heroicons/react": "^2.1.5",
 		"@hookform/resolvers": "^3.9.0",
+		"@prisma/client": "6.2.1",
 		"@starknet-react/chains": "^3.0.0",
 		"@starknet-react/core": "^3.0.0",
 		"@storybook/react": "^8.3.0",
@@ -54,6 +56,7 @@
 		"install": "^0.13.0",
 		"jotai": "^2.10.0",
 		"lefthook": "^1.7.15",
+		"prisma": "6.2.1",
 		"react-hook-form": "^7.53.0",
 		"starknetkit": "^2.3.0",
 		"usehooks-ts": "^3.1.0",

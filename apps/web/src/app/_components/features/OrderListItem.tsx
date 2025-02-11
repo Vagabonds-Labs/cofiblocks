@@ -21,16 +21,15 @@ export default function OrderListItem({
 	const { t } = useTranslation();
 
 	return (
-		<Link href="#" onClick={onClick} className="block">
-			<div
-				className="flex items-center justify-between py-4"
-				onKeyDown={(e) => {
-					if (e.key === "Enter" || e.key === " ") {
+		<Link href="#" className="block">
+			<button
+				type="button"
+				onClick={() => {
+					if (onClick) {
 						onClick();
 					}
 				}}
-				role="button"
-				tabIndex={0}
+				className="flex w-full cursor-pointer items-center justify-between p-4 hover:bg-gray-50"
 			>
 				<div className="flex items-center space-x-4">
 					<Image
@@ -57,7 +56,7 @@ export default function OrderListItem({
 					</span>
 					<ChevronRightIcon className="text-content-body-default w-5 h-5" />
 				</div>
-			</div>
+			</button>
 		</Link>
 	);
 }

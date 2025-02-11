@@ -86,7 +86,7 @@ export default function ProductCatalog() {
 				farmName={metadata?.farmName ?? ""}
 				variety={t(product.name)}
 				price={product.price}
-				badgeText={t(`strength.${metadata?.strength.toLowerCase()}`)}
+				badgeText={t(`strength.${metadata?.strength?.toLowerCase()}`)}
 				onClick={() => accessProductDetails(product.id)}
 			/>
 		);

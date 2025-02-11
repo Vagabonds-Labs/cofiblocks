@@ -42,11 +42,7 @@ export default function Home() {
 			<Header address={address} disconnect={disconnect} showCart={true} />
 			<SearchBar />
 
-			{query.length <= 0 && (
-				<>
-					<Carousel cards={carouselData} />
-				</>
-			)}
+			{query.length <= 0 && <Carousel cards={carouselData} />}
 			<ProductCatalog />
 		</Main>
 	);

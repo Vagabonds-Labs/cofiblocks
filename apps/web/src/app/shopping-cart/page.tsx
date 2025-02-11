@@ -3,13 +3,11 @@
 import { ArrowLeftIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { useAccount } from "@starknet-react/core";
 import { useProvider } from "@starknet-react/core";
-import { useAtom, useAtomValue } from "jotai";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { cartItemsAtom, removeItemAtom } from "~/store/cartAtom";
-import type { CartItem } from "~/store/cartAtom";
+import { api } from "~/trpc/react";
 import {
 	ContractsError,
 	ContractsInterface,
@@ -17,7 +15,6 @@ import {
 	useMarketplaceContract,
 	useStarkContract,
 } from "../../services/contractsInterface";
-//import { api } from "~/trpc/server";
 
 interface DeleteModalProps {
 	isOpen: boolean;
@@ -64,11 +61,19 @@ function DeleteConfirmationModal({
 	);
 }
 
+interface NftMetadata {
+	description: string;
+	imageUrl: string;
+	imageAlt: string;
+	region?: string;
+	farmName?: string;
+	strength?: string;
+}
+
 export default function ShoppingCart() {
 	const router = useRouter();
-	const items = useAtomValue(cartItemsAtom);
-	const [, removeItem] = useAtom(removeItemAtom);
-	const [itemToDelete, setItemToDelete] = useState<CartItem | null>(null);
+	const { t } = useTranslation();
+	const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 	const { provider } = useProvider();
 	const contract = new ContractsInterface(
 		useAccount(),
@@ -77,14 +82,23 @@ export default function ShoppingCart() {
 		useStarkContract(),
 		provider,
 	);
-	const { t } = useTranslation();
-	const handleRemove = (item: CartItem) => {
-		setItemToDelete(item);
+
+	// Get cart data from server
+	const { data: cart, refetch: refetchCart } = api.cart.getUserCart.useQuery();
+	const { mutate: removeFromCart } = api.cart.removeFromCart.useMutation({
+		onSuccess: () => {
+			void refetchCart();
+		},
+	});
+	const { mutate: clearCart } = api.cart.clearCart.useMutation();
+
+	const handleRemove = (cartItemId: string) => {
+		setItemToDelete(cartItemId);
 	};
 
 	const confirmDelete = () => {
 		if (itemToDelete) {
-			removeItem(itemToDelete.id);
+			removeFromCart({ cartItemId: itemToDelete });
 			setItemToDelete(null);
 		}
 	};
@@ -94,8 +108,15 @@ export default function ShoppingCart() {
 	};
 
 	const handleBuy = async () => {
-		const token_ids = items.map((item) => item.tokenId);
-		const token_amounts = items.map((item) => item.quantity);
+		if (!cart) return;
+
+		const token_ids = cart.items.map((item) => item.product.tokenId);
+		const token_amounts = cart.items.map((item) => item.quantity);
+		const totalPrice = cart.items.reduce(
+			(total, item) => total + item.product.price * item.quantity,
+			0,
+		);
+
 		console.log("buying items", token_ids, token_amounts, totalPrice);
 		try {
 			const tx_hash = await contract.buy_product(
@@ -104,9 +125,9 @@ export default function ShoppingCart() {
 				totalPrice,
 			);
 			alert(`Items bought successfully tx hash: ${tx_hash}`);
-			for (const item of items) {
-				removeItem(item.id);
-			}
+			// Clear cart after successful purchase
+			clearCart();
+			void refetchCart();
 		} catch (error) {
 			if (error instanceof ContractsError) {
 				alert(error.message);
@@ -115,10 +136,23 @@ export default function ShoppingCart() {
 		}
 	};
 
-	const totalPrice = items.reduce(
-		(total, item) => total + item.price * item.quantity,
-		0,
-	);
+	const totalPrice =
+		cart?.items.reduce(
+			(total, item) => total + item.product.price * item.quantity,
+			0,
+		) ?? 0;
+
+	const getImageUrl = (nftMetadata: unknown): string => {
+		if (typeof nftMetadata !== "string") return "/images/default.webp";
+		try {
+			const metadata = JSON.parse(nftMetadata) as NftMetadata;
+			return metadata.imageUrl;
+		} catch {
+			return "/images/default.webp";
+		}
+	};
+
+	const hasItems = Boolean(cart?.items && cart.items.length > 0);
 
 	return (
 		<div className="max-w-md mx-auto bg-white min-h-screen">
@@ -135,26 +169,28 @@ export default function ShoppingCart() {
 			</div>
 
 			<div className="px-4">
-				{items.length === 0 ? (
+				{!hasItems ? (
 					<div className="py-8 text-center text-gray-500">
 						{t("cart_empty_message")}
 					</div>
 				) : (
-					items.map((item) => (
+					cart?.items.map((item) => (
 						<div
 							key={item.id}
 							className="py-4 flex items-center justify-between border-b"
 						>
 							<div className="flex items-center gap-3">
 								<Image
-									src={item.imageUrl}
-									alt={item.name}
+									src={getImageUrl(item.product.nftMetadata)}
+									alt={item.product.name}
 									width={48}
 									height={48}
 									className="rounded-lg object-cover bg-gray-100"
 								/>
 								<div>
-									<h3 className="font-medium text-gray-900">{t(item.name)}</h3>
+									<h3 className="font-medium text-gray-900">
+										{t(item.product.name)}
+									</h3>
 									<p className="text-gray-400 text-sm">
 										{t("quantity_label")}: {item.quantity}
 									</p>
@@ -162,13 +198,13 @@ export default function ShoppingCart() {
 							</div>
 							<div className="flex items-center gap-4">
 								<span className="text-gray-900">
-									{item.price * item.quantity} USD
+									{item.product.price * item.quantity} USD
 								</span>
 								<button
 									type="button"
-									onClick={() => handleRemove(item)}
+									onClick={() => handleRemove(item.id)}
 									className="text-red-500 hover:text-red-600"
-									aria-label={`Remove ${item.name} from cart`}
+									aria-label={`Remove ${item.product.name} from cart`}
 								>
 									<TrashIcon className="h-5 w-5" />
 								</button>
@@ -178,7 +214,7 @@ export default function ShoppingCart() {
 				)}
 			</div>
 
-			{items.length > 0 && (
+			{hasItems && (
 				<>
 					<div className="px-4 py-4">
 						<div className="flex items-center justify-between">

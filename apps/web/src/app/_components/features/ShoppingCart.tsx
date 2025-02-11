@@ -1,10 +1,9 @@
 "use client";
 
 import { XMarkIcon } from "@heroicons/react/24/solid";
-import { useAtom, useAtomValue } from "jotai";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { cartItemsAtom, removeItemAtom } from "~/store/cartAtom";
+import { api } from "~/trpc/react";
 
 interface ShoppingCartProps {
 	closeCart: () => void;
@@ -13,11 +12,17 @@ interface ShoppingCartProps {
 export default function ShoppingCart({ closeCart }: ShoppingCartProps) {
 	const { t } = useTranslation();
 	const router = useRouter();
-	const items = useAtomValue(cartItemsAtom);
-	const [, removeItem] = useAtom(removeItemAtom);
 
-	const handleRemoveItem = (itemId: string) => {
-		removeItem(itemId);
+	// Get cart data from server
+	const { data: cart, refetch: refetchCart } = api.cart.getUserCart.useQuery();
+	const { mutate: removeFromCart } = api.cart.removeFromCart.useMutation({
+		onSuccess: () => {
+			void refetchCart();
+		},
+	});
+
+	const handleRemoveItem = (cartItemId: string) => {
+		removeFromCart({ cartItemId });
 	};
 
 	const handleCheckout = () => {
@@ -25,10 +30,11 @@ export default function ShoppingCart({ closeCart }: ShoppingCartProps) {
 		router.push("/shopping-cart");
 	};
 
-	const totalPrice = items.reduce(
-		(total, item) => total + item.price * item.quantity,
-		0,
-	);
+	const totalPrice =
+		cart?.items.reduce(
+			(total, item) => total + item.product.price * item.quantity,
+			0,
+		) ?? 0;
 
 	return (
 		<div className="absolute right-0 top-14 w-96 bg-white p-4 shadow-xl">
@@ -39,10 +45,10 @@ export default function ShoppingCart({ closeCart }: ShoppingCartProps) {
 				</button>
 			</div>
 			<div className="mt-4 flex flex-col gap-4">
-				{items.map((item) => (
+				{cart?.items.map((item) => (
 					<div key={item.id} className="flex items-center justify-between">
-						<p>{item.name}</p>
-						<p>${item.price}</p>
+						<p>{item.product.name}</p>
+						<p>${item.product.price}</p>
 						<button onClick={() => handleRemoveItem(item.id)} type="button">
 							{t("remove")}
 						</button>

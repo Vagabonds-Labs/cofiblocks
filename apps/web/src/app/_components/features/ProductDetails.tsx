@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { addItemAtom, cartItemsAtom } from "~/store/cartAtom";
+import { api } from "~/trpc/react";
 import { ProducerInfo } from "./ProducerInfo";
 import { SelectionTypeCard } from "./SelectionTypeCard";
 
@@ -45,27 +46,35 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 	const [isLiked, setIsLiked] = useState(false);
 	const router = useRouter();
 	const [isAddingToCart, setIsAddingToCart] = useState(false);
-	const [, addItem] = useAtom(addItemAtom);
-	const items = useAtomValue(cartItemsAtom);
-	const cartItemsCount = items.reduce(
-		(total, item) => total + item.quantity,
-		0,
-	);
+	const { data: cart, refetch: refetchCart } = api.cart.getUserCart.useQuery();
+	const { mutate: addToCart } = api.cart.addToCart.useMutation({
+		onSuccess: () => {
+			void refetchCart();
+		},
+	});
+	const cartItemsCount =
+		cart?.items?.reduce((total, item) => total + item.quantity, 0) ?? 0;
 
 	const isSoldOut = type === "SoldOut";
 	const isFarmer = type === "Farmer";
 
 	const handleAddToCart = () => {
 		setIsAddingToCart(true);
-		addItem({
-			id: String(product.id),
-			tokenId: product.tokenId,
-			name: product.name,
-			quantity: quantity,
-			price: product.price,
-			imageUrl: product.image,
-		});
-		setIsAddingToCart(false);
+		addToCart(
+			{
+				productId: product.id,
+				quantity: quantity,
+			},
+			{
+				onSuccess: () => {
+					setIsAddingToCart(false);
+				},
+				onError: () => {
+					setIsAddingToCart(false);
+					// TODO: Show error toast
+				},
+			},
+		);
 	};
 
 	return (

@@ -39,3 +39,6 @@ yarn-error.log*
 
 # Storybook
 storybook-static
+
+# Instructions folder
+instructions/

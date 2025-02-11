@@ -6,7 +6,6 @@ import {
 	getServerSession,
 } from "next-auth";
 import type { Session } from "next-auth";
-import type { Adapter } from "next-auth/adapters";
 import {
 	type JWTDecodeParams,
 	type JWTEncodeParams,
@@ -73,14 +72,14 @@ const authorize = async (credentials: Record<string, string> | undefined) => {
 
 		const user = await findOrCreateUser(address);
 
-		return { id: user.walletAddress, nonce };
+		return { id: user.id, nonce };
 	} catch (error) {
 		console.error({ error });
 		return null;
 	}
 };
 
-export const authOptions: NextAuthOptions = {
+export const authOptions = {
 	callbacks: {
 		session: ({ session, token }) =>
 			({
@@ -91,7 +90,7 @@ export const authOptions: NextAuthOptions = {
 				},
 			}) as Session & { user: { id: string } },
 	},
-	adapter: PrismaAdapter(db) as Adapter,
+	adapter: PrismaAdapter(db),
 	providers: [
 		CredentialsProvider({
 			name: "Starknet",
@@ -134,6 +133,6 @@ export const authOptions: NextAuthOptions = {
 		updateAge: 86400,
 		generateSessionToken: () => crypto.randomBytes(32).toString("hex"),
 	},
-};
+} satisfies NextAuthOptions;
 
 export const getServerAuthSession = () => getServerSession(authOptions);
