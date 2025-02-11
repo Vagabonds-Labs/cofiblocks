@@ -10,9 +10,10 @@ interface HeaderProps {
 	address: string | undefined;
 	disconnect: () => void;
 	showCart?: boolean;
+	onConnect?: () => void;
 }
 
-function Header({ address, disconnect, showCart }: HeaderProps) {
+function Header({ address, disconnect, showCart, onConnect }: HeaderProps) {
 	const router = useRouter();
 	const items = useAtomValue(cartItemsAtom);
 	const cartItemsCount = showCart
@@ -32,6 +33,7 @@ function Header({ address, disconnect, showCart }: HeaderProps) {
 			onLogout={handleLogout}
 			showCart={showCart}
 			cartItemsCount={cartItemsCount}
+			onConnect={onConnect}
 		/>
 	);
 }

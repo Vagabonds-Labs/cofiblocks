@@ -11,7 +11,9 @@ interface SelectionTypeCardProps {
 	bagsAvailable: number;
 	onQuantityChange: (quantity: number) => void;
 	onAddToCart: () => void;
+	onConnect?: () => void;
 	isAddingToCart?: boolean;
+	isConnected?: boolean;
 }
 
 export function SelectionTypeCard({
@@ -20,7 +22,9 @@ export function SelectionTypeCard({
 	bagsAvailable,
 	onQuantityChange,
 	onAddToCart,
+	onConnect,
 	isAddingToCart = false,
+	isConnected = false,
 }: SelectionTypeCardProps) {
 	const [selectedOption, setSelectedOption] = useState<"bean" | "grounded">(
 		"bean",
@@ -64,37 +68,47 @@ export function SelectionTypeCard({
 				</div>
 			</div>
 
-			<div className="h-13 px-4 py-3 bg-white rounded-lg border border-surface-border flex justify-between items-center">
-				<button
-					type="button"
-					onClick={() => onQuantityChange(Math.max(1, quantity - 1))}
-					className="w-6 h-6 bg-surface-secondary-default rounded grid place-content-center relative"
-				>
-					<span className="text-white font-bold text-base translate-x-[0.5px] -translate-y-[1px]">
-						-
-					</span>
-				</button>
-				<Text className="text-base text-content-body-default">{quantity}</Text>
-				<button
-					type="button"
-					onClick={() =>
-						onQuantityChange(Math.min(bagsAvailable, quantity + 1))
-					}
-					className="w-6 h-6 bg-surface-secondary-default rounded grid place-content-center relative"
-				>
-					<span className="text-white font-bold text-base translate-x-[0.5px] -translate-y-[1px]">
-						+
-					</span>
-				</button>
-			</div>
+			{isConnected ? (
+				<>
+					<div className="h-13 px-4 py-3 bg-white rounded-lg border border-surface-border flex justify-between items-center">
+						<button
+							type="button"
+							onClick={() => onQuantityChange(Math.max(1, quantity - 1))}
+							className="w-6 h-6 bg-surface-secondary-default rounded grid place-content-center relative"
+						>
+							<span className="text-white font-bold text-base translate-x-[0.5px] -translate-y-[1px]">
+								-
+							</span>
+						</button>
+						<Text className="text-base text-content-body-default">
+							{quantity}
+						</Text>
+						<button
+							type="button"
+							onClick={() =>
+								onQuantityChange(Math.min(bagsAvailable, quantity + 1))
+							}
+							className="w-6 h-6 bg-surface-secondary-default rounded grid place-content-center relative"
+						>
+							<span className="text-white font-bold text-base translate-x-[0.5px] -translate-y-[1px]">
+								+
+							</span>
+						</button>
+					</div>
 
-			<Button
-				variant="primary"
-				onClick={handleAddToCart}
-				disabled={isAddingToCart}
-			>
-				{isAddingToCart ? t("adding_to_cart") : t("add_to_cart")}
-			</Button>
+					<Button
+						variant="primary"
+						onClick={handleAddToCart}
+						disabled={isAddingToCart}
+					>
+						{isAddingToCart ? t("adding_to_cart") : t("add_to_cart")}
+					</Button>
+				</>
+			) : (
+				<Button variant="primary" onClick={onConnect}>
+					{t("Connect")}
+				</Button>
+			)}
 		</InfoCard>
 	);
 }

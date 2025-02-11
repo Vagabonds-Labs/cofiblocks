@@ -15,6 +15,7 @@ interface ProductCardProps {
 	onClick: () => void;
 	onAddToCart?: () => void;
 	isAddingToShoppingCart?: boolean;
+	isConnected?: boolean;
 }
 
 export function ProductCard({
@@ -26,6 +27,8 @@ export function ProductCard({
 	badgeText,
 	onClick,
 	onAddToCart,
+	isAddingToShoppingCart,
+	isConnected,
 }: ProductCardProps) {
 	const { t } = useTranslation();
 
@@ -68,7 +71,7 @@ export function ProductCard({
 							{t("per_unit")}
 						</span>
 					</Text>
-					{onAddToCart && (
+					{onAddToCart && isConnected && (
 						<button
 							onClick={onAddToCart}
 							className="px-4 py-2 md:px-6 md:py-3 bg-surface-primary-default text-white rounded-lg text-sm md:text-base font-medium hover:bg-surface-primary-hover transition-colors"

@@ -16,7 +16,15 @@ import {
 import { api } from "~/trpc/react";
 import type { NftMetadata, Product } from "./types";
 
-export default function ProductCatalog() {
+interface ProductCatalogProps {
+	isConnected?: boolean;
+	onConnect?: () => void;
+}
+
+export default function ProductCatalog({
+	isConnected,
+	onConnect,
+}: ProductCatalogProps) {
 	const { t } = useTranslation();
 	const [products, setProducts] = useState<Product[]>([]);
 	const [results, setSearchResults] = useAtom(searchResultsAtom);
@@ -24,6 +32,14 @@ export default function ProductCatalog() {
 	const [quantity, setQuantityProducts] = useAtom(quantityOfProducts);
 	const [query, setQuery] = useAtom(searchQueryAtom);
 	const router = useRouter();
+	const [addingToCart, setAddingToCart] = useState<number | null>(null);
+
+	const { refetch: refetchCart } = api.cart.getUserCart.useQuery();
+	const { mutate: addToCart } = api.cart.addToCart.useMutation({
+		onSuccess: () => {
+			void refetchCart();
+		},
+	});
 
 	const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
 		api.product.getProducts.useInfiniteQuery(
@@ -79,6 +95,29 @@ export default function ProductCatalog() {
 			metadata = product.nftMetadata as NftMetadata;
 		}
 
+		const handleAddToCart = () => {
+			if (!isConnected && onConnect) {
+				onConnect();
+				return;
+			}
+
+			setAddingToCart(product.id);
+			addToCart(
+				{
+					productId: product.id,
+					quantity: 1,
+				},
+				{
+					onSuccess: () => {
+						setAddingToCart(null);
+					},
+					onError: () => {
+						setAddingToCart(null);
+					},
+				},
+			);
+		};
+
 		return (
 			<ProductCard
 				key={product.id}
@@ -89,6 +128,9 @@ export default function ProductCatalog() {
 				price={product.price}
 				badgeText={t(`strength.${metadata?.strength?.toLowerCase()}`)}
 				onClick={() => accessProductDetails(product.id)}
+				onAddToCart={handleAddToCart}
+				isConnected={isConnected}
+				isAddingToShoppingCart={addingToCart === product.id}
 			/>
 		);
 	};

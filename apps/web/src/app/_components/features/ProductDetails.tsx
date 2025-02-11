@@ -2,12 +2,14 @@ import { HeartIcon, ShareIcon } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartSolidIcon } from "@heroicons/react/24/solid";
 import Button from "@repo/ui/button";
 import { DataCard } from "@repo/ui/dataCard";
+import { InfoCard } from "@repo/ui/infoCard";
 import PageHeader from "@repo/ui/pageHeader";
 import { H1, H2, Text } from "@repo/ui/typography";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { api } from "~/trpc/react";
 import { ProducerInfo } from "./ProducerInfo";
@@ -28,9 +30,15 @@ interface ProductDetailsProps {
 		type: "Buyer" | "Farmer" | "SoldOut";
 		process: string;
 	};
+	isConnected?: boolean;
+	onConnect?: () => void;
 }
 
-export default function ProductDetails({ product }: ProductDetailsProps) {
+export default function ProductDetails({
+	product,
+	isConnected,
+	onConnect,
+}: ProductDetailsProps) {
 	const {
 		image,
 		name,
@@ -235,6 +243,8 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 									onQuantityChange={setQuantity}
 									onAddToCart={handleAddToCart}
 									isAddingToCart={isAddingToCart}
+									isConnected={isConnected}
+									onConnect={onConnect}
 								/>
 							)}
 

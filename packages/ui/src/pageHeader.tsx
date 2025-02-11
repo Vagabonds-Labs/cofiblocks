@@ -1,10 +1,12 @@
 import { ArrowLeftIcon, ShoppingCartIcon } from "@heroicons/react/24/outline";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
+import Button from "./button";
 
 const BlockiesSvg = dynamic<{ address: string; size: number; scale: number }>(
 	() => import("blockies-react-svg"),
@@ -22,6 +24,7 @@ interface PageHeaderProps {
 	rightActions?: React.ReactNode;
 	showCart?: boolean;
 	cartItemsCount?: number;
+	onConnect?: () => void;
 }
 
 function PageHeader({
@@ -35,6 +38,7 @@ function PageHeader({
 	rightActions,
 	showCart = true,
 	cartItemsCount,
+	onConnect,
 }: PageHeaderProps) {
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	const menuRef = useRef<HTMLDivElement>(null);
@@ -65,7 +69,7 @@ function PageHeader({
 	}, []);
 
 	return (
-		<div className="w-full max-w-full md:max-w-7xl px-4 h-16 py-2 bg-white flex justify-between items-center mx-auto space-x-4 fixed top-0 left-0 right-0 z-50 shadow-sm">
+		<div className="w-full max-w-full md:max-w-7xl px-4 h-20 py-3 bg-white flex justify-between items-center mx-auto space-x-4 fixed top-0 left-0 right-0 z-50 shadow-sm">
 			<div className="flex items-center space-x-2">
 				{showBackButton && (
 					<button
@@ -75,6 +79,48 @@ function PageHeader({
 						aria-label="Go back"
 					>
 						<ArrowLeftIcon className="w-6 h-6" />
+					</button>
+				)}
+			</div>
+			<div className="flex-grow text-center md:text-left">
+				<Link
+					href="/marketplace"
+					className="hover:opacity-80 transition-opacity inline-flex items-center gap-2"
+				>
+					<Image
+						src="/images/logo.png"
+						alt="CofiBlocks Logo"
+						width={40}
+						height={64}
+						className="w-10 h-16"
+					/>
+				</Link>
+			</div>
+			<div className="flex items-center space-x-4">
+				{rightActions}
+				{!userAddress && onConnect && (
+					<Button
+						onClick={onConnect}
+						variant="primary"
+						size="sm"
+						className="px-4"
+					>
+						{t("Connect")}
+					</Button>
+				)}
+				{showCart && (
+					<button
+						type="button"
+						onClick={() => router.push("/shopping-cart")}
+						className="p-2 hover:bg-gray-100 rounded-full transition-colors relative"
+						aria-label="Shopping cart"
+					>
+						<ShoppingCartIcon className="w-6 h-6" />
+						{cartItemsCount && cartItemsCount > 0 ? (
+							<span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
+								{cartItemsCount}
+							</span>
+						) : null}
 					</button>
 				)}
 				{userAddress && (
@@ -90,13 +136,13 @@ function PageHeader({
 							aria-haspopup="true"
 						>
 							{showBlockie && (
-								<div className="rounded-full overflow-hidden relative w-8 h-8 ring-2 ring-gray-200">
-									<BlockiesSvg address={userAddress} size={8} scale={5} />
+								<div className="rounded-full overflow-hidden relative w-10 h-10 ring-2 ring-surface-primary-default">
+									<BlockiesSvg address={userAddress} size={10} scale={4} />
 								</div>
 							)}
 						</div>
 						{isMenuOpen && (
-							<div className="absolute left-0 mt-2 w-48 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
+							<div className="absolute right-0 mt-2 w-48 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
 								<div
 									className="py-1"
 									role="menu"
@@ -122,32 +168,6 @@ function PageHeader({
 							</div>
 						)}
 					</div>
-				)}
-			</div>
-			<div className="flex-grow text-center md:text-left">
-				<Link
-					href="/marketplace"
-					className="hover:opacity-80 transition-opacity inline-block"
-				>
-					<h1 className="text-xl md:text-2xl font-bold truncate">{title}</h1>
-				</Link>
-			</div>
-			<div className="flex items-center space-x-4">
-				{rightActions}
-				{showCart && (
-					<button
-						type="button"
-						onClick={() => router.push("/shopping-cart")}
-						className="p-2 hover:bg-gray-100 rounded-full transition-colors relative"
-						aria-label="Shopping cart"
-					>
-						<ShoppingCartIcon className="w-6 h-6" />
-						{cartItemsCount && cartItemsCount > 0 ? (
-							<span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
-								{cartItemsCount}
-							</span>
-						) : null}
-					</button>
 				)}
 			</div>
 		</div>
