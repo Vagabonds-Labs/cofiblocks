@@ -30,41 +30,53 @@ export function ProductCard({
 	const { t } = useTranslation();
 
 	return (
-		<div className="max-w-sm rounded-2xl overflow-hidden shadow-lg border border-surface-border min-w-[22.375rem]">
+		<div className="w-full rounded-2xl overflow-hidden shadow-lg border border-surface-border hover:shadow-xl transition-all duration-300 group">
 			<div className="relative">
 				<Image
 					src={image}
-					alt={t("product_image_alt")} // Localized alt text
-					width={358}
-					height={188}
-					className="object-cover w-full h-48 rounded-t-2xl"
+					alt={t("product_image_alt")}
+					width={600}
+					height={400}
+					className="object-cover w-full h-48 md:h-64 lg:h-72 rounded-t-2xl transition-transform duration-300 group-hover:scale-105"
 				/>
 				<div className="absolute bottom-4 left-4">
 					<Badge variant="accent" text={badgeText} />
 				</div>
 			</div>
-			<div className="px-4 py-4 bg-surface-primary-soft rounded-b-2xl">
-				<Text className="text-sm text-content-body-default">
-					{t("region_by_farm", { region, farmName })}{" "}
-					{/* Localized region and farm */}
+			<div className="px-4 py-4 md:px-6 md:py-6 bg-surface-primary-soft rounded-b-2xl">
+				<Text className="text-sm md:text-base text-content-body-default mb-2">
+					{t("region_by_farm", { region, farmName })}
 				</Text>
 
-				<div className="flex items-center justify-between">
-					<H4 className="text-2xl font-bold text-content-title">{variety}</H4>
+				<div className="flex items-center justify-between mb-4">
+					<H4 className="text-xl md:text-2xl lg:text-3xl font-bold text-content-title line-clamp-2">
+						{variety}
+					</H4>
 					<IconButton
 						size="lg"
 						variant="secondary"
 						onClick={onClick}
-						icon={<ArrowRightIcon className="w-5 h-5" />}
+						icon={<ArrowRightIcon className="w-5 h-5 md:w-6 md:h-6" />}
+						className="ml-2 flex-shrink-0 hover:bg-surface-primary-default hover:text-white transition-colors"
 					/>
 				</div>
 
 				<div className="flex justify-between items-center">
-					<Text className="text-xl font-semibold text-surface-primary-default">
-						{t("price_with_currency", { price })} {/* Localized price */}
-						<span className="text-sm font-semibold"> {t("per_unit")}</span>{" "}
-						{/* Localized unit */}
+					<Text className="text-lg md:text-xl lg:text-2xl font-semibold text-surface-primary-default">
+						{t("price_with_currency", { price })}
+						<span className="text-sm md:text-base font-medium text-content-body-default ml-1">
+							{t("per_unit")}
+						</span>
 					</Text>
+					{onAddToCart && (
+						<button
+							onClick={onAddToCart}
+							className="px-4 py-2 md:px-6 md:py-3 bg-surface-primary-default text-white rounded-lg text-sm md:text-base font-medium hover:bg-surface-primary-hover transition-colors"
+							type="button"
+						>
+							{t("add_to_cart")}
+						</button>
+					)}
 				</div>
 			</div>
 		</div>

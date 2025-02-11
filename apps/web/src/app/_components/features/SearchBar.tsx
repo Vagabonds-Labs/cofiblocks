@@ -62,24 +62,28 @@ export default function SearchBar() {
 
 	return (
 		<>
-			<div className=" flex justify-center items-center mb-5">
-				<InputField<formData>
-					name="region"
-					control={control}
-					label=""
-					placeholder={t("search_placeholder")}
-					onChange={(value: string) => handleInputChange(value)}
-					className="gap-0 mr-3 w-3/4"
-					showSearchIcon={true}
-				/>
-				<button
-					type="button"
-					onClick={() => setIsFilterOpen(true)}
-					className="bg-surface-secondary-default p-3.5 rounded-lg"
-					aria-label={t("open_filters")}
-				>
-					<FunnelIcon className="h-6 w-6" />
-				</button>
+			<div className="relative z-40">
+				<div className="bg-white rounded-xl shadow-xl p-3 md:p-4">
+					<div className="flex items-center gap-3">
+						<InputField<formData>
+							name="region"
+							control={control}
+							label=""
+							placeholder={t("search_placeholder")}
+							onChange={(value: string) => handleInputChange(value)}
+							className="flex-1"
+							showSearchIcon={true}
+						/>
+						<button
+							type="button"
+							onClick={() => setIsFilterOpen(true)}
+							className="bg-surface-secondary-default p-3.5 rounded-lg hover:bg-surface-secondary-hover transition-colors flex-shrink-0"
+							aria-label={t("open_filters")}
+						>
+							<FunnelIcon className="h-6 w-6" />
+						</button>
+					</div>
+				</div>
 			</div>
 			<FilterModal
 				isOpen={isFilterOpen}

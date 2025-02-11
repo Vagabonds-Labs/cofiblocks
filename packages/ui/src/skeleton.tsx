@@ -1,15 +1,17 @@
 interface SkeletonLoaderProps {
 	width?: string;
 	height?: string;
+	className?: string;
 }
 
 function SkeletonLoader({
 	width = "w-[19.5rem]",
 	height = "h-[44rem]",
+	className = "",
 }: SkeletonLoaderProps) {
 	return (
 		<div
-			className={`relative rounded-[0.3125rem] ${width} ${height} bg-surface-inverse overflow-hidden`}
+			className={`relative rounded-[0.3125rem] ${width} ${height} bg-surface-inverse overflow-hidden ${className}`}
 		>
 			{/* Rectangle with Content */}
 			<div className="w-[16.5rem] h-60 left-6 absolute flex flex-col gap-2">

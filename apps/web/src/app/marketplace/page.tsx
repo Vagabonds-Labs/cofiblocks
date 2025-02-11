@@ -14,7 +14,6 @@ export default function Home() {
 	const { t } = useTranslation();
 	const { address } = useAccount();
 	const { disconnect } = useDisconnect();
-	const [query] = useAtom(searchQueryAtom);
 
 	const carouselData = [
 		{
@@ -39,11 +38,25 @@ export default function Home() {
 
 	return (
 		<Main>
-			<Header address={address} disconnect={disconnect} showCart={true} />
-			<SearchBar />
+			<div className="flex flex-col min-h-screen">
+				<Header address={address} disconnect={disconnect} showCart={true} />
+				<div className="flex-grow">
+					{/* Hero Section */}
+					<div className="mb-8">
+						<Carousel cards={carouselData} />
+					</div>
 
-			{query.length <= 0 && <Carousel cards={carouselData} />}
-			<ProductCatalog />
+					{/* Search Section */}
+					<div className="mb-12 px-4 md:px-6 lg:px-8">
+						<SearchBar />
+					</div>
+
+					{/* Product Catalog */}
+					<div className="px-4 md:px-6 lg:px-8">
+						<ProductCatalog />
+					</div>
+				</div>
+			</div>
 		</Main>
 	);
 }

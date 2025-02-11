@@ -25,6 +25,7 @@ import {
 	formContainerVariants,
 	formContentVariants,
 } from "~/utils/animationsConfig";
+import Main from "./_components/layout/Main";
 
 export default function LoginPage() {
 	const [showForm, setShowForm] = useState(false);
@@ -127,87 +128,89 @@ export default function LoginPage() {
 	}, []);
 
 	return (
-		<div className="bg-surface-primary-default flex items-center justify-center min-h-screen overflow-hidden">
-			<motion.div
-				className="w-[24.375rem] h-[52.75rem] bg-surface-primary-default relative overflow-hidden"
-				variants={containerVariants}
-				initial="initial"
-				animate="exploded"
-			>
-				<LoginAnimation
-					backgroundControls={backgroundControls}
-					controls={controls}
-				/>
+		<Main fullWidth className="bg-surface-primary-default">
+			<div className="flex items-center justify-center min-h-screen overflow-hidden">
 				<motion.div
-					className="absolute bottom-0 left-0 right-0 bg-surface-inverse rounded-t-3xl overflow-hidden"
-					variants={formContainerVariants}
+					className="w-full max-w-[24.375rem] h-[52.75rem] bg-surface-primary-default relative overflow-hidden mx-4"
+					variants={containerVariants}
 					initial="initial"
-					animate={showForm ? "visible" : "initial"}
+					animate="exploded"
 				>
+					<LoginAnimation
+						backgroundControls={backgroundControls}
+						controls={controls}
+					/>
 					<motion.div
-						className="p-6 space-y-6"
-						variants={formContentVariants}
+						className="absolute bottom-0 left-0 right-0 bg-surface-inverse rounded-t-3xl overflow-hidden"
+						variants={formContainerVariants}
 						initial="initial"
 						animate={showForm ? "visible" : "initial"}
 					>
-						<div className="text-center">
-							<Text className="text-content-title text-lg mt-2">
-								{t("welcome_to")}
-							</Text>
-							<H1 className="text-content-title">CofiBlocks</H1>
-						</div>
-						<div className="flex flex-col justify-center items-center space-y-4">
-							{address ? (
-								<>
-									<Button
-										onClick={handleSignMessage}
-										variant="primary"
-										size="lg"
-										className="w-full max-w-[15rem] px-4 py-3 text-content-title text-base font-medium font-inter rounded-lg border border-surface-secondary-default transition-all duration-300 hover:bg-surface-secondary-hover"
-									>
-										{t("sign")}
-									</Button>
-									<button
-										onClick={handleDisconnectWallet}
-										className="block text-center text-content-title text-base font-normal font-inter underline transition-colors duration-300 hover:text-content-title-hover"
-										type="button"
-									>
-										{t("disconnect")}
-									</button>
-								</>
-							) : (
-								<>
-									{isClient && (
-										<>
-											{connectors.map((connector) => (
-												<Button
-													key={connector.id}
-													onClick={() => handleConnectWallet(connector)}
-													className="w-full"
-												>
-													<div className="flex items-center justify-between">
-														<div className="flex items-center">
-															<Image
-																src={`/images/wallets/${connector.id}.svg`}
-																alt={connector.id}
-																width={24}
-																height={24}
-																className="mr-2"
-															/>
-															<span>{t(`wallets.${connector.id}`)}</span>
+						<motion.div
+							className="p-6 md:p-8 space-y-6"
+							variants={formContentVariants}
+							initial="initial"
+							animate={showForm ? "visible" : "initial"}
+						>
+							<div className="text-center">
+								<Text className="text-content-title text-lg mt-2">
+									{t("welcome_to")}
+								</Text>
+								<H1 className="text-content-title">CofiBlocks</H1>
+							</div>
+							<div className="flex flex-col justify-center items-center space-y-4">
+								{address ? (
+									<>
+										<Button
+											onClick={handleSignMessage}
+											variant="primary"
+											size="lg"
+											className="w-full max-w-[15rem] px-4 py-3 text-content-title text-base font-medium font-inter rounded-lg border border-surface-secondary-default transition-all duration-300 hover:bg-surface-secondary-hover"
+										>
+											{t("sign")}
+										</Button>
+										<button
+											onClick={handleDisconnectWallet}
+											className="block text-center text-content-title text-base font-normal font-inter underline transition-colors duration-300 hover:text-content-title-hover"
+											type="button"
+										>
+											{t("disconnect")}
+										</button>
+									</>
+								) : (
+									<>
+										{isClient && (
+											<>
+												{connectors.map((connector) => (
+													<Button
+														key={connector.id}
+														onClick={() => handleConnectWallet(connector)}
+														className="w-full max-w-[15rem]"
+													>
+														<div className="flex items-center justify-between">
+															<div className="flex items-center">
+																<Image
+																	src={`/images/wallets/${connector.id}.svg`}
+																	alt={connector.id}
+																	width={24}
+																	height={24}
+																	className="mr-2"
+																/>
+																<span>{t(`wallets.${connector.id}`)}</span>
+															</div>
+															<ChevronRightIcon className="h-5 w-5" />
 														</div>
-														<ChevronRightIcon className="h-5 w-5" />
-													</div>
-												</Button>
-											))}
-										</>
-									)}
-								</>
-							)}
-						</div>
+													</Button>
+												))}
+											</>
+										)}
+									</>
+								)}
+							</div>
+						</motion.div>
 					</motion.div>
 				</motion.div>
-			</motion.div>
-		</div>
+			</div>
+		</Main>
 	);
 }

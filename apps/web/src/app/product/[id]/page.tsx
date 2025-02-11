@@ -1,6 +1,5 @@
 "use client";
 
-import SkeletonLoader from "@repo/ui/skeleton";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -92,9 +91,70 @@ function ProductPage() {
 
 	if (isLoading) {
 		return (
-			<div className="min-h-screen w-full flex flex-col pt-4">
-				<div className="flex justify-center pl-12">
-					<SkeletonLoader width="w-full max-w-[24.375rem]" height="h-[30rem]" />
+			<div className="w-full">
+				<div className="pt-20">
+					<div className="max-w-7xl mx-auto px-4">
+						{/* Breadcrumb Skeleton */}
+						<div className="flex mb-6 gap-2">
+							<div className="h-5 w-24 bg-surface-primary-soft rounded animate-pulse" />
+							<div className="h-5 w-2">/</div>
+							<div className="h-5 w-32 bg-surface-primary-soft rounded animate-pulse" />
+						</div>
+
+						{/* Content Grid */}
+						<div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+							{/* Image Gallery Skeleton */}
+							<div className="space-y-4">
+								<div className="relative aspect-square rounded-2xl overflow-hidden bg-surface-primary-soft animate-pulse" />
+								<div className="grid grid-cols-4 gap-4">
+									{/* Explicitly define array for type safety */}
+									{["thumb1", "thumb2", "thumb3", "thumb4"].map((thumbId) => (
+										<div
+											key={thumbId}
+											className="aspect-square rounded-lg bg-surface-primary-soft animate-pulse"
+										/>
+									))}
+								</div>
+							</div>
+
+							{/* Product Info Skeleton */}
+							<div className="space-y-6">
+								<div className="space-y-2">
+									<div className="h-5 w-24 bg-surface-primary-soft rounded animate-pulse" />
+									<div className="h-8 w-3/4 bg-surface-primary-soft rounded animate-pulse" />
+									<div className="h-5 w-1/2 bg-surface-primary-soft rounded animate-pulse" />
+								</div>
+
+								<div className="border-t border-b py-4">
+									<div className="h-8 w-48 bg-surface-primary-soft rounded animate-pulse" />
+									<div className="h-5 w-32 bg-surface-primary-soft rounded animate-pulse mt-1" />
+								</div>
+
+								<div className="space-y-2">
+									<div className="h-5 w-full bg-surface-primary-soft rounded animate-pulse" />
+									<div className="h-5 w-5/6 bg-surface-primary-soft rounded animate-pulse" />
+									<div className="h-5 w-4/6 bg-surface-primary-soft rounded animate-pulse" />
+								</div>
+
+								<div className="grid grid-cols-2 gap-4">
+									{/* Explicitly define array for type safety */}
+									{["card1", "card2"].map((cardId) => (
+										<div
+											key={cardId}
+											className="h-24 rounded-lg bg-surface-primary-soft animate-pulse"
+										/>
+									))}
+								</div>
+
+								<div className="h-40 rounded-lg bg-surface-primary-soft animate-pulse" />
+
+								<div className="border-t pt-6 space-y-4">
+									<div className="h-6 w-32 bg-surface-primary-soft rounded animate-pulse" />
+									<div className="h-48 rounded-lg bg-surface-primary-soft animate-pulse" />
+								</div>
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 		);

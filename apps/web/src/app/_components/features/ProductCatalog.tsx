@@ -1,6 +1,7 @@
 import Button from "@repo/ui/button";
 import { ProductCard } from "@repo/ui/productCard";
 import SkeletonLoader from "@repo/ui/skeleton";
+import { Text } from "@repo/ui/typography";
 import { useAtom } from "jotai";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -100,54 +101,94 @@ export default function ProductCatalog() {
 	};
 
 	return (
-		<div className="flex flex-col items-center gap-6 p-4 mx-auto">
+		<div className="flex flex-col items-center gap-6 w-full">
 			{isLoadingResults ? (
-				<SkeletonLoader />
+				<div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+					<SkeletonLoader width="w-full" height="h-[30rem]" />
+					<SkeletonLoader
+						width="w-full"
+						height="h-[30rem]"
+						className="hidden md:block"
+					/>
+					<SkeletonLoader
+						width="w-full"
+						height="h-[30rem]"
+						className="hidden lg:block"
+					/>
+				</div>
 			) : (
 				<>
 					{results.length > 0 ? (
-						<div>
-							<div className="flex justify-between mb-2">
-								<div>{t("products_found", { count: quantity })}</div>
+						<div className="w-full">
+							<div className="flex justify-between items-center mb-6">
+								<div className="text-lg font-medium">
+									{t("products_found", { count: quantity })}
+								</div>
 								<button
 									type="button"
-									className="underline cursor-pointer"
+									className="text-blue-600 hover:text-blue-800 transition-colors font-medium"
 									onClick={() => clearSearch()}
 								>
 									{t("clear_search")}
 								</button>
 							</div>
-							{results.map((product) => (
-								<div key={product.id}>{renderProduct(product)}</div>
-							))}
+							<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 w-full">
+								{results.map((product) => (
+									<div key={product.id} className="w-full">
+										{renderProduct(product)}
+									</div>
+								))}
+							</div>
 						</div>
 					) : query ? (
-						<div className="flex flex-col justify-center items-center">
-							<div>
+						<div className="w-full py-12">
+							<div className="max-w-md mx-auto text-center">
 								<Image
 									src="/images/NoResultsImage.png"
-									width={700}
-									height={700}
+									width={300}
+									height={300}
 									alt={t("no_results_image_alt")}
+									className="w-full h-auto mb-6"
+									priority
 								/>
-							</div>
-							<div className="flex justify-center mt-4">
+								<Text className="text-lg text-gray-600 mb-6">
+									{t("no_results_message")}
+								</Text>
 								<Button
 									variant="primary"
 									size="sm"
 									onClick={() => clearSearch()}
+									className="px-8 py-2"
 								>
 									{t("clear_search")}
 								</Button>
 							</div>
 						</div>
 					) : (
-						products.map((product) => (
-							<div key={product.id}>{renderProduct(product)}</div>
-						))
+						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 w-full">
+							{products.map((product) => (
+								<div key={product.id} className="w-full">
+									{renderProduct(product)}
+								</div>
+							))}
+						</div>
 					)}
 
-					{isFetchingNextPage && <SkeletonLoader />}
+					{isFetchingNextPage && (
+						<div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mt-6">
+							<SkeletonLoader width="w-full" height="h-[30rem]" />
+							<SkeletonLoader
+								width="w-full"
+								height="h-[30rem]"
+								className="hidden md:block"
+							/>
+							<SkeletonLoader
+								width="w-full"
+								height="h-[30rem]"
+								className="hidden lg:block"
+							/>
+						</div>
+					)}
 				</>
 			)}
 		</div>
