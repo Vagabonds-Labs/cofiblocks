@@ -1,5 +1,6 @@
 import { ArrowLeftIcon, ShoppingCartIcon } from "@heroicons/react/24/outline";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
@@ -116,7 +117,12 @@ function PageHeader({
 				)}
 			</div>
 			<div className="flex-grow text-left">
-				<h1 className="text-2xl font-bold">{title}</h1>
+				<Link
+					href="/marketplace"
+					className="hover:opacity-80 transition-opacity"
+				>
+					<h1 className="text-2xl font-bold">{title}</h1>
+				</Link>
 			</div>
 			<div className="flex items-center space-x-4">
 				{rightActions}
