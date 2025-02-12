@@ -5,19 +5,16 @@ import {
 	useInjectedConnectors,
 } from "@starknet-react/core";
 import type { Connector } from "@starknet-react/core";
-import { argent, braavos, injected } from "@starknet-react/core";
+import { argent, braavos } from "@starknet-react/core";
 
 export default function StarknetProvider({
 	children,
 }: {
 	children: React.ReactNode;
 }) {
-	const connector = injected({ id: "my-wallet" });
-
 	const { connectors } = useInjectedConnectors({
 		// Show these connectors if the user has no connector installed.
-		recommended: [argent(), braavos(), connector],
-		// Hide recommended connectors if the user has any connector installed.
+		recommended: [argent(), braavos()],
 		includeRecommended: "onlyIfNoConnectors",
 		// Randomize the order of the connectors.
 		order: "random",
@@ -28,7 +25,7 @@ export default function StarknetProvider({
 			autoConnect
 			chains={[mainnet, sepolia]}
 			provider={publicProvider()}
-			connectors={connectors as unknown as Connector[]}
+			connectors={connectors}
 		>
 			{children}
 		</StarknetConfig>
