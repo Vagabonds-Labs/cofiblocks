@@ -95,6 +95,13 @@ export default function ProductCatalog({
 			metadata = product.nftMetadata as NftMetadata;
 		}
 
+		// Format the image URL to include the IPFS gateway if it's an IPFS hash
+		const imageUrl = metadata?.imageUrl
+			? metadata.imageUrl.startsWith("Qm")
+				? `${process.env.NEXT_PUBLIC_GATEWAY_URL}/ipfs/${metadata.imageUrl}`
+				: metadata.imageUrl
+			: "/images/cafe1.webp";
+
 		const handleAddToCart = () => {
 			if (!isConnected && onConnect) {
 				onConnect();
@@ -121,7 +128,7 @@ export default function ProductCatalog({
 		return (
 			<ProductCard
 				key={product.id}
-				image={metadata?.imageUrl ?? "/images/cafe1.webp"}
+				image={imageUrl}
 				region={metadata?.region ?? ""}
 				farmName={metadata?.farmName ?? ""}
 				variety={t(product.name)}

@@ -29,7 +29,7 @@ export function ImageUpload({
 			if (!file) return;
 
 			try {
-				// Create preview
+				// Create temporary preview
 				const objectUrl = URL.createObjectURL(file);
 				setPreviewUrl(objectUrl);
 				setIsUploading(true);
@@ -51,7 +51,13 @@ export function ImageUpload({
 					throw new Error(data.error ?? "Failed to upload image");
 				}
 
+				// Update preview URL to use IPFS gateway
+				const ipfsUrl = `${process.env.NEXT_PUBLIC_GATEWAY_URL}/ipfs/${data.ipfsHash}`;
+				setPreviewUrl(ipfsUrl);
 				onImageUploaded(data.ipfsHash);
+
+				// Clean up the temporary object URL
+				URL.revokeObjectURL(objectUrl);
 			} catch (error) {
 				const errorMessage =
 					error instanceof Error ? error.message : "Failed to upload image";
@@ -88,6 +94,7 @@ export function ImageUpload({
 							alt="Preview"
 							fill
 							className="object-cover rounded-lg"
+							unoptimized
 						/>
 					</div>
 				) : (
