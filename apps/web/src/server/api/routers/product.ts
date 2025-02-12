@@ -1,9 +1,16 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
-import { mockedProducts } from "./mockProducts";
 
-// TODO: Replace mockedProducts with real data fetched from the blockchain in the near future.
+interface ProductMetadata {
+	description: string;
+	imageUrl?: string;
+	imageAlt?: string;
+	region?: string;
+	farmName?: string;
+	strength?: string;
+}
+
 const normalizeText = (text: string): string => {
 	return text
 		.toLowerCase()
@@ -100,44 +107,30 @@ export const productRouter = createTRPCRouter({
 			}
 		}),
 
-	// updateProductStock: publicProcedure
-	// 	.input(
-	// 		z.object({
-	// 			id: z.number().min(1),
-	// 			buy_amount: z.number().min(0),
-	// 		}),
-	// 	)
-	// 	.mutation(async ({ input }) => {
-	// 		try {
-	// 			const updatedProduct = await db.product.update({
-	// 				where: { id: input.id },
-	// 				data: {
-	// 					orderItems: {order}
-	// 				},
-	// 			});
-
-	// 			return { success: true, product: updatedProduct };
-	// 		} catch (error) {
-	// 			console.error("Error updating product stock:", error);
-	// 			throw new Error("Failed to update product stock");
-	// 		}
-	// 	}),
-
 	searchProductCatalog: publicProcedure
 		.input(
 			z.object({
 				region: z.string(),
 			}),
 		)
-		.query(({ input }) => {
+		.query(async ({ input }) => {
 			const { region } = input;
-
 			const normalizedSearchTerm = normalizeText(region);
 
-			const productsFound = mockedProducts.filter((product) => {
-				const normalizedRegion = normalizeText(product.region);
+			const products = await db.product.findMany();
+			const productsFound = products.filter((product) => {
+				let metadata: ProductMetadata;
+				try {
+					metadata = JSON.parse(
+						product.nftMetadata as string,
+					) as ProductMetadata;
+				} catch {
+					return false;
+				}
+
+				const normalizedRegion = normalizeText(metadata.region ?? "");
 				const normalizedName = normalizeText(product.name);
-				const normalizedFarmName = normalizeText(product.farmName);
+				const normalizedFarmName = normalizeText(metadata.farmName ?? "");
 
 				return (
 					normalizedRegion.includes(normalizedSearchTerm) ||
@@ -159,23 +152,38 @@ export const productRouter = createTRPCRouter({
 				orderBy: z.string().optional(),
 			}),
 		)
-		.query(({ input }) => {
+		.query(async ({ input }) => {
 			const { strength, region, orderBy } = input;
-			let filteredProducts = [...mockedProducts];
+			const products = await db.product.findMany();
 
-			if (strength) {
-				const normalizedStrength = normalizeText(strength);
-				filteredProducts = filteredProducts.filter(
-					(product) => normalizeText(product.strength) === normalizedStrength,
-				);
-			}
+			const filteredProducts = products.filter((product) => {
+				let metadata: ProductMetadata;
+				try {
+					metadata = JSON.parse(
+						product.nftMetadata as string,
+					) as ProductMetadata;
+				} catch {
+					return false;
+				}
 
-			if (region) {
-				const normalizedRegion = normalizeText(region);
-				filteredProducts = filteredProducts.filter(
-					(product) => normalizeText(product.region) === normalizedRegion,
-				);
-			}
+				if (strength) {
+					const normalizedStrength = normalizeText(strength);
+					const productStrength = normalizeText(metadata.strength ?? "");
+					if (productStrength !== normalizedStrength) {
+						return false;
+					}
+				}
+
+				if (region) {
+					const normalizedRegion = normalizeText(region);
+					const productRegion = normalizeText(metadata.region ?? "");
+					if (productRegion !== normalizedRegion) {
+						return false;
+					}
+				}
+
+				return true;
+			});
 
 			if (orderBy) {
 				filteredProducts.sort((a, b) => {

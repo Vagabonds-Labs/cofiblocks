@@ -1,77 +1,114 @@
 import { XMarkIcon } from "@heroicons/react/24/outline";
+import type { JsonValue } from "@prisma/client/runtime/library";
 import { motion } from "framer-motion";
-import { useAtom } from "jotai";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-	isLoadingAtom,
-	quantityOfProducts,
-	searchResultsAtom,
-} from "~/atoms/productAtom";
 import { api } from "~/trpc/react";
 
 interface FilterModalProps {
 	isOpen: boolean;
 	onClose: () => void;
+	onApplyFilters: (products: FilteredProduct[]) => void;
 }
 
-export default function FilterModal({ isOpen, onClose }: FilterModalProps) {
+interface NftMetadata {
+	description: string;
+	imageUrl?: string;
+	imageAlt?: string;
+	region?: string;
+	farmName?: string;
+	strength?: string;
+}
+
+interface FilteredProduct {
+	id: number;
+	tokenId: number;
+	name: string;
+	price: number;
+	nftMetadata: JsonValue;
+	createdAt: Date;
+	updatedAt: Date;
+	region: string;
+	strength: string;
+}
+
+export default function FilterModal({
+	isOpen,
+	onClose,
+	onApplyFilters,
+}: FilterModalProps) {
 	const { t } = useTranslation();
-	const [selectedStrength, setSelectedStrength] = useState("");
-	const [selectedRegion, setSelectedRegion] = useState("");
-	const [selectedOrder, setSelectedOrder] = useState("");
-	const [, setSearchResults] = useAtom(searchResultsAtom);
-	const [, setQuantityProducts] = useAtom(quantityOfProducts);
-	const [, setIsLoading] = useAtom(isLoadingAtom);
+	const [selectedStrength, setSelectedStrength] = useState<string>("");
+	const [selectedRegion, setSelectedRegion] = useState<string>("");
+	const [selectedOrder, setSelectedOrder] = useState<string>("");
+	const [searchResults, setSearchResults] = useState<FilteredProduct[]>([]);
+	const [quantityProducts, setQuantityProducts] = useState<number>(0);
 
-	const { refetch } = api.product.filterProducts.useQuery(
-		{
-			strength: selectedStrength || undefined,
-			region: selectedRegion || undefined,
-			orderBy: selectedOrder || undefined,
-		},
-		{
-			enabled: false,
-		},
-	);
+	const { data, refetch } = api.product.filterProducts.useQuery({
+		strength: selectedStrength,
+		region: selectedRegion,
+		orderBy: selectedOrder,
+	});
 
-	const handleApply = async () => {
-		setIsLoading(true);
-		try {
-			const { data } = await refetch();
-
-			if (data?.productsFound) {
-				const products = data.productsFound.map((product) => ({
+	useEffect(() => {
+		if (data) {
+			const products = data.productsFound.map((product) => {
+				let metadata: NftMetadata = {
+					description: "",
+					imageUrl: "",
+					imageAlt: "",
+					region: "",
+					farmName: "",
+					strength: "",
+				};
+				try {
+					if (typeof product.nftMetadata === "string") {
+						metadata = JSON.parse(product.nftMetadata) as NftMetadata;
+					} else if (
+						product.nftMetadata &&
+						typeof product.nftMetadata === "object"
+					) {
+						metadata = product.nftMetadata as unknown as NftMetadata;
+					}
+				} catch (error) {
+					console.error("Error parsing metadata:", error);
+				}
+				return {
 					...product,
-					region: product.region,
-				}));
-				setSearchResults(products);
-				setQuantityProducts(products.length);
-			} else {
-				setSearchResults([]);
-				setQuantityProducts(0);
-			}
-		} catch (error) {
-			console.error(error);
-			setSearchResults([]);
-			setQuantityProducts(0);
-		} finally {
-			setIsLoading(false);
-			onClose();
+					region: metadata.region ?? "",
+					strength: metadata.strength ?? "",
+				};
+			});
+			setSearchResults(products);
+			setQuantityProducts(products.length);
 		}
+	}, [data]);
+
+	const handleApplyFilters = () => {
+		onApplyFilters(searchResults);
+		onClose();
 	};
 
-	const handleClear = () => {
+	const handleClearFilters = () => {
 		setSelectedStrength("");
 		setSelectedRegion("");
 		setSelectedOrder("");
-		setSearchResults([]);
-		setQuantityProducts(0);
+		void refetch();
 	};
 
 	if (!isOpen) return null;
 
 	const hasActiveFilters = selectedStrength || selectedRegion || selectedOrder;
+
+	const strengthOptions = Object.keys(
+		t("strength", { returnObjects: true }) as Record<string, string>,
+	);
+	const regionOptions = Object.keys(
+		t("regions", { returnObjects: true }) as Record<string, string>,
+	);
+	const orderOptions = Object.keys(
+		t("order", { returnObjects: true }) as Record<string, string>,
+	);
 
 	return (
 		<motion.div
@@ -94,7 +131,7 @@ export default function FilterModal({ isOpen, onClose }: FilterModalProps) {
 						{hasActiveFilters && (
 							<button
 								type="button"
-								onClick={handleClear}
+								onClick={handleClearFilters}
 								className="text-gray-500 hover:text-gray-700"
 							>
 								{t("clear")}
@@ -108,24 +145,21 @@ export default function FilterModal({ isOpen, onClose }: FilterModalProps) {
 
 				<div className="p-4 space-y-6 overflow-y-auto">
 					<div className="space-y-3">
-						<h3 className="font-medium">{t("roast_level")}</h3>
+						<h3 className="font-medium">{t("strength")}</h3>
 						<div className="space-y-2">
-							{["Light", "Medium", "Strong"].map((strength) => (
+							{strengthOptions.map((strength) => (
 								<label
 									key={strength}
 									className="flex items-center space-x-2 py-3 border-b"
 								>
 									<input
-										type="checkbox"
+										type="radio"
+										name="strength"
 										checked={selectedStrength === strength}
-										onChange={() =>
-											setSelectedStrength(
-												selectedStrength === strength ? "" : strength,
-											)
-										}
+										onChange={() => setSelectedStrength(strength)}
 										className="w-5 h-5 rounded mr-1"
 									/>
-									<span>{t(`strength.${strength.toLowerCase()}`)}</span>
+									<span>{t(`strength.${strength}`)}</span>
 								</label>
 							))}
 						</div>
@@ -134,22 +168,19 @@ export default function FilterModal({ isOpen, onClose }: FilterModalProps) {
 					<div className="space-y-3">
 						<h3 className="font-medium">{t("region")}</h3>
 						<div className="space-y-2">
-							{["Region A", "Region B", "Region C"].map((region) => (
+							{regionOptions.map((region) => (
 								<label
 									key={region}
 									className="flex items-center space-x-2 py-3 border-b"
 								>
 									<input
-										type="checkbox"
+										type="radio"
+										name="region"
 										checked={selectedRegion === region}
-										onChange={() =>
-											setSelectedRegion(selectedRegion === region ? "" : region)
-										}
+										onChange={() => setSelectedRegion(region)}
 										className="w-5 h-5 rounded mr-1"
 									/>
-									<span>
-										{t(`regions.${region.replace(" ", "_").toLowerCase()}`)}
-									</span>
+									<span>{t(`regions.${region}`)}</span>
 								</label>
 							))}
 						</div>
@@ -158,7 +189,7 @@ export default function FilterModal({ isOpen, onClose }: FilterModalProps) {
 					<div className="space-y-3">
 						<h3 className="font-medium">{t("order_by")}</h3>
 						<div className="space-y-2">
-							{["Highest price", "Lowest price"].map((order) => (
+							{orderOptions.map((order) => (
 								<label
 									key={order}
 									className="flex items-center space-x-2 py-3 border-b"
@@ -170,9 +201,7 @@ export default function FilterModal({ isOpen, onClose }: FilterModalProps) {
 										onChange={() => setSelectedOrder(order)}
 										className="w-5 h-5 rounded mr-1"
 									/>
-									<span>
-										{t(`order.${order.toLowerCase().replace(" ", "_")}`)}
-									</span>
+									<span>{t(`order.${order}`)}</span>
 								</label>
 							))}
 						</div>
@@ -182,10 +211,12 @@ export default function FilterModal({ isOpen, onClose }: FilterModalProps) {
 				<div className="p-4 sticky bottom-0 bg-white">
 					<button
 						type="button"
-						onClick={handleApply}
+						onClick={handleApplyFilters}
 						className="w-full bg-surface-secondary-default text-black py-3 px-4 rounded-lg font-medium hover:bg-yellow-500 transition-colors"
 					>
-						{t("apply")}
+						{t("products_found", {
+							count: quantityProducts,
+						})}
 					</button>
 				</div>
 			</motion.div>

@@ -14,6 +14,7 @@ import {
 } from "~/atoms/productAtom";
 import { api } from "~/trpc/react";
 import FilterModal from "./FilterModal";
+import type { SearchResult } from "./types";
 
 const searchSchema = z.object({
 	region: z.string(),
@@ -21,7 +22,11 @@ const searchSchema = z.object({
 
 type formData = z.infer<typeof searchSchema>;
 
-export default function SearchBar() {
+interface SearchBarProps {
+	onSearch: (results: SearchResult[]) => void;
+}
+
+export default function SearchBar({ onSearch }: SearchBarProps) {
 	const [query, setQuery] = useAtom(searchQueryAtom);
 	const [, setSearchResults] = useAtom(searchResultsAtom);
 	const [, setQuantityProducts] = useAtom(quantityOfProducts);
@@ -35,29 +40,26 @@ export default function SearchBar() {
 		mode: "onBlur",
 	});
 
-	const { data, isLoading } = api.product.searchProductCatalog.useQuery(
+	const { data: searchData } = api.product.searchProductCatalog.useQuery(
 		{ region: query },
 		{ enabled: !!query },
 	);
 
+	const handleSearch = (searchTerm: string) => {
+		setQuery(searchTerm);
+	};
+
 	useEffect(() => {
-		setIsLoading(isLoading);
-
-		if (data?.productsFound) {
-			const productsWithProcess = data.productsFound.map((product) => ({
-				...product,
-				process: product.process ?? t("natural_process"),
-			}));
-			setSearchResults(productsWithProcess);
-			setQuantityProducts(productsWithProcess.length);
+		if (searchData?.productsFound) {
+			onSearch(searchData.productsFound as SearchResult[]);
 		} else {
-			setSearchResults([]);
-			setQuantityProducts(0);
+			onSearch([]);
 		}
-	}, [data, isLoading, setIsLoading, setQuantityProducts, setSearchResults, t]);
+	}, [searchData, onSearch]);
 
-	const handleInputChange = (value: string) => {
-		setQuery(value);
+	const handleApplyFilters = (filteredProducts: SearchResult[]) => {
+		onSearch(filteredProducts);
+		setIsFilterOpen(false);
 	};
 
 	return (
@@ -70,7 +72,7 @@ export default function SearchBar() {
 							control={control}
 							label=""
 							placeholder={t("search_placeholder")}
-							onChange={(value: string) => handleInputChange(value)}
+							onChange={(value: string) => handleSearch(value)}
 							className="flex-1"
 							showSearchIcon={true}
 						/>
@@ -88,6 +90,7 @@ export default function SearchBar() {
 			<FilterModal
 				isOpen={isFilterOpen}
 				onClose={() => setIsFilterOpen(false)}
+				onApplyFilters={handleApplyFilters}
 			/>
 		</>
 	);

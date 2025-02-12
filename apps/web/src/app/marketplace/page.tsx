@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import ProductCatalog from "~/app/_components/features/ProductCatalog";
 import { ProfileOptions } from "~/app/_components/features/ProfileOptions";
 import WalletConnect from "~/app/_components/features/WalletConnect";
+import type { SearchResult } from "~/app/_components/features/types";
 import Header from "~/app/_components/layout/Header";
 import Main from "~/app/_components/layout/Main";
 import SearchBar from "../_components/features/SearchBar";
@@ -16,6 +17,7 @@ export default function Home() {
 	const { address } = useAccount();
 	const { disconnect } = useDisconnect();
 	const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+	const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
 
 	const handleConnect = () => {
 		setIsWalletModalOpen(true);
@@ -23,6 +25,10 @@ export default function Home() {
 
 	const handleCloseWalletModal = () => {
 		setIsWalletModalOpen(false);
+	};
+
+	const handleSearch = (results: SearchResult[]) => {
+		setSearchResults(results);
 	};
 
 	const carouselData = [
@@ -66,12 +72,12 @@ export default function Home() {
 
 					{/* Search Section */}
 					<div className="mb-12 px-4 md:px-6 lg:px-8">
-						<SearchBar />
+						<SearchBar onSearch={handleSearch} />
 					</div>
 
 					{/* Product Catalog */}
 					<div className="px-4 md:px-6 lg:px-8">
-						<ProductCatalog isConnected={!!address} onConnect={handleConnect} />
+						<ProductCatalog searchResults={searchResults} />
 					</div>
 				</div>
 

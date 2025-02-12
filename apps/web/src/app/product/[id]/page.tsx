@@ -7,11 +7,23 @@ import { ProfileOptions } from "~/app/_components/features/ProfileOptions";
 import WalletConnect from "~/app/_components/features/WalletConnect";
 import Header from "~/app/_components/layout/Header";
 import Main from "~/app/_components/layout/Main";
+import { api } from "~/trpc/react";
 
-export default function ProductPage() {
+interface ProductPageProps {
+	params: {
+		id: string;
+	};
+}
+
+export default function ProductPage({ params }: ProductPageProps) {
 	const { address } = useAccount();
 	const { disconnect } = useDisconnect();
 	const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+	const productId = Number.parseInt(params.id, 10);
+
+	const { data: product, isLoading } = api.product.getProductById.useQuery({
+		id: productId,
+	});
 
 	const handleConnect = () => {
 		setIsWalletModalOpen(true);
@@ -21,21 +33,32 @@ export default function ProductPage() {
 		setIsWalletModalOpen(false);
 	};
 
-	// Mock product data - in real app, this would come from an API
-	const product = {
-		id: 1,
-		tokenId: 1,
-		image: "/images/cafe1.webp",
-		name: "Café de Especialidad",
-		farmName: "Finca La Esperanza",
-		roastLevel: "Medium",
-		bagsAvailable: 10,
-		price: 25.0,
-		type: "Buyer" as const,
-		process: "Natural",
-		description: "Un café excepcional con notas a chocolate y frutos rojos.",
-		region: "Huehuetenango",
-	};
+	if (isLoading) {
+		return (
+			<Main>
+				<div className="flex flex-col min-h-screen">
+					<Header
+						address={address}
+						disconnect={disconnect}
+						showCart={true}
+						onConnect={handleConnect}
+						profileOptions={
+							address ? <ProfileOptions address={address} /> : undefined
+						}
+					/>
+					<div className="flex-grow px-4 md:px-6 lg:px-8 pt-24">
+						<div className="animate-pulse">
+							<div className="h-96 bg-gray-200 rounded-lg mb-6" />
+						</div>
+					</div>
+				</div>
+			</Main>
+		);
+	}
+
+	if (!product) {
+		return null;
+	}
 
 	return (
 		<Main>

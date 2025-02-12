@@ -14,16 +14,18 @@ import {
 	searchResultsAtom,
 } from "~/atoms/productAtom";
 import { api } from "~/trpc/react";
-import type { NftMetadata, Product } from "./types";
+import type { NftMetadata, Product, SearchResult } from "./types";
 
 interface ProductCatalogProps {
 	isConnected?: boolean;
 	onConnect?: () => void;
+	searchResults: SearchResult[];
 }
 
 export default function ProductCatalog({
 	isConnected,
 	onConnect,
+	searchResults,
 }: ProductCatalogProps) {
 	const { t } = useTranslation();
 	const [products, setProducts] = useState<Product[]>([]);
@@ -160,7 +162,7 @@ export default function ProductCatalog({
 				</div>
 			) : (
 				<>
-					{results.length > 0 ? (
+					{searchResults.length > 0 ? (
 						<div className="w-full">
 							<div className="flex justify-between items-center mb-6">
 								<div className="text-lg font-medium">
@@ -175,7 +177,7 @@ export default function ProductCatalog({
 								</button>
 							</div>
 							<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 w-full">
-								{results.map((product) => (
+								{searchResults.map((product) => (
 									<div key={product.id} className="w-full">
 										{renderProduct(product)}
 									</div>

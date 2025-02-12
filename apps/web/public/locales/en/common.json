@@ -279,5 +279,8 @@
 		"en": "English",
 		"es": "Spanish",
 		"pt": "Portuguese"
-	}
+	},
+
+	"argent_mobile": "Argent Mobile",
+	"connecting": "Connecting..."
 }
