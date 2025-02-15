@@ -12,7 +12,8 @@ import { signIn, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { MESSAGE } from "~/constants";
+import { connect } from "starknetkit";
+import { ARGENT_WEBWALLET_URL, MESSAGE } from "~/constants";
 import BottomModal from "../ui/BottomModal";
 
 interface WalletConnectProps {
@@ -31,8 +32,9 @@ export default function WalletConnect({
 	isModal = true,
 }: WalletConnectProps) {
 	const [isClient, setIsClient] = useState(false);
+	const [isConnecting, setIsConnecting] = useState(false);
 	const { address } = useAccount();
-	const { connect, connectors } = useConnect();
+	const { connect: connectWallet, connectors } = useConnect();
 	const { disconnect } = useDisconnect();
 	const { signTypedDataAsync } = useSignTypedData(MESSAGE);
 	const { t } = useTranslation();
@@ -40,7 +42,36 @@ export default function WalletConnect({
 
 	const handleConnectWallet = async (connector: Connector): Promise<void> => {
 		if (connector) {
-			connect({ connector });
+			try {
+				const result = connectWallet({ connector });
+				console.log("connector result", result);
+			} catch (error) {
+				console.error("Error connecting wallet:", error);
+			}
+		}
+	};
+
+	const handleConnectArgentMobile = async (): Promise<void> => {
+		try {
+			setIsConnecting(true);
+			const result = await connect({
+				webWalletUrl: ARGENT_WEBWALLET_URL,
+				argentMobileOptions: {
+					dappName: "CofiBlocks",
+					url: "https://web.argent.xyz",
+				},
+			});
+
+			if (result?.connector) {
+				const connectorResult = connectWallet({
+					connector: result.connector as unknown as Connector,
+				});
+				console.log("connectorResult", connectorResult);
+			}
+		} catch (error) {
+			console.error("Error connecting Argent Mobile:", error);
+		} finally {
+			setIsConnecting(false);
 		}
 	};
 
@@ -48,13 +79,16 @@ export default function WalletConnect({
 		try {
 			const signature = await signTypedDataAsync();
 
-			await signIn("credentials", {
+			const signInResult = await signIn("credentials", {
 				address,
 				message: JSON.stringify(MESSAGE),
 				redirect: false,
 				signature,
 			});
-			onSuccess?.();
+
+			if (signInResult?.ok) {
+				onSuccess?.();
+			}
 		} catch (err) {
 			console.error(t("error_signing_message"), err);
 		}
@@ -82,7 +116,7 @@ export default function WalletConnect({
 				{address ? (
 					<>
 						<Button
-							onClick={handleSignMessage}
+							onClick={() => void handleSignMessage()}
 							variant="primary"
 							size="lg"
 							className="w-full max-w-[15rem] px-4 py-3 text-content-title text-base font-medium font-inter rounded-lg border border-surface-secondary-default transition-all duration-300 hover:bg-surface-secondary-hover"
@@ -101,20 +135,35 @@ export default function WalletConnect({
 					<>
 						{isClient && (
 							<>
-								{connectors.map((connector) => (
-									<Button
-										key={connector.id}
-										onClick={() => handleConnectWallet(connector)}
-										className="w-full max-w-[15rem]"
-									>
-										<div className="flex items-center justify-between">
-											<div className="flex items-center">
-												<span>{t(`${connector.id}`)}</span>
-											</div>
-											<ChevronRightIcon className="h-5 w-5" />
+								<Button
+									onClick={() => void handleConnectArgentMobile()}
+									className="w-full max-w-[15rem]"
+									disabled={isConnecting}
+								>
+									<div className="flex items-center justify-between">
+										<div className="flex items-center">
+											<span>
+												{isConnecting ? t("connecting") : t("argent_mobile")}
+											</span>
 										</div>
-									</Button>
-								))}
+										<ChevronRightIcon className="h-5 w-5" />
+									</div>
+								</Button>
+								{Array.isArray(connectors) &&
+									connectors.map((connector) => (
+										<Button
+											key={connector.id}
+											onClick={() => void handleConnectWallet(connector)}
+											className="w-full max-w-[15rem]"
+										>
+											<div className="flex items-center justify-between">
+												<div className="flex items-center">
+													<span>{t(`${connector.id}`)}</span>
+												</div>
+												<ChevronRightIcon className="h-5 w-5" />
+											</div>
+										</Button>
+									))}
 							</>
 						)}
 					</>
