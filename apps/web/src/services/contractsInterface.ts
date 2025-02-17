@@ -25,7 +25,7 @@ type CoinGeckoResponse = {
 };
 
 const useCofiCollectionContract = () => {
-	const env = (process.env.STARKNET_ENV ??
+	const env = (process.env.NEXT_PUBLIC_STARKNET_ENV ??
 		"sepolia") as keyof typeof configExternalContracts;
 	const { contract } = useContract({
 		abi: configExternalContracts[env].CofiCollection.abi as Abi,
@@ -35,7 +35,7 @@ const useCofiCollectionContract = () => {
 };
 
 const useMarketplaceContract = () => {
-	const env = (process.env.STARKNET_ENV ??
+	const env = (process.env.NEXT_PUBLIC_STARKNET_ENV ??
 		"sepolia") as keyof typeof configExternalContracts;
 	const { contract } = useContract({
 		abi: configExternalContracts[env].Marketplace.abi as Abi,
@@ -45,7 +45,7 @@ const useMarketplaceContract = () => {
 	return contract;
 };
 const useStarkContract = () => {
-	const env = (process.env.STARKNET_ENV ??
+	const env = (process.env.NEXT_PUBLIC_STARKNET_ENV ??
 		"sepolia") as keyof typeof configExternalContracts;
 	const { contract } = useContract({
 		abi: configExternalContracts[env].stark.abi as Abi,
