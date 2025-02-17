@@ -43,38 +43,13 @@ function PageHeader({
 	onConnect,
 	profileOptions,
 }: PageHeaderProps) {
-	const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 	const [isHamburgerMenuOpen, setIsHamburgerMenuOpen] = useState(false);
-	const menuRef = useRef<HTMLDivElement>(null);
 	const { t } = useTranslation();
 	const router = useRouter();
-
-	const toggleProfileMenu = () => {
-		setIsProfileMenuOpen((prevState: boolean) => !prevState);
-	};
 
 	const toggleHamburgerMenu = () => {
 		setIsHamburgerMenuOpen((prevState: boolean) => !prevState);
 	};
-
-	const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-		if (event.key === "Enter" || event.key === " ") {
-			toggleProfileMenu();
-		}
-	};
-
-	useEffect(() => {
-		function handleClickOutside(event: MouseEvent) {
-			if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-				setIsProfileMenuOpen(false);
-			}
-		}
-
-		document.addEventListener("mousedown", handleClickOutside);
-		return () => {
-			document.removeEventListener("mousedown", handleClickOutside);
-		};
-	}, []);
 
 	return (
 		<div className="w-full max-w-full md:max-w-7xl px-4 h-20 py-3 bg-white flex justify-between items-center mx-auto space-x-4 fixed top-0 left-0 right-0 z-50 shadow-sm">
@@ -141,50 +116,17 @@ function PageHeader({
 								{profileOptions}
 							</HamburgerMenu>
 						)}
-						<div className="relative" ref={menuRef}>
-							<div
-								className="cursor-pointer p-1 hover:bg-gray-100 rounded-full transition-colors"
-								onClick={toggleProfileMenu}
-								onKeyDown={handleKeyDown}
-								role="button"
-								tabIndex={0}
-								aria-label="Open user menu"
-								aria-expanded={isProfileMenuOpen}
-								aria-haspopup="true"
-							>
-								{showBlockie && (
-									<div className="rounded-full overflow-hidden relative w-10 h-10 ring-2 ring-surface-primary-default">
-										<BlockiesSvg address={userAddress} size={10} scale={4} />
-									</div>
-								)}
-							</div>
-							{isProfileMenuOpen && (
-								<div className="absolute right-0 mt-2 w-48 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
-									<div
-										className="py-1"
-										role="menu"
-										aria-orientation="vertical"
-										aria-labelledby="options-menu"
-									>
-										<Link
-											href="/user-profile"
-											className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left transition-colors"
-											role="menuitem"
-										>
-											{t("Profile")}
-										</Link>
-										<button
-											className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left transition-colors"
-											onClick={onLogout}
-											role="menuitem"
-											type="button"
-										>
-											{t("disconnect")}
-										</button>
-									</div>
+						<Link
+							href="/user-profile"
+							className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+							aria-label="Go to profile"
+						>
+							{showBlockie && (
+								<div className="rounded-full overflow-hidden relative w-10 h-10 ring-2 ring-surface-primary-default">
+									<BlockiesSvg address={userAddress} size={10} scale={4} />
 								</div>
 							)}
-						</div>
+						</Link>
 					</div>
 				)}
 			</div>

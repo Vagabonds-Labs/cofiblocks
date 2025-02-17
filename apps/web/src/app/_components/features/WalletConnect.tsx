@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { connect } from "starknetkit";
 import { ARGENT_WEBWALLET_URL, MESSAGE } from "~/constants";
+import { api } from "~/trpc/react";
 import BottomModal from "../ui/BottomModal";
 
 interface WalletConnectProps {
@@ -39,6 +40,7 @@ export default function WalletConnect({
 	const { signTypedDataAsync } = useSignTypedData(MESSAGE);
 	const { t } = useTranslation();
 	const router = useRouter();
+	const utils = api.useUtils();
 
 	const handleConnectWallet = async (connector: Connector): Promise<void> => {
 		if (connector) {
@@ -87,6 +89,7 @@ export default function WalletConnect({
 			});
 
 			if (signInResult?.ok) {
+				await utils.user.getMe.prefetch();
 				onSuccess?.();
 			}
 		} catch (err) {

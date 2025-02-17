@@ -1,15 +1,11 @@
 "use client";
 
-import {
-	ArrowPathRoundedSquareIcon,
-	CameraIcon,
-} from "@heroicons/react/24/outline";
+import { ArrowPathRoundedSquareIcon } from "@heroicons/react/24/outline";
 import { ClockIcon } from "@heroicons/react/24/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@repo/ui/button";
 import RadioButton from "@repo/ui/form/radioButton";
 import { useAccount, useProvider } from "@starknet-react/core";
-import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";

@@ -4,7 +4,9 @@ import PageHeader from "@repo/ui/pageHeader";
 import { useAtomValue } from "jotai";
 import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { cartItemsAtom } from "~/store/cartAtom";
+import { api } from "~/trpc/react";
 
 interface HeaderProps {
 	address: string | undefined;
@@ -23,9 +25,17 @@ function Header({
 }: HeaderProps) {
 	const router = useRouter();
 	const items = useAtomValue(cartItemsAtom);
+	const utils = api.useUtils();
 	const cartItemsCount = showCart
 		? items.reduce((total, item) => total + item.quantity, 0)
 		: undefined;
+
+	// Prefetch user data when the component mounts
+	useEffect(() => {
+		if (address) {
+			void utils.user.getMe.prefetch();
+		}
+	}, [address, utils.user.getMe]);
 
 	const handleLogout = async () => {
 		await signOut();

@@ -1,17 +1,9 @@
-import crypto from "node:crypto";
-import { PrismaAdapter } from "@auth/prisma-adapter";
+import type { Role } from "@prisma/client";
 import {
 	type DefaultSession,
 	type NextAuthOptions,
 	getServerSession,
 } from "next-auth";
-import type { Session } from "next-auth";
-import {
-	type JWTDecodeParams,
-	type JWTEncodeParams,
-	decode,
-	encode,
-} from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 import { db } from "~/server/db";
@@ -24,13 +16,24 @@ declare module "next-auth" {
 	interface Session extends DefaultSession {
 		user: {
 			id: string;
+			role: Role;
 		} & DefaultSession["user"];
+	}
+
+	interface User {
+		id: string;
+		role: Role;
 	}
 }
 
-const generateNonce = () => crypto.randomBytes(16).toString("hex");
+declare module "next-auth/jwt" {
+	interface JWT {
+		role?: Role;
+		userId?: string;
+	}
+}
 
-export const findOrCreateUser = async (walletAddress: string) => {
+const findOrCreateUser = async (walletAddress: string) => {
 	let user = await db.user.findFirst({
 		where: { walletAddress },
 	});
@@ -68,33 +71,46 @@ const authorize = async (credentials: Record<string, string> | undefined) => {
 
 		await verifyUserSignature(address, signature);
 
-		const nonce = generateNonce();
-
 		const user = await findOrCreateUser(address);
 
-		return { id: user.id, nonce };
+		return {
+			id: user.id,
+			role: user.role,
+		};
 	} catch (error) {
 		console.error({ error });
 		return null;
 	}
 };
 
-export const authOptions = {
+export const authOptions: NextAuthOptions = {
 	callbacks: {
-		session: ({ session, token }) =>
-			({
-				...session,
-				user: {
-					...session.user,
-					id: token.sub,
-				},
-			}) as Session & { user: { id: string } },
+		jwt: async ({ token, user }) => {
+			if (user) {
+				console.log("Setting JWT token with user data:", {
+					userId: user.id,
+					role: user.role,
+				});
+				token.role = user.role;
+				token.userId = user.id;
+			}
+			return token;
+		},
+		session: ({ session, token }) => {
+			if (token) {
+				console.log("Setting session with token data:", {
+					userId: token.userId ?? token.sub,
+					role: token.role,
+				});
+				session.user.id = token.userId ?? token.sub ?? "";
+				session.user.role = token.role ?? "COFFEE_BUYER";
+			}
+			return session;
+		},
 	},
-	adapter: PrismaAdapter(db),
 	providers: [
 		CredentialsProvider({
 			name: "Starknet",
-			type: "credentials",
 			credentials: {
 				message: {
 					label: "Message",
@@ -119,20 +135,11 @@ export const authOptions = {
 		signIn: "/",
 	},
 	secret: process.env.NEXTAUTH_SECRET,
-	jwt: {
-		encode: async ({ token, secret, maxAge }: JWTEncodeParams) => {
-			return encode({ token, secret, maxAge });
-		},
-		decode: async ({ token, secret }: JWTDecodeParams) => {
-			return decode({ token, secret });
-		},
-	},
 	session: {
 		strategy: "jwt",
 		maxAge: 2592000,
 		updateAge: 86400,
-		generateSessionToken: () => crypto.randomBytes(32).toString("hex"),
 	},
-} satisfies NextAuthOptions;
+};
 
 export const getServerAuthSession = () => getServerSession(authOptions);

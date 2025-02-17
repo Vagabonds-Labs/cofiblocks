@@ -1,7 +1,9 @@
 import Button from "@repo/ui/button";
+import { useDisconnect } from "@starknet-react/core";
+import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import BottomModal from "~/app/_components/ui/BottomModal";
+import BottomModal from "../ui/BottomModal";
 
 interface LogoutModalProps {
 	isOpen: boolean;
@@ -11,10 +13,11 @@ interface LogoutModalProps {
 function LogoutModal({ isOpen, onClose }: LogoutModalProps) {
 	const { t } = useTranslation();
 	const router = useRouter();
+	const { disconnect } = useDisconnect();
 
-	const handleLogout = () => {
-		// TODO: Implement logout/disconnect logic
-		alert(t("logout_logic"));
+	const handleLogout = async () => {
+		await signOut();
+		disconnect();
 		onClose();
 		router.push("/");
 	};
@@ -36,4 +39,4 @@ function LogoutModal({ isOpen, onClose }: LogoutModalProps) {
 	);
 }
 
-export { LogoutModal };
+export default LogoutModal;

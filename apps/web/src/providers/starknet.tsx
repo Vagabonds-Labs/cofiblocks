@@ -4,7 +4,6 @@ import {
 	publicProvider,
 	useInjectedConnectors,
 } from "@starknet-react/core";
-import type { Connector } from "@starknet-react/core";
 import { argent, braavos } from "@starknet-react/core";
 
 export default function StarknetProvider({
