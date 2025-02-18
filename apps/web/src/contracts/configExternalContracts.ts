@@ -2410,7 +2410,7 @@ const configExternalContracts = {
 	mainnet: {
 		Marketplace: {
 			address:
-				"0x3b154f45cea15666efdcbfcf63b29c379bb4e6164163e9d84c2f78cb1eca57d",
+				"0x1db72e3f25244efe8729c2d6acda7c8d83addc74d9cccff9da1a5c741a722d1",
 			classHash:
 				"0x044eb6074fa74a9dbddb65c52394cd1bab274e3bc22e1fc36c26c37686d1e440",
 			abi: [
@@ -2990,7 +2990,7 @@ const configExternalContracts = {
 		},
 		CofiCollection: {
 			address:
-				"0x520803b8b8d9d33ba65f3fbb482b7614f047347ef5ee7584f963660096488fe",
+				"0x5f1e5752fffa227c319c8baa9f69af1e4b598e04743dfaa6c35835f3ab51d33",
 			classHash:
 				"0x07a108607024be2054d1558cbfd5de3fe264afe9e025bc7653b1bc5fc76d1af0",
 			abi: [
