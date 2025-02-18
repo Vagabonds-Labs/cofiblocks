@@ -3,10 +3,12 @@
 import { ArrowLeftIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { useAccount } from "@starknet-react/core";
 import { useProvider } from "@starknet-react/core";
+import { useSetAtom } from "jotai";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { type CartItem, cartItemsAtom } from "~/store/cartAtom";
 import { api } from "~/trpc/react";
 import {
 	ContractsError,
@@ -75,6 +77,7 @@ export default function ShoppingCart() {
 	const { t } = useTranslation();
 	const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 	const { provider } = useProvider();
+	const setCartItems = useSetAtom(cartItemsAtom);
 	const contract = new ContractsInterface(
 		useAccount(),
 		useCofiCollectionContract(),
@@ -85,12 +88,33 @@ export default function ShoppingCart() {
 
 	// Get cart data from server
 	const { data: cart, refetch: refetchCart } = api.cart.getUserCart.useQuery();
+
+	// Sync server cart data with local atom
+	useEffect(() => {
+		if (cart?.items) {
+			const cartItems: CartItem[] = cart.items.map((item) => ({
+				id: item.id,
+				tokenId: item.product.tokenId,
+				name: item.product.name,
+				quantity: item.quantity,
+				price: item.product.price,
+				imageUrl: getImageUrl(item.product.nftMetadata),
+			}));
+			setCartItems(cartItems);
+		}
+	}, [cart?.items, setCartItems]);
+
 	const { mutate: removeFromCart } = api.cart.removeFromCart.useMutation({
 		onSuccess: () => {
 			void refetchCart();
 		},
 	});
-	const { mutate: clearCart } = api.cart.clearCart.useMutation();
+	const { mutate: clearCart } = api.cart.clearCart.useMutation({
+		onSuccess: () => {
+			setCartItems([]);
+			void refetchCart();
+		},
+	});
 
 	const handleRemove = (cartItemId: string) => {
 		setItemToDelete(cartItemId);
@@ -146,7 +170,10 @@ export default function ShoppingCart() {
 		if (typeof nftMetadata !== "string") return "/images/default.webp";
 		try {
 			const metadata = JSON.parse(nftMetadata) as NftMetadata;
-			return metadata.imageUrl;
+			// Format the image URL to include the IPFS gateway if it's an IPFS hash
+			return metadata.imageUrl.startsWith("Qm")
+				? `${process.env.NEXT_PUBLIC_GATEWAY_URL}/ipfs/${metadata.imageUrl}`
+				: metadata.imageUrl;
 		} catch {
 			return "/images/default.webp";
 		}
@@ -154,7 +181,7 @@ export default function ShoppingCart() {
 
 	const hasItems = Boolean(cart?.items && cart.items.length > 0);
 
-	const handleBuy = () => {
+	const handleCheckout = () => {
 		router.push("/checkout");
 	};
 
@@ -163,13 +190,13 @@ export default function ShoppingCart() {
 			<div className="flex items-center gap-3 p-4 mb-8">
 				<button
 					type="button"
-					onClick={() => router.back()}
+					onClick={() => router.push("/marketplace")}
 					className="hover:bg-gray-100 p-1 rounded-full"
-					aria-label="Go back"
+					aria-label={t("aria_label_go_back")}
 				>
 					<ArrowLeftIcon className="h-6 w-6" />
 				</button>
-				<h1 className="text-xl font-semibold">{t("shopping_cart_title")}</h1>
+				<h1 className="text-xl font-semibold">{t("marketplace")}</h1>
 			</div>
 
 			<div className="px-4">
@@ -233,8 +260,7 @@ export default function ShoppingCart() {
 					<div className="fixed bottom-0 left-0 right-0 bg-white max-w-md mx-auto px-4 pb-4 pt-2">
 						<button
 							type="button"
-
-							onClick={() => handleBuy()}
+							onClick={() => handleCheckout()}
 							className="w-full py-3.5 px-4 bg-surface-secondary-default rounded-lg border border-surface-secondary-defaul flex justify-center items-center"
 						>
 							<span className="text-[#1F1F20] text-base font-normal">

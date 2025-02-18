@@ -30,13 +30,6 @@ function Header({
 		? items.reduce((total, item) => total + item.quantity, 0)
 		: undefined;
 
-	// Prefetch user data when the component mounts
-	useEffect(() => {
-		if (address) {
-			void utils.user.getMe.prefetch();
-		}
-	}, [address, utils.user.getMe]);
-
 	const handleLogout = async () => {
 		await signOut();
 		disconnect();

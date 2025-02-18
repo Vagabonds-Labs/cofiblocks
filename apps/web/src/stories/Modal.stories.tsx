@@ -45,7 +45,9 @@ const Template: StoryFn = (args) => (
 		}}
 		buttons={buttons}
 		{...args}
-	/>
+	>
+		<p>Modal content goes here</p>
+	</Modal>
 );
 
 //The default modal configuration with basic buttons.
@@ -54,6 +56,8 @@ Default.args = {
 	isOpen: true,
 	onClose: () => alert("Modal closed"),
 	buttons,
+	children: <p>This is a default modal with basic buttons.</p>,
+	title: "Default Modal",
 };
 
 //This modal includes buttons with icons (e.g., accept and decline buttons).
@@ -61,6 +65,8 @@ export const Icons = Template.bind({});
 Icons.args = {
 	isOpen: true,
 	onClose: () => alert("Modal closed"),
+	title: "Modal with Icons",
+	children: <p>This modal demonstrates the use of buttons with icons.</p>,
 	buttons: [
 		{ label: "Accept", onClick: () => alert("Accept clicked") },
 		{
@@ -76,5 +82,7 @@ export const NoButtons = Template.bind({});
 NoButtons.args = {
 	isOpen: true,
 	onClose: () => alert("Modal closed"),
+	title: "Information Modal",
+	children: <p>This is an informational modal without any action buttons.</p>,
 	buttons: [],
 };

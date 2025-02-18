@@ -6,7 +6,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@repo/ui/button";
 import RadioButton from "@repo/ui/form/radioButton";
 import { useAccount, useProvider } from "@starknet-react/core";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { ImageUpload } from "~/app/_components/features/ImageUpload";
@@ -40,6 +43,7 @@ type FormData = z.infer<typeof schema>;
 export default function RegisterCoffee() {
 	const { t } = useTranslation();
 	const { provider } = useProvider();
+	const router = useRouter();
 	const contracts = new ContractsInterface(
 		useAccount(),
 		useCofiCollectionContract(),
@@ -48,6 +52,7 @@ export default function RegisterCoffee() {
 		provider,
 	);
 	const mutation = api.product.createProduct.useMutation();
+	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	const { register, handleSubmit, control, getValues, setValue } =
 		useForm<FormData>({
@@ -59,12 +64,11 @@ export default function RegisterCoffee() {
 		});
 
 	const onSubmit = async (data: FormData) => {
+		setIsSubmitting(true);
 		const submissionData = {
 			...data,
 			price: Number.parseFloat(data.price),
 		};
-		// TODO: Implement coffee registration logic
-		console.log(submissionData);
 		try {
 			const token_id = await contracts.register_product(
 				submissionData.price,
@@ -80,18 +84,21 @@ export default function RegisterCoffee() {
 				region: "",
 				farmName: "",
 			});
-			alert("Product registered successfully");
+			toast.success(t("product_registered_successfully"));
+			router.push("/marketplace");
 		} catch (error) {
 			if (error instanceof ContractsError) {
 				if (error.code === ContractsError.USER_MISSING_ROLE) {
-					alert("User is not registered as a seller");
+					toast.error(t("user_not_registered_as_seller"));
 				} else if (error.code === ContractsError.USER_NOT_CONNECTED) {
-					alert("User is disconnected");
+					toast.error(t("user_disconnected"));
 				}
 			} else {
 				console.log("error registering", error);
-				alert("An error occurred while registering the product");
+				toast.error(t("error_registering_product"));
 			}
+		} finally {
+			setIsSubmitting(false);
 		}
 	};
 
@@ -323,8 +330,39 @@ export default function RegisterCoffee() {
 							</Button>
 						</div>
 					</div>
-					<Button type="submit" className="py-6 rounded w-full">
-						{t("save_and_publish")}
+					<Button
+						type="submit"
+						className="py-6 rounded w-full"
+						disabled={isSubmitting}
+					>
+						{isSubmitting ? (
+							<div className="flex items-center justify-center">
+								<svg
+									className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+									xmlns="http://www.w3.org/2000/svg"
+									fill="none"
+									viewBox="0 0 24 24"
+								>
+									<title>Loading spinner</title>
+									<circle
+										className="opacity-25"
+										cx="12"
+										cy="12"
+										r="10"
+										stroke="currentColor"
+										strokeWidth="4"
+									/>
+									<path
+										className="opacity-75"
+										fill="currentColor"
+										d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+									/>
+								</svg>
+								{t("saving")}
+							</div>
+						) : (
+							t("save_and_publish")
+						)}
 					</Button>
 				</form>
 			</div>

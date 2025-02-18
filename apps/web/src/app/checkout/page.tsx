@@ -64,7 +64,7 @@ export default function CheckoutPage() {
 			<Link href="/shopping-cart">
 				<div className="flex items-center gap-2 p-3 rounded-lg mb-6">
 					<ArrowLeftIcon className="h-5 w-5" />
-					<span className="text-xl">{t("my_cart")}</span>
+					<span className="text-xl">{t("shopping_cart_title")}</span>
 				</div>
 			</Link>
 			{state.checkoutStep === "delivery" && (

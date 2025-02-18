@@ -16,19 +16,28 @@
 - Database seeding script for initial data population
 - Starknet provider for blockchain connectivity
 - TRPC setup for type-safe API routes
+- Implemented Starknet payment processing in checkout flow
+- Added loading states and error handling for payment transactions
+- Integrated cart management with blockchain transactions
+- Added i18n translations for checkout and payment flows
 
 ### Changed
 - Updated project structure to use Turborepo for monorepo management
 - Configured custom themes for DaisyUI
+- Enhanced OrderReview component with Starknet payment functionality
+- Improved error handling and user feedback during payment process
 
 ### Fixed
 - Resolved potential issues with environment variable validation
+- Fixed IPFS image loading in shopping cart
+- Fixed cart counter synchronization with server state
 
 ### Removed
 - Removed unused boilerplate code from initial setup
 
 ### Security
 - Implemented secure practices for handling wallet addresses and user data
+- Added transaction validation for Starknet payments
 
 ### Development
 - Added scripts for database management and development server startup

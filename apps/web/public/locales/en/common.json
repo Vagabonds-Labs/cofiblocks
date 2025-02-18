@@ -245,10 +245,7 @@
 	"seller1_fullname": "Seller 1",
 	"seller2_fullname": "Seller 2",
 	"delivery_method_label": "Delivery method",
-	"delivery_method": {
-		"address": "Address",
-		"meetup": "Meetup"
-	},
+	"delivery_method": "Delivery Method",
 	"quantity_with_unit": "{{count}} {{unit}}",
 	"total_balance_receivable": "Total Balance Receivable",
 	"recieve": "Receive",
@@ -279,5 +276,31 @@
 		"en": "English",
 		"es": "Spanish",
 		"pt": "Portuguese"
-	}
+	},
+
+	"send_to_my_home": "Send to my home",
+	"plus_20_usd": "+20 USD",
+	"pick_up_at_meetup": "Pick up at meetup",
+	"free": "Free",
+	"check_meetup_calendar": "Check meetup calendar",
+	"im_in": "I'm in",
+	"im_in_gam": "I'm in GAM",
+	"im_not_in_gam": "I'm not in GAM",
+	"next": "Next",
+
+	"proceed_to_payment": "Proceed to Payment",
+	"processing_payment": "Processing Payment...",
+	"review_your_order": "Review Your Order",
+	"quantity": "Quantity",
+	"product_price": "Product Price",
+	"delivery_address": "Delivery Address",
+	"my_home": "My Home",
+	"delivery_price": "Delivery Price",
+	"total_price": "Total Price",
+	"change_currency": "Change Currency",
+	"congrats": "Congratulations!",
+	"order_confirmation_message": "Your order has been confirmed and is being processed.",
+	"track_in_my_orders": "Track in My Orders",
+
+	"marketplace": "Marketplace"
 }

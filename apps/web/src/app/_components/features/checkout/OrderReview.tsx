@@ -3,11 +3,18 @@
 import { ArrowDownIcon } from "@heroicons/react/24/outline";
 import Button from "@repo/ui/button";
 import { Separator } from "@repo/ui/separator";
-import { useAtomValue } from "jotai";
+import { useAccount, useProvider } from "@starknet-react/core";
+import { useAtomValue, useSetAtom } from "jotai";
 import Image from "next/image";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { cartItemsAtom } from "~/store/cartAtom";
+import {
+	ContractsInterface,
+	useCofiCollectionContract,
+	useMarketplaceContract,
+	useStarkContract,
+} from "~/services/contractsInterface";
+import { cartItemsAtom, clearCartAtom } from "~/store/cartAtom";
 import type { CartItem } from "~/store/cartAtom";
 import Confirmation from "./Confirmation";
 import { CurrencySelector } from "./CurrencySelector";
@@ -36,9 +43,22 @@ export default function OrderReview({
 }: OrderReviewProps) {
 	const { t } = useTranslation();
 	const cartItems = useAtomValue(cartItemsAtom);
+	const clearCart = useSetAtom(clearCartAtom);
 	const [isCurrencySelectorOpen, setIsCurrencySelectorOpen] = useState(false);
 	const [selectedCurrency, setSelectedCurrency] = useState("USD");
 	const [showConfirmation, setShowConfirmation] = useState(false);
+	const [isProcessing, setIsProcessing] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+
+	const account = useAccount();
+	const { provider } = useProvider();
+	const contract = new ContractsInterface(
+		account,
+		useCofiCollectionContract(),
+		useMarketplaceContract(),
+		useStarkContract(),
+		provider,
+	);
 
 	const productPrice = cartItems.reduce(
 		(total, item) => total + item.price * item.quantity,
@@ -50,13 +70,37 @@ export default function OrderReview({
 		setSelectedCurrency(currency);
 		setIsCurrencySelectorOpen(false);
 		onCurrencySelect(currency);
-		// Here you would typically also convert the prices to the new currency
-		// For this example, we'll just update the display currency
 	};
 
-	const handleProceedToPayment = () => {
-		setShowConfirmation(true);
-		onNext();
+	const handleProceedToPayment = async () => {
+		try {
+			setIsProcessing(true);
+			setError(null);
+
+			const token_ids = cartItems.map((item) => item.tokenId);
+			const token_amounts = cartItems.map((item) => item.quantity);
+
+			// Execute the purchase transaction
+			const tx_hash = await contract.buy_product(
+				token_ids,
+				token_amounts,
+				totalPrice,
+			);
+
+			// Clear the cart after successful purchase
+			clearCart();
+
+			// Show confirmation
+			setShowConfirmation(true);
+			onNext();
+		} catch (err) {
+			console.error("Payment error:", err);
+			setError(
+				err instanceof Error ? err.message : "Failed to process payment",
+			);
+		} finally {
+			setIsProcessing(false);
+		}
 	};
 
 	if (showConfirmation || isConfirmed) {
@@ -135,9 +179,16 @@ export default function OrderReview({
 					</div>
 				</div>
 
+				{error && (
+					<div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600">
+						{error}
+					</div>
+				)}
+
 				<Button
 					onClick={() => setIsCurrencySelectorOpen(true)}
 					className="w-full bg-white border border-gray-300 text-black mt-6 h-14"
+					disabled={isProcessing}
 				>
 					{t("change_currency")}
 				</Button>
@@ -145,8 +196,9 @@ export default function OrderReview({
 				<Button
 					onClick={handleProceedToPayment}
 					className="w-full bg-yellow-400 hover:bg-yellow-500 text-black mt-6 h-14"
+					disabled={isProcessing}
 				>
-					{t("proceed_to_payment")}
+					{isProcessing ? t("processing_payment") : t("proceed_to_payment")}
 				</Button>
 			</div>
 

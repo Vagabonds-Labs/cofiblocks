@@ -97,13 +97,17 @@ export const authOptions: NextAuthOptions = {
 			return token;
 		},
 		session: ({ session, token }) => {
+			console.log("Session callback - Token:", token);
+			console.log("Session callback - Current session:", session);
+
 			if (token) {
-				console.log("Setting session with token data:", {
-					userId: token.userId ?? token.sub,
-					role: token.role,
-				});
-				session.user.id = token.userId ?? token.sub ?? "";
-				session.user.role = token.role ?? "COFFEE_BUYER";
+				session.user = {
+					...session.user,
+					id: token.userId ?? token.sub ?? "",
+					role: token.role ?? "COFFEE_BUYER",
+				};
+
+				console.log("Updated session:", session);
 			}
 			return session;
 		},
@@ -137,9 +141,10 @@ export const authOptions: NextAuthOptions = {
 	secret: process.env.NEXTAUTH_SECRET,
 	session: {
 		strategy: "jwt",
-		maxAge: 2592000,
-		updateAge: 86400,
+		maxAge: 2592000, // 30 days
+		updateAge: 86400, // 24 hours
 	},
+	debug: process.env.NODE_ENV === "development",
 };
 
 export const getServerAuthSession = () => getServerSession(authOptions);
