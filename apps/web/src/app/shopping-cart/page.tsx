@@ -154,6 +154,10 @@ export default function ShoppingCart() {
 
 	const hasItems = Boolean(cart?.items && cart.items.length > 0);
 
+	const handleBuy = () => {
+		router.push("/checkout");
+	};
+
 	return (
 		<div className="max-w-md mx-auto bg-white min-h-screen">
 			<div className="flex items-center gap-3 p-4 mb-8">
@@ -229,6 +233,7 @@ export default function ShoppingCart() {
 					<div className="fixed bottom-0 left-0 right-0 bg-white max-w-md mx-auto px-4 pb-4 pt-2">
 						<button
 							type="button"
+
 							onClick={() => handleBuy()}
 							className="w-full py-3.5 px-4 bg-surface-secondary-default rounded-lg border border-surface-secondary-defaul flex justify-center items-center"
 						>
