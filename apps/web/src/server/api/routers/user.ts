@@ -86,4 +86,30 @@ export const userRouter = createTRPCRouter({
 				data: updateData,
 			});
 		}),
+
+	updateWalletAddress: protectedProcedure
+		.input(
+			z.object({
+				walletAddress: z.string(),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const { walletAddress } = input;
+			const userId = ctx.session.user.id;
+
+			// Check if wallet address is already in use
+			const existingUser = await ctx.db.user.findUnique({
+				where: { walletAddress },
+			});
+
+			if (existingUser && existingUser.id !== userId) {
+				throw new Error("Wallet address already in use");
+			}
+
+			// Update user's wallet address
+			return ctx.db.user.update({
+				where: { id: userId },
+				data: { walletAddress },
+			});
+		}),
 });

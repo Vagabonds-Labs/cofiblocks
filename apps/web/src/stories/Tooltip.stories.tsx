@@ -1,10 +1,10 @@
 //Thia Tooltip component provides contextual information
 // when users hover over, focus on, or tap on an element
-import Tooltip from "@repo/ui/tooltip";
-import type { Meta } from "@storybook/react";
+import { Tooltip } from "@repo/ui/tooltip";
+import type { Meta, StoryObj } from "@storybook/react";
 
 //This meta object configures the Tooltip for Storybook
-export default {
+const meta = {
 	title: "Components/Tooltip", //organizes components under the "Tooltip component"
 	tags: ["autodocs"], //automates documentation generation
 	component: Tooltip,
@@ -25,32 +25,42 @@ export default {
 			table: { type: { summary: "React.ReactNode" } },
 		},
 	},
-} as Meta<typeof Tooltip>;
+} satisfies Meta<typeof Tooltip>;
 
-export const TooltipPositions = () => {
-	const positions: ("top" | "bottom" | "left" | "right")[] = [
-		"top",
-		"bottom",
-		"left",
-		"right",
-	];
+export default meta;
+type Story = StoryObj<typeof meta>;
 
-	return (
-		<div className="flex gap-4 justify-center items-center h-screen">
-			{positions.map((position) => (
-				<Tooltip
-					key={position}
-					content={`This is a ${position} tooltip!`}
-					position={position}
-				>
-					<button
-						type="button"
-						className="px-4 py-2 bg-blue-600 text-white rounded capitalize"
+export const TooltipPositions: Story = {
+	args: {
+		content: "Tooltip Content",
+		position: "top",
+		children: <div>Hover me</div>,
+	},
+	render: () => {
+		const positions: ("top" | "bottom" | "left" | "right")[] = [
+			"top",
+			"bottom",
+			"left",
+			"right",
+		];
+
+		return (
+			<div className="flex gap-4 justify-center items-center h-screen">
+				{positions.map((position) => (
+					<Tooltip
+						key={position}
+						content={`This is a ${position} tooltip!`}
+						position={position}
 					>
-						{position}
-					</button>
-				</Tooltip>
-			))}
-		</div>
-	);
+						<button
+							type="button"
+							className="px-4 py-2 bg-blue-600 text-white rounded capitalize"
+						>
+							{position}
+						</button>
+					</Tooltip>
+				))}
+			</div>
+		);
+	},
 };
