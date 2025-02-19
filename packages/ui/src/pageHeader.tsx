@@ -1,136 +1,185 @@
-import { ArrowLeftIcon, ShoppingCartIcon } from "@heroicons/react/24/outline";
-import dynamic from "next/dynamic";
+"use client";
+
+import {
+	Bars3Icon,
+	ChevronLeftIcon,
+	ShoppingCartIcon,
+} from "@heroicons/react/24/outline";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import type { KeyboardEvent } from "react";
-import { useTranslation } from "react-i18next";
+import { useState } from "react";
 import Button from "./button";
-import { HamburgerMenu } from "./hamburgerMenu";
+import { CartContent } from "./cartContent";
+import { CartSidebar } from "./cartSidebar";
+import IconButton from "./iconButton";
+import { Sidebar } from "./sidebar";
 
-const BlockiesSvg = dynamic<{ address: string; size: number; scale: number }>(
-	() => import("blockies-react-svg"),
-	{ ssr: false },
-);
-
-interface PageHeaderProps {
-	title: string | React.ReactNode;
-	userAddress?: string;
-	onLogout?: () => void;
-	hideCart?: boolean;
-	showBackButton?: boolean;
-	onBackClick?: () => void;
-	showBlockie?: boolean;
-	rightActions?: React.ReactNode;
-	showCart?: boolean;
-	cartItemsCount?: number;
-	onConnect?: () => void;
-	profileOptions?: React.ReactNode;
+interface CartItem {
+	id: string;
+	product: {
+		name: string;
+		price: number;
+		nftMetadata: string;
+	};
+	quantity: number;
 }
 
-function PageHeader({
+interface PageHeaderProps {
+	title: string;
+	userEmail?: string | null;
+	onLogout?: () => void;
+	onSignIn?: () => void;
+	showCart?: boolean;
+	cartItems?: CartItem[];
+	onRemoveFromCart?: (cartItemId: string) => void;
+	cartTranslations?: {
+		cartEmptyMessage: string;
+		quantityLabel: string;
+		removeConfirmationTitle?: string;
+		removeConfirmationYes?: string;
+		cancel?: string;
+	};
+	isAuthenticated?: boolean;
+	profileOptions?: React.ReactNode;
+	showBackButton?: boolean;
+	onBackClick?: () => void;
+	rightActions?: React.ReactNode;
+}
+
+export function PageHeader({
 	title,
-	userAddress,
+	userEmail,
 	onLogout,
-	hideCart = false,
-	showBackButton = false,
-	onBackClick,
-	showBlockie = true,
-	rightActions,
-	showCart = true,
-	cartItemsCount,
-	onConnect,
+	onSignIn,
+	showCart,
+	cartItems = [],
+	onRemoveFromCart,
+	cartTranslations,
+	isAuthenticated,
 	profileOptions,
+	showBackButton,
+	onBackClick,
+	rightActions,
 }: PageHeaderProps) {
-	const [isHamburgerMenuOpen, setIsHamburgerMenuOpen] = useState(false);
-	const { t } = useTranslation();
+	const [isCartOpen, setIsCartOpen] = useState(false);
+	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	const router = useRouter();
 
-	const toggleHamburgerMenu = () => {
-		setIsHamburgerMenuOpen((prevState: boolean) => !prevState);
+	const cartItemsCount = cartItems.reduce(
+		(total, item) => total + item.quantity,
+		0,
+	);
+	const totalPrice = cartItems.reduce(
+		(total, item) => total + item.product.price * item.quantity,
+		0,
+	);
+
+	const handleCheckout = () => {
+		setIsCartOpen(false);
+		router.push("/checkout");
 	};
 
 	return (
-		<div className="w-full max-w-full md:max-w-7xl px-4 h-20 py-3 bg-white flex justify-between items-center mx-auto space-x-4 fixed top-0 left-0 right-0 z-50 shadow-sm">
-			<div className="flex items-center space-x-2">
-				{showBackButton && (
-					<button
-						onClick={onBackClick}
-						className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-						type="button"
-						aria-label="Go back"
-					>
-						<ArrowLeftIcon className="w-6 h-6" />
-					</button>
-				)}
-			</div>
-			<div className="flex-grow text-center md:text-left">
-				<Link
-					href="/marketplace"
-					className="hover:opacity-80 transition-opacity inline-flex items-center gap-2"
-				>
-					<Image
-						src="/images/logo.png"
-						alt="CofiBlocks Logo"
-						width={40}
-						height={64}
-						className="w-10 h-16"
-					/>
-				</Link>
-			</div>
-			<div className="flex items-center space-x-4">
-				{rightActions}
-				{!userAddress && onConnect && (
-					<Button
-						onClick={onConnect}
-						variant="primary"
-						size="sm"
-						className="px-4"
-					>
-						{t("Connect")}
-					</Button>
-				)}
-				{showCart && (
-					<button
-						type="button"
-						onClick={() => router.push("/shopping-cart")}
-						className="p-2 hover:bg-gray-100 rounded-full transition-colors relative"
-						aria-label="Shopping cart"
-					>
-						<ShoppingCartIcon className="w-6 h-6" />
-						{cartItemsCount && cartItemsCount > 0 ? (
-							<span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
-								{cartItemsCount}
-							</span>
-						) : null}
-					</button>
-				)}
-				{userAddress && (
-					<div className="flex items-center space-x-4">
-						{profileOptions && (
-							<HamburgerMenu
-								isOpen={isHamburgerMenuOpen}
-								onToggle={toggleHamburgerMenu}
-							>
-								{profileOptions}
-							</HamburgerMenu>
-						)}
-						<Link
-							href="/user-profile"
-							className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-							aria-label="Go to profile"
-						>
-							{showBlockie && (
-								<div className="rounded-full overflow-hidden relative w-10 h-10 ring-2 ring-surface-primary-default">
-									<BlockiesSvg address={userAddress} size={10} scale={4} />
-								</div>
+		<header className="bg-white">
+			<div className="mx-auto flex max-w-7xl items-center justify-between p-4">
+				<div className="flex items-center gap-2">
+					{showBackButton && (
+						<IconButton
+							icon={<ChevronLeftIcon className="w-6 h-6" />}
+							onClick={onBackClick}
+							variant="primary"
+							size="lg"
+							className="p-2 hover:bg-gray-100 rounded-full transition-colors !bg-transparent !text-content-body-default !border-0"
+							aria-label="Go back"
+						/>
+					)}
+					<Link href="/" className="flex items-center gap-2">
+						<Image
+							src="/images/logo.png"
+							alt="Logo"
+							width={40}
+							height={64}
+							className="w-10 h-16"
+						/>
+					</Link>
+				</div>
+
+				<div className="flex items-center gap-4">
+					{rightActions}
+					{isAuthenticated ? (
+						<div className="flex items-center gap-4">
+							{showCart && (
+								<button
+									type="button"
+									onClick={() => setIsCartOpen(true)}
+									className="relative p-3 hover:bg-surface-primary-soft rounded-full transition-colors"
+									aria-label="Shopping cart"
+								>
+									<ShoppingCartIcon className="w-6 h-6 text-content-body-default" />
+									{cartItemsCount > 0 && (
+										<span className="absolute -right-1 -top-1 rounded-full bg-error-default px-2 py-1 text-xs text-surface-inverse min-w-[20px] h-5 flex items-center justify-center">
+											{cartItemsCount}
+										</span>
+									)}
+								</button>
 							)}
-						</Link>
-					</div>
-				)}
+
+							<button
+								type="button"
+								onClick={() => setIsMenuOpen(true)}
+								className="p-3 hover:bg-surface-primary-soft rounded-full transition-colors"
+								aria-label="Menu"
+							>
+								<Bars3Icon className="w-6 h-6 text-content-body-default" />
+							</button>
+
+							<CartSidebar
+								isOpen={isCartOpen}
+								onClose={() => setIsCartOpen(false)}
+								title="Shopping Cart"
+								totalPrice={totalPrice}
+								onCheckout={handleCheckout}
+							>
+								<CartContent
+									items={cartItems}
+									onRemoveItem={onRemoveFromCart}
+									translations={cartTranslations}
+								/>
+							</CartSidebar>
+
+							<Sidebar
+								isOpen={isMenuOpen}
+								onClose={() => setIsMenuOpen(false)}
+								title="Menu"
+							>
+								<div className="flex flex-col space-y-4">
+									<span className="text-sm text-content-body-default">
+										{userEmail}
+									</span>
+									{profileOptions}
+									<Button onClick={onLogout} variant="secondary" size="sm">
+										Sign out
+									</Button>
+								</div>
+							</Sidebar>
+						</div>
+					) : (
+						<div className="flex items-center space-x-4">
+							<Button onClick={onSignIn} variant="primary" size="sm">
+								Sign in
+							</Button>
+							<Link
+								href="/auth/signup"
+								className="text-sm font-medium text-content-body-default hover:text-content-title transition-colors"
+							>
+								Create account
+							</Link>
+						</div>
+					)}
+				</div>
 			</div>
-		</div>
+		</header>
 	);
 }
 

@@ -3,7 +3,9 @@
 	"version": "0.0.0",
 	"private": true,
 	"exports": {
+		"./card": "./src/card/index.tsx",
 		"./button": "./src/button.tsx",
+		"./pageHeader": "./src/pageHeader.tsx",
 		"./hamburgerMenu": "./src/hamburgerMenu.tsx",
 		"./iconButton": "./src/iconButton.tsx",
 		"./productCard": "./src/productCard.tsx",
@@ -11,7 +13,6 @@
 		"./pill": "./src/pill.tsx",
 		"./typography": "./src/typography.tsx",
 		"./carousel": "./src/carousel.tsx",
-		"./pageHeader": "./src/pageHeader.tsx",
 		"./form/inputField": "./src/form/inputField.tsx",
 		"./form/radioButton": "./src/form/radioButton.tsx",
 		"./form/checkBox": "./src/form/checkBox.tsx",
@@ -27,7 +28,6 @@
 		"./chatWithSeller": "./src/chatWithSeller.tsx",
 		"./dataCard": "./src/dataCard.tsx",
 		"./infoCard": "./src/infoCard.tsx",
-		"./card": "./src/card.tsx",
 		"./separator": "./src/separator.tsx",
 		"./cardContent": "./src/cardContent.tsx"
 	},
@@ -47,6 +47,7 @@
 		"typescript": "^5.3.3"
 	},
 	"dependencies": {
-		"react": "^18.2.0"
+		"react": "^18.2.0",
+		"@radix-ui/react-tooltip": "^1.0.7"
 	}
 }

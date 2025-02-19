@@ -37,7 +37,7 @@ export function CartSidebar({
 
 	return (
 		<Sidebar isOpen={isOpen} onClose={onClose} title={title} footer={footer}>
-			{children}
+			<div className="flex-1 overflow-y-auto">{children}</div>
 		</Sidebar>
 	);
 }

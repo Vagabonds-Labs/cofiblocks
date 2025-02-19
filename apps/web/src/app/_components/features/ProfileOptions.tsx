@@ -8,14 +8,12 @@ import {
 	TicketIcon,
 	TruckIcon,
 	UserIcon,
-	WalletIcon,
 } from "@heroicons/react/24/outline";
 import type { Role } from "@prisma/client";
 import Link from "next/link";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import LogoutModal from "~/app/_components/features/LogoutModal";
-import { UserWalletsModal } from "~/app/_components/features/UserWalletsModal";
 
 interface ProfileOptionsProps {
 	address?: string;
@@ -33,7 +31,6 @@ type ProfileOption = {
 export function ProfileOptions({ address: _ }: ProfileOptionsProps) {
 	const { t } = useTranslation();
 	const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
-	const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
 	const closeLogoutModal = () => {
 		setIsLogoutModalOpen(false);
@@ -41,14 +38,6 @@ export function ProfileOptions({ address: _ }: ProfileOptionsProps) {
 
 	const openLogoutModal = () => {
 		setIsLogoutModalOpen(true);
-	};
-
-	const openWalletModal = () => {
-		setIsWalletModalOpen(true);
-	};
-
-	const closeWalletModal = () => {
-		setIsWalletModalOpen(false);
 	};
 
 	// Common options that are always shown
@@ -69,18 +58,10 @@ export function ProfileOptions({ address: _ }: ProfileOptionsProps) {
 			label: t("my_orders"),
 			href: "/user/my-orders",
 		},
-		{ icon: WalletIcon, label: t("wallet"), onClick: openWalletModal },
 		{
 			icon: AdjustmentsHorizontalIcon,
 			label: t("settings"),
 			href: "/user/settings",
-		},
-		{
-			icon: NoSymbolIcon,
-			label: t("log_out"),
-			customClass: "text-error-default",
-			iconColor: "text-error-default",
-			onClick: openLogoutModal,
 		},
 	];
 
@@ -134,7 +115,6 @@ export function ProfileOptions({ address: _ }: ProfileOptionsProps) {
 			{commonOptions.slice(4).map(renderOption)}
 
 			<LogoutModal isOpen={isLogoutModalOpen} onClose={closeLogoutModal} />
-			<UserWalletsModal isOpen={isWalletModalOpen} onClose={closeWalletModal} />
 		</div>
 	);
 }

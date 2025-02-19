@@ -106,6 +106,19 @@ export default function ProductDetails({
 		}
 	};
 
+	const cartItems =
+		cart?.items?.map((item) => ({
+			id: item.id,
+			product: {
+				name: item.product.name,
+				price: item.product.price,
+				nftMetadata: item.product.nftMetadata
+					? JSON.stringify(item.product.nftMetadata)
+					: "{}",
+			},
+			quantity: item.quantity,
+		})) ?? [];
+
 	return (
 		<div className="w-full">
 			<PageHeader
@@ -113,7 +126,7 @@ export default function ProductDetails({
 				showBackButton
 				onBackClick={() => router.back()}
 				showCart={true}
-				cartItemsCount={cartItemsCount}
+				cartItems={cartItems}
 				rightActions={
 					<div className="flex items-center space-x-2">
 						<button

@@ -132,6 +132,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   farms          Farm[]
+  password      String?
 }
 
 model Farm {

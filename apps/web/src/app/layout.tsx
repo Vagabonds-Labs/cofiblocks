@@ -32,7 +32,9 @@ export default function RootLayout({
 			<body>
 				<SessionProvider>
 					<StarknetProvider>
-						<TRPCReactProvider>{children}</TRPCReactProvider>
+						<TRPCReactProvider>
+							<div className="pb-20">{children}</div>
+						</TRPCReactProvider>
 					</StarknetProvider>
 				</SessionProvider>
 				<Toaster
