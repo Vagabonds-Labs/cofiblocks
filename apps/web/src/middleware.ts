@@ -8,6 +8,9 @@ const protectedRoutes: Record<string, Role[]> = {
 	"/user/register-coffee": ["COFFEE_PRODUCER"],
 	"/user/my-coffee": ["COFFEE_PRODUCER"],
 	"/user/my-sales": ["COFFEE_PRODUCER"],
+	"/user/my-claims": ["COFFEE_PRODUCER"],
+	"/user/my-sales/[id]": ["COFFEE_PRODUCER"],
+	"/user/my-claims/[id]": ["COFFEE_PRODUCER"],
 } as const;
 
 export async function middleware(request: NextRequest) {

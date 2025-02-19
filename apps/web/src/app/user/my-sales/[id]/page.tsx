@@ -1,5 +1,6 @@
 "use client";
 
+import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import ProductStatusDetails from "~/app/_components/features/ProductStatusDetails";
@@ -8,10 +9,10 @@ import type { SaleDetailsType } from "~/types";
 
 export default function SaleDetails() {
 	const { id: saleId } = useParams();
+	const { data: session } = useSession();
 
 	const [saleDetails, setSaleDetails] = useState<SaleDetailsType | null>(null);
-	// TODO: Fetch user role based on user id or from session/context/token
-	const [isProducer, setIsProducer] = useState<boolean>(false);
+	const isProducer = session?.user?.role === "COFFEE_PRODUCER";
 
 	useEffect(() => {
 		// TODO: Fetch sale details based on saleId
@@ -26,9 +27,6 @@ export default function SaleDetails() {
 				totalPrice: "50 USD",
 			});
 		}
-
-		// TODO: Fetch user role based on user id or from session/context/token
-		setIsProducer(true);
 	}, [saleId]);
 
 	const updateSaleDetails = (productDetails: SaleDetailsType) => {

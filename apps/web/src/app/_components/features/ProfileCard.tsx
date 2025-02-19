@@ -1,3 +1,4 @@
+import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
@@ -14,7 +15,7 @@ type UserProfile = {
 	country: string;
 	memberSince: number;
 	walletAddress: string;
-	badges: Badge[];
+	role: string;
 };
 
 type ProfileCardProps = {
@@ -23,9 +24,23 @@ type ProfileCardProps = {
 
 function ProfileCard({ user }: ProfileCardProps) {
 	const { t } = useTranslation();
+	const { data: session } = useSession();
 
-	// Define all badges and their translation keys
-	const allBadges: Badge[] = ["lover", "contributor", "producer"];
+	// Define badges and their validation rules
+	const badges: { type: Badge; active: boolean }[] = [
+		{
+			type: "lover",
+			active: true, // Everyone gets this badge
+		},
+		{
+			type: "contributor",
+			active: user.role === "COFFEE_PRODUCER" || user.role === "ADMIN",
+		},
+		{
+			type: "producer",
+			active: user.role === "COFFEE_PRODUCER",
+		},
+	];
 
 	// Format country name for display
 	const formattedCountry = user.country.replace("_", " ");
@@ -55,19 +70,20 @@ function ProfileCard({ user }: ProfileCardProps) {
 				</div>
 			</div>
 			<div className="bg-surface-primary-soft py-4 sm:py-6 px-4 sm:px-6 flex justify-around rounded-b-lg">
-				{allBadges.map((badge) => (
-					<div key={badge} className="flex flex-col items-center">
+				{badges.map(({ type, active }) => (
+					<div key={type} className="flex flex-col items-center">
 						<Image
-							src={`/images/user-profile/badges/${badge}.svg`}
-							alt={badge}
+							src={`/images/user-profile/badges/${type}.svg`}
+							alt={type}
 							width={32}
 							height={32}
-							className={`${
-								user.badges.includes(badge) ? "" : "grayscale"
-							} mb-1 sm:w-[40px] sm:h-[40px]`}
+							className={`${active ? "" : "grayscale opacity-50"} mb-1 sm:w-[40px] sm:h-[40px]`}
 						/>
-						{/* Translate the badge name */}
-						<p className="text-xs sm:text-sm">{t(badge)}</p>
+						<p
+							className={`text-xs sm:text-sm ${active ? "" : "text-gray-400"}`}
+						>
+							{t(`badges.${type}`)}
+						</p>
 					</div>
 				))}
 			</div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -10,12 +11,12 @@ import type { OrderDetailsType } from "~/types";
 export default function OrderDetails() {
 	const { t } = useTranslation();
 	const { id: orderId } = useParams();
+	const { data: session } = useSession();
 
 	const [orderDetails, setOrderDetails] = useState<OrderDetailsType | null>(
 		null,
 	);
-	// TODO: Fetch user role based on user id or from session/context/token
-	const [isProducer, setIsProducer] = useState<boolean>(false);
+	const isProducer = session?.user?.role === "COFFEE_PRODUCER";
 
 	useEffect(() => {
 		// TODO: Fetch order details based on orderId
@@ -31,9 +32,6 @@ export default function OrderDetails() {
 				totalPrice: `50 ${t("usd")}`,
 			});
 		}
-
-		// TODO: Fetch user role based on user id or from session/context/token
-		setIsProducer(true);
 	}, [orderId, t]);
 
 	const updateProductDetails = (productDetails: OrderDetailsType) => {

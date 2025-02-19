@@ -10,6 +10,7 @@ import {
 	UserIcon,
 } from "@heroicons/react/24/outline";
 import type { Role } from "@prisma/client";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -30,6 +31,7 @@ type ProfileOption = {
 
 export function ProfileOptions({ address: _ }: ProfileOptionsProps) {
 	const { t } = useTranslation();
+	const { data: session } = useSession();
 	const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
 	const closeLogoutModal = () => {
@@ -42,7 +44,7 @@ export function ProfileOptions({ address: _ }: ProfileOptionsProps) {
 
 	// Common options that are always shown
 	const commonOptions: ProfileOption[] = [
-		{ icon: UserIcon, label: t("edit_profile"), href: "/user/edit-profile" },
+		{ icon: UserIcon, label: t("user_profile"), href: "/user/user-profile" },
 		{
 			icon: HeartIcon,
 			label: t("favorite_products"),
@@ -65,16 +67,19 @@ export function ProfileOptions({ address: _ }: ProfileOptionsProps) {
 		},
 	];
 
-	// Producer-specific options that are loaded after user data
-	const producerOptions: ProfileOption[] = [
-		{ icon: TicketIcon, label: t("my_coffee"), href: "/user/my-coffee" },
-		{ icon: TruckIcon, label: t("my_sales"), href: "/user/my-sales" },
-		{
-			icon: CurrencyDollarIcon,
-			label: t("my_claims"),
-			href: "/user/my-claims",
-		},
-	];
+	// Producer-specific options that are shown only to producers
+	const producerOptions: ProfileOption[] =
+		session?.user?.role === "COFFEE_PRODUCER"
+			? [
+					{ icon: TicketIcon, label: t("my_coffee"), href: "/user/my-coffee" },
+					{ icon: TruckIcon, label: t("my_sales"), href: "/user/my-sales" },
+					{
+						icon: CurrencyDollarIcon,
+						label: t("my_claims"),
+						href: "/user/my-claims",
+					},
+				]
+			: [];
 
 	const renderOption = (option: ProfileOption) => (
 		<div
@@ -108,8 +113,9 @@ export function ProfileOptions({ address: _ }: ProfileOptionsProps) {
 			{/* Always render common options first */}
 			{commonOptions.slice(0, 4).map(renderOption)}
 
-			{/* Show all producer options for now */}
-			{producerOptions.map(renderOption)}
+			{/* Only show producer options if user has COFFEE_PRODUCER role */}
+			{session?.user?.role === "COFFEE_PRODUCER" &&
+				producerOptions.map(renderOption)}
 
 			{/* Always render remaining common options */}
 			{commonOptions.slice(4).map(renderOption)}

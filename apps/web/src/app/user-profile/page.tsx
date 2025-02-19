@@ -8,6 +8,7 @@ import { toast } from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { ProfileCard } from "~/app/_components/features/ProfileCard";
 import { ProfileOptions } from "~/app/_components/features/ProfileOptions";
+import WalletConnectFlow from "~/app/_components/features/WalletConnectFlow";
 import Header from "~/app/_components/layout/Header";
 import Main from "~/app/_components/layout/Main";
 import { api } from "~/trpc/react";
@@ -30,6 +31,17 @@ export default function UserProfile() {
 		},
 	);
 
+	// Debug user data
+	useEffect(() => {
+		if (user) {
+			console.log("User Data:", {
+				walletAddress: user.walletAddress,
+				isPlaceholder: user.walletAddress?.startsWith("placeholder_"),
+				hasStarknetWallet: !!address,
+			});
+		}
+	}, [user, address]);
+
 	// Handle errors with useEffect
 	useEffect(() => {
 		if (!user && !isLoading && status === "authenticated") {
@@ -44,6 +56,29 @@ export default function UserProfile() {
 			router.push("/");
 		}
 	}, [status, router]);
+
+	// Check if user needs to connect wallet
+	const needsWalletConnection =
+		!address || user?.walletAddress?.startsWith("placeholder_");
+
+	// Show wallet connection flow if needed
+	if (needsWalletConnection) {
+		return (
+			<Main>
+				<div className="min-h-screen flex items-center justify-center">
+					<div className="max-w-md w-full p-6 bg-white rounded-lg shadow-lg">
+						<h1 className="text-2xl font-bold text-center mb-6">
+							{t("connect_wallet")}
+						</h1>
+						<p className="text-gray-600 text-center mb-8">
+							{t("connect_wallet_description")}
+						</p>
+						<WalletConnectFlow />
+					</div>
+				</div>
+			</Main>
+		);
+	}
 
 	// Show loading state
 	if (status === "loading" || isLoading) {
@@ -69,6 +104,7 @@ export default function UserProfile() {
 		country: "costa_rica",
 		memberSince: new Date(user.createdAt).getFullYear(),
 		walletAddress: user.walletAddress,
+		role: user.role,
 		badges: ["lover", "contributor"] as Badge[],
 	};
 

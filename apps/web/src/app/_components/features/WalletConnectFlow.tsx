@@ -27,11 +27,13 @@ export default function WalletConnectFlow() {
 	const handleConnectWallet = async (connector: Connector): Promise<void> => {
 		if (connector) {
 			try {
+				setIsConnecting(true);
 				connectWallet({ connector });
-				console.log("Connecting with connector:", connector.id);
-				// The address effect will handle the redirect
+				router.push("/");
 			} catch (error) {
-				console.error("Error connecting wallet:", error);
+				console.error("Failed to connect wallet:", error);
+			} finally {
+				setIsConnecting(false);
 			}
 		}
 	};
@@ -51,8 +53,7 @@ export default function WalletConnectFlow() {
 				connectWallet({
 					connector: result.connector as unknown as Connector,
 				});
-				console.log("Connecting with Argent Mobile");
-				// The address effect will handle the redirect
+				router.push("/");
 			}
 		} catch (error) {
 			console.error("Error connecting Argent Mobile:", error);
@@ -118,6 +119,7 @@ export default function WalletConnectFlow() {
 											key={connector.id}
 											onClick={() => void handleConnectWallet(connector)}
 											className="w-full max-w-[15rem]"
+											disabled={!connector.available() || isConnecting}
 										>
 											<div className="flex items-center justify-between">
 												<div className="flex items-center">

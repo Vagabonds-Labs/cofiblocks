@@ -5,13 +5,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/card";
 import { signIn } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { WalletConnectFlow } from "~/app/_components/features";
 
 export default function SignUp() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [name, setName] = useState("");
 	const [error, setError] = useState("");
+	const [isRegistered, setIsRegistered] = useState(false);
+	const router = useRouter();
+
+	const handleWalletConnected = () => {
+		router.push("/");
+	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -29,16 +37,46 @@ export default function SignUp() {
 				throw new Error(data.error ?? "Failed to register");
 			}
 
+			// After successful registration, show wallet connect
+			setIsRegistered(true);
+
 			// Sign in after successful registration
 			await signIn("credentials", {
 				email,
 				password,
-				callbackUrl: "/",
+				redirect: false, // Don't redirect yet, we need to connect wallet first
 			});
 		} catch (err) {
 			setError(err instanceof Error ? err.message : "Registration failed");
 		}
 	};
+
+	if (isRegistered) {
+		return (
+			<div className="min-h-screen flex items-center justify-center bg-surface-primary-soft p-4">
+				<Card className="w-full max-w-md">
+					<CardHeader className="text-center">
+						<div className="mx-auto mb-4">
+							<Image
+								src="/images/logo.png"
+								alt="CofiBlocks Logo"
+								width={48}
+								height={48}
+								className="mx-auto"
+							/>
+						</div>
+						<CardTitle>Connect Your Wallet</CardTitle>
+						<p className="text-sm text-content-body-default mt-2">
+							To complete your registration, please connect your wallet.
+						</p>
+					</CardHeader>
+					<CardContent>
+						<WalletConnectFlow />
+					</CardContent>
+				</Card>
+			</div>
+		);
+	}
 
 	return (
 		<div className="min-h-screen flex items-center justify-center bg-surface-primary-soft p-4">
