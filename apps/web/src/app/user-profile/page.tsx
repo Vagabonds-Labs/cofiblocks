@@ -42,24 +42,22 @@ export default function UserProfile() {
 		}
 	}, [user, address]);
 
-	// Handle errors with useEffect
-	useEffect(() => {
-		if (!user && !isLoading && status === "authenticated") {
-			toast.error(t("error_fetching_profile"));
-			router.push("/");
-		}
-	}, [user, isLoading, router, t, status]);
-
-	// Handle session status
-	useEffect(() => {
-		if (status === "unauthenticated") {
-			router.push("/");
-		}
-	}, [status, router]);
+	// Show loading state while checking data
+	if (isLoading) {
+		return (
+			<Main>
+				<div className="container mx-auto px-4 py-8">
+					<Header address={address} disconnect={disconnect} />
+					<div className="animate-pulse">
+						<div className="h-48 bg-gray-200 rounded-lg mb-6" />
+					</div>
+				</div>
+			</Main>
+		);
+	}
 
 	// Check if user needs to connect wallet
-	const needsWalletConnection =
-		!address || user?.walletAddress?.startsWith("placeholder_");
+	const needsWalletConnection = !address;
 
 	// Show wallet connection flow if needed
 	if (needsWalletConnection) {
@@ -80,23 +78,16 @@ export default function UserProfile() {
 		);
 	}
 
-	// Show loading state
-	if (status === "loading" || isLoading) {
+	// Only show profile if we have user data
+	if (!user) {
 		return (
 			<Main>
-				<div className="container mx-auto px-4 py-8">
+				<div className="container mx-auto px-4 py-8 text-center">
 					<Header address={address} disconnect={disconnect} />
-					<div className="animate-pulse">
-						<div className="h-48 bg-gray-200 rounded-lg mb-6" />
-					</div>
+					<p className="text-red-500">{t("error_loading_profile")}</p>
 				</div>
 			</Main>
 		);
-	}
-
-	// Return null if no user data
-	if (!user || status === "unauthenticated") {
-		return null;
 	}
 
 	const userProfile = {

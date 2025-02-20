@@ -19,6 +19,23 @@ import type { CartItem } from "~/store/cartAtom";
 import Confirmation from "./Confirmation";
 import { CurrencySelector } from "./CurrencySelector";
 
+const getImageUrl = (src: string) => {
+	if (src.startsWith("Qm")) {
+		return `${process.env.NEXT_PUBLIC_GATEWAY_URL}/ipfs/${src}`;
+	}
+	if (src.startsWith("ipfs://")) {
+		return `${process.env.NEXT_PUBLIC_GATEWAY_URL}/ipfs/${src.replace("ipfs://", "")}`;
+	}
+	if (
+		src.startsWith("http://") ||
+		src.startsWith("https://") ||
+		src.startsWith("/")
+	) {
+		return src;
+	}
+	return "/images/cafe1.webp"; // Fallback image
+};
+
 interface OrderReviewProps {
 	readonly onNext: () => void;
 	readonly onCurrencySelect: (currency: string) => void;
@@ -116,7 +133,7 @@ export default function OrderReview({
 					<div key={item.id} className="space-y-6 mb-6">
 						<div className="flex items-start gap-4">
 							<Image
-								src={item.imageUrl}
+								src={getImageUrl(item.imageUrl)}
 								alt={item.name}
 								width={80}
 								height={80}

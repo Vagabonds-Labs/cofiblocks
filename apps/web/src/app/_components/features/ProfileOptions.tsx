@@ -44,7 +44,7 @@ export function ProfileOptions({ address: _ }: ProfileOptionsProps) {
 
 	// Common options that are always shown
 	const commonOptions: ProfileOption[] = [
-		{ icon: UserIcon, label: t("user_profile"), href: "/user/user-profile" },
+		{ icon: UserIcon, label: t("user_profile"), href: "/user-profile" },
 		{
 			icon: HeartIcon,
 			label: t("favorite_products"),
