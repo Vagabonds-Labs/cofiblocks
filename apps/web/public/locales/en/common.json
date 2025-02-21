@@ -2,14 +2,15 @@
 	"welcome_to": "Welcome to",
 	"sign": "Sign",
 	"disconnect": "Disconnect",
-	"connect_wallet": "Connect {{walletName}}",
+	"connect_wallet": "Connect your wallet",
 	"argent_x": "Argent X",
+	"argent_mobile": "Argent Mobile",
 	"error_signing_message": "Error signing the message",
 
 	"tag_new": "New",
 	"welcome_coffee_lover": "Welcome Coffee Lover",
 	"featured": "Featured",
-	"find_best_coffee": "Find Best Coffee",
+	"find_best_coffee": "Find the Best Coffee",
 	"popular": "Popular",
 	"discover_unique_blends": "Discover Unique Blends",
 

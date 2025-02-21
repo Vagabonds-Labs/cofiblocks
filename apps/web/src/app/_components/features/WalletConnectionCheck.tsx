@@ -3,7 +3,6 @@
 import { useAccount } from "@starknet-react/core";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { toast } from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import WalletConnectFlow from "./WalletConnectFlow";
 
@@ -24,11 +23,10 @@ export default function WalletConnectionCheck({
 		// and we're not in a loading state
 		if (status === "authenticated" && session && !address) {
 			setShowConnectPrompt(true);
-			toast.error(t("please_connect_wallet"));
 		} else {
 			setShowConnectPrompt(false);
 		}
-	}, [session, address, status, t]);
+	}, [session, address, status]);
 
 	// Don't show prompt during loading/transitioning states
 	if (status === "loading") {
@@ -42,9 +40,6 @@ export default function WalletConnectionCheck({
 					<h2 className="text-xl font-bold text-center mb-4">
 						{t("connect_wallet")}
 					</h2>
-					<p className="text-gray-600 text-center mb-6">
-						{t("connect_wallet_description")}
-					</p>
 					<WalletConnectFlow />
 				</div>
 			</div>

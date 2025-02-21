@@ -2,8 +2,9 @@
 	"welcome_to": "Bienvenido a",
 	"sign": "Firmar",
 	"disconnect": "Desconectar",
-	"connect_wallet": "Conectar {{walletName}}",
+	"connect_wallet": "Conectar billetera",
 	"argent_x": "Argent X",
+	"argent_mobile": "Argent Mobile",
 	"error_signing_message": "Error al firmar el mensaje",
 
 	"tag_new": "Nuevo",

@@ -67,11 +67,6 @@ export default function WalletConnectFlow() {
 
 	return (
 		<div className="p-6 space-y-6">
-			<div className="text-center">
-				<Text className="text-content-title text-lg">
-					{t("connect_your_wallet")}
-				</Text>
-			</div>
 			{isAutoConnecting && (
 				<div className="text-center mb-4">
 					<Text className="text-content-body-default">

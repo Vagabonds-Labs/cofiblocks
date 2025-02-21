@@ -4,6 +4,7 @@
 	"disconnect": "Desconectar",
 	"connect_wallet": "Conectar {{walletName}}",
 	"argent_x": "Argent X",
+	"argent_mobile": "Argent Mobile",
 	"error_signing_message": "Erro ao assinar a mensagem",
 
 	"tag_new": "Novo",
