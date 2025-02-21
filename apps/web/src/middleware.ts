@@ -20,6 +20,8 @@ export async function middleware(request: NextRequest) {
 	// Check if the path is protected
 	const allowedRoles = protectedRoutes[pathname];
 
+	console.debug("JWT Token:", token ? "Present" : "Not Present", token);
+
 	if (allowedRoles) {
 		if (!token) {
 			// Redirect to login if not authenticated
