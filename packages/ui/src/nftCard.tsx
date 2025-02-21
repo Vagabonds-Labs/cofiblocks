@@ -10,9 +10,15 @@ interface NFTCardProps {
 	title: string;
 	nftMetadata: NFTMetadata;
 	onDetailsClick?: () => void;
+	quantity?: number;
 }
 
-function NFTCard({ title, nftMetadata, onDetailsClick }: NFTCardProps) {
+function NFTCard({
+	title,
+	nftMetadata,
+	onDetailsClick,
+	quantity,
+}: NFTCardProps) {
 	const { t } = useTranslation();
 	return (
 		<div className="bg-surface-primary-soft rounded-[1rem] shadow-md flex overflow-hidden">
@@ -22,9 +28,14 @@ function NFTCard({ title, nftMetadata, onDetailsClick }: NFTCardProps) {
 				className="w-36 h-[11.75rem] object-cover"
 			/>
 			<div className="flex flex-col items-start justify-center flex-1 p-4 ml-4">
-				<h2 className="text-content-title font-manrope text-2xl font-bold mb-4">
+				<h2 className="text-content-title font-manrope text-2xl font-bold mb-2">
 					{title}
 				</h2>
+				{quantity && (
+					<p className="text-content-secondary mb-4">
+						{t("quantity")}: {quantity}
+					</p>
+				)}
 				<Button
 					variant="secondary"
 					size="sm"

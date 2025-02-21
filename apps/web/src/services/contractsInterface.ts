@@ -1,3 +1,5 @@
+"use client";
+
 import { useContract } from "@starknet-react/core";
 import type { UseAccountResult } from "@starknet-react/core";
 import type { Abi, Contract, ProviderInterface } from "starknet";

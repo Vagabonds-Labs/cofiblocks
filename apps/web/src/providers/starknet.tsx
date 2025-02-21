@@ -1,3 +1,5 @@
+"use client";
+
 import { mainnet, sepolia } from "@starknet-react/chains";
 import {
 	StarknetConfig,

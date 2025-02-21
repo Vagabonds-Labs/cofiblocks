@@ -47,10 +47,6 @@ export default function CheckoutPage() {
 		dispatch({ type: "SET_CURRENCY", payload: currency });
 	};
 
-	const handleOrderReviewNext = () => {
-		dispatch({ type: "CONFIRM_ORDER" });
-	};
-
 	if (!address) {
 		return (
 			<div className="flex items-center justify-center min-h-screen">
@@ -75,10 +71,8 @@ export default function CheckoutPage() {
 			)}
 			{state.checkoutStep === "review" && (
 				<OrderReview
-					onNext={handleOrderReviewNext}
 					onCurrencySelect={handleCurrencySelect}
 					deliveryAddress={state.deliveryAddress}
-					deliveryMethod={state.deliveryMethod}
 					deliveryPrice={state.deliveryPrice}
 					isConfirmed={state.isConfirmed}
 				/>

@@ -6,6 +6,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import ProductStatusDetails from "~/app/_components/features/ProductStatusDetails";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
+import { CoffeeIcon } from "~/app/_components/icons/CoffeeIcon";
 import { api } from "~/trpc/react";
 
 interface RawMetadata {
@@ -16,9 +17,7 @@ const parseMetadata = (metadata: string | null): { roast: string } => {
 	try {
 		let parsed: RawMetadata = {};
 		try {
-			// Use type assertion for the initial parse result
 			const rawResult = JSON.parse(metadata ?? "{}") as unknown;
-			// Type guard to ensure we have an object
 			if (
 				rawResult &&
 				typeof rawResult === "object" &&
@@ -64,27 +63,9 @@ export default function OrderDetails() {
 		},
 	);
 
-	const orderDetails = order
-		? {
-				productName: order.items[0]?.product.name ?? t("unknown_product"),
-				status: order.status,
-				roast: order.items[0]?.product.nftMetadata
-					? parseMetadata(order.items[0].product.nftMetadata as string).roast
-					: t("unknown_roast"),
-				type: t("grounded"), // TODO: Add type to product metadata
-				quantity: `${order.items[0]?.quantity ?? 0} ${t("bags")}`,
-				delivery: t("delivery"), // TODO: Add delivery method to order
-				address: user?.physicalAddress ?? "",
-				totalPrice: `${order.total} ${t("usd")}`,
-			}
-		: null;
-
-	return (
-		<ProfileOptionLayout
-			title={orderDetails?.productName ?? ""}
-			backLink="/user/my-orders"
-		>
-			{isLoading ? (
+	if (isLoading) {
+		return (
+			<ProfileOptionLayout title="" backLink="/user/my-orders">
 				<div className="space-y-4">
 					<div className="animate-pulse h-6 bg-gray-200 rounded w-1/4" />
 					<div className="space-y-2">
@@ -92,16 +73,101 @@ export default function OrderDetails() {
 						<div className="animate-pulse h-20 bg-gray-200 rounded" />
 					</div>
 				</div>
-			) : orderDetails ? (
+			</ProfileOptionLayout>
+		);
+	}
+
+	if (!order) {
+		return (
+			<ProfileOptionLayout title="" backLink="/user/my-orders">
+				<div className="text-center py-8">
+					<p className="text-gray-600">{t("order_not_found")}</p>
+				</div>
+			</ProfileOptionLayout>
+		);
+	}
+
+	const orderDetails = {
+		productName: order.items[0]?.product.name ?? t("unknown_product"),
+		status: order.status,
+		roast: order.items[0]?.product.nftMetadata
+			? parseMetadata(order.items[0].product.nftMetadata as string).roast
+			: t("unknown_roast"),
+		type: t("grounded"),
+		quantity: `${order.items[0]?.quantity ?? 0} ${t("bags")}`,
+		delivery: t("delivery"),
+		address: user?.physicalAddress ?? "",
+		totalPrice: `${order.total} ${t("usd")}`,
+	};
+
+	return (
+		<ProfileOptionLayout
+			title={orderDetails.productName}
+			backLink="/user/my-orders"
+		>
+			{/* Status Banner - Most important info for customers */}
+			<div className="bg-surface-primary-soft rounded-lg p-6 mb-6">
+				<div className="flex items-center justify-between mb-4">
+					<h2 className="text-xl font-semibold">{t("status")}</h2>
+					<span className="px-4 py-2 bg-white rounded-full text-sm font-medium">
+						{t(`order_status.${orderDetails.status.toLowerCase()}`)}
+					</span>
+				</div>
+				<p className="text-gray-600">
+					{t(`order_status_message.${orderDetails.status.toLowerCase()}`)}
+				</p>
+			</div>
+
+			{/* Product Experience Card */}
+			<div className="bg-white rounded-lg p-6 mb-6">
+				<div className="flex items-start space-x-4">
+					<div className="bg-surface-primary-soft p-4 rounded-lg">
+						<CoffeeIcon className="w-8 h-8 text-primary" />
+					</div>
+					<div className="flex-1">
+						<h3 className="text-lg font-medium mb-2">{t("your_coffee")}</h3>
+						<div className="grid grid-cols-2 gap-4">
+							<div>
+								<p className="text-sm text-gray-500">{t("roast")}</p>
+								<p className="font-medium">{orderDetails.roast}</p>
+							</div>
+							<div>
+								<p className="text-sm text-gray-500">{t("quantity")}</p>
+								<p className="font-medium">{orderDetails.quantity}</p>
+							</div>
+							<div>
+								<p className="text-sm text-gray-500">{t("type")}</p>
+								<p className="font-medium">{orderDetails.type}</p>
+							</div>
+							<div>
+								<p className="text-sm text-gray-500">{t("total")}</p>
+								<p className="font-medium">{orderDetails.totalPrice}</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			{/* Delivery Information - Only if there's an address */}
+			{orderDetails.address && (
+				<div className="bg-white rounded-lg p-6">
+					<h3 className="text-lg font-medium mb-4">
+						{t("delivery_information")}
+					</h3>
+					<div className="bg-surface-primary-soft rounded-lg p-4">
+						<p className="text-sm text-gray-600 mb-2">{t("shipping_to")}</p>
+						<p className="font-medium">{orderDetails.address}</p>
+					</div>
+				</div>
+			)}
+
+			{/* Hidden ProductStatusDetails for maintaining functionality */}
+			<div className="hidden">
 				<ProductStatusDetails
 					productDetails={orderDetails}
 					isProducer={isProducer}
 				/>
-			) : (
-				<div className="text-center py-8">
-					<p className="text-gray-600">{t("order_not_found")}</p>
-				</div>
-			)}
+			</div>
 		</ProfileOptionLayout>
 	);
 }

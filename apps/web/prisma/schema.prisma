@@ -64,14 +64,17 @@ model ShoppingCartItem {
 model Order {
   id        String      @id @default(cuid())
   userId    String
+  sellerId  String
   total     Float
   status    OrderStatus
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
   items     OrderItem[]
-  user      User        @relation(fields: [userId], references: [id])
+  user      User        @relation("UserOrders", fields: [userId], references: [id])
+  seller    User        @relation("SellerOrders", fields: [sellerId], references: [id])
 
   @@index([userId])
+  @@index([sellerId])
 }
 
 model OrderItem {
@@ -128,7 +131,8 @@ model User {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   shoppingCarts ShoppingCart[]
-  orders        Order[]
+  buyerOrders   Order[]        @relation("UserOrders")    // Orders made by this user as a buyer
+  sellerOrders  Order[]        @relation("SellerOrders")  // Orders where this user is the seller
   accounts      Account[]
   sessions      Session[]
   farms          Farm[]

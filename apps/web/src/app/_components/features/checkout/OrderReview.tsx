@@ -6,6 +6,7 @@ import { Separator } from "@repo/ui/separator";
 import { useAccount, useProvider } from "@starknet-react/core";
 import { useAtomValue, useSetAtom } from "jotai";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -14,8 +15,10 @@ import {
 	useMarketplaceContract,
 	useStarkContract,
 } from "~/services/contractsInterface";
-import { cartItemsAtom, clearCartAtom } from "~/store/cartAtom";
+import { useCreateOrder } from "~/services/useCreateOrder";
+import { cartItemsAtom, clearCartAtom, isCartOpenAtom } from "~/store/cartAtom";
 import type { CartItem } from "~/store/cartAtom";
+import { api } from "~/trpc/react";
 import Confirmation from "./Confirmation";
 import { CurrencySelector } from "./CurrencySelector";
 
@@ -37,7 +40,6 @@ const getImageUrl = (src: string) => {
 };
 
 interface OrderReviewProps {
-	readonly onNext: () => void;
 	readonly onCurrencySelect: (currency: string) => void;
 	readonly deliveryAddress: {
 		readonly street: string;
@@ -45,27 +47,27 @@ interface OrderReviewProps {
 		readonly city: string;
 		readonly zipCode: string;
 	};
-	readonly deliveryMethod: string;
 	readonly deliveryPrice: number;
 	readonly isConfirmed: boolean;
 }
 
 export default function OrderReview({
-	onNext,
 	onCurrencySelect,
 	deliveryAddress,
-	deliveryMethod,
 	deliveryPrice,
 	isConfirmed,
 }: OrderReviewProps) {
 	const { t } = useTranslation();
 	const cartItems = useAtomValue(cartItemsAtom);
 	const clearCart = useSetAtom(clearCartAtom);
+	const setIsCartOpen = useSetAtom(isCartOpenAtom);
 	const [isCurrencySelectorOpen, setIsCurrencySelectorOpen] = useState(false);
 	const [selectedCurrency, setSelectedCurrency] = useState("USD");
 	const [showConfirmation, setShowConfirmation] = useState(false);
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const router = useRouter();
+	const createOrder = useCreateOrder();
 
 	const account = useAccount();
 	const { provider } = useProvider();
@@ -76,6 +78,9 @@ export default function OrderReview({
 		useStarkContract(),
 		provider,
 	);
+
+	// Get current cart
+	const { data: cart } = api.cart.getUserCart.useQuery();
 
 	const productPrice = cartItems.reduce(
 		(total, item) => total + item.price * item.quantity,
@@ -98,26 +103,29 @@ export default function OrderReview({
 			const token_amounts = cartItems.map((item) => item.quantity);
 
 			// Execute the purchase transaction
-			const tx_hash = await contract.buy_product(
-				token_ids,
-				token_amounts,
-				totalPrice,
-			);
+			await contract.buy_product(token_ids, token_amounts, totalPrice);
 
-			// Clear the cart after successful purchase
+			if (!cart?.id) {
+				throw new Error("Cart not found");
+			}
+
+			// Create order in the database
+			const result = await createOrder.mutateAsync({ cartId: cart.id });
+
+			// Clear the cart and close the cart sidebar
 			clearCart();
+			setIsCartOpen(false);
 
-			// Show confirmation
+			// Show confirmation and redirect to my-orders
 			setShowConfirmation(true);
-			onNext();
+			router.push("/user/my-orders");
 		} catch (err) {
 			console.error("Payment error:", err);
 			setError(
 				err instanceof Error ? err.message : "Failed to process payment",
 			);
-		} finally {
-			setIsProcessing(false);
 		}
+		setIsProcessing(false);
 	};
 
 	if (showConfirmation || isConfirmed) {

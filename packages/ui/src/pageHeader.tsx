@@ -158,7 +158,7 @@ export function PageHeader({
 										{userEmail}
 									</span>
 									{profileOptions}
-									<Button onClick={onLogout} variant="secondary" size="sm">
+									<Button onClick={onLogout} variant="primary" size="sm">
 										Sign out
 									</Button>
 								</div>

@@ -3,13 +3,14 @@
 import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import Link from "next/link";
+import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
 interface OrderListItemProps {
 	productName: string;
 	name: string;
 	status: string;
-	onClick: () => void;
+	onClick?: () => void;
 }
 
 export default function OrderListItem({
@@ -20,17 +21,21 @@ export default function OrderListItem({
 }: OrderListItemProps) {
 	const { t } = useTranslation();
 
+	const handleClick = useCallback(
+		(e: React.MouseEvent) => {
+			e.preventDefault();
+			onClick?.();
+		},
+		[onClick],
+	);
+
 	return (
-		<Link href="#" className="block">
-			<button
-				type="button"
-				onClick={() => {
-					if (onClick) {
-						onClick();
-					}
-				}}
-				className="flex w-full cursor-pointer items-center justify-between p-4 hover:bg-gray-50"
-			>
+		<Link
+			href="#"
+			onClick={handleClick}
+			className="block w-full cursor-pointer hover:bg-gray-50"
+		>
+			<div className="flex items-center justify-between p-4">
 				<div className="flex items-center space-x-4">
 					<Image
 						src="/images/cafe2.webp"
@@ -56,7 +61,7 @@ export default function OrderListItem({
 					</span>
 					<ChevronRightIcon className="text-content-body-default w-5 h-5" />
 				</div>
-			</button>
+			</div>
 		</Link>
 	);
 }

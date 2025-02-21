@@ -7,30 +7,25 @@ import {
 	WalletIcon,
 } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
+import type { OrderStatus } from "@prisma/client";
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { ProductDetailsList } from "./ProductDetailsList";
 import { StatusBanner } from "./StatusBanner";
-import { StatusUpdateModal } from "./StatusUpdateModal";
+import StatusUpdateModal from "./StatusUpdateModal";
 
-type ProductDetails = {
+interface ProductDetails {
 	productName: string;
-	status: string;
+	status: OrderStatus;
 	roast: string;
 	type: string;
 	quantity: string;
 	delivery: string;
 	totalPrice: string;
 	address?: string;
-};
-
-export enum StatusStepsEnum {
-	Paid = "Paid",
-	Shipped = "Shipped",
-	Prepared = "Prepared",
-	Delivered = "Delivered",
 }
 
 enum DeliveryTypeEnum {
@@ -38,8 +33,14 @@ enum DeliveryTypeEnum {
 	Delivery = "Delivery",
 }
 
+const OrderStatusEnum = {
+	PENDING: "PENDING",
+	COMPLETED: "COMPLETED",
+	CANCELLED: "CANCELLED",
+} as const;
+
 const orderStatusSchema = z.object({
-	status: z.nativeEnum(StatusStepsEnum),
+	status: z.enum(["PENDING", "COMPLETED", "CANCELLED"] as const),
 });
 
 interface ProductStatusDetailsProps {
@@ -54,25 +55,26 @@ export default function ProductStatusDetails({
 	updateProductDetails,
 }: ProductStatusDetailsProps) {
 	const [isOrderStatusModalOpen, setIsOrderStatusModalOpen] = useState(false);
+	const { t } = useTranslation();
 
 	const { control, handleSubmit, setValue } = useForm<{
-		status: StatusStepsEnum;
+		status: OrderStatus;
 	}>({
-		defaultValues: { status: StatusStepsEnum.Paid },
+		defaultValues: { status: "PENDING" },
 		resolver: zodResolver(orderStatusSchema),
 	});
 
 	useEffect(() => {
 		if (productDetails?.status) {
-			setValue("status", productDetails.status as StatusStepsEnum);
+			setValue("status", productDetails.status);
 		}
 	}, [productDetails, setValue]);
 
-	const statusStepsKeys = Object.keys(StatusStepsEnum);
+	const statusStepsKeys = ["PENDING", "COMPLETED", "CANCELLED"];
 
 	const closeOrderStatusModal = () => setIsOrderStatusModalOpen(false);
 
-	const onSubmit = (data: { status: StatusStepsEnum }) => {
+	const onSubmit = (data: { status: OrderStatus }) => {
 		if (productDetails && updateProductDetails) {
 			updateProductDetails({ ...productDetails, status: data.status });
 		}
@@ -84,29 +86,18 @@ export default function ProductStatusDetails({
 	if (!productDetails) return <div>Loading...</div>;
 
 	const stepsByDeliveryType = {
-		[DeliveryTypeEnum.Meetup]: [
-			StatusStepsEnum.Paid,
-			StatusStepsEnum.Prepared,
-			StatusStepsEnum.Delivered,
-		],
-		[DeliveryTypeEnum.Delivery]: [
-			StatusStepsEnum.Paid,
-			StatusStepsEnum.Shipped,
-			StatusStepsEnum.Delivered,
-		],
+		[DeliveryTypeEnum.Meetup]: ["PENDING", "COMPLETED", "CANCELLED"],
+		[DeliveryTypeEnum.Delivery]: ["PENDING", "COMPLETED", "CANCELLED"],
 	};
 
 	const statusSteps =
 		stepsByDeliveryType[productDetails.delivery as DeliveryTypeEnum];
-	const currentStepIndex = statusSteps.indexOf(
-		productDetails.status as StatusStepsEnum,
-	);
+	const currentStepIndex = statusSteps.indexOf(productDetails.status);
 
 	const stepIconMap = {
-		[StatusStepsEnum.Paid]: WalletIcon,
-		[StatusStepsEnum.Shipped]: TruckIcon,
-		[StatusStepsEnum.Prepared]: ShoppingBagIcon,
-		[StatusStepsEnum.Delivered]: CheckCircleIcon,
+		PENDING: WalletIcon,
+		COMPLETED: CheckCircleIcon,
+		CANCELLED: ShoppingBagIcon,
 	};
 
 	return (
@@ -130,40 +121,35 @@ export default function ProductStatusDetails({
 			</div>
 
 			<div className="!my-8 flex items-center justify-between w-full">
-				{statusSteps.map((step, index) => (
-					<div key={step} className="flex items-center">
-						<div className="flex flex-col items-center w-10">
+				{statusSteps.map((step, index) => {
+					const Icon = stepIconMap[step as keyof typeof stepIconMap];
+					const isCompleted = index <= currentStepIndex;
+					const isActive = index === currentStepIndex;
+
+					return (
+						<div
+							key={step}
+							className={`flex flex-col items-center ${
+								isCompleted ? "text-green-600" : "text-gray-400"
+							}`}
+						>
 							<div
-								className={`w-8 h-8 rounded-full flex items-center justify-center ${
-									index <= currentStepIndex
-										? "bg-surface-secondary-default"
-										: "bg-surface-primary-soft"
+								className={`w-12 h-12 rounded-full flex items-center justify-center ${
+									isActive
+										? "bg-green-100"
+										: isCompleted
+											? "bg-green-50"
+											: "bg-gray-100"
 								}`}
 							>
-								{React.createElement(stepIconMap[step], {
-									className: `w-4 h-4 ${
-										index <= currentStepIndex ? "text-black" : "text-gray-500"
-									}`,
-								})}
+								<Icon className="w-6 h-6" />
 							</div>
-							<span className="text-sm mt-1">{step}</span>
+							<span className="mt-2 text-sm">
+								{t(`order_status.${step.toLowerCase()}`)}
+							</span>
 						</div>
-						{index < statusSteps.length - 1 && (
-							<div
-								className={`h-1 ${
-									index < currentStepIndex
-										? "bg-surface-secondary-default"
-										: "bg-surface-primary-soft"
-								} flex-grow`}
-								style={{
-									marginLeft: "-4px",
-									marginRight: "-12px",
-									marginBottom: "24px",
-								}}
-							/>
-						)}
-					</div>
-				))}
+					);
+				})}
 			</div>
 
 			<ProductDetailsList

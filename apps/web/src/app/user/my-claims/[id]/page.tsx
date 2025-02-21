@@ -1,5 +1,6 @@
 "use client";
 
+import type { OrderStatus } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -21,7 +22,7 @@ export default function MySaleDetails() {
 		if (saleId) {
 			setSaleDetails({
 				productName: t("product_name"),
-				status: t("order_status.delivered"),
+				status: "COMPLETED" as OrderStatus,
 				roast: t("roast.strong"),
 				type: t("coffee_type.grounded"),
 				quantity: t("quantity_with_unit", { count: 5, unit: t("bags") }),

@@ -65,6 +65,14 @@
 		"prepared": "Prepared",
 		"shipped": "Shipped"
 	},
+	"order_status_message": {
+		"pending": "Your order has been received and is being processed",
+		"paid": "Payment confirmed! Your coffee is being prepared",
+		"prepared": "Your coffee is ready and will be shipped soon",
+		"shipped": "Your coffee is on its way to you!",
+		"delivered": "Your coffee has arrived. Enjoy!",
+		"canceled": "This order has been canceled"
+	},
 	"ordered_by": "Ordered by {{name}}",
 	"price_with_currency": "{{price}} USD",
 
@@ -303,5 +311,9 @@
 	"order_confirmation_message": "Your order has been confirmed and is being processed.",
 	"track_in_my_orders": "Track in My Orders",
 
-	"marketplace": "Marketplace"
+	"marketplace": "Marketplace",
+
+	"your_coffee": "Your Coffee",
+	"delivery_information": "Delivery Information",
+	"shipping_to": "Shipping to"
 }

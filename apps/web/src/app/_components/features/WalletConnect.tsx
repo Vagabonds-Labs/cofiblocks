@@ -1,3 +1,5 @@
+"use client";
+
 import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import Button from "@repo/ui/button";
 import { H1, Text } from "@repo/ui/typography";
@@ -172,20 +174,6 @@ export default function WalletConnect({
 					<>
 						{isClient && (
 							<>
-								<Button
-									onClick={() => void handleConnectArgentMobile()}
-									className="w-full max-w-[15rem]"
-									disabled={isConnecting}
-								>
-									<div className="flex items-center justify-between">
-										<div className="flex items-center">
-											<span>
-												{isConnecting ? t("connecting") : t("argent_mobile")}
-											</span>
-										</div>
-										<ChevronRightIcon className="h-5 w-5" />
-									</div>
-								</Button>
 								{Array.isArray(connectors) &&
 									connectors.map((connector) => (
 										<Button

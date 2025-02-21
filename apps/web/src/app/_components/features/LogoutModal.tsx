@@ -1,3 +1,5 @@
+"use client";
+
 import Button from "@repo/ui/button";
 import { useDisconnect } from "@starknet-react/core";
 import { signOut } from "next-auth/react";

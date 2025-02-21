@@ -124,6 +124,12 @@ async function main() {
 
 	// Create shopping carts, orders and farms for each user
 	for (const user of users) {
+		// Find a seller (Charlie, who is a COFFEE_PRODUCER)
+		const seller = users.find((u) => u.role === "COFFEE_PRODUCER");
+		if (!seller) {
+			throw new Error("No COFFEE_PRODUCER found in users");
+		}
+
 		const cart = await prisma.shoppingCart.create({
 			data: {
 				userId: user.id,
@@ -136,27 +142,32 @@ async function main() {
 			},
 		});
 
-		const order = await prisma.order.create({
-			data: {
-				userId: user.id,
-				total: products[0]?.price ?? 0 + 2 * (products[1]?.price ?? 0),
-				status: "PENDING",
-				items: {
-					create: [
-						{
-							productId: products[0]?.id ?? 0,
-							quantity: 1,
-							price: products[0]?.price ?? 0,
-						},
-						{
-							productId: products[1]?.id ?? 0,
-							quantity: 2,
-							price: products[1]?.price ?? 0,
-						},
-					],
+		// Skip creating an order for the seller to avoid self-referential orders
+		if (user.id !== seller.id) {
+			const order = await prisma.order.create({
+				data: {
+					userId: user.id,
+					sellerId: seller.id, // Now seller.id is guaranteed to exist
+					total: products[0]?.price ?? 0 + 2 * (products[1]?.price ?? 0),
+					status: "PENDING",
+					items: {
+						create: [
+							{
+								productId: products[0]?.id ?? 0,
+								quantity: 1,
+								price: products[0]?.price ?? 0,
+							},
+							{
+								productId: products[1]?.id ?? 0,
+								quantity: 2,
+								price: products[1]?.price ?? 0,
+							},
+						],
+					},
 				},
-			},
-		});
+			});
+			console.log(`Order ${order.id} created for ${user.name}`);
+		}
 
 		const farm = await prisma.farm.create({
 			data: {
@@ -172,7 +183,7 @@ async function main() {
 		});
 
 		console.log(
-			`Seed data inserted: Order ${order.id} created for ${user.name}, shopping cart ${cart.id} created for ${user.name}, farm ${farm.id} created for ${user.name}`,
+			`Seed data inserted: Shopping cart ${cart.id} created for ${user.name}, farm ${farm.id} created for ${user.name}`,
 		);
 	}
 }
