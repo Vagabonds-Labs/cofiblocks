@@ -43,6 +43,8 @@ export const authOptions: NextAuthOptions = {
 					role: token.role ?? "COFFEE_BUYER",
 				};
 			}
+
+			console.log("session", session);
 			return session;
 		},
 	},
