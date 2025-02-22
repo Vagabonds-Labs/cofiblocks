@@ -8,6 +8,7 @@ import {
 import Button from "@repo/ui/button";
 import { useAccount, useProvider } from "@starknet-react/core";
 import { useEffect, useState } from "react";
+import type { Provider } from "starknet";
 import OrderListItem from "~/app/_components/features/OrderListItem";
 import OrderListPriceItem from "~/app/_components/features/OrderListPriceItem";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
@@ -21,100 +22,163 @@ import { DeliveryMethod, SalesStatus } from "~/types";
 
 import { useTranslation } from "react-i18next";
 
-const mockedOrders = [
-	{
-		date: "october_18",
-		items: [
-			{
-				id: "1",
-				productName: "product_name_1",
-				buyerName: "buyer1_fullname",
-				status: SalesStatus.Delivered,
-				delivery: DeliveryMethod.Address,
-				price: 30,
-				claimed: false,
-			},
-			{
-				id: "2",
-				productName: "product_name_2",
-				buyerName: "buyer2_fullname",
-				status: SalesStatus.Delivered,
-				delivery: DeliveryMethod.Meetup,
-				price: 30,
-				claimed: false,
-			},
-		],
-	},
-	{
-		date: "september_20",
-		items: [
-			{
-				id: "3",
-				productName: "product_name_3",
-				buyerName: "buyer1_fullname",
-				status: SalesStatus.Delivered,
-				delivery: DeliveryMethod.Address,
-				price: 30,
-				claimed: true,
-			},
-			{
-				id: "4",
-				productName: "product_name_4",
-				buyerName: "buyer2_fullname",
-				status: SalesStatus.Delivered,
-				delivery: DeliveryMethod.Meetup,
-				price: 30,
-				claimed: true,
-			},
-		],
-	},
-];
+// Interface for blockchain events
+interface BlockchainOrder {
+	token_id: string;
+	amount: string;
+	price: string;
+	timestamp: number;
+	claimed: boolean;
+}
+
+interface OrderItem {
+	id: string;
+	productName: string;
+	buyerName: string;
+	status: SalesStatus;
+	delivery: DeliveryMethod;
+	price: number;
+	claimed: boolean;
+}
+
+interface OrderGroup {
+	date: string;
+	items: OrderItem[];
+}
+
+interface BlockchainEvent {
+	name: string;
+	data: string[];
+	timestamp: number;
+}
+
+interface StarknetEvent {
+	keys: string[];
+	data: string[];
+	block_number: number;
+	transaction_hash: string;
+}
 
 export default function MyClaims() {
-	const [OrdersToClaim, setOrdersToClaim] = useState(mockedOrders);
-	const [ClaimedOrders, setClaimedOrders] = useState(mockedOrders);
+	const [OrdersToClaim, setOrdersToClaim] = useState<OrderGroup[]>([]);
+	const [ClaimedOrders, setClaimedOrders] = useState<OrderGroup[]>([]);
 	const [searchTerm, setSearchTerm] = useState("");
 	const [MoneyToClaim, setMoneyToClaim] = useState(0);
 	const [checked, setChecked] = useState(false);
-	const [, setIsFiltersModalOpen] = useState(false);
+	const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
 	const { t } = useTranslation();
 
 	const { provider } = useProvider();
+	const starknetProvider = provider as Provider;
+	const { address } = useAccount();
 	const contracts = new ContractsInterface(
 		useAccount(),
 		useCofiCollectionContract(),
 		useMarketplaceContract(),
 		useStarkContract(),
-		provider,
+		starknetProvider,
 	);
 
 	useEffect(() => {
-		const fetchData = () => {
-			const unclaimedOrders = mockedOrders
-				.map((orderGroup) => ({
-					...orderGroup,
-					items: orderGroup.items.filter((item) => !item.claimed),
-				}))
-				.filter((orderGroup) => orderGroup.items.length > 0);
+		const fetchBlockchainData = async () => {
+			if (!starknetProvider || !address || !contracts.marketplaceContract)
+				return;
 
-			setOrdersToClaim(unclaimedOrders);
+			try {
+				// Get claim balance
+				const balance = await contracts.get_claim_balance();
+				setMoneyToClaim(Number(balance));
 
-			const totalMoneyToClaim = 0;
+				// Get events for this seller
+				const eventsResponse = await starknetProvider.getEvents({
+					address: contracts.marketplaceContract.address,
+					from_block: { block_number: 0 },
+					to_block: "latest",
+					chunk_size: 100,
+					keys: [[contracts.marketplaceContract.address]],
+				});
 
-			setMoneyToClaim(totalMoneyToClaim);
+				// Convert events to our format
+				const events: BlockchainEvent[] = (eventsResponse.events ?? []).map(
+					(event: StarknetEvent) => ({
+						name: event.keys[0] ?? "",
+						data: event.data,
+						timestamp: Date.now() / 1000, // Using current timestamp as fallback
+					}),
+				);
 
-			const claimedOrders = mockedOrders
-				.map((orderGroup) => ({
-					...orderGroup,
-					items: orderGroup.items.filter((item) => item.claimed),
-				}))
-				.filter((orderGroup) => orderGroup.items.length > 0);
+				// Process events into orders
+				const processedOrders: BlockchainOrder[] = events
+					.filter(
+						(event) =>
+							event.data.includes(address.toLowerCase()) &&
+							(event.name === "PaymentSeller" || event.name === "BuyProduct"),
+					)
+					.map((event) => ({
+						token_id: event.data[0] ?? "0",
+						amount: event.data[1] ?? "0",
+						price: event.data[2] ?? "0",
+						timestamp: event.timestamp,
+						claimed: event.name === "PaymentSeller",
+					}));
 
-			setClaimedOrders(claimedOrders);
+				// Group orders by month
+				const groupedOrders = processedOrders.reduce<OrderGroup[]>(
+					(acc, order) => {
+						const date = new Date(order.timestamp * 1000);
+						const monthYear = date.toLocaleString("default", {
+							month: "long",
+							year: "numeric",
+						});
+
+						const orderItem: OrderItem = {
+							id: order.token_id,
+							productName: `Product #${order.token_id}`,
+							buyerName: "Anonymous Buyer",
+							status: SalesStatus.Delivered,
+							delivery: DeliveryMethod.Address,
+							price: Number(order.price) / 1e18,
+							claimed: order.claimed,
+						};
+
+						const existingGroup = acc.find((group) => group.date === monthYear);
+						if (existingGroup) {
+							existingGroup.items.push(orderItem);
+						} else {
+							acc.push({
+								date: monthYear,
+								items: [orderItem],
+							});
+						}
+						return acc;
+					},
+					[],
+				);
+
+				// Split into claimed and unclaimed orders
+				const unclaimedOrders = groupedOrders
+					.map((group) => ({
+						...group,
+						items: group.items.filter((item) => !item.claimed),
+					}))
+					.filter((group) => group.items.length > 0);
+
+				const claimedOrders = groupedOrders
+					.map((group) => ({
+						...group,
+						items: group.items.filter((item) => item.claimed),
+					}))
+					.filter((group) => group.items.length > 0);
+
+				setOrdersToClaim(unclaimedOrders);
+				setClaimedOrders(claimedOrders);
+			} catch (error) {
+				console.error("Error fetching blockchain data:", error);
+			}
 		};
 
-		fetchData();
-	}, []);
+		void fetchBlockchainData();
+	}, [starknetProvider, address, contracts]);
 
 	const openFiltersModal = () => {
 		setIsFiltersModalOpen(true);
@@ -127,9 +191,13 @@ export default function MyClaims() {
 			setChecked(true);
 			return;
 		}
-		console.log("claiming");
-		const tx = await contracts.claim();
-		alert(`Claimed success with tx: ${tx}`);
+		try {
+			console.log("claiming");
+			const tx = await contracts.claim();
+			alert(`Claimed success with tx: ${tx}`);
+		} catch (error) {
+			console.error("Error claiming:", error);
+		}
 	};
 
 	const handleItemClick = (id: string) => {

@@ -172,7 +172,6 @@ class ContractsInterface {
 				CallData.compile([initial_stock, "0x0", price, "0x0", "0x1", "0x0"]),
 				{ maxFee: "10000000000000000000000" },
 			);
-			console.log("tx hash is", tx.transaction_hash);
 			const txReceipt = await this.provider.waitForTransaction(
 				tx.transaction_hash,
 				{

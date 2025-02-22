@@ -1,22 +1,24 @@
 "use client";
 
 import NFTCard from "@repo/ui/nftCard";
+import { useAccount } from "@starknet-react/core";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import type { Contract } from "starknet";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
+import { useCofiCollectionContract } from "~/services/contractsInterface";
 import { api } from "~/trpc/react";
 
 interface NFTMetadata {
-	imageSrc: string;
-	description?: string;
-}
-
-interface RawNFTMetadata {
-	imageUrl: string;
+	name: string;
 	description: string;
-	// Add other potential fields from your metadata
-	region?: string;
-	farmName?: string;
-	strength?: string;
+	image: string;
+	external_url: string;
+	attributes: {
+		trait_type: string;
+		value: string | number;
+		display_type?: string;
+	}[];
 }
 
 interface CollectibleDisplay {
@@ -27,67 +29,118 @@ interface CollectibleDisplay {
 	totalQuantity: number;
 }
 
-function parseNFTMetadata(jsonString: string): NFTMetadata {
-	try {
-		const parsed = JSON.parse(jsonString) as unknown;
-
-		if (!parsed || typeof parsed !== "object") {
-			throw new Error("Invalid metadata format");
-		}
-
-		const metadata = parsed as Record<string, unknown>;
-
-		if (typeof metadata.imageUrl !== "string") {
-			throw new Error("Invalid imageUrl in metadata");
-		}
-
-		return {
-			imageSrc: metadata.imageUrl,
-			description:
-				typeof metadata.description === "string"
-					? metadata.description
-					: undefined,
-		};
-	} catch (error) {
-		console.error("Error parsing NFT metadata:", error);
-		return {
-			imageSrc: "/images/cafe1.webp", // Default fallback image
-		};
-	}
+interface CofiCollectionContract extends Contract {
+	balance_of: (address: string, tokenId: string) => Promise<bigint>;
 }
 
 export default function Collectibles() {
 	const { t } = useTranslation();
-	const { data: rawCollectibles, isLoading } =
-		api.order.getUserCollectibles.useQuery();
+	const { address, status } = useAccount();
+	const [collectibles, setCollectibles] = useState<CollectibleDisplay[]>([]);
+	const [isLoading, setIsLoading] = useState(true);
+	const cofiCollection = useCofiCollectionContract();
 
-	// Parse metadata for each collectible
-	const collectibles: CollectibleDisplay[] | undefined = rawCollectibles?.map(
-		(collectible) => {
-			const metadata =
-				typeof collectible.metadata === "string"
-					? parseNFTMetadata(collectible.metadata)
-					: { imageSrc: "/images/cafe1.webp" };
-
-			return {
-				id: collectible.id,
-				tokenId: collectible.tokenId,
-				name: collectible.name,
-				metadata,
-				totalQuantity: collectible.totalQuantity,
-			};
-		},
+	const productsQuery = api.product.getProducts.useQuery(
+		{ limit: 100, cursor: undefined },
+		{ enabled: !!address },
 	);
 
-	if (isLoading) {
+	useEffect(() => {
+		async function fetchCollectibles() {
+			if (!address || !cofiCollection || !productsQuery.data) {
+				console.log("Missing dependencies:", {
+					hasAddress: !!address,
+					hasContract: !!cofiCollection,
+					hasProducts: !!productsQuery.data,
+					walletStatus: status,
+				});
+				setIsLoading(false);
+				return;
+			}
+
+			try {
+				const products = productsQuery.data.products;
+				console.log("Found products:", products.length);
+
+				const userCollectibles: CollectibleDisplay[] = [];
+
+				// Check balance for each product
+				for (const product of products) {
+					try {
+						console.log("Checking balance for token", product.tokenId);
+
+						const contract = cofiCollection as CofiCollectionContract;
+						const balance = await contract.balance_of(
+							address,
+							product.tokenId.toString(),
+						);
+						const balanceNumber = Number(balance);
+
+						console.log(
+							"Balance result for token",
+							product.tokenId,
+							":",
+							balance,
+						);
+						console.log("Parsed balance:", balanceNumber);
+
+						if (balanceNumber > 0) {
+							console.log("Fetching metadata for token", product.tokenId);
+							const metadataResponse = await fetch(
+								`/api/metadata/${product.tokenId}`,
+							);
+							const metadata = (await metadataResponse.json()) as NFTMetadata;
+							console.log("Got metadata:", metadata);
+
+							userCollectibles.push({
+								id: product.id,
+								tokenId: product.tokenId,
+								name: metadata.name,
+								metadata,
+								totalQuantity: balanceNumber,
+							});
+						}
+					} catch (error) {
+						console.error(
+							"Error fetching balance for token",
+							product.tokenId,
+							":",
+							error,
+						);
+					}
+				}
+
+				console.log("Final collectibles:", userCollectibles);
+				setCollectibles(userCollectibles);
+			} catch (error) {
+				console.error("Error fetching collectibles:", error);
+			} finally {
+				setIsLoading(false);
+			}
+		}
+
+		void fetchCollectibles();
+	}, [address, cofiCollection, productsQuery.data, status]);
+
+	if (isLoading || productsQuery.isLoading) {
 		return (
 			<ProfileOptionLayout title={t("my_collectibles")}>
-				<div className="space-y-6">
-					{[1, 2, 3].map((i) => (
-						<div key={i} className="animate-pulse">
-							<div className="h-64 bg-gray-200 rounded-lg" />
-						</div>
-					))}
+				<div className="flex flex-col items-center justify-center py-12">
+					<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4" />
+					<p className="text-gray-600">{t("loading_collectibles")}</p>
+				</div>
+			</ProfileOptionLayout>
+		);
+	}
+
+	if (!address || status === "disconnected") {
+		return (
+			<ProfileOptionLayout title={t("my_collectibles")}>
+				<div className="text-center py-8">
+					<p className="text-gray-600 mb-4">
+						{t("connect_wallet_to_view_collectibles")}
+					</p>
+					<p className="text-sm text-gray-500">Current status: {status}</p>
 				</div>
 			</ProfileOptionLayout>
 		);
@@ -96,19 +149,36 @@ export default function Collectibles() {
 	return (
 		<ProfileOptionLayout title={t("my_collectibles")}>
 			<div className="space-y-6">
-				{collectibles?.length === 0 ? (
+				{collectibles.length === 0 ? (
 					<div className="text-center py-8">
 						<p className="text-gray-600">{t("no_collectibles_found")}</p>
+						<p className="text-sm text-gray-500 mt-2">
+							Make sure you have purchased some coffee NFTs
+						</p>
 					</div>
 				) : (
-					collectibles?.map((collectible) => (
-						<NFTCard
-							key={collectible.id}
-							title={collectible.name}
-							nftMetadata={collectible.metadata}
-							quantity={collectible.totalQuantity}
-						/>
-					))
+					collectibles.map((collectible) => {
+						// Format the image URL to include the IPFS gateway if it's an IPFS hash
+						const imageUrl = collectible.metadata.image
+							? collectible.metadata.image.startsWith("Qm")
+								? `${process.env.NEXT_PUBLIC_GATEWAY_URL}/ipfs/${collectible.metadata.image}`
+								: collectible.metadata.image
+							: "/images/cafe1.webp";
+
+						return (
+							<NFTCard
+								key={collectible.id}
+								title={collectible.name}
+								nftMetadata={{
+									imageSrc: imageUrl,
+								}}
+								quantity={collectible.totalQuantity}
+								onDetailsClick={() =>
+									window.open(`/product/${collectible.id}`, "_self")
+								}
+							/>
+						);
+					})
 				)}
 			</div>
 		</ProfileOptionLayout>
