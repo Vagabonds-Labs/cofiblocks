@@ -1,15 +1,15 @@
 "use client";
 
-import { ChevronRightIcon } from "@heroicons/react/24/outline";
+import { ChevronRightIcon, GlobeAltIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@repo/ui/button";
-import RadioButton from "@repo/ui/form/radioButton";
+import { InfoCard } from "@repo/ui/infoCard";
+import { Text } from "@repo/ui/typography";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
-import BottomModal from "~/app/_components/ui/BottomModal";
 
 const languageSchema = z.object({
 	language: z.string(),
@@ -19,14 +19,27 @@ type FormValues = z.infer<typeof languageSchema>;
 
 const LANGUAGE_KEY = "app_language";
 
+const LANGUAGES = [
+	{
+		code: "en",
+		flag: "🇺🇸",
+		name: "English",
+	},
+	{
+		code: "es",
+		flag: "🇪🇸",
+		name: "Español",
+	},
+	{
+		code: "pt",
+		flag: "🇧🇷",
+		name: "Português",
+	},
+] as const;
+
 export default function Settings() {
 	const { i18n, t } = useTranslation();
-
-	// Set a default language
 	const [language, setLanguage] = useState<string>("en");
-	const [isLanguageModalOpen, setLanguageModalOpen] = useState<boolean>(false);
-
-	const languages = ["en", "es", "pt"];
 
 	const { control, handleSubmit, setValue } = useForm<FormValues>({
 		defaultValues: {
@@ -45,75 +58,43 @@ export default function Settings() {
 		}
 	}, [i18n, language, setValue]);
 
-	const openLanguageModal = () => setLanguageModalOpen(true);
-	const closeLanguageModal = () => setLanguageModalOpen(false);
-
-	const handleLanguageClick = () => {
-		openLanguageModal();
+	const handleLanguageSelect = async (langCode: string) => {
+		setLanguage(langCode);
+		await i18n.changeLanguage(langCode);
+		localStorage.setItem(LANGUAGE_KEY, langCode);
+		setValue("language", langCode);
 	};
 
-	const onSubmit = async (data: FormValues) => {
-		setLanguage(data.language);
-		await i18n.changeLanguage(data.language);
-		localStorage.setItem(LANGUAGE_KEY, data.language);
-		closeLanguageModal();
-	};
+	const currentLanguage = LANGUAGES.find((lang) => lang.code === language);
 
 	return (
 		<ProfileOptionLayout title={t("settings")}>
-			<div>
-				<div
-					className="flex justify-between items-center py-2 cursor-pointer"
-					onClick={handleLanguageClick}
-					onKeyDown={(e) => {
-						if (e.key === "Enter" || e.key === " ") {
-							handleLanguageClick();
-						}
-					}}
-					role="button"
-					tabIndex={0}
-				>
-					<span className="text-lg font-medium">{t("language")}</span>
-					<div className="flex items-center gap-2">
-						<span className="text-content-body-default">
-							{t(`language_name.${language}`)}
-						</span>
-						<ChevronRightIcon scale={16} className="w-5 h-5 ml-2" />
-					</div>
+			<div className="space-y-4">
+				<Text className="text-lg font-medium mb-4">{t("language")}</Text>
+				<div className="grid grid-cols-1 gap-3">
+					{LANGUAGES.map((lang) => (
+						<button
+							key={lang.code}
+							type="button"
+							onClick={() => handleLanguageSelect(lang.code)}
+							className={`flex items-center justify-between p-4 rounded-lg border transition-all ${
+								language === lang.code
+									? "border-surface-secondary-default bg-surface-primary-soft"
+									: "border-surface-border hover:border-surface-secondary-default"
+							}`}
+						>
+							<div className="flex items-center gap-3">
+								<span className="text-2xl" role="img" aria-label={lang.name}>
+									{lang.flag}
+								</span>
+								<Text className="font-medium">{lang.name}</Text>
+							</div>
+							{language === lang.code && (
+								<div className="w-3 h-3 rounded-full bg-surface-secondary-default" />
+							)}
+						</button>
+					))}
 				</div>
-
-				<BottomModal isOpen={isLanguageModalOpen} onClose={closeLanguageModal}>
-					<h3 className="text-xl font-semibold mb-4 text-content-title">
-						{t("language")}
-					</h3>
-					<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-						<div className="flex flex-col gap-2">
-							{languages.map((lang, index) => (
-								<div key={lang}>
-									<label
-										htmlFor={`lang-${lang}`}
-										className="flex items-center gap-2"
-									>
-										<RadioButton<FormValues>
-											id={`lang-${lang}`}
-											name="language"
-											value={lang}
-											control={control}
-											label={t(`languages.${lang}`)}
-										/>
-										<span>{t(`languages.${lang}`)}</span>
-									</label>
-									{index < languages.length - 1 && (
-										<hr className="my-2 border-surface-border" />
-									)}
-								</div>
-							))}
-						</div>
-						<Button type="submit" className="w-full">
-							{t("apply")}
-						</Button>
-					</form>
-				</BottomModal>
 			</div>
 		</ProfileOptionLayout>
 	);

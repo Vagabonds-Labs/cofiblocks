@@ -24,17 +24,15 @@ import {
 import { api } from "~/trpc/react";
 import { RoastLevel } from "~/types";
 
+const MARKET_FEE_BPS = 5000; // 50%
+
 const schema = z.object({
 	roast: z.string().min(1, "Roast level is required"),
 	price: z.string().min(1, "Price is required"),
 	bagsAvailable: z.number().min(0, "Available bags must be a positive number"),
 	description: z.string().min(1, "Description is required"),
 	variety: z.string().min(1, "Variety is required"),
-	coffeeScore: z
-		.number()
-		.min(0, "Coffee score must be a positive number")
-		.max(100, "Coffee score must be at most 100")
-		.optional(),
+	coffeeScore: z.number().optional(),
 	image: z.string().optional(),
 });
 
@@ -54,7 +52,11 @@ export default function RegisterCoffee() {
 	const mutation = api.product.createProduct.useMutation();
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
-	const { register, handleSubmit, control, getValues, setValue } =
+	const calculateFee = (amount: number): number => {
+		return (amount * MARKET_FEE_BPS) / 10000;
+	};
+
+	const { register, handleSubmit, control, getValues, setValue, watch } =
 		useForm<FormData>({
 			resolver: zodResolver(schema),
 			defaultValues: {
@@ -62,6 +64,12 @@ export default function RegisterCoffee() {
 				bagsAvailable: 1,
 			},
 		});
+
+	const price = watch("price");
+	const priceNumber = Number.parseFloat(price || "0");
+	const operatingFee = calculateFee(priceNumber);
+	const totalSalesValue = priceNumber + operatingFee;
+	const producerValue = priceNumber;
 
 	const onSubmit = async (data: FormData) => {
 		setIsSubmitting(true);
@@ -142,7 +150,7 @@ export default function RegisterCoffee() {
 							placeholder={t("type_here")}
 						/>
 					</div>
-					<div className="mb-2">
+					<div className="my-2">
 						<label className="text-content-body-default block mb-1">
 							{t("coffee_score")}{" "}
 							<span className="text-content-body-soft">
@@ -235,7 +243,9 @@ export default function RegisterCoffee() {
 								{t("operating_fee")}
 							</label>
 						</div>
-						<p className="text-content-body-default">$20.00</p>
+						<p className="text-content-body-default">
+							${operatingFee.toFixed(2)} USD
+						</p>
 					</div>
 					<div className="my-4">
 						<label className="text-content-body-default block mb-1">
@@ -276,11 +286,15 @@ export default function RegisterCoffee() {
 						<p className="text-[0.875rem] text-content-body-default">
 							{t("total_sales_value_per_bag")}
 						</p>
-						<p className="font-medium text-[0.875rem]">30 USD</p>
+						<p className="font-medium text-[0.875rem]">
+							${totalSalesValue.toFixed(2)} USD
+						</p>
 						<p className="mt-2 text-[0.875rem] text-content-body-default">
 							{t("producer_value_per_bag")}
 						</p>
-						<p className="font-medium text-[0.875rem]">25 USD</p>
+						<p className="font-medium text-[0.875rem]">
+							${producerValue.toFixed(2)} USD
+						</p>
 					</div>
 					<div className="my-6">
 						<label className="text-content-body-default block mb-1">

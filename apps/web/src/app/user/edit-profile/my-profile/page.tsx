@@ -110,10 +110,7 @@ function EditMyProfile() {
 	};
 
 	return (
-		<ProfileOptionLayout
-			title={t("edit_my_profile")}
-			backLink="/user/edit-profile"
-		>
+		<ProfileOptionLayout title={t("edit_my_profile")} backLink="/user-profile">
 			<div className="p-4 bg-white rounded-lg">
 				<form onSubmit={handleSubmit(onSubmit)}>
 					<InputField

@@ -21,6 +21,32 @@ const searchSchema = z.object({
 
 type formData = z.infer<typeof searchSchema>;
 
+const metadataSchema = z.object({
+	process: z.string().optional(),
+	region: z.string().optional(),
+	farmName: z.string().optional(),
+	strength: z.string().optional(),
+});
+
+type ProductMetadata = z.infer<typeof metadataSchema>;
+
+const parseMetadata = (data: unknown): ProductMetadata => {
+	try {
+		if (typeof data === "string") {
+			return metadataSchema.parse(JSON.parse(data));
+		}
+		return metadataSchema.parse(data);
+	} catch {
+		console.warn("Failed to parse metadata, using default values");
+		return {
+			process: undefined,
+			region: undefined,
+			farmName: undefined,
+			strength: undefined,
+		};
+	}
+};
+
 export default function SearchBar() {
 	const [query, setQuery] = useAtom(searchQueryAtom);
 	const [, setSearchResults] = useAtom(searchResultsAtom);
@@ -44,10 +70,21 @@ export default function SearchBar() {
 		setIsLoading(isLoading);
 
 		if (data?.productsFound) {
-			const productsWithProcess = data.productsFound.map((product) => ({
-				...product,
-				process: product.process ?? t("natural_process"),
-			}));
+			const productsWithProcess = data.productsFound.map((product) => {
+				const metadata = parseMetadata(product.nftMetadata);
+
+				return {
+					...product,
+					nftMetadata:
+						typeof product.nftMetadata === "string"
+							? product.nftMetadata
+							: JSON.stringify(product.nftMetadata),
+					process: metadata.process ?? t("natural_process"),
+					region: metadata.region ?? "",
+					farmName: metadata.farmName ?? "",
+					strength: metadata.strength ?? "",
+				};
+			});
 			setSearchResults(productsWithProcess);
 			setQuantityProducts(productsWithProcess.length);
 		} else {

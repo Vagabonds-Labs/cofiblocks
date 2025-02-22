@@ -1,4 +1,5 @@
 import { cartRouter } from "~/server/api/routers/cart";
+import { favoritesRouter } from "~/server/api/routers/favorites";
 import { orderRouter } from "~/server/api/routers/order";
 import { producerRouter } from "~/server/api/routers/producer";
 import { productRouter } from "~/server/api/routers/product";
@@ -14,6 +15,7 @@ export const appRouter = createTRPCRouter({
 	product: productRouter,
 	user: userRouter,
 	cart: cartRouter,
+	favorites: favoritesRouter,
 	producer: producerRouter,
 	order: orderRouter,
 });

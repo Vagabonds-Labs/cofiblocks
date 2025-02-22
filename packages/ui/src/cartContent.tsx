@@ -122,39 +122,44 @@ export function CartContent({
 				{items.map((item) => (
 					<div
 						key={item.id}
-						className="py-4 flex items-center justify-between border-b"
+						className="py-3 flex items-start gap-3 border-b border-surface-primary-soft last:border-b-0"
 					>
-						<div className="flex items-center gap-3">
+						<div className="relative flex-shrink-0">
 							<Image
 								src={getImageUrl(item.product.nftMetadata)}
 								alt={item.product.name}
-								width={48}
-								height={48}
+								width={64}
+								height={64}
 								className="rounded-lg object-cover bg-gray-100"
 							/>
-							<div>
-								<Text className="font-medium text-gray-900">
-									{item.product.name}
-								</Text>
-								<Text className="text-gray-400 text-sm">
-									{translations.quantityLabel}: {item.quantity}
-								</Text>
+							<div className="absolute -top-2 -right-2 bg-primary-default text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-medium">
+								{item.quantity}
 							</div>
 						</div>
-						<div className="flex items-center gap-4">
-							<span className="text-gray-900">
-								{item.product.price * item.quantity} USD
-							</span>
-							{onRemoveItem && (
-								<button
-									type="button"
-									onClick={() => handleRemove(item.id)}
-									className="text-red-500 hover:text-red-600"
-									aria-label={`Remove ${item.product.name} from cart`}
-								>
-									<TrashIcon className="h-5 w-5" />
-								</button>
-							)}
+						<div className="flex-1 min-w-0">
+							<div className="flex justify-between items-start gap-2">
+								<Text className="font-medium text-gray-900 truncate">
+									{item.product.name}
+								</Text>
+								<Text className="font-semibold whitespace-nowrap">
+									${(item.product.price * item.quantity).toFixed(2)}
+								</Text>
+							</div>
+							<div className="flex items-center justify-between mt-1">
+								<Text className="text-sm text-gray-500">
+									${item.product.price.toFixed(2)} each
+								</Text>
+								{onRemoveItem && (
+									<button
+										type="button"
+										onClick={() => handleRemove(item.id)}
+										className="text-red-500 hover:text-red-600 p-1 -m-1"
+										aria-label={`Remove ${item.product.name} from cart`}
+									>
+										<TrashIcon className="h-4 w-4" />
+									</button>
+								)}
+							</div>
 						</div>
 					</div>
 				))}

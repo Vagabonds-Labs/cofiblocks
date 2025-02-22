@@ -43,6 +43,7 @@ model Product {
   updatedAt    DateTime @updatedAt
   shoppingCartItems ShoppingCartItem[]
   orderItems        OrderItem[]
+  favorites         Favorite[]
 
   @@index([name])
 }
@@ -137,6 +138,7 @@ model User {
   sessions      Session[]
   farms          Farm[]
   password      String?
+  favorites     Favorite[]
 }
 
 model Farm {
@@ -152,6 +154,20 @@ model Farm {
   user      User @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  productId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
 }
 
 model VerificationToken {

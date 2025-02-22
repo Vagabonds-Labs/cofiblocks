@@ -336,6 +336,27 @@ class ContractsInterface {
 			throw error;
 		}
 	}
+
+	async get_product_stock(tokenId: number) {
+		// connect user account to contracts
+		this.connect_account();
+
+		// Call the contract to get the stock
+		if (!this.marketplaceContract) {
+			throw new Error("Marketplace contract is not loaded");
+		}
+
+		try {
+			const stock = await this.marketplaceContract.call(
+				"listed_product_stock",
+				[tokenId, "0x0"],
+			);
+			return Number(stock);
+		} catch (error) {
+			console.error("Error getting product stock:", error);
+			return 0;
+		}
+	}
 }
 
 export {

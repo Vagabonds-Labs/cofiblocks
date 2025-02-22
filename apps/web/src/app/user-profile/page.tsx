@@ -1,7 +1,9 @@
 "use client";
 
+import { ChevronRightIcon, UserIcon } from "@heroicons/react/24/outline";
 import { useAccount, useDisconnect } from "@starknet-react/core";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { toast } from "react-hot-toast";
@@ -92,7 +94,7 @@ export default function UserProfile() {
 
 	const userProfile = {
 		name: user.name ?? t("unnamed_user"),
-		country: "costa_rica",
+		country: t("costa_rica"),
 		memberSince: new Date(user.createdAt).getFullYear(),
 		walletAddress: user.walletAddress,
 		role: user.role,
@@ -108,7 +110,18 @@ export default function UserProfile() {
 					profileOptions={<ProfileOptions address={address} />}
 				/>
 				<ProfileCard user={userProfile} />
-				<ProfileOptions address={address} />
+				<div className="mb-6">
+					<Link
+						href="/user/edit-profile/my-profile"
+						className="w-full bg-white text-content-title flex items-center justify-between p-4 rounded-lg hover:bg-surface-secondary-soft transition-colors"
+					>
+						<div className="flex items-center">
+							<UserIcon className="w-5 h-5 mr-3" />
+							<span>{t("edit_my_profile")}</span>
+						</div>
+						<ChevronRightIcon className="w-5 h-5 text-content-body-default" />
+					</Link>
+				</div>
 			</div>
 		</Main>
 	);

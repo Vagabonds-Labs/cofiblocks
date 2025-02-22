@@ -121,6 +121,7 @@
 	"chat_with_seller": "Chatear con el vendedor",
 	"bags_available": "Bolsas disponibles",
 	"bags": "bolsas",
+	"bags_available_count": "{{count}} bolsas disponibles",
 	"unit_price": "Precio por unidad ({{weight}})",
 	"sold_out": "AGOTADO",
 	"add_to_favorites": "Agregar a favoritos",
@@ -203,6 +204,7 @@
 	"contributor": "Contribuyente",
 	"producer": "Productor",
 	"united_states": "Estados Unidos",
+	"costa_rica": "Costa Rica",
 	"since": "Desde",
 
 	"edit_my_profile": "Editar mi perfil",
@@ -280,5 +282,38 @@
 		"en": "Inglés",
 		"es": "Español",
 		"pt": "Portugués"
-	}
+	},
+
+	"badges": {
+		"lover": "Amante del Café",
+		"contributor": "Contribuidor",
+		"producer": "Productor"
+	},
+
+	"update_status": "Actualizar Estado",
+	"status_updated": "Estado actualizado con éxito",
+
+	"cart": {
+		"empty_message": "Tu carrito está vacío",
+		"quantity_label": "Cantidad",
+		"remove_confirmation_title": "¿Deseas eliminar este artículo?",
+		"remove_confirmation_yes": "Sí, eliminar",
+		"cancel": "Cancelar",
+		"total": "Total",
+		"checkout": "Pagar"
+	},
+
+	"added_to_favorites": "Agregado a favoritos",
+	"error_adding_to_favorites": "Error al agregar a favoritos",
+	"removed_from_favorites": "Eliminado de favoritos",
+	"error_removing_from_favorites": "Error al eliminar de favoritos",
+	"error_updating_favorites": "Error al actualizar favoritos",
+	"please_connect_to_favorite": "Por favor conéctate para agregar a favoritos",
+	"loading_strk_price": "Cargando precio en STRK...",
+	"connect_to_buy": "Conéctate para comprar",
+	"marketplace": "Mercado",
+	"share_product": "Compartir producto",
+	"farm_details": "Detalles de la granja",
+	"no_favorite_products": "Aún no hay productos favoritos",
+	"click_to_upload": "Haz clic para subir"
 }

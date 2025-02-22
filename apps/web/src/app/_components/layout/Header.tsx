@@ -160,11 +160,11 @@ function Header({
 			cartItems={transformedItems}
 			onRemoveFromCart={handleRemoveFromCart}
 			cartTranslations={{
-				cartEmptyMessage: t("cart_empty_message"),
-				quantityLabel: t("quantity_label"),
-				removeConfirmationTitle: t("remove_confirmation_title"),
-				removeConfirmationYes: t("remove_confirmation_yes"),
-				cancel: t("cancel"),
+				cartEmptyMessage: t("cart.empty_message"),
+				quantityLabel: t("cart.quantity_label"),
+				removeConfirmationTitle: t("cart.remove_confirmation_title"),
+				removeConfirmationYes: t("cart.remove_confirmation_yes"),
+				cancel: t("cart.cancel"),
 			}}
 			isAuthenticated={!!session}
 			profileOptions={profileOptions}

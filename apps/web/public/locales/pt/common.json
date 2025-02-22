@@ -121,6 +121,7 @@
 	"chat_with_seller": "Conversar com o vendedor",
 	"bags_available": "Sacos disponíveis",
 	"bags": "sacos",
+	"bags_available_count": "{{count}} sacos disponíveis",
 	"unit_price": "Preço por unidade ({{weight}})",
 	"sold_out": "ESGOTADO",
 	"add_to_favorites": "Adicionar aos favoritos",
@@ -203,6 +204,7 @@
 	"contributor": "Contribuidor",
 	"producer": "Produtor",
 	"united_states": "Estados Unidos",
+	"costa_rica": "Costa Rica",
 	"since": "Desde",
 
 	"edit_my_profile": "Editar meu perfil",
@@ -280,5 +282,25 @@
 		"en": "Inglês",
 		"es": "Espanhol",
 		"pt": "Português"
-	}
+	},
+
+	"badges": {
+		"lover": "Amante do Café",
+		"contributor": "Contribuidor",
+		"producer": "Produtor"
+	},
+
+	"update_status": "Atualizar Status",
+	"status_updated": "Status atualizado com sucesso",
+
+	"cart": {
+		"empty_message": "Seu carrinho está vazio",
+		"quantity_label": "Quantidade",
+		"remove_confirmation_title": "Deseja remover este item?",
+		"remove_confirmation_yes": "Sim, remover",
+		"cancel": "Cancelar",
+		"total": "Total",
+		"checkout": "Finalizar compra"
+	},
+	"click_to_upload": "Clique para fazer upload"
 }

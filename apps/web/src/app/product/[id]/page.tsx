@@ -2,14 +2,21 @@
 
 import Skeleton from "@repo/ui/skeleton";
 import { useAccount, useDisconnect } from "@starknet-react/core";
+import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "react-hot-toast";
+import { useTranslation } from "react-i18next";
 import ProductDetails from "~/app/_components/features/ProductDetails";
 import { ProfileOptions } from "~/app/_components/features/ProfileOptions";
 import WalletConnect from "~/app/_components/features/WalletConnect";
 import type { NftMetadata } from "~/app/_components/features/types";
 import Header from "~/app/_components/layout/Header";
 import Main from "~/app/_components/layout/Main";
+import {
+	useCofiCollectionContract,
+	useMarketplaceContract,
+} from "~/services/contractsInterface";
 import { api } from "~/trpc/react";
 
 interface ParsedMetadata extends NftMetadata {
@@ -30,9 +37,13 @@ interface RawMetadata {
 }
 
 export default function ProductPage() {
+	const { t } = useTranslation();
+	const { data: session } = useSession();
 	const { address } = useAccount();
 	const { disconnect } = useDisconnect();
 	const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+	const [bagsAvailable, setBagsAvailable] = useState(0);
+	const marketplaceContract = useMarketplaceContract();
 	const params = useParams();
 	const idParam = params?.id;
 	const id =
@@ -43,6 +54,64 @@ export default function ProductPage() {
 				: "0";
 	const productId = id ? Number.parseInt(id, 10) : 0;
 
+	const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
+
+	const { data: isFavorited, refetch: refetchFavorited } =
+		api.favorites.isProductFavorited.useQuery(
+			{ productId },
+			{
+				enabled: !!productId && !!address && !!session,
+				retry: false,
+			},
+		);
+
+	const { mutate: addToFavorites } = api.favorites.addToFavorites.useMutation({
+		onSuccess: () => {
+			toast.success(t("added_to_favorites"));
+			void refetchFavorited();
+			setIsTogglingFavorite(false);
+		},
+		onError: (error) => {
+			console.error("Error adding to favorites:", error);
+			toast.error(t("error_adding_to_favorites"));
+			setIsTogglingFavorite(false);
+		},
+	});
+
+	const { mutate: removeFromFavorites } =
+		api.favorites.removeFromFavorites.useMutation({
+			onSuccess: () => {
+				toast.success(t("removed_from_favorites"));
+				void refetchFavorited();
+				setIsTogglingFavorite(false);
+			},
+			onError: (error) => {
+				console.error("Error removing from favorites:", error);
+				toast.error(t("error_removing_from_favorites"));
+				setIsTogglingFavorite(false);
+			},
+		});
+
+	const handleToggleFavorite = () => {
+		if (!product || !session) {
+			toast.error(t("please_connect_to_favorite"));
+			return;
+		}
+
+		try {
+			setIsTogglingFavorite(true);
+			if (isFavorited) {
+				removeFromFavorites({ productId });
+			} else {
+				addToFavorites({ productId });
+			}
+		} catch (error) {
+			console.error("Error toggling favorite:", error);
+			toast.error(t("error_updating_favorites"));
+			setIsTogglingFavorite(false);
+		}
+	};
+
 	const { data: product, isLoading: isLoadingProduct } =
 		api.product.getProductById.useQuery(
 			{ id: productId },
@@ -51,6 +120,23 @@ export default function ProductPage() {
 				retry: false,
 			},
 		);
+
+	useEffect(() => {
+		async function getStock() {
+			if (!marketplaceContract || !product?.tokenId) return;
+			try {
+				const stock = await marketplaceContract.call("listed_product_stock", [
+					product.tokenId,
+					"0x0",
+				]);
+				setBagsAvailable(Number(stock));
+			} catch (error) {
+				console.error("Error getting stock:", error);
+				setBagsAvailable(0);
+			}
+		}
+		void getStock();
+	}, [marketplaceContract, product?.tokenId]);
 
 	const handleConnect = () => {
 		setIsWalletModalOpen(true);
@@ -143,15 +229,18 @@ export default function ProductPage() {
 								farmName: parseMetadata(product.nftMetadata as string).farmName,
 								roastLevel: parseMetadata(product.nftMetadata as string)
 									.strength,
-								bagsAvailable: 10, // TODO: Implement stock tracking
+								bagsAvailable,
 								price: product.price,
-								type: "Buyer", // TODO: Implement type logic
-								process: "Natural", // TODO: Add process to metadata
+								type: "Buyer",
+								process: "Natural",
 								description: parseMetadata(product.nftMetadata as string)
 									.description,
 							}}
 							isConnected={!!address}
 							onConnect={handleConnect}
+							isFavorited={isFavorited}
+							onToggleFavorite={handleToggleFavorite}
+							isLoadingFavorite={isTogglingFavorite}
 						/>
 					) : (
 						<div className="text-center py-8">

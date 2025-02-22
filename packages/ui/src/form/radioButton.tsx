@@ -55,10 +55,7 @@ function RadioButton<T extends FieldValues>({
 					onChange={handleChange}
 					onKeyPress={handleKeyPress}
 					aria-checked={field.value === value}
-					className={cn(
-						"h-5 w-5 cursor-pointer rounded-full border border-surface-border bg-white",
-						field.value === value && "bg-surface-primary-default",
-					)}
+					className="sr-only"
 				/>
 				<div
 					className={cs(

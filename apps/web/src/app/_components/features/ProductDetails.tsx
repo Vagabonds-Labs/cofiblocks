@@ -3,6 +3,7 @@ import { HeartIcon as HeartSolidIcon } from "@heroicons/react/24/solid";
 import Button from "@repo/ui/button";
 import { DataCard } from "@repo/ui/dataCard";
 import { H2, Text } from "@repo/ui/typography";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -30,6 +31,9 @@ interface ProductDetailsProps {
 	};
 	isConnected?: boolean;
 	onConnect?: () => void;
+	isFavorited?: boolean;
+	onToggleFavorite?: () => void;
+	isLoadingFavorite?: boolean;
 }
 
 interface CoinGeckoResponse {
@@ -59,6 +63,9 @@ export default function ProductDetails({
 	product,
 	isConnected,
 	onConnect,
+	isFavorited,
+	onToggleFavorite,
+	isLoadingFavorite,
 }: ProductDetailsProps) {
 	const {
 		image,
@@ -75,7 +82,6 @@ export default function ProductDetails({
 
 	const { t } = useTranslation();
 	const [quantity, setQuantity] = useState(1);
-	const [isLiked, setIsLiked] = useState(false);
 	const [selectedImage, setSelectedImage] = useState(0);
 	const [strkPrice, setStrkPrice] = useState<number | null>(null);
 	const [isLoadingPrice, setIsLoadingPrice] = useState(false);
@@ -87,6 +93,7 @@ export default function ProductDetails({
 			void refetchCart();
 		},
 	});
+	const { data: session } = useSession();
 
 	useEffect(() => {
 		const fetchStrkPrice = async () => {
@@ -160,6 +167,18 @@ export default function ProductDetails({
 		}
 	};
 
+	const handleFavoriteClick = () => {
+		console.log("Favorite clicked", { isConnected, isFavorited, session });
+		if (!session) {
+			// If not authenticated, trigger connect
+			onConnect?.();
+			return;
+		}
+		if (onToggleFavorite) {
+			onToggleFavorite();
+		}
+	};
+
 	return (
 		<div className="w-full">
 			{/* Navigation Bar */}
@@ -205,13 +224,16 @@ export default function ProductDetails({
 							</button>
 							<button
 								type="button"
-								onClick={() => setIsLiked(!isLiked)}
+								onClick={handleFavoriteClick}
+								disabled={isLoadingFavorite}
 								className="p-2 hover:bg-gray-100 rounded-full transition-colors"
 								aria-label={
-									isLiked ? t("remove_from_favorites") : t("add_to_favorites")
+									isFavorited
+										? t("remove_from_favorites")
+										: t("add_to_favorites")
 								}
 							>
-								{isLiked ? (
+								{isFavorited ? (
 									<HeartSolidIcon className="h-6 w-6 text-red-500" />
 								) : (
 									<HeartIcon className="h-6 w-6" />

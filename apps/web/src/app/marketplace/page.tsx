@@ -28,20 +28,20 @@ export default function Home() {
 	const carouselData = [
 		{
 			id: "1",
-			tag: t("tag_new", { ns: "common" }),
-			title: t("welcome_coffee_lover", { ns: "common" }),
+			tag: t("tag_new"),
+			title: t("welcome_coffee_lover"),
 			image: "/images/carousel1.webp",
 		},
 		{
 			id: "2",
-			tag: t("featured", { ns: "common" }),
-			title: t("find_best_coffee", { ns: "common" }),
+			tag: t("featured"),
+			title: t("find_best_coffee"),
 			image: "/images/carousel2.webp",
 		},
 		{
 			id: "3",
-			tag: t("popular", { ns: "common" }),
-			title: t("discover_unique_blends", { ns: "common" }),
+			tag: t("popular"),
+			title: t("discover_unique_blends"),
 			image: "/images/carousel3.webp",
 		},
 	];

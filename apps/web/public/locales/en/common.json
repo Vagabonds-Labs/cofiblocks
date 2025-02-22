@@ -129,6 +129,7 @@
 	"chat_with_seller": "Chat with the seller",
 	"bags_available": "Bags Available",
 	"bags": "bags",
+	"bags_available_count": "{{count}} bags available",
 	"unit_price": "Unit price ({{weight}})",
 	"sold_out": "SOLD OUT",
 	"add_to_favorites": "Add to favorites",
@@ -211,6 +212,7 @@
 	"contributor": "Contributor",
 	"producer": "Producer",
 	"united_states": "United States",
+	"costa_rica": "Costa Rica",
 	"since": "Since",
 
 	"edit_my_profile": "Edit my profile",
@@ -315,5 +317,37 @@
 
 	"your_coffee": "Your Coffee",
 	"delivery_information": "Delivery Information",
-	"shipping_to": "Shipping to"
+	"shipping_to": "Shipping to",
+
+	"badges": {
+		"lover": "Coffee Lover",
+		"contributor": "Contributor",
+		"producer": "Producer"
+	},
+
+	"update_status": "Update Status",
+	"status_updated": "Status updated successfully",
+
+	"cart": {
+		"empty_message": "Your cart is empty",
+		"quantity_label": "Quantity",
+		"remove_confirmation_title": "Do you want to remove this item?",
+		"remove_confirmation_yes": "Yes, remove",
+		"cancel": "Cancel",
+		"total": "Total",
+		"checkout": "Checkout"
+	},
+
+	"added_to_favorites": "Added to favorites",
+	"error_adding_to_favorites": "Error adding to favorites",
+	"removed_from_favorites": "Removed from favorites",
+	"error_removing_from_favorites": "Error removing from favorites",
+	"error_updating_favorites": "Error updating favorites",
+	"please_connect_to_favorite": "Please connect to add to favorites",
+	"loading_strk_price": "Loading STRK price...",
+	"connect_to_buy": "Connect to buy",
+	"share_product": "Share product",
+	"farm_details": "Farm details",
+	"no_favorite_products": "No favorite products yet",
+	"click_to_upload": "Click to upload"
 }
