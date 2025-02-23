@@ -23,16 +23,24 @@ export const productRouter = createTRPCRouter({
 			z.object({
 				limit: z.number().min(1),
 				cursor: z.number().optional(),
+				includeHidden: z.boolean().optional().default(false),
 			}),
 		)
 		.query(async ({ input }) => {
-			const { limit, cursor } = input;
+			const { limit, cursor, includeHidden } = input;
 
 			const products = await db.product.findMany({
 				take: limit,
 				skip: cursor ? 1 : 0,
 				cursor: cursor ? { id: cursor } : undefined,
 				orderBy: { id: "asc" },
+				where: includeHidden
+					? undefined
+					: {
+							NOT: {
+								hidden: true,
+							},
+						},
 			});
 
 			const nextCursor =

@@ -39,6 +39,7 @@ model Product {
   name         String
   price        Float
   nftMetadata  Json
+  hidden       Boolean? @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   shoppingCartItems ShoppingCartItem[]

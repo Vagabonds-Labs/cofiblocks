@@ -46,6 +46,7 @@ export default function ProductList({ products }: ProductListProps) {
 						tokenId: product.tokenId,
 						name: product.name,
 						price: product.price,
+						hidden: false,
 						nftMetadata: JSON.stringify({
 							imageUrl: "/default-image.webp",
 							description: product.description,
