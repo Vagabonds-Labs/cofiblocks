@@ -64,7 +64,9 @@ interface StarknetEvent {
 export default function MyClaims() {
 	const [OrdersToClaim, setOrdersToClaim] = useState<OrderGroup[]>([]);
 	const [MoneyToClaim, setMoneyToClaim] = useState(0);
-	const [checked, setChecked] = useState(false);
+	const [isLoading, setIsLoading] = useState(false);
+	const [isFetching, setIsFetching] = useState(false);
+	const [isChecked, setIsChecked] = useState(false);
 	const { t } = useTranslation();
 	const router = useRouter();
 
@@ -79,108 +81,110 @@ export default function MyClaims() {
 		starknetProvider,
 	);
 
-	useEffect(() => {
-		const fetchBlockchainData = async () => {
-			if (!starknetProvider || !address || !contracts.marketplaceContract)
-				return;
+	const fetchBlockchainData = async () => {
+		if (!starknetProvider || !address || !contracts.marketplaceContract) return;
 
-			try {
-				// Get claim balance
-				const balance = await contracts.get_claim_balance();
-				setMoneyToClaim(Number(balance));
+		setIsFetching(true);
+		try {
+			// Get claim balance
+			const balance = await contracts.get_claim_balance();
+			setMoneyToClaim(Number(balance));
 
-				// Get events for this seller
-				const eventsResponse = await starknetProvider.getEvents({
-					address: contracts.marketplaceContract.address,
-					from_block: { block_number: 0 },
-					to_block: "latest",
-					chunk_size: 100,
-					keys: [[contracts.marketplaceContract.address]],
-				});
+			// Get events for this seller
+			const eventsResponse = await starknetProvider.getEvents({
+				address: contracts.marketplaceContract.address,
+				from_block: { block_number: 0 },
+				to_block: "latest",
+				chunk_size: 100,
+				keys: [[contracts.marketplaceContract.address]],
+			});
 
-				// Convert events to our format
-				const events: BlockchainEvent[] = (eventsResponse.events ?? []).map(
-					(event: StarknetEvent) => ({
-						name: event.keys[0] ?? "",
-						data: event.data,
-						timestamp: Date.now() / 1000, // Using current timestamp as fallback
-					}),
-				);
+			// Convert events to our format
+			const events: BlockchainEvent[] = (eventsResponse.events ?? []).map(
+				(event: StarknetEvent) => ({
+					name: event.keys[0] ?? "",
+					data: event.data,
+					timestamp: Date.now() / 1000, // Using current timestamp as fallback
+				}),
+			);
 
-				// Process events into orders
-				const processedOrders: BlockchainOrder[] = events
-					.filter(
-						(event) =>
-							event.data.includes(address.toLowerCase()) &&
-							event.name === "BuyProduct",
-					)
-					.map((event) => ({
-						token_id: event.data[0] ?? "0",
-						amount: event.data[1] ?? "0",
-						price: event.data[2] ?? "0",
-						timestamp: event.timestamp,
-						claimed: false,
-					}));
+			// Process events into orders
+			const processedOrders: BlockchainOrder[] = events
+				.filter(
+					(event) =>
+						event.data.includes(address.toLowerCase()) &&
+						event.name === "BuyProduct",
+				)
+				.map((event) => ({
+					token_id: event.data[0] ?? "0",
+					amount: event.data[1] ?? "0",
+					price: event.data[2] ?? "0",
+					timestamp: event.timestamp,
+					claimed: false,
+				}));
 
-				// Group orders by month
-				const groupedOrders = processedOrders.reduce<OrderGroup[]>(
-					(acc, order) => {
-						const date = new Date(order.timestamp * 1000);
-						const monthYear = date.toLocaleString("default", {
-							month: "long",
-							year: "numeric",
+			// Group orders by month
+			const groupedOrders = processedOrders.reduce<OrderGroup[]>(
+				(acc, order) => {
+					const date = new Date(order.timestamp * 1000);
+					const monthYear = date.toLocaleString("default", {
+						month: "long",
+						year: "numeric",
+					});
+
+					const orderItem: OrderItem = {
+						id: order.token_id,
+						productName: `Product #${order.token_id}`,
+						buyerName: "Anonymous Buyer",
+						status: SalesStatus.Delivered,
+						delivery: DeliveryMethod.Address,
+						price: Number(order.price) / 1e18,
+						claimed: order.claimed,
+					};
+
+					const existingGroup = acc.find((group) => group.date === monthYear);
+					if (existingGroup) {
+						existingGroup.items.push(orderItem);
+					} else {
+						acc.push({
+							date: monthYear,
+							items: [orderItem],
 						});
+					}
+					return acc;
+				},
+				[],
+			);
 
-						const orderItem: OrderItem = {
-							id: order.token_id,
-							productName: `Product #${order.token_id}`,
-							buyerName: "Anonymous Buyer",
-							status: SalesStatus.Delivered,
-							delivery: DeliveryMethod.Address,
-							price: Number(order.price) / 1e18,
-							claimed: order.claimed,
-						};
-
-						const existingGroup = acc.find((group) => group.date === monthYear);
-						if (existingGroup) {
-							existingGroup.items.push(orderItem);
-						} else {
-							acc.push({
-								date: monthYear,
-								items: [orderItem],
-							});
-						}
-						return acc;
-					},
-					[],
-				);
-
-				setOrdersToClaim(groupedOrders);
-			} catch (error) {
-				console.error("Error fetching blockchain data:", error);
-			}
-		};
-
-		void fetchBlockchainData();
-	}, [starknetProvider, address, contracts]);
+			setOrdersToClaim(groupedOrders);
+			setIsChecked(true);
+		} catch (error) {
+			console.error("Error fetching blockchain data:", error);
+			toast.error(t("error_fetching_data"));
+			setIsChecked(false);
+			setMoneyToClaim(0);
+			setOrdersToClaim([]);
+		} finally {
+			setIsFetching(false);
+		}
+	};
 
 	const handleClaim = async () => {
-		if (!checked) {
-			const total = await contracts.get_claim_balance();
-			setMoneyToClaim(Number(total));
-			setChecked(true);
-			return;
-		}
+		if (isLoading || MoneyToClaim <= 0) return;
+
 		try {
-			console.log("claiming");
+			setIsLoading(true);
 			const tx = await contracts.claim();
 			toast.success(t("status_updated"));
-			router.refresh();
-			setChecked(false);
 			setMoneyToClaim(0);
+			setIsChecked(false);
+			setOrdersToClaim([]);
+			router.refresh();
 		} catch (error) {
 			console.error("Error claiming:", error);
 			toast.error(t("error_updating_status"));
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
@@ -197,50 +201,85 @@ export default function MyClaims() {
 						<InformationCircleIcon className="w-5 h-5 ml-2" />
 					</h3>
 				</div>
-				<div>
-					<h1 className="text-2xl font-semibold text-gray-800">
-						{MoneyToClaim.toFixed(2)} USD
-					</h1>
-				</div>
-				<div className="text-l text-green-600">
-					~{(Number(MoneyToClaim) * 520).toFixed(2)} CRC
-				</div>
+				{isFetching ? (
+					<div className="animate-pulse">
+						<div className="h-8 bg-gray-200 rounded w-32 mb-2" />
+						<div className="h-6 bg-gray-200 rounded w-24" />
+					</div>
+				) : isChecked ? (
+					<>
+						<div>
+							<h1 className="text-2xl font-semibold text-gray-800">
+								{t("amount_with_currency", { amount: MoneyToClaim.toFixed(2) })}
+							</h1>
+						</div>
+						<div className="text-l text-green-600">
+							~
+							{t("amount_with_currency", {
+								amount: (Number(MoneyToClaim) * 520).toFixed(2),
+							})}{" "}
+							CRC
+						</div>
+					</>
+				) : (
+					<div className="text-gray-500 italic">
+						{t("click_check_to_see_balance")}
+					</div>
+				)}
 			</div>
 			<hr className="border-t border-gray-300 my-4" />
 			<div className="mb-6">
-				{OrdersToClaim.map((orderGroup, index) => (
-					<div key={`${orderGroup.date}-${index}`}>
-						<h2 className="text-lg font-semibold text-gray-500 mb-2">
-							{t(orderGroup.date)}
-						</h2>
-						<div className="bg-white rounded-lg">
-							{orderGroup.items.map((order, orderIndex) => (
-								<div key={order.id || orderIndex}>
-									<OrderListPriceItem
-										productName={t(order.productName)}
-										name={t(order.buyerName)}
-										price={order.price}
-										onClick={() => handleItemClick(order.id)}
-									/>
-									{orderIndex < orderGroup.items.length - 1 && (
-										<hr className="my-2 border-surface-primary-soft" />
-									)}
-								</div>
-							))}
-						</div>
+				{isFetching ? (
+					<div className="animate-pulse space-y-4">
+						<div className="h-10 bg-gray-200 rounded" />
+						<div className="h-10 bg-gray-200 rounded" />
+						<div className="h-10 bg-gray-200 rounded" />
 					</div>
-				))}
+				) : isChecked && OrdersToClaim.length > 0 ? (
+					OrdersToClaim.map((orderGroup, index) => (
+						<div key={`${orderGroup.date}-${index}`}>
+							<h2 className="text-lg font-semibold text-gray-500 mb-2">
+								{t(orderGroup.date)}
+							</h2>
+							<div className="bg-white rounded-lg">
+								{orderGroup.items.map((order, orderIndex) => (
+									<div key={order.id || orderIndex}>
+										<OrderListPriceItem
+											productName={t(order.productName)}
+											name={t(order.buyerName)}
+											price={order.price}
+											onClick={() => handleItemClick(order.id)}
+										/>
+										{orderIndex < orderGroup.items.length - 1 && (
+											<hr className="my-2 border-surface-primary-soft" />
+										)}
+									</div>
+								))}
+							</div>
+						</div>
+					))
+				) : null}
 			</div>
-			<div className="mb-6">
-				<Button
-					className="mx-auto mt-5 w-[90%] h-15 px-2"
-					onClick={() => handleClaim()}
-					disabled={checked && MoneyToClaim <= 0}
-				>
-					{!checked
-						? t("check_balance")
-						: `${t("recieve")} ${MoneyToClaim.toFixed(2)} USD`}
-				</Button>
+			<div className="mb-6 space-y-4">
+				{isChecked && MoneyToClaim > 0 ? (
+					<Button
+						className="mx-auto w-[90%] h-15 px-2"
+						onClick={() => handleClaim()}
+						disabled={isLoading}
+					>
+						{isLoading
+							? t("claiming")
+							: t("amount_with_currency", { amount: MoneyToClaim.toFixed(2) })}
+					</Button>
+				) : (
+					<Button
+						className="mx-auto w-[90%] h-15 px-2"
+						onClick={() => fetchBlockchainData()}
+						disabled={isFetching}
+					>
+						{isFetching ? t("checking") : t("check_balance")}
+					</Button>
+				)}
 			</div>
 		</ProfileOptionLayout>
 	);

@@ -167,17 +167,32 @@ class ContractsInterface {
 	async get_claim_balance() {
 		const address = this.get_user_address();
 		if (!this.marketplaceContract) {
-			throw new Error("Cofi collection contract is not loaded");
+			throw new Error("Marketplace contract is not loaded");
 		}
-		const balance_result = await this.marketplaceContract.call(
-			"claim_balance",
-			CallData.compile([address]),
-		);
-		const balance = BigInt(Number(balance_result));
+		try {
+			const balance_result = await this.marketplaceContract.call(
+				"claim_balance",
+				CallData.compile([address]),
+			);
 
-		const stark_price_usd = await this.getStarkPrice();
-		const total = (Number(balance) / 1000000000000000000) * stark_price_usd;
-		return total;
+			let balanceStr = "0";
+			if (balance_result !== undefined && balance_result !== null) {
+				balanceStr =
+					typeof balance_result === "bigint"
+						? balance_result.toString()
+						: (
+								balance_result as { low: bigint; high: bigint }
+							)?.low?.toString() || "0";
+			}
+
+			const stark_price_usd = await this.getStarkPrice();
+			const total =
+				(Number(balanceStr) / 1000000000000000000) * stark_price_usd;
+			return total;
+		} catch (error) {
+			console.error("Error getting claim balance:", error);
+			return 0;
+		}
 	}
 
 	async register_product(price_usd: number, initial_stock: number) {
