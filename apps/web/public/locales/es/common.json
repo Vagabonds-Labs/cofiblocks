@@ -63,7 +63,9 @@
 		"canceled": "Cancelado",
 		"paid": "Pagado",
 		"prepared": "Preparado",
-		"shipped": "Enviado"
+		"shipped": "Enviado",
+		"completed": "Completado",
+		"cancelled": "Cancelado"
 	},
 	"ordered_by": "Pedido por {{name}}",
 	"price_with_currency": "{{price}} USD",
@@ -221,6 +223,11 @@
 	"edit_profile": "Editar perfil",
 	"my_coffee": "Mi Café",
 	"my_sales": "Mis Ventas",
+	"total_sales": "Ventas Totales",
+	"total_sales_amount": "Monto Total de Ventas",
+	"claim_rewards": "Reclamar Recompensas",
+	"available_to_claim": "Disponible para reclamar",
+	"view_claims": "Ver Reclamaciones",
 	"my_claims": "Mis Reclamaciones",
 	"my_orders": "Mis Pedidos",
 	"favorite_products": "Productos favoritos",
@@ -255,6 +262,7 @@
 	"quantity_with_unit": "{{count}} {{unit}}",
 	"total_balance_receivable": "Saldo total por recibir",
 	"recieve": "Recibir",
+	"check_balance": "Verificar saldo",
 	"history": "Historia",
 	"my_sellers": "Mis Vendedores",
 	"offer_coffee": "Ofrecer mi Café",
@@ -316,5 +324,20 @@
 	"farm_details": "Detalles de la granja",
 	"no_favorite_products": "Aún no hay productos favoritos",
 	"click_to_upload": "Haz clic para subir",
-	"no_collectibles_found": "No se encontraron coleccionables"
+	"no_collectibles_found": "No se encontraron coleccionables",
+
+	"review_your_order": "Revisa tu pedido",
+	"quantity": "Cantidad",
+	"product_price": "Precio del producto",
+	"delivery_address": "Dirección de entrega",
+	"my_home": "Mi casa",
+	"delivery_price": "Precio de entrega",
+	"total_price": "Precio total",
+	"change_currency": "Cambiar moneda",
+	"congrats": "¡Felicitaciones!",
+	"order_confirmation_message": "Tu pedido ha sido confirmado y está siendo procesado.",
+	"track_in_my_orders": "Seguir en Mis Pedidos",
+	"subtotal": "Subtotal",
+	"amount_with_currency": "{{amount}} USD",
+	"amount_with_currency_short": "${amount} USD"
 }

@@ -107,21 +107,48 @@ class ContractsInterface {
 	}
 
 	async getStarkPrice() {
-		try {
-			const response = await fetch(
-				"https://api.coingecko.com/api/v3/simple/price?ids=starknet&vs_currencies=usd",
-			);
-			if (!response.ok) {
-				throw new Error(`HTTP error! Status: ${response.status}`);
+		const MAX_RETRIES = 3;
+		const RETRY_DELAY = 1000;
+		const FALLBACK_PRICE = 2.5;
+
+		for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+			try {
+				const response = await fetch(
+					"https://api.coingecko.com/api/v3/simple/price?ids=starknet&vs_currencies=usd",
+					{
+						headers: {
+							Accept: "application/json",
+							"Cache-Control": "no-cache",
+						},
+					},
+				);
+
+				if (!response.ok) {
+					throw new Error(`HTTP error! Status: ${response.status}`);
+				}
+
+				const data = (await response.json()) as CoinGeckoResponse;
+				if (!data?.starknet?.usd) {
+					throw new Error("Invalid response format");
+				}
+
+				return data.starknet.usd;
+			} catch (error) {
+				console.warn(`Attempt ${attempt}/${MAX_RETRIES} failed:`, error);
+
+				if (attempt === MAX_RETRIES) {
+					console.warn(
+						"All retries failed, using fallback price:",
+						FALLBACK_PRICE,
+					);
+					return FALLBACK_PRICE;
+				}
+
+				await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
 			}
-			const data = (await response.json()) as CoinGeckoResponse;
-			return data.starknet.usd;
-		} catch (error) {
-			if (error instanceof Error) {
-				throw new Error(`Error fetching starknet price data: ${error.message}`);
-			}
-			throw new Error("Error fetching starknet price data");
 		}
+
+		return FALLBACK_PRICE;
 	}
 
 	async get_balance_of(token_id: string) {

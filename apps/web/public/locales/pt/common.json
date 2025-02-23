@@ -63,7 +63,9 @@
 		"canceled": "Cancelado",
 		"paid": "Pago",
 		"prepared": "Preparado",
-		"shipped": "Enviado"
+		"shipped": "Enviado",
+		"completed": "Concluído",
+		"cancelled": "Cancelado"
 	},
 	"ordered_by": "Pedido por {{name}}",
 	"price_with_currency": "{{price}} USD",
@@ -221,6 +223,11 @@
 	"edit_profile": "Editar perfil",
 	"my_coffee": "Meu Café",
 	"my_sales": "Minhas Vendas",
+	"total_sales": "Vendas Totais",
+	"total_sales_amount": "Valor Total de Vendas",
+	"claim_rewards": "Resgatar Recompensas",
+	"available_to_claim": "Disponível para resgate",
+	"view_claims": "Ver Resgates",
 	"my_claims": "Minhas Reclamações",
 	"my_orders": "Meus Pedidos",
 	"favorite_products": "Produtos favoritos",
@@ -255,6 +262,7 @@
 	"quantity_with_unit": "{{count}} {{unit}}",
 	"total_balance_receivable": "Saldo total a receber",
 	"recieve": "Receber",
+	"check_balance": "Verificar saldo",
 	"history": "Histórico",
 	"my_sellers": "Meus Vendedores",
 	"offer_coffee": "Oferecer meu café",
@@ -267,7 +275,7 @@
 	"coffee_score": "Pontuação do Café",
 	"not_mandatory": "não obrigatório",
 	"score_placeholder": "Insira uma pontuação entre 0 e 100",
-	"operating_fee": "Taxa de operação por saco",
+	"operating_fee": "Taxa de operação",
 	"price_per_bag": "Preço por saco",
 	"enter_price_placeholder": "Insira o preço (ex. 25.99)",
 	"producer_value_per_bag": "Valor destinado ao produtor por saco:",
@@ -303,5 +311,20 @@
 		"checkout": "Finalizar compra"
 	},
 	"click_to_upload": "Clique para fazer upload",
-	"no_collectibles_found": "Nenhum colecionável encontrado"
+	"no_collectibles_found": "Nenhum colecionável encontrado",
+
+	"review_your_order": "Revise seu pedido",
+	"quantity": "Quantidade",
+	"product_price": "Preço do produto",
+	"delivery_address": "Endereço de entrega",
+	"my_home": "Minha casa",
+	"delivery_price": "Preço de entrega",
+	"total_price": "Preço total",
+	"change_currency": "Alterar moeda",
+	"congrats": "Parabéns!",
+	"order_confirmation_message": "Seu pedido foi confirmado e está sendo processado.",
+	"track_in_my_orders": "Acompanhar em Meus Pedidos",
+	"subtotal": "Subtotal",
+	"amount_with_currency": "{{amount}} USD",
+	"amount_with_currency_short": "${amount} USD"
 }

@@ -90,8 +90,14 @@ export default function ProductStatusDetails({
 		[DeliveryTypeEnum.Delivery]: ["PENDING", "COMPLETED", "CANCELLED"],
 	};
 
-	const statusSteps =
-		stepsByDeliveryType[productDetails.delivery as DeliveryTypeEnum];
+	// Default to Delivery steps if delivery type doesn't match
+	const deliveryType = Object.values(DeliveryTypeEnum).includes(
+		productDetails.delivery as DeliveryTypeEnum,
+	)
+		? (productDetails.delivery as DeliveryTypeEnum)
+		: DeliveryTypeEnum.Delivery;
+
+	const statusSteps = stepsByDeliveryType[deliveryType];
 	const currentStepIndex = statusSteps.indexOf(productDetails.status);
 
 	const stepIconMap = {

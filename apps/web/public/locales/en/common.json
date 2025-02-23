@@ -63,7 +63,9 @@
 		"canceled": "Canceled",
 		"paid": "Paid",
 		"prepared": "Prepared",
-		"shipped": "Shipped"
+		"shipped": "Shipped",
+		"completed": "Completed",
+		"cancelled": "Cancelled"
 	},
 	"order_status_message": {
 		"pending": "Your order has been received and is being processed",
@@ -229,12 +231,19 @@
 	"edit_profile": "Edit profile",
 	"my_coffee": "My Coffee",
 	"my_sales": "My Sales",
+	"total_sales": "Total Sales",
+	"total_sales_amount": "Total Sales Amount",
+	"claim_rewards": "Claim Rewards",
+	"available_to_claim": "Available to claim",
+	"view_claims": "View Claims",
 	"my_claims": "My Claims",
 	"my_orders": "My Orders",
 	"favorite_products": "Favorite products",
 	"wallet": "Wallet",
 	"wallets": "Wallets",
 	"log_out": "Log out",
+	"amount_with_currency": "{{amount}} USD",
+	"amount_with_currency_short": "${amount} USD",
 
 	"variety": "Variety",
 	"badge_text": "Badge Text",
@@ -260,6 +269,7 @@
 	"quantity_with_unit": "{{count}} {{unit}}",
 	"total_balance_receivable": "Total Balance Receivable",
 	"recieve": "Receive",
+	"check_balance": "Check Balance",
 	"history": "History",
 	"my_sellers": "My Sellers",
 	"offer_coffee": "Offer my coffee",
@@ -272,7 +282,7 @@
 	"coffee_score": "Coffee Score",
 	"not_mandatory": "not mandatory",
 	"score_placeholder": "Enter a score between 0 and 100",
-	"operating_fee": "Operating fee per bag",
+	"operating_fee": "Operating fee",
 	"price_per_bag": "Price per bag",
 	"enter_price_placeholder": "Enter price (e.g. 25.99)",
 	"producer_value_per_bag": "Value allocated to the producer per bag:",
@@ -312,6 +322,7 @@
 	"congrats": "Congratulations!",
 	"order_confirmation_message": "Your order has been confirmed and is being processed.",
 	"track_in_my_orders": "Track in My Orders",
+	"subtotal": "Subtotal",
 
 	"marketplace": "Marketplace",
 
