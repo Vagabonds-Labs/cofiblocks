@@ -51,6 +51,8 @@ interface OrderReviewProps {
 	readonly isConfirmed: boolean;
 }
 
+const MARKET_FEE_BPS = 5000; // 50%
+
 export default function OrderReview({
 	onCurrencySelect,
 	deliveryAddress,
@@ -86,7 +88,8 @@ export default function OrderReview({
 		(total, item) => total + item.price * item.quantity,
 		0,
 	);
-	const totalPrice = productPrice + deliveryPrice;
+	const platformFee = (productPrice * MARKET_FEE_BPS) / 10000;
+	const totalPrice = productPrice + platformFee + deliveryPrice;
 
 	const handleCurrencySelect = (currency: string) => {
 		setSelectedCurrency(currency);
@@ -161,9 +164,19 @@ export default function OrderReview({
 
 							<div className="flex justify-between py-2">
 								<span className="text-gray-600">{t("product_price")}</span>
-								<span>
-									{(item.price * item.quantity).toFixed(2)} {selectedCurrency}
-								</span>
+								<div className="flex flex-col items-end">
+									<span className="text-sm text-gray-500">
+										{(item.price * item.quantity).toFixed(2)} {selectedCurrency}
+									</span>
+									<span className="font-medium">
+										{(
+											item.price *
+											(1 + MARKET_FEE_BPS / 10000) *
+											item.quantity
+										).toFixed(2)}{" "}
+										{selectedCurrency}
+									</span>
+								</div>
 							</div>
 							<Separator />
 						</div>
@@ -186,6 +199,22 @@ export default function OrderReview({
 					<Separator />
 
 					<div className="flex justify-between py-2">
+						<span className="text-gray-600">{t("subtotal")}</span>
+						<span>
+							{productPrice.toFixed(2)} {selectedCurrency}
+						</span>
+					</div>
+					<Separator />
+
+					<div className="flex justify-between py-2">
+						<span className="text-gray-600">{t("operating_fee")} (50%)</span>
+						<span>
+							+{platformFee.toFixed(2)} {selectedCurrency}
+						</span>
+					</div>
+					<Separator />
+
+					<div className="flex justify-between py-2">
 						<span className="text-gray-600">{t("delivery_price")}</span>
 						<span>
 							+{deliveryPrice.toFixed(2)} {selectedCurrency}
@@ -194,12 +223,14 @@ export default function OrderReview({
 					<Separator />
 
 					<div className="flex justify-between items-center py-2">
-						<span className="text-gray-600">{t("total_price")}</span>
-						<div className="flex items-center gap-2">
-							<span>
-								{totalPrice.toFixed(2)} {selectedCurrency}
-							</span>
-							<ArrowDownIcon className="h-4 w-4 text-yellow-500" />
+						<span className="font-medium text-lg">{t("total_price")}</span>
+						<div className="flex flex-col items-end gap-1">
+							<div className="flex items-center gap-2">
+								<span className="font-bold text-lg">
+									{totalPrice.toFixed(2)} {selectedCurrency}
+								</span>
+								<ArrowDownIcon className="h-4 w-4 text-yellow-500" />
+							</div>
 						</div>
 					</div>
 				</div>
