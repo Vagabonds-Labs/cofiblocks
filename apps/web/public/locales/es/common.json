@@ -315,5 +315,6 @@
 	"share_product": "Compartir producto",
 	"farm_details": "Detalles de la granja",
 	"no_favorite_products": "Aún no hay productos favoritos",
-	"click_to_upload": "Haz clic para subir"
+	"click_to_upload": "Haz clic para subir",
+	"no_collectibles_found": "No se encontraron coleccionables"
 }

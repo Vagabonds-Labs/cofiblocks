@@ -349,5 +349,6 @@
 	"share_product": "Share product",
 	"farm_details": "Farm details",
 	"no_favorite_products": "No favorite products yet",
-	"click_to_upload": "Click to upload"
+	"click_to_upload": "Click to upload",
+	"no_collectibles_found": "No collectibles found"
 }

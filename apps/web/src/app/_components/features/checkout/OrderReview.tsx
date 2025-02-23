@@ -213,15 +213,15 @@ export default function OrderReview({
 				<Button
 					onClick={() => setIsCurrencySelectorOpen(true)}
 					className="w-full bg-white border border-gray-300 text-black mt-6 h-14"
-					disabled={isProcessing}
+					disabled={isProcessing || cartItems.length === 0}
 				>
 					{t("change_currency")}
 				</Button>
 
 				<Button
 					onClick={handleProceedToPayment}
-					className="w-full bg-yellow-400 hover:bg-yellow-500 text-black mt-6 h-14"
-					disabled={isProcessing}
+					className={`w-full bg-yellow-400 hover:bg-yellow-500 text-black mt-6 h-14 ${cartItems.length === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+					disabled={isProcessing || cartItems.length === 0}
 				>
 					{isProcessing ? t("processing_payment") : t("proceed_to_payment")}
 				</Button>

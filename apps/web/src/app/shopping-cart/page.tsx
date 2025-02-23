@@ -269,7 +269,8 @@ export default function ShoppingCart() {
 						<button
 							type="button"
 							onClick={() => handleCheckout()}
-							className="w-full py-3.5 px-4 bg-surface-secondary-default rounded-lg border border-surface-secondary-defaul flex justify-center items-center"
+							className={`w-full py-3.5 px-4 bg-surface-secondary-default rounded-lg border border-surface-secondary-defaul flex justify-center items-center ${!hasItems ? "opacity-50 cursor-not-allowed" : ""}`}
+							disabled={!hasItems}
 						>
 							<span className="text-[#1F1F20] text-base font-normal">
 								{t("buy_button")}

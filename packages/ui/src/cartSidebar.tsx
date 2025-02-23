@@ -60,7 +60,8 @@ export function CartSidebar({
 			<Button
 				variant="primary"
 				onClick={onCheckout}
-				className="w-full h-12 text-base font-semibold"
+				className={`w-full h-12 text-base font-semibold ${!basePrice || basePrice <= 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+				disabled={!basePrice || basePrice <= 0}
 			>
 				{checkoutLabel}
 			</Button>
