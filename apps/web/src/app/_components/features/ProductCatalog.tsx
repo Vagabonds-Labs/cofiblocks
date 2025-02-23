@@ -16,6 +16,8 @@ import {
 import { api } from "~/trpc/react";
 import type { NftMetadata, Product } from "./types";
 
+const MARKET_FEE_BPS = 5000; // 50%
+
 interface ProductCatalogProps {
 	isConnected?: boolean;
 	onConnect?: () => void;
@@ -40,6 +42,11 @@ export default function ProductCatalog({
 			void refetchCart();
 		},
 	});
+
+	const calculateTotalPrice = (price: number): number => {
+		const fee = (price * MARKET_FEE_BPS) / 10000;
+		return price + fee;
+	};
 
 	const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
 		api.product.getProducts.useInfiniteQuery(
@@ -125,6 +132,8 @@ export default function ProductCatalog({
 			);
 		};
 
+		const totalPrice = calculateTotalPrice(product.price);
+
 		return (
 			<ProductCard
 				key={product.id}
@@ -132,7 +141,7 @@ export default function ProductCatalog({
 				region={metadata?.region ?? ""}
 				farmName={metadata?.farmName ?? ""}
 				variety={t(product.name)}
-				price={product.price}
+				price={totalPrice}
 				badgeText={t(`strength.${metadata?.strength?.toLowerCase()}`)}
 				onClick={() => accessProductDetails(product.id)}
 				onAddToCart={handleAddToCart}

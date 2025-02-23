@@ -18,6 +18,8 @@ import {
 	useStarkContract,
 } from "../../services/contractsInterface";
 
+const MARKET_FEE_BPS = 5000; // 50%
+
 interface DeleteModalProps {
 	isOpen: boolean;
 	onConfirm: () => void;
@@ -160,9 +162,15 @@ export default function ShoppingCart() {
 		}
 	};
 
+	const calculateTotalPrice = (price: number): number => {
+		const fee = (price * MARKET_FEE_BPS) / 10000;
+		return price + fee;
+	};
+
 	const totalPrice =
 		cart?.items.reduce(
-			(total, item) => total + item.product.price * item.quantity,
+			(total, item) =>
+				total + calculateTotalPrice(item.product.price) * item.quantity,
 			0,
 		) ?? 0;
 
@@ -229,7 +237,7 @@ export default function ShoppingCart() {
 							</div>
 							<div className="flex items-center gap-4">
 								<span className="text-gray-900">
-									{item.product.price * item.quantity} USD
+									{calculateTotalPrice(item.product.price) * item.quantity} USD
 								</span>
 								<button
 									type="button"

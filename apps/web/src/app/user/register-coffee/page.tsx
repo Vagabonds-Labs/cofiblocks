@@ -237,12 +237,6 @@ export default function RegisterCoffee() {
 						</div>
 					</div>
 					<div className="my-8 flex justify-between items-center">
-						<div className="flex items-center font-medium">
-							<ArrowPathRoundedSquareIcon className="w-6 h-6 mr-2" />
-							<label className="text-content-body-default">
-								{t("operating_fee")}
-							</label>
-						</div>
 						<p className="text-content-body-default">
 							${operatingFee.toFixed(2)} USD
 						</p>
