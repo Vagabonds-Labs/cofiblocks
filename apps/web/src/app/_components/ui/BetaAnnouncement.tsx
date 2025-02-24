@@ -22,10 +22,7 @@ export default function BetaAnnouncement() {
 					>
 						<circle cx={1} cy={1} r={1} />
 					</svg>
-					{t(
-						"beta_announcement",
-						"Welcome to our beta version. We're actively improving the platform and appreciate your understanding as we enhance your experience.",
-					)}
+					{t("beta_announcement")}
 				</p>
 			</div>
 			<div className="flex flex-1 justify-end">
