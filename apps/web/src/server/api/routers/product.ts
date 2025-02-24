@@ -86,6 +86,7 @@ export const productRouter = createTRPCRouter({
 				strength: z.string().min(1),
 				region: z.string().optional(),
 				farmName: z.string().optional(),
+				stock: z.number().min(0),
 			}),
 		)
 		.mutation(async ({ input }) => {
@@ -95,6 +96,7 @@ export const productRouter = createTRPCRouter({
 						tokenId: input.tokenId,
 						name: input.name,
 						price: input.price,
+						stock: input.stock,
 						nftMetadata: JSON.stringify({
 							description: input.description,
 							imageUrl: input.image,

@@ -91,6 +91,7 @@ export default function RegisterCoffee() {
 				strength: submissionData.roast,
 				region: "",
 				farmName: "",
+				stock: submissionData.bagsAvailable,
 			});
 			toast.success(t("product_registered_successfully"));
 			router.push("/marketplace");
