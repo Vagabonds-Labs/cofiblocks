@@ -42,7 +42,7 @@ export default function ProductPage() {
 	const { address } = useAccount();
 	const { disconnect } = useDisconnect();
 	const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
-	const [bagsAvailable, setBagsAvailable] = useState(0);
+	const [bagsAvailable, setBagsAvailable] = useState<number | null>(null);
 	const marketplaceContract = useMarketplaceContract();
 	const params = useParams();
 	const idParam = params?.id;
@@ -132,7 +132,7 @@ export default function ProductPage() {
 				setBagsAvailable(Number(stock));
 			} catch (error) {
 				console.error("Error getting stock:", error);
-				setBagsAvailable(0);
+				setBagsAvailable(null);
 			}
 		}
 		void getStock();
@@ -235,7 +235,7 @@ export default function ProductPage() {
 								process: "Natural",
 								description: parseMetadata(product.nftMetadata as string)
 									.description,
-								stock: bagsAvailable,
+								stock: product.stock ?? 0,
 							}}
 							isConnected={!!address}
 							onConnect={handleConnect}

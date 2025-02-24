@@ -28,7 +28,7 @@ interface ProductDetailsProps {
 		description: string;
 		type: "Buyer" | "Farmer" | "SoldOut";
 		process: string;
-		bagsAvailable?: number;
+		bagsAvailable?: number | null;
 	};
 	isConnected?: boolean;
 	onConnect?: () => void;
@@ -128,6 +128,7 @@ export default function ProductDetails({
 		return () => clearInterval(interval);
 	}, [price]);
 
+	// Only mark as sold out if stock is 0 or type is SoldOut
 	const isSoldOut = stock === 0 || type === "SoldOut";
 	const isFarmer = type === "Farmer";
 
