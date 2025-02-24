@@ -52,6 +52,7 @@ export default function ProductCatalog({
 		api.product.getProducts.useInfiniteQuery(
 			{
 				limit: 3,
+				includeHidden: false,
 			},
 			{
 				getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -60,11 +61,15 @@ export default function ProductCatalog({
 
 	useEffect(() => {
 		if (data) {
-			const allProducts = data.pages.flatMap((page) =>
-				page.products.map((product) => ({
-					...product,
-					process: "Natural",
-				})),
+			const allProducts = data.pages.flatMap(
+				(page) =>
+					page.products
+						.filter((product) => product.hidden !== true)
+						.map((product) => ({
+							...product,
+							process: "Natural",
+							stock: product.stock ?? 0,
+						})) as Product[],
 			);
 			setProducts(allProducts);
 		}
@@ -90,6 +95,10 @@ export default function ProductCatalog({
 	};
 
 	const renderProduct = (product: Product) => {
+		if (product.hidden === true) {
+			return null;
+		}
+
 		let metadata: NftMetadata | null = null;
 
 		if (typeof product.nftMetadata === "string") {
@@ -102,7 +111,6 @@ export default function ProductCatalog({
 			metadata = product.nftMetadata as NftMetadata;
 		}
 
-		// Format the image URL to include the IPFS gateway if it's an IPFS hash
 		const imageUrl = metadata?.imageUrl
 			? metadata.imageUrl.startsWith("Qm")
 				? `${process.env.NEXT_PUBLIC_GATEWAY_URL}/ipfs/${metadata.imageUrl}`
@@ -142,6 +150,7 @@ export default function ProductCatalog({
 				farmName={metadata?.farmName ?? ""}
 				variety={t(product.name)}
 				price={totalPrice}
+				stock={product.stock}
 				badgeText={t(`strength.${metadata?.strength?.toLowerCase()}`)}
 				onClick={() => accessProductDetails(product.id)}
 				onAddToCart={handleAddToCart}
@@ -191,11 +200,16 @@ export default function ProductCatalog({
 								</button>
 							</div>
 							<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 w-full">
-								{results.map((product) => (
-									<div key={product.id} className="w-full">
-										{renderProduct(product)}
-									</div>
-								))}
+								{results
+									.filter((product) => product.hidden !== true)
+									.map((product) => (
+										<div key={product.id} className="w-full">
+											{renderProduct({
+												...product,
+												stock: product.stock ?? 0,
+											})}
+										</div>
+									))}
 							</div>
 						</div>
 					) : query ? (

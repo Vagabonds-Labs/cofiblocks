@@ -1,9 +1,11 @@
 import {
 	type Order,
 	OrderStatus,
+	Prisma,
 	type Product,
 	type User,
 } from "@prisma/client";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { serverContracts } from "~/services/serverContracts";
@@ -106,77 +108,135 @@ export const orderRouter = createTRPCRouter({
 		)
 		.mutation(async ({ ctx, input }): Promise<OrderWithRelations> => {
 			// Start a transaction
-			return ctx.db.$transaction(async (tx) => {
-				// Get the cart with items
-				const cart = await tx.shoppingCart.findUnique({
-					where: { id: input.cartId },
-					include: {
-						items: {
-							include: {
-								product: true,
+			return ctx.db.$transaction(
+				async (tx) => {
+					// Get the cart with items
+					const cart = await tx.shoppingCart.findUnique({
+						where: { id: input.cartId },
+						include: {
+							items: {
+								include: {
+									product: true,
+								},
 							},
 						},
-					},
-				});
+					});
 
-				if (!cart) {
-					throw new Error("Cart not found");
-				}
+					if (!cart) {
+						throw new TRPCError({
+							code: "NOT_FOUND",
+							message: "Cart not found",
+						});
+					}
 
-				// Find the seller (producer) based on the first product's tokenId
-				const firstProduct = cart.items[0]?.product;
-				if (!firstProduct) {
-					throw new Error("No products in cart");
-				}
+					if (cart.items.length === 0) {
+						throw new TRPCError({
+							code: "BAD_REQUEST",
+							message: "Cart is empty",
+						});
+					}
 
-				// Find the producer who owns this product
-				const seller = await tx.user.findFirst({
-					where: {
-						role: "COFFEE_PRODUCER",
-						walletAddress: {
-							not: "",
-						},
-					},
-				});
+					// Validate stock for all items and prepare stock updates
+					const stockUpdates: Prisma.PrismaPromise<Product>[] = [];
+					for (const item of cart.items) {
+						if (item.quantity > item.product.stock) {
+							throw new TRPCError({
+								code: "BAD_REQUEST",
+								message: `Insufficient stock for ${item.product.name}. Available: ${item.product.stock}, Requested: ${item.quantity}`,
+							});
+						}
 
-				if (!seller) {
-					throw new Error(`No producer found for product ${firstProduct.name}`);
-				}
+						// Prepare stock update
+						stockUpdates.push(
+							tx.product.update({
+								where: { id: item.product.id },
+								data: {
+									stock: {
+										decrement: item.quantity,
+									},
+								},
+							}),
+						);
+					}
 
-				// Calculate total
-				const total = cart.items.reduce(
-					(sum, item) => sum + item.product.price * item.quantity,
-					0,
-				);
-
-				// Create the order
-				const order = (await tx.order.create({
-					data: {
-						userId: ctx.session.user.id,
-						sellerId: seller.id,
-						total,
-						status: OrderStatus.PENDING,
-						items: {
-							create: cart.items.map((item) => ({
-								productId: item.product.id,
-								quantity: item.quantity,
-								price: item.product.price,
-							})),
-						},
-					},
-					include: {
-						items: {
-							include: {
-								product: true,
+					// Find the seller (producer)
+					const seller = await tx.user.findFirst({
+						where: {
+							role: "COFFEE_PRODUCER",
+							walletAddress: {
+								not: "",
 							},
 						},
-						user: true,
-						seller: true,
-					},
-				})) as OrderWithRelations;
+					});
 
-				return order;
-			});
+					if (!seller) {
+						throw new TRPCError({
+							code: "NOT_FOUND",
+							message: "No eligible producer found for this order",
+						});
+					}
+
+					// Calculate total
+					const total = cart.items.reduce(
+						(sum, item) => sum + item.product.price * item.quantity,
+						0,
+					);
+
+					try {
+						// Execute all stock updates
+						await Promise.all(stockUpdates);
+
+						// Create the order
+						const order = (await tx.order.create({
+							data: {
+								userId: ctx.session.user.id,
+								sellerId: seller.id,
+								total,
+								status: OrderStatus.PENDING,
+								items: {
+									create: cart.items.map((item) => ({
+										productId: item.product.id,
+										quantity: item.quantity,
+										price: item.product.price,
+									})),
+								},
+							},
+							include: {
+								items: {
+									include: {
+										product: true,
+									},
+								},
+								user: true,
+								seller: true,
+							},
+						})) as OrderWithRelations;
+
+						// Clean up the cart
+						await tx.shoppingCartItem.deleteMany({
+							where: { shoppingCartId: cart.id },
+						});
+
+						await tx.shoppingCart.delete({
+							where: { id: cart.id },
+						});
+
+						return order;
+					} catch (error) {
+						// If anything fails, the transaction will be rolled back automatically
+						throw new TRPCError({
+							code: "INTERNAL_SERVER_ERROR",
+							message: "Failed to process order",
+							cause: error,
+						});
+					}
+				},
+				{
+					// Set a timeout and isolation level for the transaction
+					timeout: 10000,
+					isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+				},
+			);
 		}),
 
 	// Get user's NFT collectibles

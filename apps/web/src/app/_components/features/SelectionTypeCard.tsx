@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 interface SelectionTypeCardProps {
 	price: number;
 	quantity: number;
-	bagsAvailable: number;
+	stock: number;
 	onQuantityChange: (quantity: number) => void;
 	onAddToCart: () => void;
 	onConnect?: () => void;
@@ -19,7 +19,7 @@ interface SelectionTypeCardProps {
 export function SelectionTypeCard({
 	price,
 	quantity,
-	bagsAvailable,
+	stock,
 	onQuantityChange,
 	onAddToCart,
 	onConnect,
@@ -85,9 +85,7 @@ export function SelectionTypeCard({
 						</Text>
 						<button
 							type="button"
-							onClick={() =>
-								onQuantityChange(Math.min(bagsAvailable, quantity + 1))
-							}
+							onClick={() => onQuantityChange(Math.min(stock, quantity + 1))}
 							className="w-6 h-6 bg-surface-secondary-default rounded grid place-content-center relative"
 						>
 							<span className="text-white font-bold text-base translate-x-[0.5px] -translate-y-[1px]">
@@ -99,7 +97,7 @@ export function SelectionTypeCard({
 					<Button
 						variant="primary"
 						onClick={handleAddToCart}
-						disabled={isAddingToCart}
+						disabled={isAddingToCart || stock === 0}
 					>
 						{isAddingToCart ? t("adding_to_cart") : t("add_to_cart")}
 					</Button>

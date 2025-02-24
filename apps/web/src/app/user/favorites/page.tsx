@@ -16,6 +16,7 @@ interface Product {
 	name: string;
 	price: number;
 	nftMetadata: JsonValue;
+	stock: number;
 	createdAt: Date;
 	updatedAt: Date;
 }
@@ -98,6 +99,7 @@ export default function Favorites() {
 							variety={favorite.product.name}
 							price={favorite.product.price}
 							badgeText={t("badge_text")}
+							stock={favorite.product.stock}
 							onClick={() => handleRemoveFromFavorites(favorite.product.id)}
 							onAddToCart={() =>
 								handleAddToCart(favorite.product.id, favorite.product)

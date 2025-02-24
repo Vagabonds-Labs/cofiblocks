@@ -7,6 +7,8 @@
 	"argent_mobile": "Argent Mobile",
 	"error_signing_message": "Erro ao assinar a mensagem",
 
+	"beta_announcement": "Bem-vindo à nossa versão beta. Estamos melhorando ativamente a plataforma e agradecemos sua compreensão enquanto aprimoramos sua experiência.",
+
 	"tag_new": "Novo",
 	"welcome_coffee_lover": "Bem-vindo Amante de Café",
 	"featured": "Em destaque",
@@ -326,5 +328,11 @@
 	"track_in_my_orders": "Acompanhar em Meus Pedidos",
 	"subtotal": "Subtotal",
 	"amount_with_currency": "{{amount}} USD",
-	"amount_with_currency_short": "${amount} USD"
+	"amount_with_currency_short": "${amount} USD",
+	"stock_status": {
+		"in_stock": "{{count}} em estoque",
+		"low_stock_left": "Apenas {{count}} restantes",
+		"stock_available": "{{count}} disponíveis",
+		"sold_out": "Esgotado"
+	}
 }

@@ -7,6 +7,8 @@
 	"argent_mobile": "Argent Mobile",
 	"error_signing_message": "Error signing the message",
 
+	"beta_announcement": "Welcome to our beta version. We're actively improving the platform and appreciate your understanding as we enhance your experience.",
+
 	"tag_new": "New",
 	"welcome_coffee_lover": "Welcome Coffee Lover",
 	"featured": "Featured",
@@ -361,5 +363,12 @@
 	"farm_details": "Farm details",
 	"no_favorite_products": "No favorite products yet",
 	"click_to_upload": "Click to upload",
-	"no_collectibles_found": "No collectibles found"
+	"no_collectibles_found": "No collectibles found",
+
+	"stock_status": {
+		"in_stock": "{{count}} in stock",
+		"low_stock_left": "Only {{count}} left",
+		"stock_available": "{{count}} available",
+		"sold_out": "Sold Out"
+	}
 }

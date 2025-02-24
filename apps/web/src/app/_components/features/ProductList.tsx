@@ -6,16 +6,60 @@ import { useTranslation } from "react-i18next";
 import { addItemAtom } from "~/store/cartAtom";
 import { api } from "~/trpc/react";
 
+interface ProductMetadata {
+	imageUrl: string;
+	description: string;
+}
+
 interface Product {
 	id: number;
 	tokenId: number;
 	name: string;
 	price: number;
 	description: string;
+	stock: number;
+	hidden?: boolean | null;
+	nftMetadata: string | ProductMetadata;
+	createdAt: Date;
+	updatedAt: Date;
 }
 
 interface ProductListProps {
 	products: Product[];
+}
+
+function isValidMetadata(metadata: unknown): metadata is ProductMetadata {
+	if (!metadata || typeof metadata !== "object") return false;
+
+	const candidate = metadata as Record<string, unknown>;
+	return (
+		"imageUrl" in candidate &&
+		typeof candidate.imageUrl === "string" &&
+		"description" in candidate &&
+		typeof candidate.description === "string"
+	);
+}
+
+function parseMetadata(nftMetadata: string | ProductMetadata): ProductMetadata {
+	if (typeof nftMetadata === "string") {
+		try {
+			// Type assertion after parsing to unknown first, then validate
+			const parsed = JSON.parse(nftMetadata) as unknown;
+			if (isValidMetadata(parsed)) {
+				return parsed;
+			}
+		} catch (error) {
+			console.warn("Failed to parse metadata:", error);
+		}
+	} else if (isValidMetadata(nftMetadata)) {
+		return nftMetadata;
+	}
+
+	// Default metadata if parsing fails or validation fails
+	return {
+		imageUrl: "/default-image.webp",
+		description: "",
+	};
 }
 
 export default function ProductList({ products }: ProductListProps) {
@@ -34,6 +78,8 @@ export default function ProductList({ products }: ProductListProps) {
 
 			if (previousCart) {
 				const now = new Date();
+				const metadata = parseMetadata(product.nftMetadata);
+
 				const optimisticItem = {
 					id: `temp-${Date.now()}`,
 					productId: product.id,
@@ -46,11 +92,9 @@ export default function ProductList({ products }: ProductListProps) {
 						tokenId: product.tokenId,
 						name: product.name,
 						price: product.price,
-						hidden: false,
-						nftMetadata: JSON.stringify({
-							imageUrl: "/default-image.webp",
-							description: product.description,
-						}),
+						hidden: product.hidden ?? false,
+						stock: product.stock,
+						nftMetadata: JSON.stringify(metadata),
 						createdAt: now,
 						updatedAt: now,
 					},
@@ -68,10 +112,7 @@ export default function ProductList({ products }: ProductListProps) {
 			if (context?.previousCart) {
 				utils.cart.getUserCart.setData(undefined, context.previousCart);
 			}
-			toast.error(err.message || t("error_adding_to_cart"));
-		},
-		onSuccess: (newItem) => {
-			toast.success(t("item_added_to_cart"));
+			toast.error(t("error_adding_to_cart"));
 		},
 		onSettled: () => {
 			void utils.cart.getUserCart.invalidate();
@@ -79,9 +120,25 @@ export default function ProductList({ products }: ProductListProps) {
 	});
 
 	const handleAddToCart = (product: Product) => {
+		if (product.stock <= 0) {
+			toast.error(t("error_out_of_stock"));
+			return;
+		}
+
 		addToCart({
 			productId: product.id,
 			quantity: 1,
+		});
+
+		const metadata = parseMetadata(product.nftMetadata);
+
+		addItem({
+			id: product.id.toString(),
+			tokenId: product.tokenId,
+			name: product.name,
+			price: product.price,
+			quantity: 1,
+			imageUrl: metadata.imageUrl,
 		});
 	};
 

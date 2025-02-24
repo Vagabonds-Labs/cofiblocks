@@ -3,6 +3,7 @@ import Image from "next/image";
 import { useTranslation } from "react-i18next";
 import Badge from "./badge";
 import IconButton from "./iconButton";
+import { Tooltip } from "./tooltip";
 import { H4, Text } from "./typography";
 
 interface ProductCardProps {
@@ -12,6 +13,7 @@ interface ProductCardProps {
 	variety: string;
 	price: number;
 	badgeText: string;
+	stock: number;
 	onClick: () => void;
 	onAddToCart?: () => void;
 	isAddingToShoppingCart?: boolean;
@@ -25,38 +27,83 @@ export function ProductCard({
 	variety,
 	price,
 	badgeText,
+	stock,
 	onClick,
 	onAddToCart,
 	isAddingToShoppingCart,
 	isConnected,
 }: ProductCardProps) {
 	const { t } = useTranslation();
+	const isSoldOut = stock === 0;
+
+	// Stock level thresholds
+	const LOW_STOCK_THRESHOLD = 5;
+	const MEDIUM_STOCK_THRESHOLD = 15;
+
+	// Determine stock status and styling
+	const getStockStatus = () => {
+		if (isSoldOut)
+			return { color: "bg-red-500", text: t("stock_status.sold_out") };
+		if (stock <= LOW_STOCK_THRESHOLD)
+			return {
+				color: "bg-orange-500",
+				text: t("stock_status.low_stock_left", { count: stock }),
+			};
+		if (stock <= MEDIUM_STOCK_THRESHOLD)
+			return {
+				color: "bg-yellow-500",
+				text: t("stock_status.stock_available", { count: stock }),
+			};
+		return {
+			color: "bg-green-500",
+			text: t("stock_status.in_stock", { count: stock }),
+		};
+	};
+
+	const stockStatus = getStockStatus();
+	const hasLocationInfo = region || farmName;
 
 	return (
-		<div className="w-full rounded-2xl overflow-hidden shadow-lg border border-surface-border hover:shadow-xl transition-all duration-300 group">
-			<div className="relative">
+		<div className="w-full h-[20rem] md:h-[24rem] lg:h-[28rem] rounded-2xl overflow-hidden shadow-lg border border-surface-border hover:shadow-xl transition-all duration-300 group flex flex-col">
+			<div className="relative h-36 md:h-40 lg:h-44">
 				<Image
 					src={image}
 					alt={t("product_image_alt")}
-					width={600}
-					height={400}
-					className="object-cover w-full h-48 md:h-64 lg:h-72 rounded-t-2xl transition-transform duration-300 group-hover:scale-105"
+					fill
+					className="object-cover rounded-t-2xl transition-transform duration-300 group-hover:scale-105"
+					sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
 				/>
-				<div className="absolute bottom-4 left-4">
+				<div className="absolute bottom-3 left-3">
 					<Badge variant="accent" text={badgeText} />
 				</div>
 			</div>
-			<div className="px-4 py-4 md:px-6 md:py-6 bg-surface-primary-soft rounded-b-2xl">
-				<Text className="text-sm md:text-base text-content-body-default mb-2">
-					{t("region_by_farm", { region, farmName })}
-				</Text>
+			<div className="flex-1 px-3 py-2.5 md:px-4 md:py-3 lg:px-5 lg:py-4 bg-surface-primary-soft rounded-b-2xl flex flex-col">
+				<div className="flex flex-col gap-1 md:gap-1.5 mb-2">
+					{hasLocationInfo && (
+						<Text className="text-sm md:text-base text-content-body-default">
+							{t("region_by_farm", { region, farmName })}
+						</Text>
+					)}
+					<div className="flex items-center">
+						<div className={`w-2 h-2 rounded-full ${stockStatus.color} mr-2`} />
+						<Text
+							className={`text-sm ${isSoldOut ? "text-red-600 font-medium" : "text-gray-600"}`}
+						>
+							{stockStatus.text}
+						</Text>
+					</div>
+				</div>
 
-				<div className="flex items-center justify-between mb-4">
-					<H4 className="text-xl md:text-2xl lg:text-3xl font-bold text-content-title line-clamp-2">
-						{variety}
-					</H4>
+				<div className="flex items-start justify-between mb-2 md:mb-3 min-h-[2.75rem] md:min-h-[3rem]">
+					<div className="max-w-[90%]">
+						<Tooltip content={variety}>
+							<H4 className="text-base md:text-lg lg:text-xl font-bold text-content-title line-clamp-2 hover:text-clip cursor-help">
+								{variety}
+							</H4>
+						</Tooltip>
+					</div>
 					<IconButton
-						size="lg"
+						size="sm"
 						variant="secondary"
 						onClick={onClick}
 						icon={<ArrowRightIcon className="w-5 h-5 md:w-6 md:h-6" />}
@@ -64,18 +111,18 @@ export function ProductCard({
 					/>
 				</div>
 
-				<div className="flex justify-between items-center">
-					<Text className="text-lg md:text-xl lg:text-2xl font-semibold text-surface-primary-default">
+				<div className="mt-auto flex justify-between items-center">
+					<Text className="text-base md:text-lg lg:text-xl font-semibold text-surface-primary-default">
 						{t("price_with_currency", { price })}
 						<span className="text-sm md:text-base font-medium text-content-body-default ml-1">
 							{t("per_unit")}
 						</span>
 					</Text>
-					{onAddToCart && isConnected && (
+					{onAddToCart && isConnected && !isSoldOut && (
 						<button
 							onClick={onAddToCart}
 							disabled={isAddingToShoppingCart}
-							className="px-4 py-2 md:px-6 md:py-3 bg-surface-primary-default text-white rounded-lg text-sm md:text-base font-medium hover:bg-surface-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-w-[120px] md:min-w-[140px] flex items-center justify-center"
+							className="px-3 py-2 md:px-4 md:py-2 bg-surface-primary-default text-white rounded-lg text-sm font-medium hover:bg-surface-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-w-[100px] md:min-w-[120px] flex items-center justify-center"
 							type="button"
 						>
 							{isAddingToShoppingCart ? (

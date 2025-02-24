@@ -23,11 +23,12 @@ interface ProductDetailsProps {
 		region: string;
 		farmName: string;
 		roastLevel: string;
-		bagsAvailable: number;
+		stock: number;
 		price: number;
 		description: string;
 		type: "Buyer" | "Farmer" | "SoldOut";
 		process: string;
+		bagsAvailable?: number;
 	};
 	isConnected?: boolean;
 	onConnect?: () => void;
@@ -72,12 +73,13 @@ export default function ProductDetails({
 		name,
 		farmName,
 		roastLevel,
-		bagsAvailable,
+		stock,
 		price,
 		type,
 		process,
 		description,
 		region,
+		bagsAvailable,
 	} = product;
 
 	const { t } = useTranslation();
@@ -126,7 +128,7 @@ export default function ProductDetails({
 		return () => clearInterval(interval);
 	}, [price]);
 
-	const isSoldOut = type === "SoldOut";
+	const isSoldOut = stock === 0 || type === "SoldOut";
 	const isFarmer = type === "Farmer";
 
 	// Update productImages to use getImageUrl
@@ -245,7 +247,7 @@ export default function ProductDetails({
 						{!isSoldOut && !isFarmer && (
 							<Button
 								onClick={isConnected ? handleAddToCart : onConnect}
-								disabled={isAddingToCart}
+								disabled={isAddingToCart || stock === 0}
 								className="bg-yellow-400 hover:bg-yellow-500 text-black px-6"
 							>
 								{isAddingToCart
@@ -266,14 +268,23 @@ export default function ProductDetails({
 					<div className="space-y-4">
 						<div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100">
 							{productImages[selectedImage] && (
-								<Image
-									src={productImages[selectedImage].src}
-									alt={name}
-									fill
-									className="object-cover hover:scale-105 transition-transform duration-300"
-									sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-									priority
-								/>
+								<>
+									<Image
+										src={productImages[selectedImage].src}
+										alt={name}
+										fill
+										className="object-cover hover:scale-105 transition-transform duration-300"
+										sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+										priority
+									/>
+									{isSoldOut && (
+										<div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+											<span className="text-white text-2xl font-bold px-6 py-2 bg-red-600 rounded-lg">
+												{t("sold_out")}
+											</span>
+										</div>
+									)}
+								</>
 							)}
 						</div>
 						{productImages.length > 1 && (
@@ -310,12 +321,30 @@ export default function ProductDetails({
 						</div>
 
 						<div className="border-t border-b py-4">
-							<Text className="text-3xl font-bold text-gray-900">
-								${price.toFixed(2)} USD
-								<span className="text-base font-normal text-gray-500 ml-2">
-									{t("per_unit")}
-								</span>
-							</Text>
+							<div className="flex items-center justify-between mb-2">
+								<Text className="text-3xl font-bold text-gray-900">
+									${price.toFixed(2)} USD
+									<span className="text-base font-normal text-gray-500 ml-2">
+										{t("per_unit")}
+									</span>
+								</Text>
+								<div className="flex items-center">
+									<div
+										className={`w-2 h-2 rounded-full ${isSoldOut ? "bg-red-500" : stock <= 5 ? "bg-orange-500" : stock <= 15 ? "bg-yellow-500" : "bg-green-500"} mr-2`}
+									/>
+									<Text
+										className={`text-sm ${isSoldOut ? "text-red-600 font-medium" : "text-gray-600"}`}
+									>
+										{isSoldOut
+											? t("stock_status.sold_out")
+											: stock <= 5
+												? t("stock_status.low_stock_left", { count: stock })
+												: stock <= 15
+													? t("stock_status.stock_available", { count: stock })
+													: t("stock_status.in_stock", { count: stock })}
+									</Text>
+								</div>
+							</div>
 							{isLoadingPrice ? (
 								<Text className="text-sm text-gray-500 mt-1">
 									{t("loading_strk_price")}
@@ -325,9 +354,13 @@ export default function ProductDetails({
 									≈ {strkPrice.toFixed(2)} STRK
 								</Text>
 							) : null}
-							{!isSoldOut && (
+							{isSoldOut ? (
+								<Text className="text-sm text-red-600 font-medium mt-1">
+									{t("product_sold_out")}
+								</Text>
+							) : (
 								<Text className="text-sm text-gray-500 mt-1">
-									{t("bags_available_count", { count: bagsAvailable })}
+									{t("stock_available", { count: stock })}
 								</Text>
 							)}
 						</div>
@@ -351,7 +384,7 @@ export default function ProductDetails({
 							<SelectionTypeCard
 								price={price}
 								quantity={quantity}
-								bagsAvailable={bagsAvailable}
+								stock={stock}
 								onQuantityChange={setQuantity}
 								onAddToCart={handleAddToCart}
 								isAddingToCart={isAddingToCart}

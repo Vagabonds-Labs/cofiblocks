@@ -235,6 +235,7 @@ export default function ProductPage() {
 								process: "Natural",
 								description: parseMetadata(product.nftMetadata as string)
 									.description,
+								stock: bagsAvailable,
 							}}
 							isConnected={!!address}
 							onConnect={handleConnect}
