@@ -188,11 +188,11 @@ export default function ProductDetails({
 			<div className="sticky top-0 z-50 bg-white">
 				<div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
 					{/* Left Side: Breadcrumbs */}
-					<nav className="flex items-center text-sm text-gray-500">
+					<nav className="flex items-center text-sm text-gray-500 overflow-hidden">
 						<button
 							type="button"
 							onClick={() => router.back()}
-							className="hover:text-gray-900 transition-colors flex items-center"
+							className="hover:text-gray-900 transition-colors flex items-center flex-shrink-0"
 						>
 							<svg
 								className="w-5 h-5 mr-2"
@@ -209,8 +209,13 @@ export default function ProductDetails({
 							</svg>
 							{t("marketplace")}
 						</button>
-						<span className="mx-2">/</span>
-						<span className="text-gray-900 font-medium">{name}</span>
+						<span className="mx-2 flex-shrink-0">/</span>
+						<span
+							className="text-gray-900 font-medium truncate max-w-[150px] sm:max-w-[250px] md:max-w-xs"
+							title={name}
+						>
+							{name}
+						</span>
 					</nav>
 
 					{/* Right Side: Actions */}
@@ -243,21 +248,6 @@ export default function ProductDetails({
 								)}
 							</button>
 						</div>
-
-						{/* Add to Cart Button */}
-						{!isSoldOut && !isFarmer && (
-							<Button
-								onClick={isConnected ? handleAddToCart : onConnect}
-								disabled={isAddingToCart || stock === 0}
-								className="bg-yellow-400 hover:bg-yellow-500 text-black px-6"
-							>
-								{isAddingToCart
-									? t("adding_to_cart")
-									: isConnected
-										? t("add_to_cart")
-										: t("connect_to_buy")}
-							</Button>
-						)}
 					</div>
 				</div>
 			</div>
