@@ -31,8 +31,6 @@ services:
     working_dir: /app
     volumes:
       - ./apps/web/:/app
-      - ./node_modules:/app/node_modules  # Mount node_modules to ensure dependencies persist
-      
     depends_on:
       db:
         condition: service_healthy
@@ -45,14 +43,15 @@ services:
       context: .
       dockerfile: ./web.Dockerfile
     container_name: web
-    working_dir: /app
+    working_dir: /usr/src/app
     stdin_open: true
     tty: true
     environment:
       - NODE_PATH=/usr/src/app/node_modules
     volumes:
-      - ./apps/web/:/app
-      - ./packages/ui:/app/packages/ui
+      - ./apps/web/:/usr/src/app/apps/web
+      - ./packages/ui:/usr/src/app/packages/ui
+      - /usr/src/app/node_modules
     ports:
       - "3000:3000"
     env_file:
