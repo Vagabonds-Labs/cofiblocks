@@ -65,6 +65,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@auth/prisma-adapter": "^1.6.0",
+        "@hookform/resolvers": "^3.3.4",
         "@prisma/client": "5.22.0",
         "@radix-ui/react-tooltip": "^1.1.8",
         "@repo/ui": "workspace:*",
@@ -85,12 +86,13 @@
         "pinata-web3": "^0.5.3",
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
+        "react-hook-form": "^7.51.0",
         "react-hot-toast": "^2.5.1",
         "react-i18next": "^15.0.2",
         "server-only": "^0.0.1",
         "starknet": "^6.11.0",
         "superjson": "^2.2.1",
-        "zod": "^3.23.3",
+        "zod": "^3.22.4",
       },
       "devDependencies": {
         "@chromatic-com/storybook": "^1.9.0",
