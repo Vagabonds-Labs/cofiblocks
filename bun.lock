@@ -13,6 +13,7 @@
         "@starknet-react/chains": "^3.0.0",
         "@starknet-react/core": "^3.0.0",
         "@storybook/react": "^8.3.0",
+        "@t3-oss/env-nextjs": "^0.10.1",
         "@trpc/next": "^10.45.2",
         "blockies-react-svg": "^0.0.13",
         "chalk": "^5.3.0",
