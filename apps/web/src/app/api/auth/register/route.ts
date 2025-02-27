@@ -1,5 +1,5 @@
 import type { Role } from "@prisma/client";
-import { hash } from "bcrypt";
+import { hash } from "bcryptjs";
 import type { NextRequest } from "next/server";
 import { db } from "~/server/db";
 
