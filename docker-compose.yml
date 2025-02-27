@@ -43,15 +43,17 @@ services:
       context: .
       dockerfile: ./web.Dockerfile
     container_name: web
-    working_dir: /usr/src/app
+    working_dir: /usr/src/app/apps/web
     stdin_open: true
     tty: true
     environment:
-      - NODE_PATH=/usr/src/app/node_modules
+      - NODE_ENV=development
     volumes:
-      - ./apps/web/:/usr/src/app/apps/web
-      - ./packages/ui:/usr/src/app/packages/ui
-      - /usr/src/app/node_modules
+      - ./apps/web:/usr/src/app/apps/web
+      - ./packages:/usr/src/app/packages
+      - node_modules:/usr/src/app/node_modules
+      - web_node_modules:/usr/src/app/apps/web/node_modules
+      - exclude:/usr/src/app/apps/web/.next
     ports:
       - "3000:3000"
     env_file:
@@ -77,6 +79,10 @@ services:
 
 volumes:
   mysql-data:
+  prisma-generated:
+  node_modules:
+  web_node_modules:
+  exclude:
 
 networks:
   cofiblocks-network:

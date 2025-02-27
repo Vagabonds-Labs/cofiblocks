@@ -1,14 +1,20 @@
 #!/bin/sh
 set -e
 
-ls -la /usr/src/app/node_modules
+echo "🚀 Starting entrypoint script..."
 
-# Ensure node_modules directory exists
-mkdir -p node_modules/@repo
+cd /usr/src/app/apps/web
 
-# Remove broken symlink and recreate it
-rm -rf node_modules/@repo/ui
-ln -s /usr/src/app/packages/ui node_modules/@repo/ui
+echo "📝 Generating Prisma Client..."
+NODE_ENV=development bun prisma generate
 
-# Start the app
+echo "🔄 Running Prisma migrations..."
+bun prisma migrate deploy
+
+echo "🧹 Cleaning build cache..."
+if [ -d ".next" ]; then
+  rm -rf .next/* || true
+fi
+
+echo "✨ Starting application..."
 exec "$@"
