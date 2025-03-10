@@ -15,6 +15,15 @@ interface FilterModalProps {
 	onClose: () => void;
 }
 
+interface ProductMetadata {
+	region?: string;
+	farmName?: string;
+	strength?: string;
+	imageUrl?: string;
+	imageAlt?: string;
+	description?: string;
+}
+
 export default function FilterModal({ isOpen, onClose }: FilterModalProps) {
 	const { t } = useTranslation();
 	const [selectedStrength, setSelectedStrength] = useState("");
@@ -41,10 +50,22 @@ export default function FilterModal({ isOpen, onClose }: FilterModalProps) {
 			const { data } = await refetch();
 
 			if (data?.productsFound) {
-				const products = data.productsFound.map((product) => ({
-					...product,
-					region: product.region,
-				}));
+				const products = data.productsFound.map((product) => {
+					const metadata: ProductMetadata =
+						typeof product.nftMetadata === "string"
+							? (JSON.parse(product.nftMetadata) as ProductMetadata)
+							: (product.nftMetadata as ProductMetadata);
+					return {
+						...product,
+						nftMetadata:
+							typeof product.nftMetadata === "string"
+								? product.nftMetadata
+								: JSON.stringify(product.nftMetadata),
+						region: metadata.region ?? "",
+						farmName: metadata.farmName ?? "",
+						strength: metadata.strength ?? "",
+					};
+				});
 				setSearchResults(products);
 				setQuantityProducts(products.length);
 			} else {

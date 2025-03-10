@@ -1,4 +1,5 @@
 import cs from "classnames";
+import cn from "classnames";
 import { useController } from "react-hook-form";
 import type { Control, FieldPath, FieldValues } from "react-hook-form";
 
@@ -10,6 +11,7 @@ type RadioButtonProps<T extends FieldValues> = {
 	className?: string;
 	inputClassName?: string;
 	disabled?: boolean;
+	id?: string;
 };
 
 function RadioButton<T extends FieldValues>({
@@ -20,6 +22,7 @@ function RadioButton<T extends FieldValues>({
 	className,
 	inputClassName,
 	disabled,
+	id,
 }: RadioButtonProps<T>) {
 	const {
 		field,
@@ -28,6 +31,8 @@ function RadioButton<T extends FieldValues>({
 		name,
 		control,
 	});
+
+	const inputId = id ?? `${name}-${value}`;
 
 	const handleChange = () => {
 		field.onChange(value);
@@ -43,12 +48,14 @@ function RadioButton<T extends FieldValues>({
 		<div className={cs("flex items-center gap-2", className)}>
 			<div className="relative">
 				<input
-					id={name}
 					type="radio"
-					disabled={disabled}
-					{...field}
+					id={inputId}
+					name={name}
 					checked={field.value === value}
-					className="hidden"
+					onChange={handleChange}
+					onKeyPress={handleKeyPress}
+					aria-checked={field.value === value}
+					className="sr-only"
 				/>
 				<div
 					className={cs(
@@ -71,7 +78,7 @@ function RadioButton<T extends FieldValues>({
 				</div>
 			</div>
 			<label
-				htmlFor={name}
+				htmlFor={inputId}
 				className="text-base font-normal font-['Inter'] text-content-body-default cursor-pointer"
 				onClick={handleChange}
 				onKeyPress={handleKeyPress}

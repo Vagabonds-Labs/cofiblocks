@@ -3,14 +3,17 @@
 	"sign": "Sign",
 	"profile": "Profile",
 	"disconnect": "Disconnect",
-	"connect_wallet": "Connect {{walletName}}",
+	"connect_wallet": "Connect your wallet",
 	"argent_x": "Argent X",
+	"argent_mobile": "Argent Mobile",
 	"error_signing_message": "Error signing the message",
+
+	"beta_announcement": "Welcome to our beta version. Currently, we are only available in Costa Rica. We're actively improving the platform and appreciate your understanding as we enhance your experience.",
 
 	"tag_new": "New",
 	"welcome_coffee_lover": "Welcome Coffee Lover",
 	"featured": "Featured",
-	"find_best_coffee": "Find Best Coffee",
+	"find_best_coffee": "Find the Best Coffee",
 	"popular": "Popular",
 	"discover_unique_blends": "Discover Unique Blends",
 
@@ -63,7 +66,17 @@
 		"canceled": "Canceled",
 		"paid": "Paid",
 		"prepared": "Prepared",
-		"shipped": "Shipped"
+		"shipped": "Shipped",
+		"completed": "Completed",
+		"cancelled": "Cancelled"
+	},
+	"order_status_message": {
+		"pending": "Your order has been received and is being processed",
+		"paid": "Payment confirmed! Your coffee is being prepared",
+		"prepared": "Your coffee is ready and will be shipped soon",
+		"shipped": "Your coffee is on its way to you!",
+		"delivered": "Your coffee has arrived. Enjoy!",
+		"canceled": "This order has been canceled"
 	},
 	"ordered_by": "Ordered by {{name}}",
 	"price_with_currency": "{{price}} USD",
@@ -121,6 +134,7 @@
 	"chat_with_seller": "Chat with the seller",
 	"bags_available": "Bags Available",
 	"bags": "bags",
+	"bags_available_count": "{{count}} bags available",
 	"unit_price": "Unit price ({{weight}})",
 	"sold_out": "SOLD OUT",
 	"add_to_favorites": "Add to favorites",
@@ -203,6 +217,7 @@
 	"contributor": "Contributor",
 	"producer": "Producer",
 	"united_states": "United States",
+	"costa_rica": "Costa Rica",
 	"since": "Since",
 
 	"edit_my_profile": "Edit my profile",
@@ -219,12 +234,19 @@
 	"edit_profile": "Edit profile",
 	"my_coffee": "My Coffee",
 	"my_sales": "My Sales",
+	"total_sales": "Total Sales",
+	"total_sales_amount": "Total Sales Amount",
+	"claim_rewards": "Claim Rewards",
+	"available_to_claim": "Available to claim",
+	"view_claims": "View Claims",
 	"my_claims": "My Claims",
 	"my_orders": "My Orders",
 	"favorite_products": "Favorite products",
 	"wallet": "Wallet",
 	"wallets": "Wallets",
 	"log_out": "Log out",
+	"amount_with_currency": "{{amount}} USD",
+	"amount_with_currency_short": "${amount} USD",
 
 	"variety": "Variety",
 	"badge_text": "Badge Text",
@@ -246,13 +268,11 @@
 	"seller1_fullname": "Seller 1",
 	"seller2_fullname": "Seller 2",
 	"delivery_method_label": "Delivery method",
-	"delivery_method": {
-		"address": "Address",
-		"meetup": "Meetup"
-	},
+	"delivery_method": "Delivery Method",
 	"quantity_with_unit": "{{count}} {{unit}}",
 	"total_balance_receivable": "Total Balance Receivable",
 	"recieve": "Receive",
+	"check_balance": "Check Balance",
 	"history": "History",
 	"my_sellers": "My Sellers",
 	"offer_coffee": "Offer my coffee",
@@ -265,7 +285,7 @@
 	"coffee_score": "Coffee Score",
 	"not_mandatory": "not mandatory",
 	"score_placeholder": "Enter a score between 0 and 100",
-	"operating_fee": "Operating fee per bag",
+	"operating_fee": "Operating fee",
 	"price_per_bag": "Price per bag",
 	"enter_price_placeholder": "Enter price (e.g. 25.99)",
 	"producer_value_per_bag": "Value allocated to the producer per bag:",
@@ -280,5 +300,76 @@
 		"en": "English",
 		"es": "Spanish",
 		"pt": "Portuguese"
+	},
+
+	"send_to_my_home": "Send to my home",
+	"plus_20_usd": "+20 USD",
+	"pick_up_at_meetup": "Pick up at meetup",
+	"free": "Free",
+	"check_meetup_calendar": "Check meetup calendar",
+	"im_in": "I'm in",
+	"im_in_gam": "I'm in GAM",
+	"im_not_in_gam": "I'm not in GAM",
+	"next": "Next",
+
+	"proceed_to_payment": "Proceed to Payment",
+	"processing_payment": "Processing Payment...",
+	"review_your_order": "Review Your Order",
+	"quantity": "Quantity",
+	"product_price": "Product Price",
+	"delivery_address": "Delivery Address",
+	"my_home": "My Home",
+	"delivery_price": "Delivery Price",
+	"total_price": "Total Price",
+	"change_currency": "Change Currency",
+	"congrats": "Congratulations!",
+	"order_confirmation_message": "Your order has been confirmed and is being processed.",
+	"track_in_my_orders": "Track in My Orders",
+	"subtotal": "Subtotal",
+
+	"marketplace": "Marketplace",
+
+	"your_coffee": "Your Coffee",
+	"delivery_information": "Delivery Information",
+	"shipping_to": "Shipping to",
+
+	"badges": {
+		"lover": "Coffee Lover",
+		"contributor": "Contributor",
+		"producer": "Producer"
+	},
+
+	"update_status": "Update Status",
+	"status_updated": "Status updated successfully",
+
+	"cart": {
+		"empty_message": "Your cart is empty",
+		"quantity_label": "Quantity",
+		"remove_confirmation_title": "Do you want to remove this item?",
+		"remove_confirmation_yes": "Yes, remove",
+		"cancel": "Cancel",
+		"total": "Total",
+		"checkout": "Checkout"
+	},
+
+	"added_to_favorites": "Added to favorites",
+	"error_adding_to_favorites": "Error adding to favorites",
+	"removed_from_favorites": "Removed from favorites",
+	"error_removing_from_favorites": "Error removing from favorites",
+	"error_updating_favorites": "Error updating favorites",
+	"please_connect_to_favorite": "Please connect to add to favorites",
+	"loading_strk_price": "Loading STRK price...",
+	"connect_to_buy": "Connect to buy",
+	"share_product": "Share product",
+	"farm_details": "Farm details",
+	"no_favorite_products": "No favorite products yet",
+	"click_to_upload": "Click to upload",
+	"no_collectibles_found": "No collectibles found",
+
+	"stock_status": {
+		"in_stock": "{{count}} in stock",
+		"low_stock_left": "Only {{count}} left",
+		"stock_available": "{{count}} available",
+		"sold_out": "Sold Out"
 	}
 }

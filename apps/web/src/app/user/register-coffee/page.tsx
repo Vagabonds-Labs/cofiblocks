@@ -1,17 +1,17 @@
 "use client";
 
-import {
-	ArrowPathRoundedSquareIcon,
-	CameraIcon,
-} from "@heroicons/react/24/outline";
+import { ArrowPathRoundedSquareIcon } from "@heroicons/react/24/outline";
 import { ClockIcon } from "@heroicons/react/24/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@repo/ui/button";
 import RadioButton from "@repo/ui/form/radioButton";
 import { useAccount, useProvider } from "@starknet-react/core";
-import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 import { z } from "zod";
+import { ImageUpload } from "~/app/_components/features/ImageUpload";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
 import { useTranslation } from "~/i18n";
 import {
@@ -24,17 +24,15 @@ import {
 import { api } from "~/trpc/react";
 import { RoastLevel } from "~/types";
 
+const MARKET_FEE_BPS = 5000; // 50%
+
 const schema = z.object({
 	roast: z.string().min(1, "Roast level is required"),
 	price: z.string().min(1, "Price is required"),
 	bagsAvailable: z.number().min(0, "Available bags must be a positive number"),
 	description: z.string().min(1, "Description is required"),
 	variety: z.string().min(1, "Variety is required"),
-	coffeeScore: z
-		.number()
-		.min(0, "Coffee score must be a positive number")
-		.max(100, "Coffee score must be at most 100")
-		.optional(),
+	coffeeScore: z.number().optional(),
 	image: z.string().optional(),
 });
 
@@ -43,6 +41,7 @@ type FormData = z.infer<typeof schema>;
 export default function RegisterCoffee() {
 	const { t } = useTranslation();
 	const { provider } = useProvider();
+	const router = useRouter();
 	const contracts = new ContractsInterface(
 		useAccount(),
 		useCofiCollectionContract(),
@@ -51,11 +50,13 @@ export default function RegisterCoffee() {
 		provider,
 	);
 	const mutation = api.product.createProduct.useMutation();
-	const handleImageUpload = () => {
-		alert(t("implement_image_upload"));
+	const [isSubmitting, setIsSubmitting] = useState(false);
+
+	const calculateFee = (amount: number): number => {
+		return (amount * MARKET_FEE_BPS) / 10000;
 	};
 
-	const { register, handleSubmit, control, getValues, setValue } =
+	const { register, handleSubmit, control, getValues, setValue, watch } =
 		useForm<FormData>({
 			resolver: zodResolver(schema),
 			defaultValues: {
@@ -64,13 +65,18 @@ export default function RegisterCoffee() {
 			},
 		});
 
+	const price = watch("price");
+	const priceNumber = Number.parseFloat(price || "0");
+	const operatingFee = calculateFee(priceNumber);
+	const totalSalesValue = priceNumber + operatingFee;
+	const producerValue = priceNumber;
+
 	const onSubmit = async (data: FormData) => {
+		setIsSubmitting(true);
 		const submissionData = {
 			...data,
 			price: Number.parseFloat(data.price),
 		};
-		// TODO: Implement coffee registration logic
-		console.log(submissionData);
 		try {
 			const token_id = await contracts.register_product(
 				submissionData.price,
@@ -85,19 +91,23 @@ export default function RegisterCoffee() {
 				strength: submissionData.roast,
 				region: "",
 				farmName: "",
+				stock: submissionData.bagsAvailable,
 			});
-			alert("Product registered successfully");
+			toast.success(t("product_registered_successfully"));
+			router.push("/marketplace");
 		} catch (error) {
 			if (error instanceof ContractsError) {
 				if (error.code === ContractsError.USER_MISSING_ROLE) {
-					alert("User is not registered as a seller");
+					toast.error(t("user_not_registered_as_seller"));
 				} else if (error.code === ContractsError.USER_NOT_CONNECTED) {
-					alert("User is disconnected");
+					toast.error(t("user_disconnected"));
 				}
 			} else {
 				console.log("error registering", error);
-				alert("An error occurred while registering the product");
+				toast.error(t("error_registering_product"));
 			}
+		} finally {
+			setIsSubmitting(false);
 		}
 	};
 
@@ -108,23 +118,17 @@ export default function RegisterCoffee() {
 		>
 			<div className="p-6 bg-white rounded-lg">
 				<form onSubmit={handleSubmit(onSubmit)}>
-					<div className="flex flex-col items-center my-6">
-						<Image
-							src="/images/cafe1.webp"
-							alt="Coffee"
-							width={80}
-							height={80}
-							className="rounded-full mb-2"
-						/>
-						<Button
-							className="mx-auto mt-4 w-46 h-10 px-2"
-							onClick={handleImageUpload}
-							variant="secondary"
-							type="button"
-						>
-							<CameraIcon className="w-6 h-6 mr-2" />
-							{t("choose_coffee_photo")}
-						</Button>
+					<div className="flex flex-col items-center my-8">
+						<div className="w-full max-w-md">
+							<ImageUpload
+								className="w-full aspect-square rounded-lg"
+								onImageUploaded={(hash: string) => {
+									void setValue("image", hash, {
+										shouldValidate: true,
+									});
+								}}
+							/>
+						</div>
 					</div>
 					<div className="my-4">
 						<label className="text-content-body-default block mb-1">
@@ -147,7 +151,7 @@ export default function RegisterCoffee() {
 							placeholder={t("type_here")}
 						/>
 					</div>
-					<div className="mb-2">
+					<div className="my-2">
 						<label className="text-content-body-default block mb-1">
 							{t("coffee_score")}{" "}
 							<span className="text-content-body-soft">
@@ -234,13 +238,9 @@ export default function RegisterCoffee() {
 						</div>
 					</div>
 					<div className="my-8 flex justify-between items-center">
-						<div className="flex items-center font-medium">
-							<ArrowPathRoundedSquareIcon className="w-6 h-6 mr-2" />
-							<label className="text-content-body-default">
-								{t("operating_fee")}
-							</label>
-						</div>
-						<p className="text-content-body-default">$20.00</p>
+						<p className="text-content-body-default">
+							${operatingFee.toFixed(2)} USD
+						</p>
 					</div>
 					<div className="my-4">
 						<label className="text-content-body-default block mb-1">
@@ -281,11 +281,15 @@ export default function RegisterCoffee() {
 						<p className="text-[0.875rem] text-content-body-default">
 							{t("total_sales_value_per_bag")}
 						</p>
-						<p className="font-medium text-[0.875rem]">30 USD</p>
+						<p className="font-medium text-[0.875rem]">
+							${totalSalesValue.toFixed(2)} USD
+						</p>
 						<p className="mt-2 text-[0.875rem] text-content-body-default">
 							{t("producer_value_per_bag")}
 						</p>
-						<p className="font-medium text-[0.875rem]">25 USD</p>
+						<p className="font-medium text-[0.875rem]">
+							${producerValue.toFixed(2)} USD
+						</p>
 					</div>
 					<div className="my-6">
 						<label className="text-content-body-default block mb-1">
@@ -335,8 +339,39 @@ export default function RegisterCoffee() {
 							</Button>
 						</div>
 					</div>
-					<Button type="submit" className="py-6 rounded w-full">
-						{t("save_and_publish")}
+					<Button
+						type="submit"
+						className="py-6 rounded w-full"
+						disabled={isSubmitting}
+					>
+						{isSubmitting ? (
+							<div className="flex items-center justify-center">
+								<svg
+									className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+									xmlns="http://www.w3.org/2000/svg"
+									fill="none"
+									viewBox="0 0 24 24"
+								>
+									<title>Loading spinner</title>
+									<circle
+										className="opacity-25"
+										cx="12"
+										cy="12"
+										r="10"
+										stroke="currentColor"
+										strokeWidth="4"
+									/>
+									<path
+										className="opacity-75"
+										fill="currentColor"
+										d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+									/>
+								</svg>
+								{t("saving")}
+							</div>
+						) : (
+							t("save_and_publish")
+						)}
 					</Button>
 				</form>
 			</div>

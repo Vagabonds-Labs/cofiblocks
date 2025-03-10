@@ -4,6 +4,7 @@
 	"scripts": {
 		"chain": "starknet-devnet --seed 0 --account-class cairo1",
 		"deploy:sepolia": "ts-node scripts-ts/helpers/deploy-wrapper.ts --network sepolia",
+		"deploy:mainnet": "ts-node scripts-ts/helpers/deploy-wrapper.ts --network mainnet",
 		"deploy:no-reset": "snfoundry deploy --no-reset",
 		"test": "cd contracts && snforge test",
 		"test-eslint": "node eslint-contract-name/eslint-plugin-contract-names.test.js",

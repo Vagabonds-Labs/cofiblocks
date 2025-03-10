@@ -77,7 +77,7 @@ const deployScript = async (): Promise<void> => {
 		constructorArgs: {
 			cofi_collection_address: cofiCollectionAddress,
 			admin: deployer.address,
-			market_fee: BigInt(250), // 2.5 %
+			market_fee: BigInt(5000), // 50 %
 		},
 	});
 

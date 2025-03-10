@@ -15,6 +15,8 @@ export const cartItemsAtom = atomWithStorage<CartItem[]>(
 	[],
 );
 
+export const isCartOpenAtom = atom<boolean>(false);
+
 export const addItemAtom = atom(null, (get, set, newItem: CartItem) => {
 	const items = get(cartItemsAtom);
 	const existingItem = items.find((item) => item.id === newItem.id);

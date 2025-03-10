@@ -1,3 +1,4 @@
+import type { OrderStatus } from "@prisma/client";
 import { z } from "zod";
 
 export type Badge = "lover" | "contributor" | "producer";
@@ -26,7 +27,7 @@ export enum RoastLevel {
 
 export type SaleDetailsType = {
 	productName: string;
-	status: string;
+	status: OrderStatus;
 	roast: string;
 	type: string;
 	quantity: string;
@@ -59,12 +60,9 @@ export enum DeliveryMethod {
 }
 
 export const filtersSchema = z.object({
-	statusPaid: z.boolean().optional(),
-	statusPrepared: z.boolean().optional(),
-	statusShipped: z.boolean().optional(),
-	statusDelivered: z.boolean().optional(),
-	deliveryAddress: z.boolean().optional(),
-	deliveryMeetup: z.boolean().optional(),
+	statusPending: z.boolean().optional(),
+	statusCompleted: z.boolean().optional(),
+	statusCancelled: z.boolean().optional(),
 });
 
 export type FormValues = z.infer<typeof filtersSchema>;
@@ -72,7 +70,7 @@ export type FormValues = z.infer<typeof filtersSchema>;
 export interface OrderItem {
 	id: string;
 	productName: string;
-	status: SalesStatus;
+	status: OrderStatus;
 	sellerName?: string;
 	buyerName?: string;
 	delivery?: DeliveryMethod;

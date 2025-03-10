@@ -1,6 +1,5 @@
 import {
 	AdjustmentsHorizontalIcon,
-	ChevronRightIcon,
 	CubeIcon,
 	CurrencyDollarIcon,
 	HeartIcon,
@@ -9,60 +8,31 @@ import {
 	TicketIcon,
 	TruckIcon,
 	UserIcon,
-	WalletIcon,
 } from "@heroicons/react/24/outline";
-import { cva } from "class-variance-authority";
-import cx from "classnames";
+import type { Role } from "@prisma/client";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useState } from "react";
-import { LogoutModal } from "~/app/_components/features/LogoutModal";
-import { UserWalletsModal } from "~/app/_components/features/UserWalletsModal";
+import LogoutModal from "~/app/_components/features/LogoutModal";
 import { useTranslation } from "~/i18n";
-
-type ProfileOption = {
-	icon: React.ElementType;
-	label: string;
-	href?: string;
-	customClass?: string;
-	iconColor?: string;
-	onClick?: () => void;
-};
 
 interface ProfileOptionsProps {
 	address?: string;
 }
 
-const optionStyles = cva(
-	"flex items-center justify-between p-2 cursor-pointer",
-	{
-		variants: {
-			intent: {
-				default: "text-content-body-default",
-				error: "text-error-default",
-			},
-		},
-		defaultVariants: {
-			intent: "default",
-		},
-	},
-);
+type ProfileOption = {
+	icon: typeof UserIcon;
+	label: string;
+	href?: string;
+	onClick?: () => void;
+	customClass?: string;
+	iconColor?: string;
+};
 
-const iconStyles = cva("w-5 h-5 mr-3", {
-	variants: {
-		intent: {
-			default: "text-content-body-default",
-			error: "text-error-default",
-		},
-	},
-	defaultVariants: {
-		intent: "default",
-	},
-});
-
-function ProfileOptions({ address: _ }: ProfileOptionsProps) {
+export function ProfileOptions({ address: _ }: ProfileOptionsProps) {
 	const { t } = useTranslation();
-	const [isLogoutModalOpen, setIsLogoutModalOpen] = useState<boolean>(false);
-	const [isWalletModalOpen, setIsWalletModalOpen] = useState<boolean>(false);
+	const { data: session } = useSession();
+	const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
 	const closeLogoutModal = () => {
 		setIsLogoutModalOpen(false);
@@ -72,119 +42,85 @@ function ProfileOptions({ address: _ }: ProfileOptionsProps) {
 		setIsLogoutModalOpen(true);
 	};
 
-	const openWalletModal = () => {
-		setIsWalletModalOpen(true);
-	};
-
-	const closeWalletModal = () => {
-		setIsWalletModalOpen(false);
-	};
-
-	const profileOptions: ProfileOption[] = [
-		{ icon: UserIcon, label: t("edit_profile"), href: "/user/edit-profile" },
-		{ icon: TicketIcon, label: t("my_coffee"), href: "/user/my-coffee" },
-		{ icon: TruckIcon, label: t("my_sales"), href: "/user/my-sales" },
+	// Common options that are always shown
+	const commonOptions: ProfileOption[] = [
+		{ icon: UserIcon, label: t("user_profile"), href: "/user-profile" },
 		{
-			icon: CurrencyDollarIcon,
-			label: t("my_claims"),
-			href: "/user/my-claims",
+			icon: HeartIcon,
+			label: t("favorite_products"),
+			href: "/user/favorites",
 		},
-		{ icon: ShoppingCartIcon, label: t("my_orders"), href: "/user/my-orders" },
-		{ icon: HeartIcon, label: t("favorite_products"), href: "/user/favorites" },
-		{ icon: CubeIcon, label: t("my_collectibles"), href: "/user/collectibles" },
-		{ icon: WalletIcon, label: t("wallet"), onClick: openWalletModal },
+		{
+			icon: CubeIcon,
+			label: t("my_collectibles"),
+			href: "/user/collectibles",
+		},
+		{
+			icon: ShoppingCartIcon,
+			label: t("my_orders"),
+			href: "/user/my-orders",
+		},
 		{
 			icon: AdjustmentsHorizontalIcon,
 			label: t("settings"),
 			href: "/user/settings",
 		},
-		{
-			icon: NoSymbolIcon,
-			label: t("log_out"),
-			customClass: "text-error-default",
-			iconColor: "text-error-default",
-			onClick: openLogoutModal,
-		},
 	];
 
+	// Producer-specific options that are shown only to producers
+	const producerOptions: ProfileOption[] =
+		session?.user?.role === "COFFEE_PRODUCER"
+			? [
+					{ icon: TicketIcon, label: t("my_coffee"), href: "/user/my-coffee" },
+					{ icon: TruckIcon, label: t("my_sales"), href: "/user/my-sales" },
+					{
+						icon: CurrencyDollarIcon,
+						label: t("my_claims"),
+						href: "/user/my-claims",
+					},
+				]
+			: [];
+
+	const renderOption = (option: ProfileOption) => (
+		<div
+			key={`${option.label}-${option.href ?? "action"}`}
+			className="relative"
+		>
+			{option.href ? (
+				<Link
+					href={option.href}
+					className={`flex items-center p-2 hover:bg-gray-100 rounded transition-colors ${option.customClass ?? ""}`}
+				>
+					<option.icon className={`w-5 h-5 mr-3 ${option.iconColor ?? ""}`} />
+					<span>{option.label}</span>
+				</Link>
+			) : option.onClick ? (
+				<button
+					type="button"
+					onClick={option.onClick}
+					className={`flex items-center p-2 hover:bg-gray-100 rounded transition-colors w-full text-left ${option.customClass ?? ""}`}
+				>
+					<option.icon className={`w-5 h-5 mr-3 ${option.iconColor ?? ""}`} />
+					<span>{option.label}</span>
+				</button>
+			) : null}
+			<div className="h-px bg-gray-100 mx-2" />
+		</div>
+	);
+
 	return (
-		<>
-			<div className="bg-surface-inverse rounded-lg overflow-hidden">
-				{profileOptions.map((option, index) => (
-					<div key={option.label}>
-						<div
-							onClick={option.onClick}
-							onKeyDown={(e) => {
-								if (e.key === "Enter" || e.key === " ") {
-									option.onClick?.();
-								}
-							}}
-							role="button"
-							tabIndex={0}
-							className={optionStyles({
-								intent:
-									option.customClass === "text-error-default"
-										? "error"
-										: "default",
-							})}
-						>
-							{option.onClick ? (
-								<>
-									<div className="flex items-center">
-										<option.icon
-											className={iconStyles({
-												intent:
-													option.iconColor === "text-error-default"
-														? "error"
-														: "default",
-											})}
-										/>
-										<span
-											className={
-												option.customClass ?? "text-content-body-default"
-											}
-										>
-											{option.label}
-										</span>
-									</div>
-									<ChevronRightIcon className="text-content-body-default w-5 h-5" />
-								</>
-							) : (
-								<Link
-									href={option.href ?? ""}
-									className="flex items-center justify-between w-full"
-								>
-									<div className="flex items-center">
-										<option.icon
-											className={iconStyles({
-												intent:
-													option.iconColor === "text-error-default"
-														? "error"
-														: "default",
-											})}
-										/>
-										<span
-											className={
-												option.customClass ?? "text-content-body-default"
-											}
-										>
-											{option.label}
-										</span>
-									</div>
-									<ChevronRightIcon className="text-content-body-default w-5 h-5" />
-								</Link>
-							)}
-						</div>
-						{index < profileOptions.length - 1 && (
-							<hr className={cx("my-2", "surface-primary-soft")} />
-						)}
-					</div>
-				))}
-			</div>
+		<div id="profile-options" className="bg-white rounded-lg overflow-hidden">
+			{/* Always render common options first */}
+			{commonOptions.slice(0, 4).map(renderOption)}
+
+			{/* Only show producer options if user has COFFEE_PRODUCER role */}
+			{session?.user?.role === "COFFEE_PRODUCER" &&
+				producerOptions.map(renderOption)}
+
+			{/* Always render remaining common options */}
+			{commonOptions.slice(4).map(renderOption)}
+
 			<LogoutModal isOpen={isLogoutModalOpen} onClose={closeLogoutModal} />
-			<UserWalletsModal isOpen={isWalletModalOpen} onClose={closeWalletModal} />
-		</>
+		</div>
 	);
 }
-
-export { ProfileOptions };

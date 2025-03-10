@@ -3,13 +3,14 @@
 import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import Link from "next/link";
+import { useCallback } from "react";
 import { useTranslation } from "~/i18n";
 
 interface OrderListItemProps {
 	productName: string;
 	name: string;
 	status: string;
-	onClick: () => void;
+	onClick?: () => void;
 }
 
 export default function OrderListItem({
@@ -20,18 +21,21 @@ export default function OrderListItem({
 }: OrderListItemProps) {
 	const { t } = useTranslation();
 
+	const handleClick = useCallback(
+		(e: React.MouseEvent) => {
+			e.preventDefault();
+			onClick?.();
+		},
+		[onClick],
+	);
+
 	return (
-		<Link href="#" onClick={onClick} className="block">
-			<div
-				className="flex items-center justify-between py-4"
-				onKeyDown={(e) => {
-					if (e.key === "Enter" || e.key === " ") {
-						onClick();
-					}
-				}}
-				role="button"
-				tabIndex={0}
-			>
+		<Link
+			href="#"
+			onClick={handleClick}
+			className="block w-full cursor-pointer hover:bg-gray-50"
+		>
+			<div className="flex items-center justify-between p-4">
 				<div className="flex items-center space-x-4">
 					<Image
 						src="/images/cafe2.webp"

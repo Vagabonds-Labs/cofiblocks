@@ -21,6 +21,32 @@ const searchSchema = z.object({
 
 type formData = z.infer<typeof searchSchema>;
 
+const metadataSchema = z.object({
+	process: z.string().optional(),
+	region: z.string().optional(),
+	farmName: z.string().optional(),
+	strength: z.string().optional(),
+});
+
+type ProductMetadata = z.infer<typeof metadataSchema>;
+
+const parseMetadata = (data: unknown): ProductMetadata => {
+	try {
+		if (typeof data === "string") {
+			return metadataSchema.parse(JSON.parse(data));
+		}
+		return metadataSchema.parse(data);
+	} catch {
+		console.warn("Failed to parse metadata, using default values");
+		return {
+			process: undefined,
+			region: undefined,
+			farmName: undefined,
+			strength: undefined,
+		};
+	}
+};
+
 export default function SearchBar() {
 	const [query, setQuery] = useAtom(searchQueryAtom);
 	const [, setSearchResults] = useAtom(searchResultsAtom);
@@ -44,10 +70,21 @@ export default function SearchBar() {
 		setIsLoading(isLoading);
 
 		if (data?.productsFound) {
-			const productsWithProcess = data.productsFound.map((product) => ({
-				...product,
-				process: product.process ?? t("natural_process"),
-			}));
+			const productsWithProcess = data.productsFound.map((product) => {
+				const metadata = parseMetadata(product.nftMetadata);
+
+				return {
+					...product,
+					nftMetadata:
+						typeof product.nftMetadata === "string"
+							? product.nftMetadata
+							: JSON.stringify(product.nftMetadata),
+					process: metadata.process ?? t("natural_process"),
+					region: metadata.region ?? "",
+					farmName: metadata.farmName ?? "",
+					strength: metadata.strength ?? "",
+				};
+			});
 			setSearchResults(productsWithProcess);
 			setQuantityProducts(productsWithProcess.length);
 		} else {
@@ -62,24 +99,28 @@ export default function SearchBar() {
 
 	return (
 		<>
-			<div className=" flex justify-center items-center mb-5">
-				<InputField<formData>
-					name="region"
-					control={control}
-					label=""
-					placeholder={t("search_placeholder")}
-					onChange={(value: string) => handleInputChange(value)}
-					className="gap-0 mr-3 w-3/4"
-					showSearchIcon={true}
-				/>
-				<button
-					type="button"
-					onClick={() => setIsFilterOpen(true)}
-					className="bg-surface-secondary-default p-3.5 rounded-lg"
-					aria-label={t("open_filters")}
-				>
-					<FunnelIcon className="h-6 w-6" />
-				</button>
+			<div className="relative z-40">
+				<div className="bg-white rounded-xl shadow-xl p-3 md:p-4">
+					<div className="flex items-center gap-3">
+						<InputField<formData>
+							name="region"
+							control={control}
+							label=""
+							placeholder={t("search_placeholder")}
+							onChange={(value: string) => handleInputChange(value)}
+							className="flex-1"
+							showSearchIcon={true}
+						/>
+						<button
+							type="button"
+							onClick={() => setIsFilterOpen(true)}
+							className="bg-surface-secondary-default p-3.5 rounded-lg hover:bg-surface-secondary-hover transition-colors flex-shrink-0"
+							aria-label={t("open_filters")}
+						>
+							<FunnelIcon className="h-6 w-6" />
+						</button>
+					</div>
+				</div>
 			</div>
 			<FilterModal
 				isOpen={isFilterOpen}

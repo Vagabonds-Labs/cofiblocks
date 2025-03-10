@@ -4,10 +4,10 @@ interface SpinnerProps {
 
 export default function Spinner({ className = "" }: SpinnerProps) {
 	return (
-		<div role="status">
+		<output role="status" aria-live="polite" className={className}>
 			<svg
 				aria-hidden="true"
-				className={`dark:text-secondaryfill-primary h-4 w-4 animate-spin text-secondary ${className}`}
+				className="h-8 w-8 animate-spin text-gray-200 dark:text-gray-600"
 				viewBox="0 0 100 101"
 				fill="none"
 				xmlns="http://www.w3.org/2000/svg"
@@ -22,6 +22,6 @@ export default function Spinner({ className = "" }: SpinnerProps) {
 				/>
 			</svg>
 			<span className="sr-only">Loading...</span>
-		</div>
+		</output>
 	);
 }

@@ -1,7 +1,26 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import {
+	createTRPCRouter,
+	protectedProcedure,
+	publicProcedure,
+} from "~/server/api/trpc";
 
 export const userRouter = createTRPCRouter({
+	getMe: protectedProcedure.query(async ({ ctx }) => {
+		console.log("Getting user data for ID:", ctx.session.user.id);
+		const user = await ctx.db.user.findUnique({
+			where: { id: ctx.session.user.id },
+		});
+
+		if (!user) {
+			console.error("User not found for ID:", ctx.session.user.id);
+			throw new Error("User not found");
+		}
+
+		console.log("Found user:", { id: user.id, role: user.role });
+		return user;
+	}),
+
 	getUser: publicProcedure
 		.input(z.object({ userId: z.string() }))
 		.query(({ ctx, input }) => {
@@ -10,11 +29,24 @@ export const userRouter = createTRPCRouter({
 			});
 		}),
 
+	checkRole: protectedProcedure.query(async ({ ctx }) => {
+		const user = await ctx.db.user.findUnique({
+			where: { id: ctx.session.user.id },
+			select: { role: true },
+		});
+
+		if (!user) {
+			throw new Error("User not found");
+		}
+
+		return { role: user.role };
+	}),
+
 	updateUserProfile: publicProcedure
 		.input(
 			z.object({
 				userId: z.string(),
-				name: z.string().optional().optional(),
+				name: z.string().optional(),
 				email: z.string().email().optional(),
 				physicalAddress: z.string().optional(),
 			}),
@@ -52,6 +84,32 @@ export const userRouter = createTRPCRouter({
 			return ctx.db.farm.update({
 				where: { id: farmId },
 				data: updateData,
+			});
+		}),
+
+	updateWalletAddress: protectedProcedure
+		.input(
+			z.object({
+				walletAddress: z.string(),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const { walletAddress } = input;
+			const userId = ctx.session.user.id;
+
+			// Check if wallet address is already in use
+			const existingUser = await ctx.db.user.findUnique({
+				where: { walletAddress },
+			});
+
+			if (existingUser && existingUser.id !== userId) {
+				throw new Error("Wallet address already in use");
+			}
+
+			// Update user's wallet address
+			return ctx.db.user.update({
+				where: { id: userId },
+				data: { walletAddress },
 			});
 		}),
 });

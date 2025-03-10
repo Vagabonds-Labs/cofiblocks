@@ -3,9 +3,12 @@
 	"sign": "Firmar",
 	"profile": "Perfil",
 	"disconnect": "Desconectar",
-	"connect_wallet": "Conectar {{walletName}}",
+	"connect_wallet": "Conectar billetera",
 	"argent_x": "Argent X",
+	"argent_mobile": "Argent Mobile",
 	"error_signing_message": "Error al firmar el mensaje",
+
+	"beta_announcement": "Bienvenido a nuestra versión beta. Actualmente, solo estamos disponibles en Costa Rica. Estamos mejorando activamente la plataforma y agradecemos tu comprensión mientras optimizamos tu experiencia.",
 
 	"tag_new": "Nuevo",
 	"welcome_coffee_lover": "Bienvenido Amante del Café",
@@ -63,7 +66,9 @@
 		"canceled": "Cancelado",
 		"paid": "Pagado",
 		"prepared": "Preparado",
-		"shipped": "Enviado"
+		"shipped": "Enviado",
+		"completed": "Completado",
+		"cancelled": "Cancelado"
 	},
 	"ordered_by": "Pedido por {{name}}",
 	"price_with_currency": "{{price}} USD",
@@ -121,6 +126,7 @@
 	"chat_with_seller": "Chatear con el vendedor",
 	"bags_available": "Bolsas disponibles",
 	"bags": "bolsas",
+	"bags_available_count": "{{count}} bolsas disponibles",
 	"unit_price": "Precio por unidad ({{weight}})",
 	"sold_out": "AGOTADO",
 	"add_to_favorites": "Agregar a favoritos",
@@ -154,7 +160,7 @@
 		"grounded": "Molido"
 	},
 	"total": "total",
-	"adding_to_cart": "Añadiendo al carrito...",
+	"adding_to_cart": "Añadiendo...",
 	"add_to_cart": "Añadir al carrito",
 	"shopping_cart_title": "Mi carrito",
 	"cart_empty_message": "Tu carrito está vacío",
@@ -203,6 +209,7 @@
 	"contributor": "Contribuyente",
 	"producer": "Productor",
 	"united_states": "Estados Unidos",
+	"costa_rica": "Costa Rica",
 	"since": "Desde",
 
 	"edit_my_profile": "Editar mi perfil",
@@ -219,6 +226,11 @@
 	"edit_profile": "Editar perfil",
 	"my_coffee": "Mi Café",
 	"my_sales": "Mis Ventas",
+	"total_sales": "Ventas Totales",
+	"total_sales_amount": "Monto Total de Ventas",
+	"claim_rewards": "Reclamar Recompensas",
+	"available_to_claim": "Disponible para reclamar",
+	"view_claims": "Ver Reclamaciones",
 	"my_claims": "Mis Reclamaciones",
 	"my_orders": "Mis Pedidos",
 	"favorite_products": "Productos favoritos",
@@ -253,6 +265,7 @@
 	"quantity_with_unit": "{{count}} {{unit}}",
 	"total_balance_receivable": "Saldo total por recibir",
 	"recieve": "Recibir",
+	"check_balance": "Verificar saldo",
 	"history": "Historia",
 	"my_sellers": "Mis Vendedores",
 	"offer_coffee": "Ofrecer mi Café",
@@ -280,5 +293,60 @@
 		"en": "Inglés",
 		"es": "Español",
 		"pt": "Portugués"
+	},
+
+	"badges": {
+		"lover": "Amante del Café",
+		"contributor": "Contribuidor",
+		"producer": "Productor"
+	},
+
+	"update_status": "Actualizar Estado",
+	"status_updated": "Estado actualizado con éxito",
+
+	"cart": {
+		"empty_message": "Tu carrito está vacío",
+		"quantity_label": "Cantidad",
+		"remove_confirmation_title": "¿Deseas eliminar este artículo?",
+		"remove_confirmation_yes": "Sí, eliminar",
+		"cancel": "Cancelar",
+		"total": "Total",
+		"checkout": "Pagar"
+	},
+
+	"added_to_favorites": "Agregado a favoritos",
+	"error_adding_to_favorites": "Error al agregar a favoritos",
+	"removed_from_favorites": "Eliminado de favoritos",
+	"error_removing_from_favorites": "Error al eliminar de favoritos",
+	"error_updating_favorites": "Error al actualizar favoritos",
+	"please_connect_to_favorite": "Por favor conéctate para agregar a favoritos",
+	"loading_strk_price": "Cargando precio en STRK...",
+	"connect_to_buy": "Conéctate para comprar",
+	"marketplace": "Mercado",
+	"share_product": "Compartir producto",
+	"farm_details": "Detalles de la granja",
+	"no_favorite_products": "Aún no hay productos favoritos",
+	"click_to_upload": "Haz clic para subir",
+	"no_collectibles_found": "No se encontraron coleccionables",
+
+	"review_your_order": "Revisa tu pedido",
+	"quantity": "Cantidad",
+	"product_price": "Precio del producto",
+	"delivery_address": "Dirección de entrega",
+	"my_home": "Mi casa",
+	"delivery_price": "Precio de entrega",
+	"total_price": "Precio total",
+	"change_currency": "Cambiar moneda",
+	"congrats": "¡Felicitaciones!",
+	"order_confirmation_message": "Tu pedido ha sido confirmado y está siendo procesado.",
+	"track_in_my_orders": "Seguir en Mis Pedidos",
+	"subtotal": "Subtotal",
+	"amount_with_currency": "{{amount}} USD",
+	"amount_with_currency_short": "${amount} USD",
+	"stock_status": {
+		"in_stock": "{{count}} en existencia",
+		"low_stock_left": "Solo quedan {{count}}",
+		"stock_available": "{{count}} disponibles",
+		"sold_out": "Agotado"
 	}
 }

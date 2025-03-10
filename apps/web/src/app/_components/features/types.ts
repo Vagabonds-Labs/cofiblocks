@@ -15,6 +15,8 @@ export type Product = {
 	name: string;
 	price: number;
 	nftMetadata: Prisma.JsonValue | NftMetadata;
+	hidden?: boolean | null;
+	stock: number;
 	process?: string;
 	createdAt: Date;
 	updatedAt: Date;

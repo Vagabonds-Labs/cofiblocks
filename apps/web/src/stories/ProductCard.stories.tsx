@@ -1,6 +1,7 @@
 //This ProductCard component displays product details in a card format
 import { ProductCard } from "@repo/ui/productCard";
 import type { Meta, StoryFn } from "@storybook/react";
+import Image from "next/image";
 
 //This meta object configures the ProductCard for Storybook
 export default {
@@ -27,6 +28,10 @@ export default {
 		price: {
 			control: "number",
 			description: "The price of the product per unit",
+		},
+		stock: {
+			control: "number",
+			description: "The current stock level of the product",
 		},
 		badgeText: {
 			control: "text",
@@ -59,6 +64,7 @@ Default.args = {
 	farmName: "Sunrise Farms",
 	variety: "Arabica Coffee",
 	price: 25,
+	stock: 10,
 	badgeText: "New Arrival",
 	onClick: () => alert("View product details"),
 };
@@ -69,6 +75,7 @@ OnSale.args = {
 	...Default.args,
 	badgeText: "On Sale",
 	price: 20,
+	stock: 5,
 };
 
 //This implements the Featured Card
@@ -77,6 +84,7 @@ Featured.args = {
 	...Default.args,
 	badgeText: "Featured",
 	variety: "Geisha Coffee",
+	stock: 15,
 };
 
 //This implements a card without an image
@@ -84,6 +92,7 @@ export const NoImage = Template.bind({});
 NoImage.args = {
 	...Default.args,
 	image: "",
+	stock: 8,
 };
 
 //This implements how to add to Cart
@@ -91,6 +100,7 @@ export const AddToCart = Template.bind({});
 AddToCart.args = {
 	...Default.args,
 	badgeText: "Best Seller",
+	stock: 20,
 	onAddToCart: () => alert("Item added to cart"),
 };
 
@@ -102,6 +112,7 @@ AddToCart.args = {
 	farmName="Sunrise Farms"
 	variety="Arabica Coffee"
 	price={25}
+	stock={10}
 	badgeText="New Arrival"
 	onClick={() => alert("View product details")}
 />;
@@ -113,6 +124,7 @@ AddToCart.args = {
 	farmName="Sunrise Farms"
 	variety="Arabica Coffee"
 	price={20}
+	stock={5}
 	badgeText="On Sale"
 	onClick={() => alert("View product details")}
 />;
@@ -125,7 +137,11 @@ AddToCart.args = {
 </span>;
 // You should use meaningful alt text for the product image.
 // If the image is decorative or missing, provide an empty alt="".
-<img
-	src="https://via.placeholder.com/358x188"
-	alt="Arabica Coffee from Sunrise Farms"
-/>;
+<div className="relative w-full h-48">
+	<Image
+		src={Default.args.image ?? "https://via.placeholder.com/358x188"}
+		alt={Default.args.variety ?? "Product image"}
+		fill
+		className="object-cover rounded-t-lg"
+	/>
+</div>;

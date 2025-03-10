@@ -1,3 +1,5 @@
+"use client";
+
 import { useContract } from "@starknet-react/core";
 import type { UseAccountResult } from "@starknet-react/core";
 import type { Abi, Contract, ProviderInterface } from "starknet";
@@ -25,7 +27,7 @@ type CoinGeckoResponse = {
 };
 
 const useCofiCollectionContract = () => {
-	const env = (process.env.STARKNET_ENV ??
+	const env = (process.env.NEXT_PUBLIC_STARKNET_ENV ??
 		"sepolia") as keyof typeof configExternalContracts;
 	const { contract } = useContract({
 		abi: configExternalContracts[env].CofiCollection.abi as Abi,
@@ -35,7 +37,7 @@ const useCofiCollectionContract = () => {
 };
 
 const useMarketplaceContract = () => {
-	const env = (process.env.STARKNET_ENV ??
+	const env = (process.env.NEXT_PUBLIC_STARKNET_ENV ??
 		"sepolia") as keyof typeof configExternalContracts;
 	const { contract } = useContract({
 		abi: configExternalContracts[env].Marketplace.abi as Abi,
@@ -45,7 +47,7 @@ const useMarketplaceContract = () => {
 	return contract;
 };
 const useStarkContract = () => {
-	const env = (process.env.STARKNET_ENV ??
+	const env = (process.env.NEXT_PUBLIC_STARKNET_ENV ??
 		"sepolia") as keyof typeof configExternalContracts;
 	const { contract } = useContract({
 		abi: configExternalContracts[env].stark.abi as Abi,
@@ -105,21 +107,48 @@ class ContractsInterface {
 	}
 
 	async getStarkPrice() {
-		try {
-			const response = await fetch(
-				"https://api.coingecko.com/api/v3/simple/price?ids=starknet&vs_currencies=usd",
-			);
-			if (!response.ok) {
-				throw new Error(`HTTP error! Status: ${response.status}`);
+		const MAX_RETRIES = 3;
+		const RETRY_DELAY = 1000;
+		const FALLBACK_PRICE = 2.5;
+
+		for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+			try {
+				const response = await fetch(
+					"https://api.coingecko.com/api/v3/simple/price?ids=starknet&vs_currencies=usd",
+					{
+						headers: {
+							Accept: "application/json",
+							"Cache-Control": "no-cache",
+						},
+					},
+				);
+
+				if (!response.ok) {
+					throw new Error(`HTTP error! Status: ${response.status}`);
+				}
+
+				const data = (await response.json()) as CoinGeckoResponse;
+				if (!data?.starknet?.usd) {
+					throw new Error("Invalid response format");
+				}
+
+				return data.starknet.usd;
+			} catch (error) {
+				console.warn(`Attempt ${attempt}/${MAX_RETRIES} failed:`, error);
+
+				if (attempt === MAX_RETRIES) {
+					console.warn(
+						"All retries failed, using fallback price:",
+						FALLBACK_PRICE,
+					);
+					return FALLBACK_PRICE;
+				}
+
+				await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
 			}
-			const data = (await response.json()) as CoinGeckoResponse;
-			return data.starknet.usd;
-		} catch (error) {
-			if (error instanceof Error) {
-				throw new Error(`Error fetching starknet price data: ${error.message}`);
-			}
-			throw new Error("Error fetching starknet price data");
 		}
+
+		return FALLBACK_PRICE;
 	}
 
 	async get_balance_of(token_id: string) {
@@ -138,17 +167,32 @@ class ContractsInterface {
 	async get_claim_balance() {
 		const address = this.get_user_address();
 		if (!this.marketplaceContract) {
-			throw new Error("Cofi collection contract is not loaded");
+			throw new Error("Marketplace contract is not loaded");
 		}
-		const balance_result = await this.marketplaceContract.call(
-			"claim_balance",
-			CallData.compile([address]),
-		);
-		const balance = BigInt(Number(balance_result));
+		try {
+			const balance_result = await this.marketplaceContract.call(
+				"claim_balance",
+				CallData.compile([address]),
+			);
 
-		const stark_price_usd = await this.getStarkPrice();
-		const total = (Number(balance) / 1000000000000000000) * stark_price_usd;
-		return total;
+			let balanceStr = "0";
+			if (balance_result !== undefined && balance_result !== null) {
+				balanceStr =
+					typeof balance_result === "bigint"
+						? balance_result.toString()
+						: (
+								balance_result as { low: bigint; high: bigint }
+							)?.low?.toString() || "0";
+			}
+
+			const stark_price_usd = await this.getStarkPrice();
+			const total =
+				(Number(balanceStr) / 1000000000000000000) * stark_price_usd;
+			return total;
+		} catch (error) {
+			console.error("Error getting claim balance:", error);
+			return 0;
+		}
 	}
 
 	async register_product(price_usd: number, initial_stock: number) {
@@ -170,7 +214,6 @@ class ContractsInterface {
 				CallData.compile([initial_stock, "0x0", price, "0x0", "0x1", "0x0"]),
 				{ maxFee: "10000000000000000000000" },
 			);
-			console.log("tx hash is", tx.transaction_hash);
 			const txReceipt = await this.provider.waitForTransaction(
 				tx.transaction_hash,
 				{
@@ -333,6 +376,27 @@ class ContractsInterface {
 				);
 			}
 			throw error;
+		}
+	}
+
+	async get_product_stock(tokenId: number) {
+		// connect user account to contracts
+		this.connect_account();
+
+		// Call the contract to get the stock
+		if (!this.marketplaceContract) {
+			throw new Error("Marketplace contract is not loaded");
+		}
+
+		try {
+			const stock = await this.marketplaceContract.call(
+				"listed_product_stock",
+				[tokenId, "0x0"],
+			);
+			return Number(stock);
+		} catch (error) {
+			console.error("Error getting product stock:", error);
+			return 0;
 		}
 	}
 }

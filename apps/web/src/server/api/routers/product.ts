@@ -1,9 +1,15 @@
+// TODO: Implement blockchain sync mechanism to keep database in sync with on-chain data
+// This should include:
+// 1. Listening to blockchain events for product updates
+// 2. Syncing product availability/stock from the blockchain
+// 3. Updating prices based on blockchain data
+// 4. Handling blockchain transaction confirmations
+
+import type { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
-import { mockedProducts } from "./mockProducts";
 
-// TODO: Replace mockedProducts with real data fetched from the blockchain in the near future.
 const normalizeText = (text: string): string => {
 	return text
 		.toLowerCase()
@@ -17,20 +23,26 @@ export const productRouter = createTRPCRouter({
 			z.object({
 				limit: z.number().min(1),
 				cursor: z.number().optional(),
+				includeHidden: z.boolean().optional().default(false),
 			}),
 		)
 		.query(async ({ input }) => {
-			const { limit, cursor } = input;
+			const { limit, cursor, includeHidden } = input;
 
-			// Fetch products from the database using Prisma
 			const products = await db.product.findMany({
-				take: limit, // Limit the number of products
-				skip: cursor ? 1 : 0, // Skip if cursor is provided
-				cursor: cursor ? { id: cursor } : undefined, // Cursor-based pagination
-				orderBy: { id: "asc" }, // Order products by ID ascending
+				take: limit,
+				skip: cursor ? 1 : 0,
+				cursor: cursor ? { id: cursor } : undefined,
+				orderBy: { id: "asc" },
+				where: includeHidden
+					? undefined
+					: {
+							NOT: {
+								hidden: true,
+							},
+						},
 			});
 
-			// Determine next cursor for pagination
 			const nextCursor =
 				products.length === limit ? products[products.length - 1]?.id : null;
 
@@ -74,6 +86,7 @@ export const productRouter = createTRPCRouter({
 				strength: z.string().min(1),
 				region: z.string().optional(),
 				farmName: z.string().optional(),
+				stock: z.number().min(0),
 			}),
 		)
 		.mutation(async ({ input }) => {
@@ -83,6 +96,7 @@ export const productRouter = createTRPCRouter({
 						tokenId: input.tokenId,
 						name: input.name,
 						price: input.price,
+						stock: input.stock,
 						nftMetadata: JSON.stringify({
 							description: input.description,
 							imageUrl: input.image,
@@ -129,25 +143,36 @@ export const productRouter = createTRPCRouter({
 				region: z.string(),
 			}),
 		)
-		.query(({ input }) => {
+		.query(async ({ input }) => {
 			const { region } = input;
-
 			const normalizedSearchTerm = normalizeText(region);
 
-			const productsFound = mockedProducts.filter((product) => {
-				const normalizedRegion = normalizeText(product.region);
-				const normalizedName = normalizeText(product.name);
-				const normalizedFarmName = normalizeText(product.farmName);
-
-				return (
-					normalizedRegion.includes(normalizedSearchTerm) ||
-					normalizedName.includes(normalizedSearchTerm) ||
-					normalizedFarmName.includes(normalizedSearchTerm)
-				);
+			const products = await db.product.findMany({
+				where: {
+					OR: [
+						{
+							nftMetadata: {
+								path: "$.region",
+								string_contains: normalizedSearchTerm,
+							},
+						},
+						{
+							name: {
+								contains: normalizedSearchTerm,
+							},
+						},
+						{
+							nftMetadata: {
+								path: "$.farmName",
+								string_contains: normalizedSearchTerm,
+							},
+						},
+					],
+				},
 			});
 
 			return {
-				productsFound,
+				productsFound: products,
 			};
 		}),
 
@@ -159,35 +184,42 @@ export const productRouter = createTRPCRouter({
 				orderBy: z.string().optional(),
 			}),
 		)
-		.query(({ input }) => {
+		.query(async ({ input }) => {
 			const { strength, region, orderBy } = input;
-			let filteredProducts = [...mockedProducts];
+
+			const conditions: Prisma.ProductWhereInput[] = [];
 
 			if (strength) {
 				const normalizedStrength = normalizeText(strength);
-				filteredProducts = filteredProducts.filter(
-					(product) => normalizeText(product.strength) === normalizedStrength,
-				);
+				conditions.push({
+					nftMetadata: {
+						path: "$.strength",
+						string_contains: normalizedStrength,
+					},
+				});
 			}
 
 			if (region) {
 				const normalizedRegion = normalizeText(region);
-				filteredProducts = filteredProducts.filter(
-					(product) => normalizeText(product.region) === normalizedRegion,
-				);
-			}
-
-			if (orderBy) {
-				filteredProducts.sort((a, b) => {
-					if (orderBy === "Highest price") {
-						return b.price - a.price;
-					}
-					return a.price - b.price;
+				conditions.push({
+					nftMetadata: {
+						path: "$.region",
+						string_contains: normalizedRegion,
+					},
 				});
 			}
 
+			const products = await db.product.findMany({
+				where: conditions.length > 0 ? { AND: conditions } : undefined,
+				orderBy: orderBy
+					? {
+							price: orderBy === "Highest price" ? "desc" : "asc",
+						}
+					: undefined,
+			});
+
 			return {
-				productsFound: filteredProducts,
+				productsFound: products,
 			};
 		}),
 });

@@ -11,6 +11,18 @@ const config = {
 		...nextI18NextConfig.i18n,
 		localeDetection: false,
 	},
+	reactStrictMode: true,
+	transpilePackages: ["@repo/ui"],
+	images: {
+		domains: ["gateway.pinata.cloud"],
+	},
+	webpack: (config) => {
+		config.resolve.fallback = {
+			...config.resolve.fallback,
+			fs: false,
+		};
+		return config;
+	},
 };
 
 export default config;

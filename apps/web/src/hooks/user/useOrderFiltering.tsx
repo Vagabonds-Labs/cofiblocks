@@ -1,11 +1,39 @@
-import { useEffect, useState } from "react";
-import { DeliveryMethod, type Order, SalesStatus } from "~/types";
+import type { OrderStatus } from "@prisma/client";
+import { useCallback, useEffect, useState } from "react";
+import { SalesStatus } from "~/types";
+
+interface OrderGroup {
+	date: string;
+	items: OrderItem[];
+}
+
+interface OrderItem {
+	id: string;
+	productName: string;
+	buyerName?: string;
+	sellerName?: string;
+	status: OrderStatus;
+	total?: number;
+}
 
 interface UseOrderFilteringProps {
-	orders: Order[];
+	orders: OrderGroup[];
 	searchKey: "sellerName" | "buyerName";
 	filters: Record<string, boolean>;
 }
+
+const mapOrderStatusToSalesStatus = (status: OrderStatus): SalesStatus => {
+	switch (status) {
+		case "PENDING":
+			return SalesStatus.Paid;
+		case "COMPLETED":
+			return SalesStatus.Delivered;
+		case "CANCELLED":
+			return SalesStatus.Paid; // TODO: Add proper cancelled status
+		default:
+			return SalesStatus.Paid;
+	}
+};
 
 export function useOrderFiltering({
 	orders,
@@ -15,85 +43,53 @@ export function useOrderFiltering({
 	const [searchTerm, setSearchTerm] = useState("");
 	const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
 	const [filteredOrders, setFilteredOrders] = useState(orders);
-	const [activeFilters, setActiveFilters] =
-		useState<Record<string, boolean>>(filters);
-
-	const openFiltersModal = () => setIsFiltersModalOpen(true);
-	const closeFiltersModal = () => setIsFiltersModalOpen(false);
-
-	const applyFilters = (newFilters: Record<string, boolean>) => {
-		setActiveFilters(newFilters);
-		closeFiltersModal();
-	};
 
 	useEffect(() => {
-		const newFilteredOrders = orders
-			.map((orderGroup) => ({
-				...orderGroup,
-				items: orderGroup.items.filter((item) => {
-					const matchesSearch = searchTerm
-						? item[searchKey]?.toLowerCase().includes(searchTerm.toLowerCase())
-						: true;
+		const filtered = orders.map((orderGroup) => ({
+			...orderGroup,
+			items: orderGroup.items.filter((item) => {
+				const searchMatch = item[searchKey]
+					?.toLowerCase()
+					.includes(searchTerm.toLowerCase());
 
-					const activeStatusFilters = [
-						activeFilters.statusPaid,
-						activeFilters.statusPrepared,
-						activeFilters.statusShipped,
-						activeFilters.statusDelivered,
-					];
+				const statusFilters = Object.entries(filters).filter(
+					([key, value]) => value,
+				);
 
-					const matchesStatus = activeStatusFilters.some(Boolean)
-						? [
-								{
-									filter: activeFilters.statusPaid,
-									status: SalesStatus.Paid,
-								},
-								{
-									filter: activeFilters.statusPrepared,
-									status: SalesStatus.Prepared,
-								},
-								{
-									filter: activeFilters.statusShipped,
-									status: SalesStatus.Shipped,
-								},
-								{
-									filter: activeFilters.statusDelivered,
-									status: SalesStatus.Delivered,
-								},
-							].some(({ filter, status }) => filter && item.status === status)
-						: true;
+				if (statusFilters.length === 0) {
+					return searchMatch;
+				}
 
-					const activeDeliveryFilters = [
-						activeFilters.deliveryAddress,
-						activeFilters.deliveryMeetup,
-					];
+				const statusMatch = statusFilters.some(([key]) => {
+					const status = key.replace("status", "").toUpperCase() as OrderStatus;
+					return item.status === status;
+				});
 
-					const matchesDelivery = activeDeliveryFilters.some(Boolean)
-						? [
-								{
-									filter: activeFilters.deliveryAddress,
-									deliveryMethod: DeliveryMethod.Address,
-								},
-								{
-									filter: activeFilters.deliveryMeetup,
-									deliveryMethod: DeliveryMethod.Meetup,
-								},
-							].some(
-								({ filter, deliveryMethod }) =>
-									filter && item.delivery === deliveryMethod,
-							)
-						: true;
+				return searchMatch && statusMatch;
+			}),
+		}));
 
-					return matchesSearch && matchesStatus && matchesDelivery;
-				}),
-			}))
-			.filter((orderGroup) => orderGroup.items.length > 0);
-		if (!searchTerm && !Object.values(activeFilters).some(Boolean)) {
-			setFilteredOrders(orders);
-		} else {
-			setFilteredOrders(newFilteredOrders);
-		}
-	}, [orders, searchKey, searchTerm, activeFilters]);
+		const nonEmptyGroups = filtered.filter(
+			(orderGroup) => orderGroup.items.length > 0,
+		);
+
+		setFilteredOrders(nonEmptyGroups);
+	}, [orders, searchTerm, filters, searchKey]);
+
+	const openFiltersModal = useCallback(() => {
+		setIsFiltersModalOpen(true);
+	}, []);
+
+	const closeFiltersModal = useCallback(() => {
+		setIsFiltersModalOpen(false);
+	}, []);
+
+	const applyFilters = useCallback(
+		(values: Record<string, boolean>) => {
+			closeFiltersModal();
+		},
+		[closeFiltersModal],
+	);
 
 	return {
 		searchTerm,
@@ -101,7 +97,6 @@ export function useOrderFiltering({
 		isFiltersModalOpen,
 		openFiltersModal,
 		closeFiltersModal,
-		activeFilters,
 		filteredOrders,
 		applyFilters,
 	};

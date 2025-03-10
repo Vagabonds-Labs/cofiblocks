@@ -1,18 +1,5 @@
 import { atom } from "jotai";
-
-interface Product {
-	id: number;
-	tokenId: number;
-	name: string;
-	price: number;
-	region: string;
-	farmName: string;
-	strength: string;
-	nftMetadata: string;
-	process?: string;
-	createdAt: Date;
-	updatedAt: Date;
-}
+import type { Product } from "~/app/_components/features/types";
 
 export const searchQueryAtom = atom<string>("");
 export const searchResultsAtom = atom<Product[]>([]);

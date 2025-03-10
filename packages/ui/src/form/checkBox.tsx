@@ -1,4 +1,5 @@
 import cs from "classnames";
+import cn from "classnames";
 import { useController } from "react-hook-form";
 import type { Control, FieldPath, FieldValues } from "react-hook-form";
 
@@ -41,12 +42,17 @@ function Checkbox<T extends FieldValues>({
 		<div className={cs("flex items-center gap-2", className)}>
 			<div className="relative">
 				<input
-					id={name}
 					type="checkbox"
-					disabled={disabled}
-					{...field}
+					id={`${name}-${field.value}`}
+					name={name}
 					checked={!!field.value}
-					className="hidden" // Hide the default checkbox input
+					onChange={handleChange}
+					onKeyPress={handleKeyPress}
+					aria-checked={!!field.value}
+					className={cn(
+						"h-5 w-5 cursor-pointer rounded border border-surface-border bg-white",
+						field.value && "bg-surface-primary-default",
+					)}
 				/>
 				<div
 					className={cs(

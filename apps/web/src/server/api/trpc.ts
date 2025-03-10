@@ -7,6 +7,7 @@
  * need to use are documented accordingly near the end.
  */
 
+import type { Role } from "@prisma/client";
 import { TRPCError, initTRPC } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
@@ -131,3 +132,62 @@ export const protectedProcedure = t.procedure
 			},
 		});
 	});
+
+/**
+ * Role-based middleware
+ *
+ * Enforces that the user has one of the allowed roles to access the procedure.
+ */
+const enforceUserRole = (allowedRoles: Role[]) => {
+	return t.middleware(async ({ ctx, next }) => {
+		if (!ctx.session || !ctx.session.user) {
+			throw new TRPCError({ code: "UNAUTHORIZED" });
+		}
+
+		const user = await ctx.db.user.findUnique({
+			where: { id: ctx.session.user.id },
+		});
+
+		if (!user || !allowedRoles.includes(user.role)) {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message: "You don't have permission to perform this action",
+			});
+		}
+
+		return next({
+			ctx: {
+				...ctx,
+				// Add the full user object to the context
+				user,
+			},
+		});
+	});
+};
+
+/**
+ * Producer-only procedure
+ *
+ * Only allows COFFEE_PRODUCER role to access these procedures
+ */
+export const producerProcedure = protectedProcedure.use(
+	enforceUserRole(["COFFEE_PRODUCER"]),
+);
+
+/**
+ * Buyer-only procedure
+ *
+ * Only allows COFFEE_BUYER role to access these procedures
+ */
+export const buyerProcedure = protectedProcedure.use(
+	enforceUserRole(["COFFEE_BUYER"]),
+);
+
+/**
+ * Admin-only procedure
+ *
+ * Only allows ADMIN role to access these procedures
+ */
+export const adminProcedure = protectedProcedure.use(
+	enforceUserRole(["ADMIN"]),
+);

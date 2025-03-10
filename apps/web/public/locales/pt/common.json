@@ -5,7 +5,10 @@
 	"disconnect": "Desconectar",
 	"connect_wallet": "Conectar {{walletName}}",
 	"argent_x": "Argent X",
+	"argent_mobile": "Argent Mobile",
 	"error_signing_message": "Erro ao assinar a mensagem",
+
+	"beta_announcement": "Bem-vindo à nossa versão beta. Atualmente, estamos disponíveis apenas na Costa Rica. Estamos melhorando ativamente a plataforma e agradecemos sua compreensão enquanto aprimoramos sua experiência.",
 
 	"tag_new": "Novo",
 	"welcome_coffee_lover": "Bem-vindo Amante de Café",
@@ -63,7 +66,9 @@
 		"canceled": "Cancelado",
 		"paid": "Pago",
 		"prepared": "Preparado",
-		"shipped": "Enviado"
+		"shipped": "Enviado",
+		"completed": "Concluído",
+		"cancelled": "Cancelado"
 	},
 	"ordered_by": "Pedido por {{name}}",
 	"price_with_currency": "{{price}} USD",
@@ -121,6 +126,7 @@
 	"chat_with_seller": "Conversar com o vendedor",
 	"bags_available": "Sacos disponíveis",
 	"bags": "sacos",
+	"bags_available_count": "{{count}} sacos disponíveis",
 	"unit_price": "Preço por unidade ({{weight}})",
 	"sold_out": "ESGOTADO",
 	"add_to_favorites": "Adicionar aos favoritos",
@@ -203,6 +209,7 @@
 	"contributor": "Contribuidor",
 	"producer": "Produtor",
 	"united_states": "Estados Unidos",
+	"costa_rica": "Costa Rica",
 	"since": "Desde",
 
 	"edit_my_profile": "Editar meu perfil",
@@ -219,6 +226,11 @@
 	"edit_profile": "Editar perfil",
 	"my_coffee": "Meu Café",
 	"my_sales": "Minhas Vendas",
+	"total_sales": "Vendas Totais",
+	"total_sales_amount": "Valor Total de Vendas",
+	"claim_rewards": "Resgatar Recompensas",
+	"available_to_claim": "Disponível para resgate",
+	"view_claims": "Ver Resgates",
 	"my_claims": "Minhas Reclamações",
 	"my_orders": "Meus Pedidos",
 	"favorite_products": "Produtos favoritos",
@@ -253,6 +265,7 @@
 	"quantity_with_unit": "{{count}} {{unit}}",
 	"total_balance_receivable": "Saldo total a receber",
 	"recieve": "Receber",
+	"check_balance": "Verificar saldo",
 	"history": "Histórico",
 	"my_sellers": "Meus Vendedores",
 	"offer_coffee": "Oferecer meu café",
@@ -265,7 +278,7 @@
 	"coffee_score": "Pontuação do Café",
 	"not_mandatory": "não obrigatório",
 	"score_placeholder": "Insira uma pontuação entre 0 e 100",
-	"operating_fee": "Taxa de operação por saco",
+	"operating_fee": "Taxa de operação",
 	"price_per_bag": "Preço por saco",
 	"enter_price_placeholder": "Insira o preço (ex. 25.99)",
 	"producer_value_per_bag": "Valor destinado ao produtor por saco:",
@@ -280,5 +293,47 @@
 		"en": "Inglês",
 		"es": "Espanhol",
 		"pt": "Português"
+	},
+
+	"badges": {
+		"lover": "Amante do Café",
+		"contributor": "Contribuidor",
+		"producer": "Produtor"
+	},
+
+	"update_status": "Atualizar Status",
+	"status_updated": "Status atualizado com sucesso",
+
+	"cart": {
+		"empty_message": "Seu carrinho está vazio",
+		"quantity_label": "Quantidade",
+		"remove_confirmation_title": "Deseja remover este item?",
+		"remove_confirmation_yes": "Sim, remover",
+		"cancel": "Cancelar",
+		"total": "Total",
+		"checkout": "Finalizar compra"
+	},
+	"click_to_upload": "Clique para fazer upload",
+	"no_collectibles_found": "Nenhum colecionável encontrado",
+
+	"review_your_order": "Revise seu pedido",
+	"quantity": "Quantidade",
+	"product_price": "Preço do produto",
+	"delivery_address": "Endereço de entrega",
+	"my_home": "Minha casa",
+	"delivery_price": "Preço de entrega",
+	"total_price": "Preço total",
+	"change_currency": "Alterar moeda",
+	"congrats": "Parabéns!",
+	"order_confirmation_message": "Seu pedido foi confirmado e está sendo processado.",
+	"track_in_my_orders": "Acompanhar em Meus Pedidos",
+	"subtotal": "Subtotal",
+	"amount_with_currency": "{{amount}} USD",
+	"amount_with_currency_short": "${amount} USD",
+	"stock_status": {
+		"in_stock": "{{count}} em estoque",
+		"low_stock_left": "Apenas {{count}} restantes",
+		"stock_available": "{{count}} disponíveis",
+		"sold_out": "Esgotado"
 	}
 }

@@ -9,6 +9,8 @@ import { SessionProvider } from "next-auth/react";
 import i18n from "~/i18n";
 import StarknetProvider from "~/providers/starknet";
 import { TRPCReactProvider } from "~/trpc/react";
+import WalletConnectionCheck from "./_components/features/WalletConnectionCheck";
+import BetaAnnouncement from "./_components/ui/BetaAnnouncement";
 
 export default function RootLayout({
 	children,
@@ -31,7 +33,12 @@ export default function RootLayout({
 			<body suppressHydrationWarning={true}>
 				<SessionProvider>
 					<StarknetProvider>
-						<TRPCReactProvider>{children}</TRPCReactProvider>
+						<TRPCReactProvider>
+							<WalletConnectionCheck>
+								<BetaAnnouncement />
+								<div className="pb-20">{children}</div>
+							</WalletConnectionCheck>
+						</TRPCReactProvider>
 					</StarknetProvider>
 				</SessionProvider>
 				<Toaster
