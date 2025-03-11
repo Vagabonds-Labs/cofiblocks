@@ -2,7 +2,8 @@
 
 CofiBlocks is the first Collaborative Business connecting traditional coffee-growing communities in Costa Rica and worldwide directly with coffee lovers using StarkNet blockchain technology. Our mission is to distribute benefits among all members, ensuring fair trade, community engagement, and technological innovation.
 
-![Build Status](https://img.shields.io/badge/build-passing-brightgreen) ![License](https://img.shields.io/badge/license-MIT-blue)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/Vagabonds-Labs/cofiblocks/actions)
+![License](https://img.shields.io/badge/license-MIT-blue)
 
 ---
 
