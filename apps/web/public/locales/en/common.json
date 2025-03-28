@@ -7,6 +7,11 @@
 	"argent_mobile": "Argent Mobile",
 	"error_signing_message": "Error signing the message",
 
+	"platform_update": {
+		"title": "Platform Update",
+		"message": "We are currently updating our platform. You may experience some issues during this time. Thank you for your patience."
+	},
+
 	"beta_announcement": "Welcome to our beta version. Currently, we are only available in Costa Rica. We're actively improving the platform and appreciate your understanding as we enhance your experience.",
 
 	"tag_new": "New",
