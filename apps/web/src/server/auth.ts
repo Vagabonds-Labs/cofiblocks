@@ -1,5 +1,5 @@
 import type { Role } from "@prisma/client";
-import { compare } from "bcrypt";
+import { compare } from "bcryptjs";
 import type { DefaultSession, NextAuthOptions } from "next-auth";
 import { getServerSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
