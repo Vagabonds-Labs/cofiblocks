@@ -7,9 +7,9 @@ import { InfoCard } from "@repo/ui/infoCard";
 import { Text } from "@repo/ui/typography";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
+import { useTranslation } from "~/i18n";
 
 const languageSchema = z.object({
 	language: z.string(),
@@ -18,6 +18,7 @@ const languageSchema = z.object({
 type FormValues = z.infer<typeof languageSchema>;
 
 const LANGUAGE_KEY = "app_language";
+const SUPPORTED_LANGUAGES = ["en", "es", "pt"];
 
 const LANGUAGES = [
 	{
@@ -49,14 +50,12 @@ export default function Settings() {
 	});
 
 	useEffect(() => {
-		// Update language from localStorage after component mounts
-		const savedLanguage = localStorage.getItem(LANGUAGE_KEY);
-		if (savedLanguage && savedLanguage !== language) {
-			setLanguage(savedLanguage);
-			setValue("language", savedLanguage);
-			void i18n.changeLanguage(savedLanguage);
-		}
-	}, [i18n, language, setValue]);
+		const detectedLanguage =
+			SUPPORTED_LANGUAGES.find((lang) => i18n.language.includes(lang)) ?? "en";
+		setLanguage(detectedLanguage);
+		setValue("language", detectedLanguage);
+		localStorage.setItem(LANGUAGE_KEY, detectedLanguage);
+	}, [i18n.language, setValue]);
 
 	const handleLanguageSelect = async (langCode: string) => {
 		setLanguage(langCode);

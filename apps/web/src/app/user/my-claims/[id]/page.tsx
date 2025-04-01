@@ -4,9 +4,9 @@ import type { OrderStatus } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
 import ProductStatusDetails from "~/app/_components/features/ProductStatusDetails";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
+import { useTranslation } from "~/i18n";
 import type { SaleDetailsType } from "~/types";
 
 export default function MySaleDetails() {

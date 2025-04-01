@@ -5,8 +5,8 @@ import { ProductCard } from "@repo/ui/productCard";
 import { useAtom } from "jotai";
 import { useSession } from "next-auth/react";
 import React from "react";
-import { useTranslation } from "react-i18next";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
+import { useTranslation } from "~/i18n";
 import { addItemAtom } from "~/store/cartAtom";
 import { api } from "~/trpc/react";
 

@@ -7,12 +7,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { toast } from "react-hot-toast";
-import { useTranslation } from "react-i18next";
 import { ProfileCard } from "~/app/_components/features/ProfileCard";
 import { ProfileOptions } from "~/app/_components/features/ProfileOptions";
 import WalletConnectFlow from "~/app/_components/features/WalletConnectFlow";
 import Header from "~/app/_components/layout/Header";
 import Main from "~/app/_components/layout/Main";
+import { useTranslation } from "~/i18n";
 import { api } from "~/trpc/react";
 
 type Badge = "lover" | "contributor" | "producer";

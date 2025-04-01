@@ -22,7 +22,7 @@ import { DeliveryMethod, SalesStatus } from "~/types";
 
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "~/i18n";
 
 // Interface for blockchain events
 interface BlockchainOrder {

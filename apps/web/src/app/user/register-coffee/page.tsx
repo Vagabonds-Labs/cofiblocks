@@ -10,10 +10,10 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { ImageUpload } from "~/app/_components/features/ImageUpload";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
+import { useTranslation } from "~/i18n";
 import {
 	ContractsError,
 	ContractsInterface,

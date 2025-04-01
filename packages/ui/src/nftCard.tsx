@@ -1,6 +1,6 @@
 import { ArrowRightIcon } from "@heroicons/react/24/solid";
 import Button from "@repo/ui/button";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "~/i18n";
 
 interface NFTMetadata {
 	imageSrc: string;

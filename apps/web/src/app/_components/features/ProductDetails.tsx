@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "~/i18n";
 import { api } from "~/trpc/react";
 import { ProducerInfo } from "./ProducerInfo";
 import { SelectionTypeCard } from "./SelectionTypeCard";

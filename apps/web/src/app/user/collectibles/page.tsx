@@ -3,9 +3,9 @@
 import NFTCard from "@repo/ui/nftCard";
 import { useAccount } from "@starknet-react/core";
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
 import type { Contract } from "starknet";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
+import { useTranslation } from "~/i18n";
 import { useCofiCollectionContract } from "~/services/contractsInterface";
 import { api } from "~/trpc/react";
 

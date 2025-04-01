@@ -18,20 +18,19 @@ export default function RootLayout({
 	children: React.ReactNode;
 }) {
 	useEffect(() => {
-		const savedLanguage = localStorage.getItem("app_language");
-		if (savedLanguage) {
-			void i18n.changeLanguage(savedLanguage);
-		}
+		const savedLanguage =
+			localStorage.getItem("app_language") ?? i18n.language ?? "en";
+		void i18n.changeLanguage(savedLanguage);
 	}, []);
 
 	return (
 		<html
-			suppressHydrationWarning
-			lang="en"
+			suppressHydrationWarning={true}
+			lang={i18n.language}
 			data-theme="cofiblocks"
 			className={`${GeistSans.variable}`}
 		>
-			<body>
+			<body suppressHydrationWarning={true}>
 				<SessionProvider>
 					<StarknetProvider>
 						<TRPCReactProvider>

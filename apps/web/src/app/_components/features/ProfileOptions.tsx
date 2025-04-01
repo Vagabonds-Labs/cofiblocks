@@ -13,8 +13,8 @@ import type { Role } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
 import LogoutModal from "~/app/_components/features/LogoutModal";
+import { useTranslation } from "~/i18n";
 
 interface ProfileOptionsProps {
 	address?: string;

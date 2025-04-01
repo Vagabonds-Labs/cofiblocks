@@ -3,10 +3,10 @@
 import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
 import React from "react";
-import { useTranslation } from "react-i18next";
 import ProductStatusDetails from "~/app/_components/features/ProductStatusDetails";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
 import { CoffeeIcon } from "~/app/_components/icons/CoffeeIcon";
+import { useTranslation } from "~/i18n";
 import { api } from "~/trpc/react";
 
 interface RawMetadata {

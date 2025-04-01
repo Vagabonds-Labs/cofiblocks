@@ -1,6 +1,6 @@
 import Button from "@repo/ui/button";
-import { useTranslation } from "react-i18next";
 import BottomModal from "~/app/_components/ui/BottomModal";
+import { useTranslation } from "~/i18n";
 
 interface FarmModalProps {
 	isOpen: boolean;
@@ -23,7 +23,7 @@ function FarmModal({
 	isEditable,
 	onEdit,
 }: FarmModalProps) {
-	const { t } = useTranslation("common");
+	const { t } = useTranslation();
 
 	return (
 		<BottomModal isOpen={isOpen} onClose={onClose}>

@@ -1,7 +1,7 @@
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "~/i18n";
 
 const BlockiesSvg = dynamic<{ address: string; size: number; scale: number }>(
 	() => import("blockies-react-svg"),
