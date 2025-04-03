@@ -1,7 +1,9 @@
 mod test_marketplace {
     use contracts::cofi_collection::ICofiCollectionDispatcher;
     use contracts::cofi_collection::ICofiCollectionDispatcherTrait;
-    use contracts::marketplace::{IMarketplaceDispatcher, IMarketplaceDispatcherTrait};
+    use contracts::marketplace::{
+        IMarketplaceDispatcher, IMarketplaceDispatcherTrait, PAYMENT_TOKEN
+    };
     use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
 
     use openzeppelin::utils::serde::SerializedAppend;
@@ -21,6 +23,9 @@ mod test_marketplace {
 
     const ONE_E18: u256 = 1000000000000000000_u256;
     const MARKET_FEE: u256 = 250_u256; // 2.5%
+
+    const EKUBO_ADDRESS_MAINNET: felt252 =
+        0x00000005dd3D2F4429AF886cD1a3b08289DBcEa99A294197E9eB43b0e0325b4b;
 
     fn deploy_receiver() -> ContractAddress {
         let contract = declare("Receiver").unwrap().contract_class();
@@ -50,6 +55,7 @@ mod test_marketplace {
 
         let mut calldata: Array<felt252> = array![];
         calldata.append_serde(cofi_collection); // coffi_collection
+        calldata.append_serde(EKUBO_ADDRESS_MAINNET); // ekubo
         calldata.append_serde(OWNER()); // admin
         calldata.append_serde(MARKET_FEE); // market fee
 
@@ -138,7 +144,7 @@ mod test_marketplace {
     }
 
     #[test]
-    #[fork("SEPOLIA_LATEST")]
+    #[fork("MAINNET_LATEST")]
     fn test_buy_product() {
         let cofi_collection = deploy_cofi_collection();
         let CONSUMER = deploy_receiver();
@@ -187,14 +193,14 @@ mod test_marketplace {
         start_cheat_caller_address(marketplace.contract_address, CONSUMER);
         start_cheat_caller_address(token_address, marketplace.contract_address);
         start_cheat_caller_address(cofi_collection.contract_address, marketplace.contract_address);
-        marketplace.buy_product(token_id, amount_to_buy);
+        marketplace.buy_product(token_id, amount_to_buy, PAYMENT_TOKEN::STRK);
 
         let minted_nfts = cofi_collection.balance_of(CONSUMER, token_id);
         assert(minted_nfts == amount_to_buy, 'invalid minted nfts');
     }
 
     #[test]
-    #[fork("SEPOLIA_LATEST")]
+    #[fork("MAINNET_LATEST")]
     fn test_buy_products() {
         let cofi_collection = deploy_cofi_collection();
         let CONSUMER = deploy_receiver();
@@ -242,7 +248,7 @@ mod test_marketplace {
         start_cheat_caller_address(token_address, marketplace.contract_address);
         start_cheat_caller_address(cofi_collection.contract_address, marketplace.contract_address);
         let token_amounts = array![2, 3].span();
-        marketplace.buy_products(token_ids, token_amounts);
+        marketplace.buy_products(token_ids, token_amounts, PAYMENT_TOKEN::STRK);
     }
 
     #[test]
@@ -309,7 +315,7 @@ mod test_marketplace {
     }
 
     #[test]
-    #[fork("SEPOLIA_LATEST")]
+    #[fork("MAINNET_LATEST")]
     fn test_claim() {
         let cofi_collection = deploy_cofi_collection();
         let CONSUMER = deploy_receiver();
@@ -356,7 +362,7 @@ mod test_marketplace {
         start_cheat_caller_address(marketplace.contract_address, CONSUMER);
         start_cheat_caller_address(token_address, marketplace.contract_address);
         start_cheat_caller_address(cofi_collection.contract_address, marketplace.contract_address);
-        marketplace.buy_product(token_id, amount_to_buy);
+        marketplace.buy_product(token_id, amount_to_buy, PAYMENT_TOKEN::STRK);
 
         let minted_nfts = cofi_collection.balance_of(CONSUMER, token_id);
         assert(minted_nfts == amount_to_buy, 'invalid minted nfts');

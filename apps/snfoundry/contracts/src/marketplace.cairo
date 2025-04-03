@@ -3,13 +3,70 @@
 
 use starknet::ContractAddress;
 
+#[derive(Copy, Drop, Serde)]
+pub struct i129 {
+    pub mag: u128,
+    pub sign: bool,
+}
+
+#[inline(always)]
+fn i129_eq(a: @i129, b: @i129) -> bool {
+    (a.mag == b.mag) & ((a.sign == b.sign) | (*a.mag == 0))
+}
+
+impl i129PartialEq of PartialEq<i129> {
+    fn eq(lhs: @i129, rhs: @i129) -> bool {
+        i129_eq(lhs, rhs)
+    }
+
+    fn ne(lhs: @i129, rhs: @i129) -> bool {
+        !i129_eq(lhs, rhs)
+    }
+}
+
+#[derive(Copy, Drop, Serde)]
+pub struct PoolKey {
+    pub token0: ContractAddress,
+    pub token1: ContractAddress,
+    pub fee: u128,
+    pub tick_spacing: u128,
+    pub extension: ContractAddress,
+}
+
+#[derive(Copy, Drop, Serde, PartialEq)]
+pub struct PoolPrice {
+    // the current ratio, up to 192 bits
+    pub sqrt_ratio: u256,
+    // the current tick, up to 32 bits
+    pub tick: i129,
+}
+
+#[starknet::interface]
+pub trait IEkuboRouter<TContractState> {
+    fn get_pool_price(self: @TContractState, pool_key: PoolKey) -> PoolPrice;
+}
+
+#[derive(Copy, Drop, Serde, PartialEq)]
+pub enum PAYMENT_TOKEN {
+    STRK,
+    USDC,
+    USDT
+}
+
 #[starknet::interface]
 pub trait IMarketplace<ContractState> {
     fn assign_seller_role(ref self: ContractState, assignee: ContractAddress);
     fn assign_consumer_role(ref self: ContractState, assignee: ContractAddress);
     fn assign_admin_role(ref self: ContractState, assignee: ContractAddress);
-    fn buy_product(ref self: ContractState, token_id: u256, token_amount: u256);
-    fn buy_products(ref self: ContractState, token_ids: Span<u256>, token_amount: Span<u256>);
+    fn buy_product(
+        ref self: ContractState, token_id: u256, token_amount: u256, payment_token: PAYMENT_TOKEN
+    );
+    fn buy_products(
+        ref self: ContractState,
+        token_ids: Span<u256>,
+        token_amount: Span<u256>,
+        payment_token: PAYMENT_TOKEN
+    );
     fn create_product(
         ref self: ContractState, initial_stock: u256, price: u256, data: Span<felt252>
     ) -> u256;
@@ -36,6 +93,7 @@ mod Marketplace {
     use starknet::{
         ContractAddress, get_caller_address, get_contract_address, contract_address_const
     };
+    use super::{IEkuboRouterDispatcher, IEkuboRouterDispatcherTrait, PoolKey, PAYMENT_TOKEN};
 
     component!(
         path: ERC1155ReceiverComponent, storage: erc1155_receiver, event: ERC1155ReceiverEvent
@@ -70,6 +128,12 @@ mod Marketplace {
     const STRK_TOKEN_ADDRESS: felt252 =
         0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d;
 
+    const USDC_TOKEN_ADDRESS: felt252 =
+        0x053c91253bc9682c04929ca02ed00b3e423f6710d2ee7e0d5ebb06f3ecf368a8;
+
+    const USDT_TOKEN_ADDRESS: felt252 =
+        0x068f5c6a61780768455de69077e07e89787839bf8166decfbf92b645209c0fb8;
+
     #[storage]
     struct Storage {
         #[substorage(v0)]
@@ -85,6 +149,7 @@ mod Marketplace {
         listed_product_price: Map<u256, u256>,
         seller_products: Map<u256, ContractAddress>,
         cofi_collection_address: ContractAddress,
+        ekubo_contract_address: ContractAddress,
         claim_balances: Map<ContractAddress, u256>,
         current_token_id: u256,
     }
@@ -165,6 +230,7 @@ mod Marketplace {
     fn constructor(
         ref self: ContractState,
         cofi_collection_address: ContractAddress,
+        ekubo_contract_address: ContractAddress,
         admin: ContractAddress,
         market_fee: u256,
     ) {
@@ -172,6 +238,7 @@ mod Marketplace {
         self.accesscontrol.initializer();
         self.accesscontrol._grant_role(DEFAULT_ADMIN_ROLE, admin);
         self.cofi_collection_address.write(cofi_collection_address);
+        self.ekubo_contract_address.write(ekubo_contract_address);
         self.market_fee.write(market_fee);
         self.current_token_id.write(1);
     }
@@ -193,28 +260,36 @@ mod Marketplace {
             self.accesscontrol._grant_role(DEFAULT_ADMIN_ROLE, assignee);
         }
 
-        fn buy_product(ref self: ContractState, token_id: u256, token_amount: u256) {
+        fn buy_product(
+            ref self: ContractState,
+            token_id: u256,
+            token_amount: u256,
+            payment_token: PAYMENT_TOKEN
+        ) {
             let stock = self.listed_product_stock.read(token_id);
             assert(stock >= token_amount, 'Not enough stock');
 
             let buyer = get_caller_address();
             let contract_address = get_contract_address();
-            let strk_token_dispatcher = IERC20Dispatcher {
-                contract_address: contract_address_const::<STRK_TOKEN_ADDRESS>()
-            };
-            // Get payment from buyer
+
             let mut producer_fee = self.listed_product_price.read(token_id) * token_amount;
             let mut total_price = producer_fee
                 + self.calculate_fee(producer_fee, self.market_fee.read());
-            assert(
-                strk_token_dispatcher.balance_of(get_caller_address()) >= total_price,
-                'insufficient funds'
-            );
-            assert(
-                strk_token_dispatcher.allowance(buyer, contract_address) >= total_price,
-                'insufficient allowance'
-            );
-            strk_token_dispatcher.transfer_from(buyer, contract_address, total_price);
+
+            // Process payment
+            if payment_token == PAYMENT_TOKEN::STRK {
+                let price_in_stark_wei = self.usdt_to_strk_wei(total_price);
+                self
+                    .pay_with_token(
+                        contract_address_const::<STRK_TOKEN_ADDRESS>(), price_in_stark_wei
+                    );
+            } else if payment_token == PAYMENT_TOKEN::USDC {
+                self.pay_with_token(contract_address_const::<USDC_TOKEN_ADDRESS>(), total_price);
+            } else if payment_token == PAYMENT_TOKEN::USDT {
+                self.pay_with_token(contract_address_const::<USDT_TOKEN_ADDRESS>(), total_price);
+            } else {
+                assert(false, 'Invalid payment token');
+            }
 
             // Transfer the nft products
             let cofi_collection = ICofiCollectionDispatcher {
@@ -243,7 +318,12 @@ mod Marketplace {
             self.emit(PaymentSeller { token_ids, seller: seller_address, payment: producer_fee });
         }
 
-        fn buy_products(ref self: ContractState, token_ids: Span<u256>, token_amount: Span<u256>) {
+        fn buy_products(
+            ref self: ContractState,
+            token_ids: Span<u256>,
+            token_amount: Span<u256>,
+            payment_token: PAYMENT_TOKEN
+        ) {
             assert(token_ids.len() > 0, 'No products to buy');
             assert(token_ids.len() == token_amount.len(), 'wrong length of arrays');
             let buyer = get_caller_address();
@@ -275,11 +355,21 @@ mod Marketplace {
             // Transfer the funds
             let total_price = producer_fee
                 + self.calculate_fee(producer_fee, self.market_fee.read());
-            let strk_token_dispatcher = IERC20Dispatcher {
-                contract_address: contract_address_const::<STRK_TOKEN_ADDRESS>()
-            };
-            assert(strk_token_dispatcher.balance_of(buyer) >= total_price, 'insufficient funds');
-            strk_token_dispatcher.transfer_from(buyer, contract_address, total_price);
+
+            // Process payment
+            if payment_token == PAYMENT_TOKEN::STRK {
+                let price_in_stark_wei = self.usdt_to_strk_wei(total_price);
+                self
+                    .pay_with_token(
+                        contract_address_const::<STRK_TOKEN_ADDRESS>(), price_in_stark_wei
+                    );
+            } else if payment_token == PAYMENT_TOKEN::USDC {
+                self.pay_with_token(contract_address_const::<USDC_TOKEN_ADDRESS>(), total_price);
+            } else if payment_token == PAYMENT_TOKEN::USDT {
+                self.pay_with_token(contract_address_const::<USDT_TOKEN_ADDRESS>(), total_price);
+            } else {
+                assert(false, 'Invalid payment token');
+            }
 
             // Transfer the nft products
             let cofi_collection = ICofiCollectionDispatcher {
@@ -320,7 +410,7 @@ mod Marketplace {
         /// Adds a new product to the marketplace
         /// Arguments:
         /// * `initial_stock` - The amount of stock that the product will have
-        /// * `price` - The price of the product per unity expresed in fri (1e-18 strk)
+        /// * `price` - The price of the product per unity expresed in wei usdc (1e-18 usdc)
         /// * `data` - Additional context or metadata for the token transfer process
         fn create_product(
             ref self: ContractState, initial_stock: u256, price: u256, data: Span<felt252>
@@ -441,10 +531,10 @@ mod Marketplace {
             let producer = get_caller_address();
             let claim_balance = self.claim_balances.read(producer);
             assert(claim_balance > 0, 'No tokens to claim');
-            let strk_token_dispatcher = IERC20Dispatcher {
-                contract_address: contract_address_const::<STRK_TOKEN_ADDRESS>()
+            let usdt_token_dispatcher = IERC20Dispatcher {
+                contract_address: contract_address_const::<USDT_TOKEN_ADDRESS>()
             };
-            let transfer = strk_token_dispatcher.transfer(producer, claim_balance);
+            let transfer = usdt_token_dispatcher.transfer(producer, claim_balance);
             assert(transfer, 'Error claiming');
 
             self.claim_balances.write(producer, 0);
@@ -472,6 +562,34 @@ mod Marketplace {
             self.emit(UpdateStock { token_id, new_stock });
         }
 
+        // Amount usdt should be in 10^18 representation (wei)
+        fn usdt_to_strk_wei(ref self: ContractState, amount_usdt: u256) -> u256 {
+            let ekubo = IEkuboRouterDispatcher {
+                contract_address: self.ekubo_contract_address.read()
+            };
+            // This is the pool being used in here
+            // https://app.ekubo.org/positions/new?baseCurrency=STRK&quoteCurrency=USDT&step=1&initialTick=-20083671&fee=3402823669209384634633746074317682114&tickSpacing=19802&tickLower=-29920822&tickUpper=-29287158
+            let usdt_stark_pool_key = PoolKey {
+                token0: contract_address_const::<STRK_TOKEN_ADDRESS>(),
+                token1: contract_address_const::<USDT_TOKEN_ADDRESS>(),
+                fee: 3402823669209384634633746074317682114,
+                tick_spacing: 19802,
+                extension: contract_address_const::<0x00>()
+            };
+            let pool_price = ekubo.get_pool_price(usdt_stark_pool_key);
+
+            // To extract the price, formula is ((sqrt_ratio)/(2^128)) ^ 2.
+            // Using 10^12 representation of the number so we don't lose precision
+            let price_without_pow = (pool_price.sqrt_ratio * 1_000_000_000_000)
+                / 340282366920938463463374607431768211456;
+            let stark_price = price_without_pow * price_without_pow;
+
+            // The amount of starks expresed in 10^6 representation (6 decimals)
+            let starks_required = amount_usdt / stark_price;
+            // output should be in 10^18 representation (wei) so padding with 12 zeros
+            starks_required * 1_000_000_000_000
+        }
+
         // Amount is the total amount
         // BPS is the percentage you want to calculate. (Example: 2.5% = 250bps, 7,48% = 748bps)
         // Use example:
@@ -480,6 +598,20 @@ mod Marketplace {
         fn calculate_fee(ref self: ContractState, amount: u256, bps: u256) -> u256 {
             assert((amount * bps) >= 10_000, 'Fee too low');
             amount * bps / 10_000
+        }
+
+        fn pay_with_token(ref self: ContractState, token_address: ContractAddress, amount: u256) {
+            let token_dispatcher = IERC20Dispatcher { contract_address: token_address };
+            let contract_address = get_contract_address();
+            let caller = get_caller_address();
+            assert(
+                token_dispatcher.balance_of(get_caller_address()) >= amount, 'insufficient funds'
+            );
+            assert(
+                token_dispatcher.allowance(caller, contract_address) >= amount,
+                'insufficient allowance'
+            );
+            token_dispatcher.transfer_from(caller, contract_address, amount);
         }
     }
 }
