@@ -1,60 +1,39 @@
-import type { Role } from "@prisma/client";
-import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-// Define protected routes and their allowed roles
-const protectedRoutes: Record<string, Role[]> = {
-	"/user/register-coffee": ["COFFEE_PRODUCER"],
-	"/user/my-coffee": ["COFFEE_PRODUCER"],
-	"/user/my-sales": ["COFFEE_PRODUCER"],
-	"/user/my-claims": ["COFFEE_PRODUCER"],
-	"/user/my-sales/[id]": ["COFFEE_PRODUCER"],
-	"/user/my-claims/[id]": ["COFFEE_PRODUCER"],
-} as const;
+// Removed unused publicPaths variable
+/*
+const publicPaths = [
+	"/",
+	"/marketplace",
+	"/product/(.*)",
+	"/auth/(.*)",
+	"/api/(.*)",
+	"/onboarding",
+	"/clerk-demo",
+];
+*/
 
-export async function middleware(request: NextRequest) {
-	const pathname = request.nextUrl.pathname;
-	const token = await getToken({ req: request });
-
-	// Check if the path is protected
-	const allowedRoles = protectedRoutes[pathname];
-
-	if (allowedRoles) {
-		if (!token) {
-			// Redirect to login if not authenticated
-			return NextResponse.redirect(new URL("/", request.url));
+// Removed unused function isPublicRoute
+/*
+function isPublicRoute(path: string): boolean {
+	return publicPaths.some((publicPath) => {
+		if (publicPath.endsWith("(.*)")) {
+			const basePath = publicPath.replace("(.*)", "");
+			return path.startsWith(basePath);
 		}
+		return path === publicPath;
+	});
+}
+*/
 
-		// eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
-		const userRole = token?.role as Role;
-
-		if (!userRole || !allowedRoles.includes(userRole)) {
-			// Redirect to marketplace if not authorized
-			return NextResponse.redirect(new URL("/marketplace", request.url));
-		}
-	}
-
-	// Handle default redirect for authenticated users
-	if (token && pathname === "/") {
-		return NextResponse.redirect(new URL("/marketplace", request.url));
-	}
-
+// This is a simpler middleware approach for initial testing
+// Once you confirm Clerk is working, you can add more complex logic
+export function middleware(_request: NextRequest) {
+	// Simply pass through all requests for now
 	return NextResponse.next();
 }
 
 export const config = {
-	matcher: [
-		/*
-		 * Match all request paths except for the ones starting with:
-		 * - api (API routes)
-		 * - _next/static (static files)
-		 * - _next/image (image optimization files)
-		 * - favicon.ico (favicon file)
-		 */
-		"/((?!api|_next/static|_next/image|favicon.ico).*)",
-		"/user/register-coffee",
-		"/user/my-coffee",
-		"/user/my-sales",
-	],
+	matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };

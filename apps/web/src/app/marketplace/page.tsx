@@ -14,7 +14,6 @@ import SearchBar from "../_components/features/SearchBar";
 export default function Home() {
 	const { t } = useTranslation();
 	const { address } = useAccount();
-	const { disconnect } = useDisconnect();
 	const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
 	const handleConnect = () => {
@@ -50,14 +49,9 @@ export default function Home() {
 		<Main>
 			<div className="flex flex-col min-h-screen">
 				<Header
-					address={address}
-					disconnect={disconnect}
 					showCart={true}
-					onConnect={handleConnect}
-					profileOptions={
-						address ? <ProfileOptions address={address} /> : undefined
-					}
 				/>
+
 				<div className="flex-grow">
 					{/* Hero Section */}
 					<div className="mb-8">
@@ -78,7 +72,6 @@ export default function Home() {
 				<WalletConnect
 					isOpen={isWalletModalOpen}
 					onClose={handleCloseWalletModal}
-					onSuccess={handleCloseWalletModal}
 				/>
 			</div>
 		</Main>

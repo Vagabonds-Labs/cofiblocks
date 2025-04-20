@@ -113,7 +113,7 @@ export default function OrderReview({
 			}
 
 			// Create order in the database
-			const result = await createOrder.mutateAsync({ cartId: cart.id });
+			await createOrder.mutateAsync({ cartId: cart.id });
 
 			// Clear the cart and close the cart sidebar
 			clearCart();

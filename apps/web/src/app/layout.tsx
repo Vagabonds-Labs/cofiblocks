@@ -3,13 +3,15 @@ import { useEffect } from "react";
 import { Toaster } from "react-hot-toast";
 import "~/styles/globals.css";
 import "~/i18n";
+import { ClerkProvider } from "@clerk/nextjs";
 import { CheckCircleIcon } from "@heroicons/react/20/solid";
 import { GeistSans } from "geist/font/sans";
 import { SessionProvider } from "next-auth/react";
 import i18n from "~/i18n";
+import { MockWalletProvider } from "~/providers/mock-wallet/MockWalletContext";
 import StarknetProvider from "~/providers/starknet";
 import { TRPCReactProvider } from "~/trpc/react";
-import WalletConnectionCheck from "./_components/features/WalletConnectionCheck";
+// import WalletConnectionCheck from "./_components/features/WalletConnectionCheck";
 import BetaAnnouncement from "./_components/ui/BetaAnnouncement";
 
 export default function RootLayout({
@@ -32,16 +34,18 @@ export default function RootLayout({
 			className={`${GeistSans.variable}`}
 		>
 			<body>
-				<SessionProvider>
-					<StarknetProvider>
-						<TRPCReactProvider>
-							<WalletConnectionCheck>
-								<BetaAnnouncement />
-								<div className="pb-20">{children}</div>
-							</WalletConnectionCheck>
-						</TRPCReactProvider>
-					</StarknetProvider>
-				</SessionProvider>
+				<ClerkProvider>
+					<SessionProvider>
+						<StarknetProvider>
+							<TRPCReactProvider>
+								<MockWalletProvider>
+									<BetaAnnouncement />
+									<div className="pb-20">{children}</div>
+								</MockWalletProvider>
+							</TRPCReactProvider>
+						</StarknetProvider>
+					</SessionProvider>
+				</ClerkProvider>
 				<Toaster
 					position="top-center"
 					toastOptions={{

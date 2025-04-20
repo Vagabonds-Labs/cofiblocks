@@ -15,10 +15,7 @@ import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLay
 import BottomModal from "~/app/_components/ui/BottomModal";
 import { useOrderFiltering } from "~/hooks/user/useOrderFiltering";
 import { api } from "~/trpc/react";
-import type { RouterOutputs } from "~/trpc/react";
 import { type FormValues, filtersSchema } from "~/types";
-
-type OrderWithItems = RouterOutputs["order"]["getUserOrders"][number];
 
 interface GroupedOrderItem {
 	id: string;
