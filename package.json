@@ -58,6 +58,7 @@
 		"install": "^0.13.0",
 		"jotai": "^2.10.0",
 		"lefthook": "^1.7.15",
+		"nextjs-toploader": "^3.8.16",
 		"prisma": "6.2.1",
 		"react-hook-form": "^7.53.0",
 		"starknetkit": "^2.3.0",

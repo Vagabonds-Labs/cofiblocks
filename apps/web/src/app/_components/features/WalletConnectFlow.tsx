@@ -23,7 +23,6 @@ export default function WalletConnectFlow() {
 				setIsConnecting(true);
 				setConnectionError(null);
 				connectWallet({ connector });
-				router.push("/marketplace");
 			} catch (error) {
 				console.error("Failed to connect wallet:", error);
 				setConnectionError(t("error_connecting_wallet"));

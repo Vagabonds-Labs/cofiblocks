@@ -8,9 +8,9 @@ import { CheckCircleIcon } from "@heroicons/react/20/solid";
 import { GeistSans } from "geist/font/sans";
 import { SessionProvider } from "next-auth/react";
 import i18n from "~/i18n";
-import { MockWalletProvider } from "~/providers/mock-wallet/MockWalletContext";
 import StarknetProvider from "~/providers/starknet";
 import { TRPCReactProvider } from "~/trpc/react";
+import NextTopLoader from "nextjs-toploader";
 // import WalletConnectionCheck from "./_components/features/WalletConnectionCheck";
 import BetaAnnouncement from "./_components/ui/BetaAnnouncement";
 
@@ -27,46 +27,45 @@ export default function RootLayout({
 	}, []);
 
 	return (
-		<html
-			suppressHydrationWarning
-			lang="en"
-			data-theme="cofiblocks"
-			className={`${GeistSans.variable}`}
-		>
-			<body>
-				<ClerkProvider>
+		<ClerkProvider>
+			<html
+				suppressHydrationWarning
+				lang="en"
+				data-theme="cofiblocks"
+				className={`${GeistSans.variable}`}
+			>
+				<body>
 					<SessionProvider>
+						<NextTopLoader color="#EAB308" showSpinner={false} />
 						<StarknetProvider>
 							<TRPCReactProvider>
-								<MockWalletProvider>
-									<BetaAnnouncement />
-									<div className="pb-20">{children}</div>
-								</MockWalletProvider>
+								<BetaAnnouncement />
+								<div className="pb-20">{children}</div>
 							</TRPCReactProvider>
 						</StarknetProvider>
+						<Toaster
+							position="top-center"
+							toastOptions={{
+								duration: 3000,
+								style: {
+									backgroundColor: "#E9F1EF",
+									color: "#3B3E3F",
+								},
+								success: {
+									icon: <CheckCircleIcon className="w-6 h-6 text-[#067c6d]" />,
+								},
+								error: {
+									style: {
+										backgroundColor: "#E9F1EF",
+										color: "#3B3E3F",
+									},
+									icon: <CheckCircleIcon className="w-6 h-6 text-[red]" />,
+								},
+							}}
+						/>
 					</SessionProvider>
-				</ClerkProvider>
-				<Toaster
-					position="top-center"
-					toastOptions={{
-						duration: 3000,
-						style: {
-							backgroundColor: "#E9F1EF",
-							color: "#3B3E3F",
-						},
-						success: {
-							icon: <CheckCircleIcon className="w-6 h-6 text-[#067c6d]" />,
-						},
-						error: {
-							style: {
-								backgroundColor: "#E9F1EF",
-								color: "#3B3E3F",
-							},
-							icon: <CheckCircleIcon className="w-6 h-6 text-[red]" />,
-						},
-					}}
-				/>
-			</body>
-		</html>
+				</body>
+			</html>
+		</ClerkProvider>
 	);
 }

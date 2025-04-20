@@ -5,6 +5,9 @@ import { useMockWallet } from "~/providers/mock-wallet/MockWalletContext";
 import Header from "~/app/_components/layout/Header";
 import Main from "~/app/_components/layout/Main";
 import { useTranslation } from "react-i18next";
+import Link from "next/link";
+import { UserIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import Button from "@repo/ui/button";
 
 export default function UserProfile() {
 	const { t } = useTranslation();
@@ -26,7 +29,7 @@ export default function UserProfile() {
 		<Main>
 			<Header />
 			<div className="container mx-auto py-8 px-4">
-				<h1 className="text-3xl font-bold mb-6">User Profile (Clerk Style)</h1>
+				<h1 className="text-3xl font-bold mb-6">User Profile</h1>
 
 				<div className="mb-8 p-4 bg-gray-50 rounded-lg">
 					<h2 className="text-xl font-semibold mb-4">Authentication Status</h2>
@@ -44,34 +47,46 @@ export default function UserProfile() {
 					)}
 				</div>
 
-				{hasWallet && (
+				{hasWallet && wallet && (
 					<div className="mb-8 p-4 bg-gray-50 rounded-lg">
 						<h2 className="text-xl font-semibold mb-4">Wallet Information</h2>
 						<p className="mb-2">
 							<span className="font-medium">Account: </span>
-							<code className="bg-gray-100 p-1 rounded text-sm">
-								{wallet?.account}
+							<code className="bg-gray-100 p-1 rounded text-sm break-all">
+								{wallet.account}
 							</code>
 						</p>
 						<p className="mb-2">
 							<span className="font-medium">Public Key: </span>
-							<code className="bg-gray-100 p-1 rounded text-sm">
-								{wallet?.publicKey}
+							<code className="bg-gray-100 p-1 rounded text-sm break-all">
+								{wallet.publicKey}
 							</code>
 						</p>
 					</div>
 				)}
 
 				{isSignedIn && !hasWallet && (
-					<div className="mb-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+					<div className="mb-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-center">
 						<h2 className="text-xl font-semibold mb-4">{t("no_wallet_found")}</h2>
 						<p className="mb-4">{t("setup_wallet_prompt")}</p>
-						<a
-							href="/onboarding"
-							className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+						<Link href="/onboarding">
+							<Button variant="primary">{t("go_to_setup")}</Button>
+						</Link>
+					</div>
+				)}
+
+				{isSignedIn && (
+					<div className="mb-6">
+						<Link
+							href="/user/edit-profile/my-profile"
+							className="w-full bg-white text-content-title flex items-center justify-between p-4 rounded-lg hover:bg-surface-secondary-soft transition-colors"
 						>
-							{t("go_to_setup")}
-						</a>
+							<div className="flex items-center">
+								<UserIcon className="w-5 h-5 mr-3" />
+								<span>{t("edit_my_profile")}</span>
+							</div>
+							<ChevronRightIcon className="w-5 h-5 text-content-body-default" />
+						</Link>
 					</div>
 				)}
 			</div>
