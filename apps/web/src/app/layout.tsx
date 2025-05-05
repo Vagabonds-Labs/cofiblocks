@@ -27,7 +27,16 @@ export default function RootLayout({
 	}, []);
 
 	return (
-		<ClerkProvider>
+		<ClerkProvider
+			publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+			appearance={{
+				baseTheme: undefined,
+				elements: {
+					formButtonPrimary: "bg-primary hover:bg-primary/90",
+					footerActionLink: "text-primary hover:text-primary/90",
+				},
+			}}
+		>
 			<html
 				suppressHydrationWarning
 				lang="en"
