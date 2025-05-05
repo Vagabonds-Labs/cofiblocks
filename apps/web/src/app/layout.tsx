@@ -11,6 +11,7 @@ import i18n from "~/i18n";
 import StarknetProvider from "~/providers/starknet";
 import { TRPCReactProvider } from "~/trpc/react";
 import NextTopLoader from "nextjs-toploader";
+import { MockWalletProvider } from "~/providers/mock-wallet/MockWalletContext";
 // import WalletConnectionCheck from "./_components/features/WalletConnectionCheck";
 import BetaAnnouncement from "./_components/ui/BetaAnnouncement";
 
@@ -48,8 +49,10 @@ export default function RootLayout({
 						<NextTopLoader color="#EAB308" showSpinner={false} />
 						<StarknetProvider>
 							<TRPCReactProvider>
-								<BetaAnnouncement />
-								<div className="pb-20">{children}</div>
+								<MockWalletProvider>
+									<BetaAnnouncement />
+									<div className="pb-20">{children}</div>
+								</MockWalletProvider>
 							</TRPCReactProvider>
 						</StarknetProvider>
 						<Toaster
