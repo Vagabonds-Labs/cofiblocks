@@ -33,8 +33,23 @@ export default function RootLayout({
 			appearance={{
 				baseTheme: undefined,
 				elements: {
-					formButtonPrimary: "bg-primary hover:bg-primary/90",
-					footerActionLink: "text-primary hover:text-primary/90",
+					formButtonPrimary: "bg-yellow-500 hover:bg-yellow-600 text-white",
+					footerActionLink: "text-yellow-500 hover:text-yellow-600",
+					formFieldInput: "border-yellow-500 focus:border-yellow-600",
+					formFieldLabel: "text-yellow-500",
+					card: "bg-white shadow-lg",
+					headerTitle: "text-yellow-500",
+					headerSubtitle: "text-gray-600",
+					dividerLine: "bg-yellow-500",
+					dividerText: "text-yellow-500",
+					socialButtonsBlockButton: "border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-white",
+					socialButtonsBlockButtonArrow: "text-yellow-500",
+					identityPreviewEditButton: "text-yellow-500",
+					formFieldAction: "text-yellow-500",
+					formFieldInputShowPasswordButton: "text-yellow-500",
+					alertText: "text-yellow-500",
+					alertIcon: "text-yellow-500",
+					alert: "bg-yellow-500/10 border-yellow-500",
 				},
 			}}
 		>
