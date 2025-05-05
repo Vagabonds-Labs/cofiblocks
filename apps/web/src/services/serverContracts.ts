@@ -1,6 +1,5 @@
 import {
 	type BigNumberish,
-	CallData,
 	Contract,
 	type InvokeFunctionResponse,
 	RpcProvider,
