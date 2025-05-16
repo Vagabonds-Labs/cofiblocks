@@ -8,14 +8,12 @@ import { CheckCircleIcon } from "@heroicons/react/20/solid";
 import { GeistSans } from "geist/font/sans";
 import { SessionProvider } from "next-auth/react";
 import i18n from "~/i18n";
-import { Inter } from "next/font/google";
 import StarknetProvider from "~/providers/starknet";
 import { TRPCReactProvider } from "~/trpc/react";
 import NextTopLoader from "nextjs-toploader";
+import { MockWalletProvider } from "~/providers/mock-wallet/MockWalletContext";
+// import WalletConnectionCheck from "./_components/features/WalletConnectionCheck";
 import BetaAnnouncement from "./_components/ui/BetaAnnouncement";
-import { ChipiProvider } from "~/providers/chipi/ChipiProvider";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export default function RootLayout({
 	children,
@@ -59,16 +57,17 @@ export default function RootLayout({
 				suppressHydrationWarning
 				lang="en"
 				data-theme="cofiblocks"
-				className={`${GeistSans.variable} ${inter.className}`}
+				className={`${GeistSans.variable}`}
 			>
 				<body>
 					<SessionProvider>
+						<NextTopLoader color="#EAB308" showSpinner={false} />
 						<StarknetProvider>
 							<TRPCReactProvider>
-								<ChipiProvider>
+								<MockWalletProvider>
 									<BetaAnnouncement />
 									<div className="pb-20">{children}</div>
-								</ChipiProvider>
+								</MockWalletProvider>
 							</TRPCReactProvider>
 						</StarknetProvider>
 						<Toaster
@@ -92,7 +91,6 @@ export default function RootLayout({
 							}}
 						/>
 					</SessionProvider>
-					<NextTopLoader />
 				</body>
 			</html>
 		</ClerkProvider>

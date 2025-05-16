@@ -2,19 +2,17 @@
 
 import { useUser } from "@clerk/nextjs";
 import { useState } from "react";
-import type { UnsafeMetadata } from "~/types";
 
 export function useWalletDetails() {
 	const { user, isLoaded } = useUser();
-	const metadata = user?.unsafeMetadata as UnsafeMetadata | undefined;
-	const wallet = metadata?.wallet;
-	
+	const wallet = user?.publicMetadata
+		?.wallet as Clerk.UserPublicMetadata["wallet"];
+
 	return {
 		isLoaded,
-		address: wallet?.address ?? "",
+		account: wallet?.account ?? "",
 		publicKey: wallet?.publicKey ?? "",
-		encryptedPrivateKey: wallet?.encryptedPrivateKey ?? "",
-		isWalletCreated: !!wallet?.encryptedPrivateKey,
+		isWalletCreated: !!wallet,
 		userType: user?.publicMetadata?.userType as
 			| "COFFEE_PRODUCER"
 			| "BUYER"
@@ -23,6 +21,7 @@ export function useWalletDetails() {
 	};
 }
 
+// This is a placeholder for future implementation with an actual wallet SDK
 export function useTransferToken() {
 	const [pin, setPin] = useState("");
 	const [recipient, setRecipient] = useState("");
@@ -30,9 +29,10 @@ export function useTransferToken() {
 	const { user } = useUser();
 
 	const handleTransfer = async () => {
-		if (!user?.unsafeMetadata?.wallet) return;
+		if (!user?.publicMetadata?.wallet) return;
 
 		try {
+			// This is a placeholder - implement actual transfer logic
 			console.log("Transfer", { pin, recipient, amount });
 			return {
 				success: true,
