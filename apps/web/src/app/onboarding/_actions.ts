@@ -1,28 +1,23 @@
 "use server";
 
 import { clerkClient } from "@clerk/nextjs/server";
+import type { WalletData } from "~/types";
 
 // Restore original completeOnboarding function
 export async function completeOnboarding(
 	userId: string,
-	wallet: {
-		account: string;
-		publicKey: string;
-		encryptedPrivateKey: string;
-	},
+	wallet: WalletData,
 ) {
 	try {
 		console.log(`Completing onboarding for user ${userId} with wallet data...`);
-		// Update metadata with the full (or relevant parts of) the mock wallet object
+		// Update metadata with the wallet data
 		const client = await clerkClient();
 		await client.users.updateUserMetadata(userId, {
-			publicMetadata: {
-				// Store the mock wallet data
-				// Adjust structure as needed (e.g., nested 'wallet' object)
+			unsafeMetadata: {
 				wallet: {
-					account: wallet.account,
-					publicKey: wallet.publicKey,
 					encryptedPrivateKey: wallet.encryptedPrivateKey,
+					publicKey: wallet.publicKey,
+					address: wallet.address,
 				}
 			},
 		});
