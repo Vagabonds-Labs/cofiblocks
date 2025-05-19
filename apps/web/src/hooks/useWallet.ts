@@ -8,7 +8,7 @@ export function useWalletDetails() {
 	const { user, isLoaded } = useUser();
 	const metadata = user?.unsafeMetadata as UnsafeMetadata | undefined;
 	const wallet = metadata?.wallet;
-	
+
 	return {
 		isLoaded,
 		address: wallet?.address ?? "",
@@ -23,6 +23,7 @@ export function useWalletDetails() {
 	};
 }
 
+// This is a placeholder for future implementation with an actual wallet SDK
 export function useTransferToken() {
 	const [pin, setPin] = useState("");
 	const [recipient, setRecipient] = useState("");
@@ -33,6 +34,7 @@ export function useTransferToken() {
 		if (!user?.unsafeMetadata?.wallet) return;
 
 		try {
+			// This is a placeholder - implement actual transfer logic
 			console.log("Transfer", { pin, recipient, amount });
 			return {
 				success: true,
