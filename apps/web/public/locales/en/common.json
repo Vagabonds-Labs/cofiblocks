@@ -393,12 +393,13 @@
 		"pin_length": "PIN length: {{length}}/4 digits",
 		"create_button": "Create Wallet",
 		"creating": "Creating...",
+		"redirecting": "Redirecting...",
 		"error_title": "Error creating wallet",
 		"wallet_created": "Wallet Created",
 		"wallet_created_message": "Wallet created successfully! Your private key has been encrypted with your PIN.",
 		"contract_address": "Contract Address",
 		"status": "Status",
 		"continue_button": "Continue to Marketplace",
-		"wallet_saved": "Your wallet has been created on StarkNet and your wallet details have been saved securely."
+		"wallet_saved": "Your wallet has been created on Starknet and your wallet details have been saved securely."
 	}
 }

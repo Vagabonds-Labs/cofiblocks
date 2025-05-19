@@ -14,11 +14,17 @@ export async function completeOnboarding(
 	wallet: WalletData,
 ) {
 	try {
-		console.log(`Completing onboarding for user ${userId} with wallet data:`, wallet);
+		console.log(`[completeOnboarding] Starting onboarding completion for user ${userId}`);
+		console.log('[completeOnboarding] Wallet data:', {
+			...wallet,
+			encryptedPrivateKey: wallet.encryptedPrivateKey ? '***' : undefined
+		});
 		
 		// Update metadata with the wallet data
 		const client = await clerkClient();
-		await client.users.updateUserMetadata(userId, {
+		console.log('[completeOnboarding] Updating user metadata...');
+		
+		const updatedUser = await client.users.updateUserMetadata(userId, {
 			unsafeMetadata: {
 				wallet: {
 					encryptedPrivateKey: wallet.encryptedPrivateKey,
@@ -30,10 +36,15 @@ export async function completeOnboarding(
 			},
 		});
 		
-		console.log(`Successfully updated metadata for user ${userId}`);
+		console.log('[completeOnboarding] Metadata update response:', {
+			id: updatedUser.id,
+			hasWallet: !!updatedUser.unsafeMetadata?.wallet,
+			walletCreated: updatedUser.unsafeMetadata?.walletCreated
+		});
+		
 		return { success: true }; 
 	} catch (error) {
-		console.error("Error completing onboarding:", error);
+		console.error("[completeOnboarding] Error completing onboarding:", error);
 		throw new Error("Failed to update user profile with wallet data.");
 	}
 }

@@ -25,6 +25,7 @@ export default function OnboardingPage() {
 	const [walletCreated, setWalletCreated] = useState(false);
 	const [response, setResponse] = useState<WalletResponse | null>(null);
 	const [apiResponse, setApiResponse] = useState<ApiResponse | null>(null);
+	const [isRedirecting, setIsRedirecting] = useState(false);
 
 	const handlePinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const value = e.target.value.replace(/[^0-9]/g, "").slice(0, 4);
@@ -125,6 +126,23 @@ export default function OnboardingPage() {
 					: "Failed to create wallet - please try again"
 			);
 			setWalletCreated(false);
+		}
+	};
+
+	const handleContinue = async () => {
+		try {
+			setIsRedirecting(true);
+			console.log('Starting redirection to marketplace...');
+			
+			// Add a small delay to ensure the session is updated
+			await new Promise(resolve => setTimeout(resolve, 1000));
+			
+			console.log('Delay completed, attempting to redirect...');
+			// Use window.location.href for a full page reload
+			window.location.href = '/marketplace';
+		} catch (error) {
+			console.error('Error during redirection:', error);
+			setIsRedirecting(false);
 		}
 	};
 
@@ -296,10 +314,11 @@ export default function OnboardingPage() {
 							<div className="mt-6 pt-6 border-t border-gray-200">
 								<button
 									type="button"
-									onClick={() => router.push("/marketplace")}
-									className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-black bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-400"
+									onClick={handleContinue}
+									disabled={isRedirecting}
+									className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-black bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-400 disabled:bg-gray-400"
 								>
-									{t("onboarding.continue_button")}
+									{isRedirecting ? t("onboarding.redirecting") : t("onboarding.continue_button")}
 								</button>
 							</div>
 						</div>

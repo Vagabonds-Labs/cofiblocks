@@ -31,12 +31,18 @@ function isPublicRoute(path: string): boolean {
 function hasWallet(sessionClaims: unknown): boolean {
 	try {
 		const claims = sessionClaims as SessionClaims;
-		const metadata = claims?.unsafeMetadata;
-		
-		// Check for wallet data in the wallet object
-		return !!metadata?.wallet?.encryptedPrivateKey;
+		const metadata = claims?.unsafeMetadata as UnsafeMetadata | undefined;
+		console.log('[middleware] Checking wallet status:', {
+			hasMetadata: !!metadata,
+			hasWallet: !!metadata?.wallet,
+			walletCreated: metadata?.walletCreated,
+			walletAddress: metadata?.wallet?.address,
+			fullMetadata: metadata
+		});
+		// Check for either wallet data or walletCreated flag
+		return !!(metadata?.wallet || metadata?.walletCreated);
 	} catch (error) {
-		console.error("Error checking wallet:", error);
+		console.error("[middleware] Error checking wallet:", error);
 		return false;
 	}
 }
@@ -63,22 +69,23 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 
 	// For authenticated users, check wallet status
 	const userHasWallet = hasWallet(sessionClaims);
+	console.log('[middleware] User has wallet:', userHasWallet);
 
 	// If user has no wallet and is not on onboarding page, redirect to onboarding
 	if (!userHasWallet && path !== "/onboarding") {
-		console.log("No wallet found, redirecting to onboarding");
+		console.log("[middleware] No wallet found, redirecting to onboarding");
 		return NextResponse.redirect(new URL("/onboarding", url));
 	}
 
 	// If user has a wallet and tries to access onboarding, redirect to marketplace
 	if (userHasWallet && path === "/onboarding") {
-		console.log("Wallet exists, redirecting to marketplace");
+		console.log("[middleware] Wallet exists, redirecting to marketplace");
 		return NextResponse.redirect(new URL("/marketplace", url));
 	}
 
 	// If user is on auth pages and is authenticated, redirect to marketplace
 	if (path === "/sign-in" || path === "/sign-up") {
-		console.log("Redirecting authenticated user to marketplace");
+		console.log("[middleware] Redirecting authenticated user to marketplace");
 		return NextResponse.redirect(new URL("/marketplace", url));
 	}
 

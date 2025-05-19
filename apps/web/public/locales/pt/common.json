@@ -351,12 +351,13 @@
 		"pin_length": "Comprimento do PIN: {{length}}/4 dígitos",
 		"create_button": "Criar Carteira",
 		"creating": "Criando...",
+		"redirecting": "Redirecionando...",
 		"error_title": "Erro ao criar carteira",
 		"wallet_created": "Carteira Criada",
 		"wallet_created_message": "Carteira criada com sucesso! Sua chave privada foi criptografada com seu PIN.",
 		"contract_address": "Endereço do Contrato",
 		"status": "Status",
-		"continue_button": "Continuar para o Mercado",
-		"wallet_saved": "Sua carteira foi criada na StarkNet e os detalhes da sua carteira foram salvos com segurança."
+		"continue_button": "Continuar para o Marketplace",
+		"wallet_saved": "Sua carteira foi criada na Starknet e os detalhes da sua carteira foram salvos com segurança."
 	}
 }

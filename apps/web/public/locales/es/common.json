@@ -370,12 +370,13 @@
 		"pin_length": "Longitud del PIN: {{length}}/4 dígitos",
 		"create_button": "Crear Billetera",
 		"creating": "Creando...",
+		"redirecting": "Redirigiendo...",
 		"error_title": "Error al crear la billetera",
 		"wallet_created": "Billetera Creada",
 		"wallet_created_message": "¡Billetera creada exitosamente! Tu clave privada ha sido encriptada con tu PIN.",
 		"contract_address": "Dirección del Contrato",
 		"status": "Estado",
-		"continue_button": "Continuar al Mercado",
-		"wallet_saved": "Tu billetera ha sido creada en StarkNet y los detalles de tu billetera han sido guardados de forma segura."
+		"continue_button": "Continuar al Marketplace",
+		"wallet_saved": "Tu billetera ha sido creada en Starknet y los detalles de tu billetera han sido guardados de forma segura."
 	}
 }
