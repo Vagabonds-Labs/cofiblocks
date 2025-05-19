@@ -1,6 +1,5 @@
 import type { OrderStatus } from "@prisma/client";
 import { z } from "zod";
-import type { WalletResponse as SDKWalletResponse } from "@chipi-pay/chipi-sdk";
 
 export type Badge = "lover" | "contributor" | "producer";
 
@@ -84,11 +83,10 @@ export interface Order {
 
 // Chipi SDK types
 export interface WalletData {
-	encryptedPrivateKey: string;
-	txHash?: string;
-	publicKey?: string;
-	address?: string;
-	activate?: () => Promise<{ txHash: string }>;
+	encryptedPrivateKey: string;  // Encrypted with user's PIN, never stored in plain text
+	publicKey?: string;           // Will be set after wallet creation is confirmed
+	address: string;             // The wallet's public address (contract address)
+	txHash?: string;             // The transaction hash from wallet creation
 }
 
 export interface UnsafeMetadata {
@@ -96,13 +94,21 @@ export interface UnsafeMetadata {
 	[key: string]: unknown;
 }
 
-export interface WalletResponse extends SDKWalletResponse {
+export interface WalletResponse {
+	success: boolean;
+	txHash: string;
+	accountAddress: string;  // This is the main contract address
+	publicKey: string;      // The public key from the API response
 	wallet: {
 		encryptedPrivateKey: string;
 		publicKey?: string;
-		address?: string;
-		activate?: () => Promise<{ txHash: string }>;
+		address?: string;    // This is redundant with accountAddress
 	};
+	checkTransactionStatus: () => Promise<{
+		confirmed: boolean;
+		publicKey?: string;
+		address?: string;
+	}>;
 }
 
 export interface SessionClaims {
@@ -120,11 +126,11 @@ declare module "@chipi-pay/chipi-sdk" {
 		success: boolean;
 		txHash: string;
 		accountAddress: string;
+		publicKey: string;
 		wallet: {
 			encryptedPrivateKey: string;
 			publicKey?: string;
 			address?: string;
-			activate?: () => Promise<{ txHash: string }>;
 		};
 		checkTransactionStatus: () => Promise<{
 			confirmed: boolean;
