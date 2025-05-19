@@ -1,201 +1,34 @@
 "use client";
 
 import { useCreateWallet } from "@chipi-pay/chipi-sdk";
-import { useUser, useAuth } from "@clerk/nextjs";
-import { useState, useEffect } from "react";
+import { useUser } from "@clerk/nextjs";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import type { WalletData, UnsafeMetadata, WalletResponse } from "~/types";
+import { useTranslation } from "react-i18next";
+import { completeOnboarding } from "./_actions";
+import type { WalletResponse } from "~/types";
+
+interface ApiResponse {
+	success: boolean;
+	txHash: string;
+	wallet: string;
+	encryptedPrivateKey: string;
+}
 
 export default function OnboardingPage() {
+	const { t } = useTranslation();
 	const router = useRouter();
 	const { user } = useUser();
-	const { getToken } = useAuth();
 	const { createWalletAsync, createWalletResponse, isLoading, isError } = useCreateWallet();
 	const [pin, setPin] = useState("");
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 	const [walletCreated, setWalletCreated] = useState(false);
-	const [walletDetails, setWalletDetails] = useState<WalletResponse | null>(null);
-	const [loading, setLoading] = useState(false);
-
-	// Watch for createWalletResponse changes
-	useEffect(() => {
-		const updateMetadataWithAddress = async () => {
-			if (createWalletResponse?.accountAddress && user) {
-				console.log("Got wallet response with address:", createWalletResponse);
-				
-				// Get current metadata
-				const currentMetadata = user.unsafeMetadata as UnsafeMetadata | undefined;
-				const currentWallet = currentMetadata?.wallet ?? {
-					encryptedPrivateKey: "",
-					txHash: "",
-					address: "",
-				} as WalletData;
-				
-				// Only update if we don't have an address yet
-				if (!currentWallet.address) {
-					const addressUpdateMetadata = {
-						...currentMetadata,
-						wallet: {
-							...currentWallet,
-							address: createWalletResponse.accountAddress,
-						},
-					};
-					console.log("Updating metadata with address from createWalletResponse:", addressUpdateMetadata);
-					await user.update({
-						unsafeMetadata: addressUpdateMetadata,
-					});
-				}
-			}
-		};
-		
-		void updateMetadataWithAddress();
-	}, [createWalletResponse, user]);
-
-	// Set up authentication token for Chipi SDK
-	useEffect(() => {
-		const setupAuth = async () => {
-			try {
-				const token = await getToken();
-				if (token) {
-					// Set the token with Bearer prefix for the SDK to use
-					window.localStorage.setItem("chipi_auth_token", `Bearer ${token}`);
-				}
-			} catch (err) {
-				console.error("Failed to set up authentication:", err);
-				setErrorMessage("Failed to authenticate with wallet service");
-			}
-		};
-		void setupAuth();
-	}, [getToken]);
+	const [response, setResponse] = useState<WalletResponse | null>(null);
+	const [apiResponse, setApiResponse] = useState<ApiResponse | null>(null);
 
 	const handlePinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const value = e.target.value.replace(/[^0-9]/g, "").slice(0, 4);
 		setPin(value);
-	};
-
-	const createWallet = async (pin: string) => {
-		setLoading(true);
-		try {
-			// Validate required environment variables
-			const apiKey = process.env.NEXT_PUBLIC_CHIPI_API_KEY;
-			const secretKey = process.env.NEXT_PUBLIC_CHIPI_SECRET_KEY;
-			const appId = process.env.NEXT_PUBLIC_CHIPI_APP_ID;
-			const nodeUrl = process.env.NEXT_PUBLIC_STARKNET_NODE_URL;
-			const activateContractAddress = process.env.NEXT_PUBLIC_CHIPI_ACTIVATE_CONTRACT_ADDRESS;
-
-			if (!apiKey || !secretKey || !appId || !nodeUrl || !activateContractAddress) {
-				throw new Error("Missing required environment variables for wallet creation");
-			}
-
-			const walletParams = {
-				apiKey,
-				secretKey,
-				appId,
-				nodeUrl,
-				activateContractAddress,
-				activateContractEntryPoint: "initialize",
-				network: "goerli",
-				pin,
-			};
-
-			console.log("Creating wallet with params:", {
-				...walletParams,
-				pin: "[REDACTED]",
-				secretKey: "[REDACTED]",
-			});
-
-			const response = await createWalletAsync(pin);
-			setWalletDetails(response);
-
-			// Save initial wallet data
-			const currentMetadata = user?.unsafeMetadata as UnsafeMetadata | undefined;
-			const initialMetadata = {
-				...currentMetadata,
-				wallet: {
-					encryptedPrivateKey: response.wallet.encryptedPrivateKey,
-					txHash: response.txHash,
-					address: response.wallet.address,
-				},
-			};
-
-			console.log("Initial metadata update:", initialMetadata);
-			await user?.update({ unsafeMetadata: initialMetadata });
-
-			// Start checking transaction status
-			let confirmed = false;
-			let attempts = 0;
-			const maxAttempts = 24; // 2 minutes (5s * 24)
-
-			while (!confirmed && attempts < maxAttempts) {
-				attempts++;
-				console.log(`Checking transaction status (attempt ${attempts}/${maxAttempts})...`);
-				
-				const status = await response.checkTransactionStatus();
-				console.log("Transaction status:", status);
-
-				if (status.confirmed) {
-					confirmed = true;
-					
-					// Get fresh metadata to ensure we don't override any updates
-					const currentMetadata = user?.unsafeMetadata as UnsafeMetadata | undefined;
-					console.log("Current metadata before final update:", currentMetadata);
-					
-					const currentWallet = (currentMetadata?.wallet as WalletData) ?? {
-						encryptedPrivateKey: response.wallet.encryptedPrivateKey,
-						txHash: response.txHash,
-						address: response.wallet.address,
-					};
-					
-					// Attempt to activate the wallet
-					try {
-						console.log("Activating wallet...");
-						if (response.wallet?.activate) {
-							const activationResponse = await response.wallet.activate();
-							console.log("Wallet activation successful, txHash:", activationResponse.txHash);
-						} else {
-							console.warn("Wallet activation method not available");
-						}
-					} catch (activationError) {
-						console.warn("Error activating wallet:", activationError);
-						// Continue with metadata update even if activation fails
-					}
-					
-					// Update metadata with public key while preserving other fields
-					const finalMetadata = {
-						...currentMetadata,
-						wallet: {
-							...currentWallet,
-							publicKey: status.publicKey,
-							encryptedPrivateKey: currentWallet.encryptedPrivateKey,
-							txHash: response.txHash,
-							address: response.wallet.address,
-						},
-					};
-
-					console.log("Final metadata update with addresses:", {
-						publicKey: status.publicKey,
-						currentAddress: currentWallet.address,
-						finalAddress: response.wallet.address
-					});
-
-					await user?.update({ unsafeMetadata: finalMetadata });
-					break;
-				}
-
-				await new Promise((resolve) => setTimeout(resolve, 5000));
-			}
-
-			if (!confirmed) {
-				console.warn("Transaction not confirmed after maximum attempts");
-			}
-
-			setLoading(false);
-			return response;
-		} catch (error) {
-			console.error("Error creating wallet:", error);
-			setLoading(false);
-			throw error;
-		}
 	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -207,74 +40,83 @@ export default function OnboardingPage() {
 		}
 
 		try {
-			// Ensure we have a fresh token before creating the wallet
-			const token = await getToken();
-			if (!token) {
-				throw new Error("Not authenticated");
-			}
-			// Set the token with Bearer prefix
-			window.localStorage.setItem("chipi_auth_token", `Bearer ${token}`);
-
 			setErrorMessage(null);
-
-			const response = await createWallet(pin);
+			console.log('Creating wallet...');
 			
-			// Log the entire response to see its structure
-			console.log("Full createWalletAsync response:", response);
-			console.log("createWalletResponse from hook:", createWalletResponse);
+			// Intercept fetch to get the raw API response
+			const originalFetch = window.fetch;
+			let requestPublicKey: string | undefined;
+			let apiTxHash: string | undefined;
+			
+			window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+				const url = input instanceof URL ? input.href : input.toString();
+				
+				// Capture the request payload for the wallet creation
+				if (url.includes("/chipi-wallets") && !url.includes("prepare-creation") && init?.body) {
+					try {
+						const payload = JSON.parse(init.body as string);
+						requestPublicKey = payload.publicKey;
+					} catch (e) {
+						throw new Error("Failed to parse request payload");
+					}
+				}
+				
+				const response = await originalFetch(input, init);
+				
+				if (url.includes("/chipi-wallets") && !url.includes("prepare-creation")) {
+					const data = await response.clone().json() as ApiResponse;
+					setApiResponse(data);
+					apiTxHash = data.txHash;
+				}
+				return response;
+			};
 
-			if (!response || !response.success || !response.wallet) {
+			// Create wallet
+			const response = await createWalletAsync(pin);
+			setResponse(response);
+
+			// Restore original fetch
+			window.fetch = originalFetch;
+			
+			if (!response || !response.success) {
 				throw new Error("Failed to create wallet - invalid response");
 			}
 
-			const wallet = response.wallet;
-			const { encryptedPrivateKey, publicKey } = wallet;
+			const { encryptedPrivateKey } = response.wallet;
 
 			if (!encryptedPrivateKey) {
 				throw new Error("Invalid wallet data received from server");
 			}
 
-			// Get existing metadata to preserve other fields
-			const existingMetadata = user?.unsafeMetadata ?? {};
-			const existingWallet = (existingMetadata.wallet as WalletData | undefined) ?? {};
+			// Use the public key from the request payload
+			const publicKey = requestPublicKey;
 
-			// First update with initial wallet data
-			const initialMetadata = {
-				...existingMetadata,
-				wallet: {
-					...existingWallet,
+			if (!publicKey) {
+				throw new Error("Public key not found in request payload");
+			}
+
+			// Use the transaction hash from the API response
+			const txHash = apiTxHash;
+
+			if (!txHash) {
+				throw new Error("Transaction hash not found in API response");
+			}
+
+			// Save wallet data to user metadata
+			if (user?.id) {
+				const walletData = {
 					encryptedPrivateKey,
-					publicKey, // Save the public key immediately if available
-					txHash: response.txHash,
-					address: publicKey, // The public key is the contract address
-				},
-			};
+					publicKey,
+					address: publicKey,
+					txHash,
+				};
+				await completeOnboarding(user.id, walletData);
+			} else {
+				throw new Error("User not authenticated");
+			}
 
-			console.log("Initial wallet data from response:", {
-				publicKey,
-				txHash: response.txHash,
-				encryptedPrivateKey: "****" // Don't log the encrypted key
-			});
-			console.log("Saving initial wallet metadata:", initialMetadata);
-
-			await user?.update({
-				unsafeMetadata: initialMetadata,
-			});
-
-			// Wait a moment for the update to be processed
-			await new Promise(resolve => setTimeout(resolve, 1000));
-
-			// Verify the metadata was saved
-			const updatedMetadata = user?.unsafeMetadata;
-			console.log("Metadata after initial save:", updatedMetadata);
-
-			// Set wallet details for display
-			setWalletDetails(response);
 			setWalletCreated(true);
-
-			// Show success message
-			setErrorMessage(null);
-
+			
 		} catch (err) {
 			console.error("Wallet creation failed:", err);
 			setErrorMessage(
@@ -283,7 +125,6 @@ export default function OnboardingPage() {
 					: "Failed to create wallet - please try again"
 			);
 			setWalletCreated(false);
-			setWalletDetails(null);
 		}
 	};
 
@@ -291,10 +132,10 @@ export default function OnboardingPage() {
 		<div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
 			<div className="sm:mx-auto sm:w-full sm:max-w-md">
 				<h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-					Create Your Wallet
+					{t("onboarding.title")}
 				</h2>
 				<p className="mt-2 text-center text-sm text-gray-600">
-					Set up your StarkNet wallet to start using the platform
+					{t("onboarding.subtitle")}
 				</p>
 			</div>
 
@@ -307,7 +148,7 @@ export default function OnboardingPage() {
 									htmlFor="pin"
 									className="block text-sm font-medium text-gray-700"
 								>
-									Set PIN Code
+									{t("onboarding.pin_label")}
 								</label>
 								<div className="mt-1">
 									<input
@@ -321,11 +162,11 @@ export default function OnboardingPage() {
 										value={pin}
 										onChange={handlePinChange}
 										className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm"
-										placeholder="Enter a 4-digit PIN"
+										placeholder={t("onboarding.pin_placeholder")}
 									/>
 								</div>
 								<p className="mt-2 text-sm text-gray-500">
-									{`PIN length: ${pin.length}/4 digits`}
+									{t("onboarding.pin_length", { length: pin.length })}
 								</p>
 							</div>
 
@@ -334,10 +175,10 @@ export default function OnboardingPage() {
 									<div className="flex">
 										<div className="ml-3">
 											<h3 className="text-sm font-medium text-red-800">
-												Error creating wallet
+												{t("onboarding.error_title")}
 											</h3>
 											<div className="mt-2 text-sm text-red-700">
-												{errorMessage || "Failed to create wallet"}
+												{errorMessage ?? "Failed to create wallet"}
 											</div>
 										</div>
 									</div>
@@ -349,28 +190,29 @@ export default function OnboardingPage() {
 								disabled={isLoading || pin.length !== 4}
 								className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-black bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-400 disabled:bg-gray-400"
 							>
-								{isLoading ? "Creating..." : "Create Wallet"}
+								{isLoading ? t("onboarding.creating") : t("onboarding.create_button")}
 							</button>
 						</form>
-					) : walletDetails && (
+					) : (
 						<div className="space-y-6">
 							<div className="space-y-4">
 								<div className="flex items-center justify-between">
-									<h3 className="text-lg font-medium">Wallet Details</h3>
-									{walletDetails.accountAddress && (
+									<h3 className="text-lg font-medium">{t("onboarding.wallet_created")}</h3>
+									{response?.accountAddress && (
 										<a
-											href={`https://starkscan.co/contract/${walletDetails.accountAddress}`}
+											href={`https://starkscan.co/contract/${response.accountAddress}`}
 											target="_blank"
 											rel="noopener noreferrer"
 											className="text-yellow-600 hover:text-yellow-800 text-sm flex items-center gap-1"
 										>
-											View on Starkscan
+											{t("view_on_starkscan")}
 											<svg
 												className="w-4 h-4"
 												fill="none"
 												stroke="currentColor"
 												viewBox="0 0 24 24"
 												aria-hidden="true"
+												aria-label="External link icon"
 											>
 												<title>External link</title>
 												<path
@@ -384,60 +226,69 @@ export default function OnboardingPage() {
 									)}
 								</div>
 								<div className="space-y-2">
-									<p className="text-sm">
-										<span className="font-medium">Status: </span>
+									<div className="text-sm">
+										<span className="font-medium">{t("onboarding.status")}: </span>
 										<span className="font-mono">
-											Wallet created successfully! Your private key has been encrypted with your PIN.
+											{t("onboarding.wallet_created_message")}
 										</span>
-									</p>
-									<p className="text-sm">
-										<span className="font-medium">Contract Address: </span>
-										<div className="flex items-center gap-2">
-											<span className="font-mono break-all">
-												{walletDetails.accountAddress}
-											</span>
+									</div>
+									{response?.accountAddress && (
+										<div className="text-sm">
+											<span className="font-medium">{t("onboarding.contract_address")}: </span>
+											<div className="flex items-center gap-2">
+												<span className="font-mono break-all">
+													{response.accountAddress}
+												</span>
+											</div>
 										</div>
-									</p>
-									<p className="text-sm">
-										<span className="font-medium">TX Hash: </span>
-										<div className="flex items-center gap-2">
-											<span className="font-mono break-all">
-												{walletDetails.txHash}
-											</span>
-											<a
-												href={`https://starkscan.co/tx/${walletDetails.txHash}`}
-												target="_blank"
-												rel="noopener noreferrer"
-												className="text-yellow-600 hover:text-yellow-800 text-sm flex items-center gap-1"
-											>
-												View on Starkscan
-												<svg
-													className="w-4 h-4"
-													fill="none"
-													stroke="currentColor"
-													viewBox="0 0 24 24"
-													aria-hidden="true"
+									)}
+									{apiResponse?.wallet && (
+										<div className="text-sm">
+											<span className="font-medium">{t("public_key")}: </span>
+											<div className="flex items-center gap-2">
+												<span className="font-mono break-all">
+													{apiResponse.wallet}
+												</span>
+											</div>
+										</div>
+									)}
+									{response?.txHash && (
+										<div className="text-sm">
+											<span className="font-medium">{t("transaction_hash")}: </span>
+											<div className="flex items-center gap-2">
+												<span className="font-mono break-all">
+													{response.txHash}
+												</span>
+												<a
+													href={`https://starkscan.co/tx/${response.txHash}`}
+													target="_blank"
+													rel="noopener noreferrer"
+													className="text-yellow-600 hover:text-yellow-800 text-sm flex items-center gap-1"
 												>
-													<title>External link</title>
-													<path
-														strokeLinecap="round"
-														strokeLinejoin="round"
-														strokeWidth={2}
-														d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-													/>
-												</svg>
-											</a>
+													{t("view_tx")}
+													<svg
+														className="w-4 h-4"
+														fill="none"
+														stroke="currentColor"
+														viewBox="0 0 24 24"
+														aria-hidden="true"
+														aria-label="External link icon"
+													>
+														<title>External link</title>
+														<path
+															strokeLinecap="round"
+															strokeLinejoin="round"
+															strokeWidth={2}
+															d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+														/>
+													</svg>
+												</a>
+											</div>
 										</div>
-									</p>
-									<p className="text-sm text-gray-500 mt-2">
-										Your wallet is being created on StarkNet. Once the transaction is confirmed:
-									</p>
-									<ul className="text-sm text-gray-500 list-disc pl-5 space-y-1">
-										<li>Your public key and wallet address will be available</li>
-										<li>You can view your wallet on Starkscan</li>
-										<li>You can start making transactions</li>
-										<li>Your private key will remain encrypted and can only be used with your PIN</li>
-									</ul>
+									)}
+									<div className="text-sm text-gray-500 mt-2">
+										{t("onboarding.wallet_saved")}
+									</div>
 								</div>
 							</div>
 
@@ -448,7 +299,7 @@ export default function OnboardingPage() {
 									onClick={() => router.push("/marketplace")}
 									className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-black bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-400"
 								>
-									Continue to Marketplace
+									{t("onboarding.continue_button")}
 								</button>
 							</div>
 						</div>
