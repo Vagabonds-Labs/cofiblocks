@@ -4,6 +4,7 @@ import {
 	Bars3Icon,
 	ChevronLeftIcon,
 	ShoppingCartIcon,
+	Cog6ToothIcon,
 } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import Link from "next/link";
@@ -100,6 +101,14 @@ export function PageHeader({
 				</div>
 
 				<div className="flex items-center gap-4">
+					<Link
+						href="/user/settings"
+						className="p-3 hover:bg-surface-primary-soft rounded-full transition-colors"
+						aria-label="Settings"
+					>
+						<Cog6ToothIcon className="w-6 h-6 text-content-body-default" />
+					</Link>
+
 					{showCart && (
 						<button
 							type="button"
