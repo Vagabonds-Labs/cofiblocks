@@ -375,5 +375,30 @@
 		"low_stock_left": "Only {{count}} left",
 		"stock_available": "{{count}} available",
 		"sold_out": "Sold Out"
+	},
+
+	"wallet_address": "Wallet Address",
+	"public_key": "Public Key",
+	"encrypted_private_key": "Encrypted Private Key",
+	"wallet_details": "Wallet Details",
+	"transaction_hash": "Transaction Hash",
+	"view_tx": "View TX",
+	"view_on_starkscan": "View on Starkscan",
+
+	"onboarding": {
+		"title": "Create Your Wallet",
+		"subtitle": "Set up your Starknet wallet to start using the platform",
+		"pin_label": "Set PIN Code",
+		"pin_placeholder": "Enter a 4-digit PIN",
+		"pin_length": "PIN length: {{length}}/4 digits",
+		"create_button": "Create Wallet",
+		"creating": "Creating...",
+		"error_title": "Error creating wallet",
+		"wallet_created": "Wallet Created",
+		"wallet_created_message": "Wallet created successfully! Your private key has been encrypted with your PIN.",
+		"contract_address": "Contract Address",
+		"status": "Status",
+		"continue_button": "Continue to Marketplace",
+		"wallet_saved": "Your wallet has been created on StarkNet and your wallet details have been saved securely."
 	}
 }

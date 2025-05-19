@@ -334,5 +334,29 @@
 		"low_stock_left": "Apenas {{count}} restantes",
 		"stock_available": "{{count}} disponíveis",
 		"sold_out": "Esgotado"
+	},
+	"wallet_address": "Endereço da Carteira",
+	"public_key": "Chave Pública",
+	"encrypted_private_key": "Chave Privada Criptografada",
+	"wallet_details": "Detalhes da Carteira",
+	"transaction_hash": "Hash da Transação",
+	"view_tx": "Ver TX",
+	"view_on_starkscan": "Ver no Starkscan",
+
+	"onboarding": {
+		"title": "Criar sua Carteira",
+		"subtitle": "Configure sua carteira Starknet para começar a usar a plataforma",
+		"pin_label": "Definir Código PIN",
+		"pin_placeholder": "Digite um PIN de 4 dígitos",
+		"pin_length": "Comprimento do PIN: {{length}}/4 dígitos",
+		"create_button": "Criar Carteira",
+		"creating": "Criando...",
+		"error_title": "Erro ao criar carteira",
+		"wallet_created": "Carteira Criada",
+		"wallet_created_message": "Carteira criada com sucesso! Sua chave privada foi criptografada com seu PIN.",
+		"contract_address": "Endereço do Contrato",
+		"status": "Status",
+		"continue_button": "Continuar para o Mercado",
+		"wallet_saved": "Sua carteira foi criada na StarkNet e os detalhes da sua carteira foram salvos com segurança."
 	}
 }

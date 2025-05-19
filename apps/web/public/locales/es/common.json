@@ -352,5 +352,30 @@
 		"low_stock_left": "Solo quedan {{count}}",
 		"stock_available": "{{count}} disponibles",
 		"sold_out": "Agotado"
+	},
+
+	"wallet_address": "Dirección de la Billetera",
+	"public_key": "Clave Pública",
+	"encrypted_private_key": "Clave Privada Encriptada",
+	"wallet_details": "Detalles de la Billetera",
+	"transaction_hash": "Hash de la Transacción",
+	"view_tx": "Ver TX",
+	"view_on_starkscan": "Ver en Starkscan",
+
+	"onboarding": {
+		"title": "Crear tu Billetera",
+		"subtitle": "Configura tu billetera Starknet para comenzar a usar la plataforma",
+		"pin_label": "Establecer Código PIN",
+		"pin_placeholder": "Ingresa un PIN de 4 dígitos",
+		"pin_length": "Longitud del PIN: {{length}}/4 dígitos",
+		"create_button": "Crear Billetera",
+		"creating": "Creando...",
+		"error_title": "Error al crear la billetera",
+		"wallet_created": "Billetera Creada",
+		"wallet_created_message": "¡Billetera creada exitosamente! Tu clave privada ha sido encriptada con tu PIN.",
+		"contract_address": "Dirección del Contrato",
+		"status": "Estado",
+		"continue_button": "Continuar al Mercado",
+		"wallet_saved": "Tu billetera ha sido creada en StarkNet y los detalles de tu billetera han sido guardados de forma segura."
 	}
 }
