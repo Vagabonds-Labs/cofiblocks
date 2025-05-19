@@ -1,15 +1,21 @@
 "use server";
 
 import { clerkClient } from "@clerk/nextjs/server";
-import type { WalletData } from "~/types";
 
-// Restore original completeOnboarding function
+interface WalletData {
+	encryptedPrivateKey: string;
+	publicKey: string;
+	address: string;
+	txHash: string;
+}
+
 export async function completeOnboarding(
 	userId: string,
 	wallet: WalletData,
 ) {
 	try {
-		console.log(`Completing onboarding for user ${userId} with wallet data...`);
+		console.log(`Completing onboarding for user ${userId} with wallet data:`, wallet);
+		
 		// Update metadata with the wallet data
 		const client = await clerkClient();
 		await client.users.updateUserMetadata(userId, {
@@ -18,14 +24,16 @@ export async function completeOnboarding(
 					encryptedPrivateKey: wallet.encryptedPrivateKey,
 					publicKey: wallet.publicKey,
 					address: wallet.address,
-				}
+					txHash: wallet.txHash,
+				},
+				walletCreated: true
 			},
 		});
+		
 		console.log(`Successfully updated metadata for user ${userId}`);
-		// Return success or necessary data
 		return { success: true }; 
 	} catch (error) {
-		console.error("Error completing onboarding (updating metadata):", error);
+		console.error("Error completing onboarding:", error);
 		throw new Error("Failed to update user profile with wallet data.");
 	}
 }
