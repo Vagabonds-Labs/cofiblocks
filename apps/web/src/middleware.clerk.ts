@@ -8,12 +8,12 @@ const publicPaths = [
 	"/",
 	"/product/(.*)",
 	"/api/(.*)",
-	"/api/trpc/(.*)",
+	"/api/trpc/(.*)",  // Make tRPC endpoints public
 	"/sign-in",
 	"/sign-up",
 	"/clerk-demo",
 	"/onboarding",
-	"/marketplace",
+	"/marketplace", // Make marketplace public by default
 ];
 
 // Helper function to check if a route is public
