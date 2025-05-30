@@ -1,10 +1,10 @@
 "use client";
 
-import { ChevronRightIcon, UserIcon } from "@heroicons/react/24/outline";
-import { useUser } from "@clerk/nextjs";
+import { ChevronRightIcon, UserIcon, ChevronDownIcon, ChevronUpIcon, WalletIcon } from "@heroicons/react/24/outline";
+import { useUser, useAuth } from "@clerk/nextjs";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ProfileCard } from "~/app/_components/features/ProfileCard";
 import { ProfileOptions } from "~/app/_components/features/ProfileOptions";
@@ -21,6 +21,8 @@ export default function UserProfile() {
 	const { t } = useTranslation();
 	const router = useRouter();
 	const { isLoaded: clerkLoaded, isSignedIn, user } = useUser();
+	const { isSignedIn: authSignedIn } = useAuth();
+	const [isWalletExpanded, setIsWalletExpanded] = useState(false);
 	
 	// Get wallet info from Clerk metadata
 	const walletMetadata = (user?.unsafeMetadata as UnsafeMetadata | undefined)?.wallet;
@@ -84,6 +86,11 @@ export default function UserProfile() {
 		badges: ["lover", "contributor"] as Badge[],
 	};
 
+	// Toggle wallet details visibility
+	const toggleWalletDetails = () => {
+		setIsWalletExpanded(!isWalletExpanded);
+	};
+
 	return (
 		<Main>
 			<div className="container mx-auto px-4 py-8">
@@ -93,11 +100,35 @@ export default function UserProfile() {
 					
 					{hasWallet && (
 						<div className="bg-white shadow rounded-lg overflow-hidden">
-							<div className="p-6">
-								<h3 className="text-lg font-medium text-gray-900 mb-4">
-									{t("wallet_details")}
-								</h3>
-								<WalletDetails />
+							<div 
+								className="p-6"
+							>
+								<div 
+									onClick={toggleWalletDetails}
+									onKeyDown={(e) => {
+										if (e.key === 'Enter' || e.key === ' ') {
+											toggleWalletDetails();
+										}
+									}}
+									tabIndex={0}
+									role="button"
+									aria-expanded={isWalletExpanded}
+									className="w-full bg-white text-content-title flex items-center justify-between p-4 rounded-lg hover:bg-surface-secondary-soft transition-colors cursor-pointer"
+								>
+									<div className="flex items-center">
+										<WalletIcon className="w-5 h-5 mr-3" />
+										<span>{t("wallet_details")}</span>
+									</div>
+									{isWalletExpanded ? 
+										<ChevronDownIcon className="w-5 h-5 text-content-body-default" /> : 
+										<ChevronRightIcon className="w-5 h-5 text-content-body-default" />
+									}
+								</div>
+								{isWalletExpanded && (
+									<div className="mt-4 px-4">
+										<WalletDetails />
+									</div>
+								)}
 							</div>
 						</div>
 					)}

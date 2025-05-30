@@ -2,11 +2,11 @@
 
 import { useCreateWallet } from "@chipi-pay/chipi-sdk";
 import { useUser } from "@clerk/nextjs";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { completeOnboarding } from "./_actions";
-import type { WalletResponse } from "~/types";
+import type { WalletResponse, UnsafeMetadata } from "~/types";
 
 interface ApiResponse {
 	success: boolean;
@@ -18,7 +18,7 @@ interface ApiResponse {
 export default function OnboardingPage() {
 	const { t } = useTranslation();
 	const router = useRouter();
-	const { user } = useUser();
+	const { user, isLoaded: userLoaded } = useUser();
 	const { createWalletAsync, createWalletResponse, isLoading, isError } = useCreateWallet();
 	const [pin, setPin] = useState("");
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -26,6 +26,25 @@ export default function OnboardingPage() {
 	const [response, setResponse] = useState<WalletResponse | null>(null);
 	const [apiResponse, setApiResponse] = useState<ApiResponse | null>(null);
 	const [isRedirecting, setIsRedirecting] = useState(false);
+	const [isCheckingWallet, setIsCheckingWallet] = useState(true);
+
+	// Check if user already has a wallet and redirect to marketplace if they do
+	useEffect(() => {
+		if (userLoaded && user) {
+			const metadata = user.unsafeMetadata as UnsafeMetadata | undefined;
+			const hasWallet = !!(metadata?.wallet || metadata?.walletCreated);
+			
+			if (hasWallet) {
+				console.log('[onboarding] User already has a wallet, redirecting to marketplace');
+				router.push('/marketplace');
+			} else {
+				setIsCheckingWallet(false);
+			}
+		} else if (userLoaded) {
+			// User is loaded but not authenticated
+			setIsCheckingWallet(false);
+		}
+	}, [userLoaded, user, router]);
 
 	const handlePinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const value = e.target.value.replace(/[^0-9]/g, "").slice(0, 4);
@@ -42,7 +61,7 @@ export default function OnboardingPage() {
 
 		try {
 			setErrorMessage(null);
-			console.log('Creating wallet...');
+			console.log('Creating PIN...');
 			
 			// Intercept fetch to get the raw API response
 			const originalFetch = window.fetch;
@@ -72,7 +91,7 @@ export default function OnboardingPage() {
 				return response;
 			};
 
-			// Create wallet
+			// Create wallet with PIN
 			const response = await createWalletAsync(pin);
 			setResponse(response);
 
@@ -80,30 +99,30 @@ export default function OnboardingPage() {
 			window.fetch = originalFetch;
 			
 			if (!response || !response.success) {
-				throw new Error("Failed to create wallet - invalid response");
+				throw new Error("Failed to create PIN - invalid response");
 			}
 
 			const { encryptedPrivateKey } = response.wallet;
 
 			if (!encryptedPrivateKey) {
-				throw new Error("Invalid wallet data received from server");
+				throw new Error("Invalid account data received from server");
 			}
 
 			// Use the public key from the request payload
 			const publicKey = requestPublicKey;
 
 			if (!publicKey) {
-				throw new Error("Public key not found in request payload");
+				throw new Error("Account ID not found in request payload");
 			}
 
 			// Use the transaction hash from the API response
 			const txHash = apiTxHash;
 
 			if (!txHash) {
-				throw new Error("Transaction hash not found in API response");
+				throw new Error("Transaction ID not found in API response");
 			}
 
-			// Save wallet data to user metadata
+			// Save account data to user metadata
 			if (user?.id) {
 				const walletData = {
 					encryptedPrivateKey,
@@ -119,11 +138,11 @@ export default function OnboardingPage() {
 			setWalletCreated(true);
 			
 		} catch (err) {
-			console.error("Wallet creation failed:", err);
+			console.error("PIN creation failed:", err);
 			setErrorMessage(
 				err instanceof Error 
 					? err.message 
-					: "Failed to create wallet - please try again"
+					: "Failed to create PIN - please try again"
 			);
 			setWalletCreated(false);
 		}
@@ -159,7 +178,12 @@ export default function OnboardingPage() {
 
 			<div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
 				<div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-					{!walletCreated ? (
+					{isCheckingWallet ? (
+						<div className="flex justify-center items-center py-6">
+							<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500" />
+							<span className="ml-2 text-gray-600">{t("loading")}</span>
+						</div>
+					) : !walletCreated ? (
 						<form onSubmit={handleSubmit} className="space-y-6">
 							<div>
 								<label
@@ -196,7 +220,7 @@ export default function OnboardingPage() {
 												{t("onboarding.error_title")}
 											</h3>
 											<div className="mt-2 text-sm text-red-700">
-												{errorMessage ?? "Failed to create wallet"}
+												{errorMessage ?? "Failed to create PIN"}
 											</div>
 										</div>
 									</div>
@@ -214,99 +238,32 @@ export default function OnboardingPage() {
 					) : (
 						<div className="space-y-6">
 							<div className="space-y-4">
-								<div className="flex items-center justify-between">
-									<h3 className="text-lg font-medium">{t("onboarding.wallet_created")}</h3>
-									{response?.accountAddress && (
-										<a
-											href={`https://starkscan.co/contract/${response.accountAddress}`}
-											target="_blank"
-											rel="noopener noreferrer"
-											className="text-yellow-600 hover:text-yellow-800 text-sm flex items-center gap-1"
-										>
-											{t("view_on_starkscan")}
-											<svg
-												className="w-4 h-4"
-												fill="none"
-												stroke="currentColor"
-												viewBox="0 0 24 24"
-												aria-hidden="true"
-												aria-label="External link icon"
-											>
-												<title>External link</title>
-												<path
-													strokeLinecap="round"
-													strokeLinejoin="round"
-													strokeWidth={2}
-													d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-												/>
-											</svg>
-										</a>
-									)}
+								<div className="text-center mb-6">
+									<div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 mb-4">
+										<svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+											<title>Success checkmark</title>
+											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+										</svg>
+									</div>
+									<h3 className="text-xl font-medium text-gray-900">{t("onboarding.success_title")}</h3>
+									<p className="mt-2 text-sm text-gray-600">{t("onboarding.success_message")}</p>
 								</div>
-								<div className="space-y-2">
-									<div className="text-sm">
-										<span className="font-medium">{t("onboarding.status")}: </span>
-										<span className="font-mono">
-											{t("onboarding.wallet_created_message")}
-										</span>
+
+								<div className="bg-gray-50 rounded-lg p-4">
+									<div className="space-y-3">
+										<div className="flex flex-col">
+											<span className="text-sm text-gray-500">{t("onboarding.wallet_ready")}</span>
+											<span className="font-medium">{t("onboarding.ready_message")}</span>
+										</div>
 									</div>
-									{response?.accountAddress && (
-										<div className="text-sm">
-											<span className="font-medium">{t("onboarding.contract_address")}: </span>
-											<div className="flex items-center gap-2">
-												<span className="font-mono break-all">
-													{response.accountAddress}
-												</span>
-											</div>
-										</div>
-									)}
-									{apiResponse?.wallet && (
-										<div className="text-sm">
-											<span className="font-medium">{t("public_key")}: </span>
-											<div className="flex items-center gap-2">
-												<span className="font-mono break-all">
-													{apiResponse.wallet}
-												</span>
-											</div>
-										</div>
-									)}
-									{response?.txHash && (
-										<div className="text-sm">
-											<span className="font-medium">{t("transaction_hash")}: </span>
-											<div className="flex items-center gap-2">
-												<span className="font-mono break-all">
-													{response.txHash}
-												</span>
-												<a
-													href={`https://starkscan.co/tx/${response.txHash}`}
-													target="_blank"
-													rel="noopener noreferrer"
-													className="text-yellow-600 hover:text-yellow-800 text-sm flex items-center gap-1"
-												>
-													{t("view_tx")}
-													<svg
-														className="w-4 h-4"
-														fill="none"
-														stroke="currentColor"
-														viewBox="0 0 24 24"
-														aria-hidden="true"
-														aria-label="External link icon"
-													>
-														<title>External link</title>
-														<path
-															strokeLinecap="round"
-															strokeLinejoin="round"
-															strokeWidth={2}
-															d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-														/>
-													</svg>
-												</a>
-											</div>
-										</div>
-									)}
-									<div className="text-sm text-gray-500 mt-2">
-										{t("onboarding.wallet_saved")}
-									</div>
+								</div>
+
+								<div className="text-sm text-gray-500 mt-2">
+									<p>{t("onboarding.whats_next")}</p>
+									<ul className="list-disc pl-5 mt-2 space-y-1">
+										<li>{t("onboarding.next_step_1")}</li>
+										<li>{t("onboarding.next_step_2")}</li>
+									</ul>
 								</div>
 							</div>
 

@@ -1,6 +1,6 @@
 export default {
 	i18n: {
-		defaultLocale: "en",
+		defaultLocale: "es",
 		locales: ["en", "es", "pt"],
 		localeDetection: true,
 	},

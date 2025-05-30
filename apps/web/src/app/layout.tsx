@@ -26,6 +26,10 @@ export default function RootLayout({
 		const savedLanguage = localStorage.getItem("app_language");
 		if (savedLanguage) {
 			void i18n.changeLanguage(savedLanguage);
+		} else {
+			// Set Spanish as default if no saved preference
+			void i18n.changeLanguage("es");
+			localStorage.setItem("app_language", "es");
 		}
 	}, []);
 
@@ -57,7 +61,7 @@ export default function RootLayout({
 		>
 			<html
 				suppressHydrationWarning
-				lang="en"
+				lang="es"
 				data-theme="cofiblocks"
 				className={`${GeistSans.variable} ${inter.className}`}
 			>
