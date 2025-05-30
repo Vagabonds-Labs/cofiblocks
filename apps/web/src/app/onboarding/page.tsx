@@ -1,101 +1,287 @@
 "use client";
 
+import { useCreateWallet } from "@chipi-pay/chipi-sdk";
 import { useUser } from "@clerk/nextjs";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { ec, stark, hash, CallData, constants, num, shortString } from "starknet";
+import { useTranslation } from "react-i18next";
 import { completeOnboarding } from "./_actions";
-import toast from "react-hot-toast";
+import type { WalletResponse, UnsafeMetadata } from "~/types";
 
-const ARGENT_X_CLASS_HASH = "0x025ec026985a3bf9d0cc1fe17326b245dfdc3ff89b8fde106242a3ea56c5a918";
+interface ApiResponse {
+	success: boolean;
+	txHash: string;
+	wallet: string;
+	encryptedPrivateKey: string;
+}
 
 export default function OnboardingPage() {
-	const [pin, setPin] = useState("");
-	const [loading, setLoading] = useState(false);
-	const { user } = useUser();
+	const { t } = useTranslation();
 	const router = useRouter();
+	const { user, isLoaded: userLoaded } = useUser();
+	const { createWalletAsync, createWalletResponse, isLoading, isError } = useCreateWallet();
+	const [pin, setPin] = useState("");
+	const [errorMessage, setErrorMessage] = useState<string | null>(null);
+	const [walletCreated, setWalletCreated] = useState(false);
+	const [response, setResponse] = useState<WalletResponse | null>(null);
+	const [apiResponse, setApiResponse] = useState<ApiResponse | null>(null);
+	const [isRedirecting, setIsRedirecting] = useState(false);
+	const [isCheckingWallet, setIsCheckingWallet] = useState(true);
+
+	// Check if user already has a wallet and redirect to marketplace if they do
+	useEffect(() => {
+		if (userLoaded && user) {
+			const metadata = user.unsafeMetadata as UnsafeMetadata | undefined;
+			const hasWallet = !!(metadata?.wallet || metadata?.walletCreated);
+			
+			if (hasWallet) {
+				console.log('[onboarding] User already has a wallet, redirecting to marketplace');
+				router.push('/marketplace');
+			} else {
+				setIsCheckingWallet(false);
+			}
+		} else if (userLoaded) {
+			// User is loaded but not authenticated
+			setIsCheckingWallet(false);
+		}
+	}, [userLoaded, user, router]);
+
+	const handlePinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const value = e.target.value.replace(/[^0-9]/g, "").slice(0, 4);
+		setPin(value);
+	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		if (!user || !pin || pin.length < 6) {
-			toast.error("Please enter a valid PIN (min 6 digits).");
+
+		if (pin.length !== 4 || !/^\d{4}$/.test(pin)) {
+			setErrorMessage("PIN must be exactly 4 digits");
 			return;
 		}
 
-		setLoading(true);
 		try {
-			// 1. Generate Starknet Key Pair
-			const privateKey = stark.randomAddress(); 
-			const publicKeyBytes = ec.starkCurve.getPublicKey(privateKey, false) as Uint8Array; // Explicit type
-			const publicKeyBN = num.toBigInt(publicKeyBytes); // Convert bytes to BigInt
-			const publicKeyHex = num.toHex(publicKeyBN); // Hex for storage
-
-			// 2. Derive Account Address 
-			const constructorCallData = CallData.compile({
-				owner: publicKeyBN, // Use BigInt
-				guardian: 0, 
-			});
-			const accountAddress = hash.calculateContractAddressFromHash(
-				publicKeyBN, // Use BigInt as salt
-				ARGENT_X_CLASS_HASH,
-				constructorCallData,
-				constants.ZERO 
-			);
-
-			// 3. Encrypt Private Key (PLACEHOLDER)
-			const encryptedPrivateKey = `encrypted:${pin}:${privateKey}`;
-
-			// 4. Prepare wallet data
-			const walletData = {
-				account: accountAddress,
-				publicKey: publicKeyHex, // Store hex
-				encryptedPrivateKey: encryptedPrivateKey, 
+			setErrorMessage(null);
+			console.log('Creating PIN...');
+			
+			// Intercept fetch to get the raw API response
+			const originalFetch = window.fetch;
+			let requestPublicKey: string | undefined;
+			let apiTxHash: string | undefined;
+			
+			window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+				const url = input instanceof URL ? input.href : input.toString();
+				
+				// Capture the request payload for the wallet creation
+				if (url.includes("/chipi-wallets") && !url.includes("prepare-creation") && init?.body) {
+					try {
+						const payload = JSON.parse(init.body as string);
+						requestPublicKey = payload.publicKey;
+					} catch (e) {
+						throw new Error("Failed to parse request payload");
+					}
+				}
+				
+				const response = await originalFetch(input, init);
+				
+				if (url.includes("/chipi-wallets") && !url.includes("prepare-creation")) {
+					const data = await response.clone().json() as ApiResponse;
+					setApiResponse(data);
+					apiTxHash = data.txHash;
+				}
+				return response;
 			};
 
-			// 5. Call server action
-			await completeOnboarding(user.id, walletData);
+			// Create wallet with PIN
+			const response = await createWalletAsync(pin);
+			setResponse(response);
+
+			// Restore original fetch
+			window.fetch = originalFetch;
 			
-			toast.success("Wallet created and saved successfully!");
-			router.push("/marketplace");
+			if (!response || !response.success) {
+				throw new Error("Failed to create PIN - invalid response");
+			}
+
+			const { encryptedPrivateKey } = response.wallet;
+
+			if (!encryptedPrivateKey) {
+				throw new Error("Invalid account data received from server");
+			}
+
+			// Use the public key from the request payload
+			const publicKey = requestPublicKey;
+
+			if (!publicKey) {
+				throw new Error("Account ID not found in request payload");
+			}
+
+			// Use the transaction hash from the API response
+			const txHash = apiTxHash;
+
+			if (!txHash) {
+				throw new Error("Transaction ID not found in API response");
+			}
+
+			// Save account data to user metadata
+			if (user?.id) {
+				const walletData = {
+					encryptedPrivateKey,
+					publicKey,
+					address: publicKey,
+					txHash,
+				};
+				await completeOnboarding(user.id, walletData);
+			} else {
+				throw new Error("User not authenticated");
+			}
+
+			setWalletCreated(true);
+			
+		} catch (err) {
+			console.error("PIN creation failed:", err);
+			setErrorMessage(
+				err instanceof Error 
+					? err.message 
+					: "Failed to create PIN - please try again"
+			);
+			setWalletCreated(false);
+		}
+	};
+
+	const handleContinue = async () => {
+		try {
+			setIsRedirecting(true);
+			console.log('Starting redirection to marketplace...');
+			
+			// Add a small delay to ensure the session is updated
+			await new Promise(resolve => setTimeout(resolve, 1000));
+			
+			console.log('Delay completed, attempting to redirect...');
+			// Use window.location.href for a full page reload
+			window.location.href = '/marketplace';
 		} catch (error) {
-			console.error("Error during wallet creation/onboarding:", error);
-			toast.error(error instanceof Error ? error.message : "Failed to create wallet.");
-		} finally {
-			setLoading(false);
+			console.error('Error during redirection:', error);
+			setIsRedirecting(false);
 		}
 	};
 
 	return (
-		<div className="max-w-md mx-auto mt-12 p-6 bg-white rounded-xl shadow-md">
-			<h1 className="text-2xl font-bold mb-6">Set Up Your Secure Wallet</h1>
-			<p className="mb-4 text-gray-600">
-				Create a secure PIN (minimum 6 digits) to encrypt your new Starknet wallet.
-				You'll need this PIN for transactions.
-			</p>
+		<div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+			<div className="sm:mx-auto sm:w-full sm:max-w-md">
+				<h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+					{t("onboarding.title")}
+				</h2>
+				<p className="mt-2 text-center text-sm text-gray-600">
+					{t("onboarding.subtitle")}
+				</p>
+			</div>
 
-			<form onSubmit={handleSubmit}>
-				<div className="mb-4">
-					<label className="block text-sm font-medium text-gray-700 mb-2">
-						Security PIN (min 6 digits)
-					</label>
-					<input
-						type="password"
-						className="w-full px-4 py-2 border rounded-md"
-						placeholder="Enter PIN"
-						value={pin}
-						onChange={(e) => setPin(e.target.value)}
-						minLength={6}
-						required
-					/>
+			<div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+				<div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+					{isCheckingWallet ? (
+						<div className="flex justify-center items-center py-6">
+							<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500" />
+							<span className="ml-2 text-gray-600">{t("loading")}</span>
+						</div>
+					) : !walletCreated ? (
+						<form onSubmit={handleSubmit} className="space-y-6">
+							<div>
+								<label
+									htmlFor="pin"
+									className="block text-sm font-medium text-gray-700"
+								>
+									{t("onboarding.pin_label")}
+								</label>
+								<div className="mt-1">
+									<input
+										id="pin"
+										name="pin"
+										type="text"
+										inputMode="numeric"
+										pattern="[0-9]*"
+										maxLength={4}
+										required
+										value={pin}
+										onChange={handlePinChange}
+										className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm"
+										placeholder={t("onboarding.pin_placeholder")}
+									/>
+								</div>
+								<p className="mt-2 text-sm text-gray-500">
+									{t("onboarding.pin_length", { length: pin.length })}
+								</p>
+							</div>
+
+							{(isError || errorMessage) && (
+								<div className="rounded-md bg-red-50 p-4">
+									<div className="flex">
+										<div className="ml-3">
+											<h3 className="text-sm font-medium text-red-800">
+												{t("onboarding.error_title")}
+											</h3>
+											<div className="mt-2 text-sm text-red-700">
+												{errorMessage ?? "Failed to create PIN"}
+											</div>
+										</div>
+									</div>
+								</div>
+							)}
+
+							<button
+								type="submit"
+								disabled={isLoading || pin.length !== 4}
+								className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-black bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-400 disabled:bg-gray-400"
+							>
+								{isLoading ? t("onboarding.creating") : t("onboarding.create_button")}
+							</button>
+						</form>
+					) : (
+						<div className="space-y-6">
+							<div className="space-y-4">
+								<div className="text-center mb-6">
+									<div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 mb-4">
+										<svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+											<title>Success checkmark</title>
+											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+										</svg>
+									</div>
+									<h3 className="text-xl font-medium text-gray-900">{t("onboarding.success_title")}</h3>
+									<p className="mt-2 text-sm text-gray-600">{t("onboarding.success_message")}</p>
+								</div>
+
+								<div className="bg-gray-50 rounded-lg p-4">
+									<div className="space-y-3">
+										<div className="flex flex-col">
+											<span className="text-sm text-gray-500">{t("onboarding.wallet_ready")}</span>
+											<span className="font-medium">{t("onboarding.ready_message")}</span>
+										</div>
+									</div>
+								</div>
+
+								<div className="text-sm text-gray-500 mt-2">
+									<p>{t("onboarding.whats_next")}</p>
+									<ul className="list-disc pl-5 mt-2 space-y-1">
+										<li>{t("onboarding.next_step_1")}</li>
+										<li>{t("onboarding.next_step_2")}</li>
+									</ul>
+								</div>
+							</div>
+
+							{/* Continue Button */}
+							<div className="mt-6 pt-6 border-t border-gray-200">
+								<button
+									type="button"
+									onClick={handleContinue}
+									disabled={isRedirecting}
+									className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-black bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-400 disabled:bg-gray-400"
+								>
+									{isRedirecting ? t("onboarding.redirecting") : t("onboarding.continue_button")}
+								</button>
+							</div>
+						</div>
+					)}
 				</div>
-				<button
-					type="submit"
-					className="w-full py-2 px-4 bg-green-600 text-white rounded-md hover:bg-green-700"
-					disabled={loading}
-				>
-					{loading ? "Creating Wallet..." : "Create Secure Wallet"}
-				</button>
-			</form>
+			</div>
 		</div>
 	);
 }

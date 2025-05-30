@@ -80,3 +80,71 @@ export interface Order {
 	date: string;
 	items: OrderItem[];
 }
+
+// Chipi SDK types
+export interface WalletData {
+	encryptedPrivateKey: string;  // Encrypted with user's PIN, never stored in plain text
+	publicKey?: string;           // Will be set after wallet creation is confirmed
+	address: string;             // The wallet's public address (contract address)
+	txHash?: string;             // The transaction hash from wallet creation
+}
+
+export interface UnsafeMetadata {
+	wallet: WalletData;
+	[key: string]: unknown;
+}
+
+export interface WalletResponse {
+	success: boolean;
+	txHash: string;
+	accountAddress: string;  // This is the main contract address
+	publicKey: string;      // The public key from the API response
+	wallet: {
+		encryptedPrivateKey: string;
+		publicKey?: string;
+		address?: string;    // This is redundant with accountAddress
+	};
+	checkTransactionStatus: () => Promise<{
+		confirmed: boolean;
+		publicKey?: string;
+		address?: string;
+	}>;
+}
+
+export interface SessionClaims {
+	publicMetadata: Record<string, unknown>;
+	unsafeMetadata: UnsafeMetadata;
+}
+
+export interface CreateWalletResponse {
+	accountAddress: string;
+	txHash: string;
+}
+
+declare module "@chipi-pay/chipi-sdk" {
+	export interface WalletResponse {
+		success: boolean;
+		txHash: string;
+		accountAddress: string;
+		publicKey: string;
+		wallet: {
+			encryptedPrivateKey: string;
+			publicKey?: string;
+			address?: string;
+		};
+		checkTransactionStatus: () => Promise<{
+			confirmed: boolean;
+			publicKey?: string;
+			address?: string;
+		}>;
+	}
+
+	export interface UseCreateWalletResult {
+		createWalletAsync: (pin: string) => Promise<WalletResponse>;
+		createWalletResponse: WalletResponse | null;
+		isLoading: boolean;
+		isError: boolean;
+	}
+
+	export function useCreateWallet(): UseCreateWalletResult;
+}

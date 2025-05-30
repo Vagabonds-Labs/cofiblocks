@@ -24,7 +24,7 @@ function ProfileOptionLayout({
 		<Main>
 			<Header
 				profileOptions={
-					address ? <ProfileOptions address={address} /> : undefined
+					address ? <ProfileOptions /> : undefined
 				}
 			/>
 			<div className="container mx-auto px-4 py-8">

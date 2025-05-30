@@ -375,5 +375,41 @@
 		"low_stock_left": "Only {{count}} left",
 		"stock_available": "{{count}} available",
 		"sold_out": "Sold Out"
+	},
+
+	"wallet_info": "Wallet Info",
+	"wallet_address": "Wallet Address",
+	"public_key": "Public Key",
+	"encrypted_private_key": "Encrypted Private Key",
+	"wallet_details": "Wallet Details",
+	"transaction_hash": "Transaction Hash",
+	"view_tx": "View Transaction",
+	"view_on_starkscan": "View on Starkscan",
+	"show": "Show",
+	"hide": "Hide",
+
+	"onboarding": {
+		"title": "Let's Get Started!",
+		"subtitle": "Set up your PIN to start using the platform",
+		"pin_label": "Set PIN Code",
+		"pin_placeholder": "Enter a 4-digit PIN",
+		"pin_length": "PIN length: {{length}}/4 digits",
+		"create_button": "Create PIN",
+		"creating": "Creating...",
+		"redirecting": "Redirecting...",
+		"error_title": "Error creating PIN",
+		"wallet_created": "PIN Created",
+		"wallet_created_message": "PIN created successfully! Your account has been secured with your PIN.",
+		"contract_address": "Account Address",
+		"status": "Status",
+		"continue_button": "Continue to Marketplace",
+		"wallet_saved": "Your account has been created and your details have been saved securely.",
+		"success_title": "Setup Complete!",
+		"success_message": "Your account has been set up successfully and is ready to use.",
+		"wallet_ready": "Account Status",
+		"ready_message": "Your account is active and ready to use on the platform.",
+		"whats_next": "What's next?",
+		"next_step_1": "Explore our marketplace to discover unique coffee products.",
+		"next_step_2": "Your account is secured with your PIN and ready for secure payments and purchases."
 	}
 }
