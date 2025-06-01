@@ -9,7 +9,7 @@ use starknet::ContractAddress;
 pub enum PAYMENT_TOKEN {
     STRK,
     USDC,
-    USDT
+    USDT,
 }
 
 #[derive(Drop, Copy, Serde)]
@@ -34,22 +34,22 @@ pub trait IMarketplace<ContractState> {
     fn assign_consumer_role(ref self: ContractState, assignee: ContractAddress);
     fn assign_admin_role(ref self: ContractState, assignee: ContractAddress);
     fn buy_product(
-        ref self: ContractState, token_id: u256, token_amount: u256, payment_token: PAYMENT_TOKEN
+        ref self: ContractState, token_id: u256, token_amount: u256, payment_token: PAYMENT_TOKEN,
     );
     fn buy_products(
         ref self: ContractState,
         token_ids: Span<u256>,
         token_amount: Span<u256>,
-        payment_token: PAYMENT_TOKEN
+        payment_token: PAYMENT_TOKEN,
     );
     fn create_product(
-        ref self: ContractState, initial_stock: u256, price: u256, data: Span<felt252>
+        ref self: ContractState, initial_stock: u256, price: u256, data: Span<felt252>,
     ) -> u256;
     fn create_products(
-        ref self: ContractState, initial_stock: Span<u256>, price: Span<u256>
+        ref self: ContractState, initial_stock: Span<u256>, price: Span<u256>,
     ) -> Span<u256>;
     fn get_product_price(
-        ref self: ContractState, token_id: u256, token_amount: u256, payment_token: PAYMENT_TOKEN
+        ref self: ContractState, token_id: u256, token_amount: u256, payment_token: PAYMENT_TOKEN,
     ) -> u256;
     fn delete_product(ref self: ContractState, token_id: u256);
     fn delete_products(ref self: ContractState, token_ids: Span<u256>);
@@ -88,21 +88,18 @@ mod Marketplace {
     use ekubo::interfaces::core::{ICoreDispatcher, ICoreDispatcherTrait, SwapParameters};
     use ekubo::types::i129::i129;
     use ekubo::types::keys::PoolKey;
-    use openzeppelin::access::accesscontrol::AccessControlComponent;
-    use openzeppelin::access::accesscontrol::DEFAULT_ADMIN_ROLE;
+    use openzeppelin::access::accesscontrol::{AccessControlComponent, DEFAULT_ADMIN_ROLE};
     use openzeppelin::introspection::src5::SRC5Component;
     use openzeppelin::token::erc1155::erc1155_receiver::ERC1155ReceiverComponent;
     use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
     use openzeppelin::upgrades::UpgradeableComponent;
     use starknet::event::EventEmitter;
     use starknet::storage::Map;
-    use starknet::{
-        ContractAddress, get_caller_address, get_contract_address, contract_address_const
-    };
-    use super::{PAYMENT_TOKEN, SwapAfterLockParameters, SwapResult, MainnetConfig};
+    use starknet::{ContractAddress, get_caller_address, get_contract_address};
+    use super::{MainnetConfig, PAYMENT_TOKEN, SwapAfterLockParameters, SwapResult};
 
     component!(
-        path: ERC1155ReceiverComponent, storage: erc1155_receiver, event: ERC1155ReceiverEvent
+        path: ERC1155ReceiverComponent, storage: erc1155_receiver, event: ERC1155ReceiverEvent,
     );
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
     component!(path: AccessControlComponent, storage: accesscontrol, event: AccessControlEvent);
@@ -153,7 +150,7 @@ mod Marketplace {
         cofi_collection_address: ContractAddress,
         claim_balances: Map<ContractAddress, u256>,
         current_token_id: u256,
-        ekubo: ICoreDispatcher
+        ekubo: ICoreDispatcher,
     }
 
     #[event]
@@ -244,8 +241,8 @@ mod Marketplace {
             .ekubo
             .write(
                 ICoreDispatcher {
-                    contract_address: contract_address_const::<MainnetConfig::EKUBO_ADDRESS>()
-                }
+                    contract_address: MainnetConfig::EKUBO_ADDRESS.try_into().unwrap(),
+                },
             );
         self.market_fee.write(market_fee);
         self.current_token_id.write(1);
@@ -273,14 +270,14 @@ mod Marketplace {
                     params.sqrt_ratio_distance,
                     is_token1,
                     MIN_SQRT_RATIO,
-                    MAX_SQRT_RATIO
+                    MAX_SQRT_RATIO,
                 );
 
             let swap_params = SwapParameters {
                 amount: i129 { mag: params.sell_token_amount.low, sign: false },
                 is_token1,
                 sqrt_ratio_limit,
-                skip_ahead: 100
+                skip_ahead: 100,
             };
             let mut delta = ekubo.swap(params.pool_key, swap_params);
 
@@ -337,7 +334,7 @@ mod Marketplace {
             ref self: ContractState,
             token_id: u256,
             token_amount: u256,
-            payment_token: PAYMENT_TOKEN
+            payment_token: PAYMENT_TOKEN,
         ) {
             let stock = self.listed_product_stock.read(token_id);
             assert(stock >= token_amount, 'Not enough stock');
@@ -351,14 +348,14 @@ mod Marketplace {
 
             // Process payment
             if payment_token == PAYMENT_TOKEN::STRK {
-                let strk_address = contract_address_const::<MainnetConfig::STRK_ADDRESS>();
+                let strk_address = MainnetConfig::STRK_ADDRESS.try_into().unwrap();
                 self.pay_with_token(strk_address, total_required_tokens);
                 self.swap_token_for_usdc(strk_address, total_required_tokens);
             } else if payment_token == PAYMENT_TOKEN::USDC {
-                let usdc_address = contract_address_const::<MainnetConfig::USDC_ADDRESS>();
+                let usdc_address = MainnetConfig::USDC_ADDRESS.try_into().unwrap();
                 self.pay_with_token(usdc_address, total_required_tokens);
             } else if payment_token == PAYMENT_TOKEN::USDT {
-                let usdt_address = contract_address_const::<MainnetConfig::USDT_ADDRESS>();
+                let usdt_address = MainnetConfig::USDT_ADDRESS.try_into().unwrap();
                 self.pay_with_token(usdt_address, total_required_tokens);
                 self.swap_token_for_usdc(usdt_address, total_required_tokens);
             } else {
@@ -367,11 +364,11 @@ mod Marketplace {
 
             // Transfer the nft products
             let cofi_collection = ICofiCollectionDispatcher {
-                contract_address: self.cofi_collection_address.read()
+                contract_address: self.cofi_collection_address.read(),
             };
             cofi_collection
                 .safe_transfer_from(
-                    contract_address, buyer, token_id, token_amount, array![0].span()
+                    contract_address, buyer, token_id, token_amount, array![0].span(),
                 );
 
             // Update stock
@@ -396,7 +393,7 @@ mod Marketplace {
             ref self: ContractState,
             token_ids: Span<u256>,
             token_amount: Span<u256>,
-            payment_token: PAYMENT_TOKEN
+            payment_token: PAYMENT_TOKEN,
         ) {
             assert(token_ids.len() > 0, 'No products to buy');
             assert(token_ids.len() == token_amount.len(), 'wrong length of arrays');
@@ -426,18 +423,18 @@ mod Marketplace {
                 }
                 assert(*producers_found.at(0) == producer, 'Different producers');
                 token_idx += 1;
-            };
+            }
 
             // Process payment
             if payment_token == PAYMENT_TOKEN::STRK {
-                let strk_address = contract_address_const::<MainnetConfig::STRK_ADDRESS>();
+                let strk_address = MainnetConfig::STRK_ADDRESS.try_into().unwrap();
                 self.pay_with_token(strk_address, total_required_tokens);
                 self.swap_token_for_usdc(strk_address, total_required_tokens);
             } else if payment_token == PAYMENT_TOKEN::USDC {
-                let usdc_address = contract_address_const::<MainnetConfig::USDC_ADDRESS>();
+                let usdc_address = MainnetConfig::USDC_ADDRESS.try_into().unwrap();
                 self.pay_with_token(usdc_address, total_required_tokens);
             } else if payment_token == PAYMENT_TOKEN::USDT {
-                let usdt_address = contract_address_const::<MainnetConfig::USDT_ADDRESS>();
+                let usdt_address = MainnetConfig::USDT_ADDRESS.try_into().unwrap();
                 self.pay_with_token(usdt_address, total_required_tokens);
                 self.swap_token_for_usdc(usdt_address, total_required_tokens);
             } else {
@@ -446,16 +443,18 @@ mod Marketplace {
 
             // Transfer the nft products
             let cofi_collection = ICofiCollectionDispatcher {
-                contract_address: self.cofi_collection_address.read()
+                contract_address: self.cofi_collection_address.read(),
             };
             cofi_collection
                 .safe_batch_transfer_from(
-                    contract_address, buyer, token_ids, token_amount, array![0].span()
+                    contract_address, buyer, token_ids, token_amount, array![0].span(),
                 );
 
             self
                 .emit(
-                    BuyBatchProducts { token_ids, token_amount, total_price: total_required_tokens }
+                    BuyBatchProducts {
+                        token_ids, token_amount, total_price: total_required_tokens,
+                    },
                 );
             // Update stock for products
             let mut token_idx = 0;
@@ -468,7 +467,7 @@ mod Marketplace {
                 let new_stock = stock - token_amount;
                 self.update_stock(*token_ids.at(token_idx), new_stock);
                 token_idx += 1;
-            };
+            }
 
             if (!self.accesscontrol.has_role(CONSUMER, buyer)) {
                 self.accesscontrol._grant_role(CONSUMER, buyer);
@@ -489,12 +488,12 @@ mod Marketplace {
         /// * `price` - The price of the product per unity expresed in usdc (1e-6 usdc)
         /// * `data` - Additional context or metadata for the token transfer process
         fn create_product(
-            ref self: ContractState, initial_stock: u256, price: u256, data: Span<felt252>
+            ref self: ContractState, initial_stock: u256, price: u256, data: Span<felt252>,
         ) -> u256 {
             self.accesscontrol.assert_only_role(PRODUCER);
             let token_id = self.current_token_id.read();
             let cofi_collection = ICofiCollectionDispatcher {
-                contract_address: self.cofi_collection_address.read()
+                contract_address: self.cofi_collection_address.read(),
             };
             cofi_collection.mint(get_contract_address(), token_id, initial_stock, data);
 
@@ -506,13 +505,13 @@ mod Marketplace {
         }
 
         fn create_products(
-            ref self: ContractState, initial_stock: Span<u256>, price: Span<u256>
+            ref self: ContractState, initial_stock: Span<u256>, price: Span<u256>,
         ) -> Span<u256> {
             assert(initial_stock.len() == price.len(), 'wrong len of arrays');
             self.accesscontrol.assert_only_role(PRODUCER);
             let producer = get_caller_address();
             let cofi_collection = ICofiCollectionDispatcher {
-                contract_address: self.cofi_collection_address.read()
+                contract_address: self.cofi_collection_address.read(),
             };
 
             // Create token ids and mint the nfts
@@ -525,10 +524,10 @@ mod Marketplace {
                 }
                 token_ids.append(current_token_id + token_idx.into());
                 token_idx += 1;
-            };
+            }
             cofi_collection
                 .batch_mint(
-                    get_contract_address(), token_ids.span(), initial_stock, array![0].span()
+                    get_contract_address(), token_ids.span(), initial_stock, array![0].span(),
                 );
             self.current_token_id.write(current_token_id + initial_stock.len().into());
 
@@ -543,10 +542,10 @@ mod Marketplace {
                         *token_ids.at(token_idx),
                         producer,
                         *initial_stock.at(token_idx),
-                        *price.at(token_idx)
+                        *price.at(token_idx),
                     );
                 token_idx += 1;
-            };
+            }
             token_ids.span()
         }
 
@@ -554,7 +553,7 @@ mod Marketplace {
             ref self: ContractState,
             token_id: u256,
             token_amount: u256,
-            payment_token: PAYMENT_TOKEN
+            payment_token: PAYMENT_TOKEN,
         ) -> u256 {
             let stock = self.listed_product_stock.read(token_id);
             assert(stock > 0, 'Product not available');
@@ -580,7 +579,7 @@ mod Marketplace {
             assert(self.seller_products.read(token_id) == producer, 'Not your product');
 
             let cofi_collection = ICofiCollectionDispatcher {
-                contract_address: self.cofi_collection_address.read()
+                contract_address: self.cofi_collection_address.read(),
             };
             let token_holder = get_contract_address();
             let amount_tokens = cofi_collection.balance_of(token_holder, token_id);
@@ -601,13 +600,13 @@ mod Marketplace {
                 let token_id = *token_ids.at(token_idx);
                 assert(self.seller_products.read(token_id) == producer, 'Not your product');
                 token_idx += 1;
-            };
+            }
 
             // Burn nfts
             token_idx = 0;
             let token_holder = get_contract_address();
             let cofi_collection = ICofiCollectionDispatcher {
-                contract_address: self.cofi_collection_address.read()
+                contract_address: self.cofi_collection_address.read(),
             };
             loop {
                 if token_idx == token_ids.len() {
@@ -632,7 +631,7 @@ mod Marketplace {
             let claim_balance = self.claim_balances.read(producer);
             assert(claim_balance > 0, 'No tokens to claim');
             let usdc_token_dispatcher = IERC20Dispatcher {
-                contract_address: contract_address_const::<MainnetConfig::USDC_ADDRESS>()
+                contract_address: MainnetConfig::USDC_ADDRESS.try_into().unwrap(),
             };
             let marketplace_balance = usdc_token_dispatcher.balance_of(get_contract_address());
             assert(claim_balance <= marketplace_balance, 'Contract insufficient balance');
@@ -645,9 +644,9 @@ mod Marketplace {
         fn withdraw(ref self: ContractState, token: PAYMENT_TOKEN) {
             self.accesscontrol.assert_only_role(DEFAULT_ADMIN_ROLE);
             let token_address = match token {
-                PAYMENT_TOKEN::STRK => contract_address_const::<MainnetConfig::STRK_ADDRESS>(),
-                PAYMENT_TOKEN::USDC => contract_address_const::<MainnetConfig::USDC_ADDRESS>(),
-                PAYMENT_TOKEN::USDT => contract_address_const::<MainnetConfig::USDT_ADDRESS>(),
+                PAYMENT_TOKEN::STRK => MainnetConfig::STRK_ADDRESS.try_into().unwrap(),
+                PAYMENT_TOKEN::USDC => MainnetConfig::USDC_ADDRESS.try_into().unwrap(),
+                PAYMENT_TOKEN::USDT => MainnetConfig::USDT_ADDRESS.try_into().unwrap(),
             };
             let token_dispatcher = IERC20Dispatcher { contract_address: token_address };
             let balance = token_dispatcher.balance_of(get_contract_address());
@@ -664,7 +663,7 @@ mod Marketplace {
             token_id: u256,
             producer: ContractAddress,
             stock: u256,
-            price: u256
+            price: u256,
         ) {
             //let product = Product { stock, price };
             self.seller_products.write(token_id, producer);
@@ -693,11 +692,11 @@ mod Marketplace {
             let contract_address = get_contract_address();
             let caller = get_caller_address();
             assert(
-                token_dispatcher.balance_of(get_caller_address()) >= amount, 'insufficient funds'
+                token_dispatcher.balance_of(get_caller_address()) >= amount, 'insufficient funds',
             );
             assert(
                 token_dispatcher.allowance(caller, contract_address) >= amount,
-                'insufficient allowance'
+                'insufficient allowance',
             );
             let success = token_dispatcher.transfer_from(caller, contract_address, amount);
             assert(success, 'Error transferring tokens');
@@ -706,11 +705,11 @@ mod Marketplace {
         fn usdc_to_strk_wei(ref self: ContractState, amount_usdc: u256) -> u256 {
             let ekubo = self.ekubo.read();
             let usdc_stark_pool_key = PoolKey {
-                token0: contract_address_const::<MainnetConfig::STRK_ADDRESS>(),
-                token1: contract_address_const::<MainnetConfig::USDC_ADDRESS>(),
+                token0: MainnetConfig::STRK_ADDRESS.try_into().unwrap(),
+                token1: MainnetConfig::USDC_ADDRESS.try_into().unwrap(),
                 fee: MainnetConfig::STARK_USDC_POOL_KEY,
                 tick_spacing: MainnetConfig::STARK_USDC_TICK_SPACING,
-                extension: contract_address_const::<0x00>()
+                extension: 0x00.try_into().unwrap(),
             };
             let pool_price = ekubo.get_pool_price(usdc_stark_pool_key);
 
@@ -731,7 +730,7 @@ mod Marketplace {
             distance: u256,
             is_token1: bool,
             min: u256,
-            max: u256
+            max: u256,
         ) -> u256 {
             let mut sqrt_ratio_limit = if is_token1 {
                 if (distance > max) {
@@ -756,19 +755,17 @@ mod Marketplace {
         }
 
         fn swap_token_for_usdc(
-            ref self: ContractState, sell_token_address: ContractAddress, sell_token_amount: u256
+            ref self: ContractState, sell_token_address: ContractAddress, sell_token_amount: u256,
         ) {
-            let usdc_address = contract_address_const::<MainnetConfig::USDC_ADDRESS>();
-            let is_stark = sell_token_address == contract_address_const::<
-                MainnetConfig::STRK_ADDRESS
-            >();
+            let usdc_address = MainnetConfig::USDC_ADDRESS.try_into().unwrap();
+            let is_stark = sell_token_address == MainnetConfig::STRK_ADDRESS.try_into().unwrap();
             let pool_key = if is_stark {
                 PoolKey {
                     token0: sell_token_address,
                     token1: usdc_address,
                     fee: MainnetConfig::STARK_USDC_POOL_KEY,
                     tick_spacing: MainnetConfig::STARK_USDC_TICK_SPACING,
-                    extension: contract_address_const::<0x00>()
+                    extension: 0x00.try_into().unwrap(),
                 }
             } else {
                 PoolKey {
@@ -776,7 +773,7 @@ mod Marketplace {
                     token1: sell_token_address,
                     fee: MainnetConfig::USDT_USDC_POOL_KEY,
                     tick_spacing: MainnetConfig::USDT_USDC_TICK_SPACING,
-                    extension: contract_address_const::<0x00>()
+                    extension: 0x00.try_into().unwrap(),
                 }
             };
 

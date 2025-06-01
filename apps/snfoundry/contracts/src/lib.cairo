@@ -1,4 +1,5 @@
 mod cofi_collection;
+mod distribution;
 mod marketplace;
 
 #[cfg(test)]

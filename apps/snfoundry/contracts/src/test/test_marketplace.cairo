@@ -1,21 +1,19 @@
 mod test_marketplace {
-    use contracts::cofi_collection::ICofiCollectionDispatcher;
-    use contracts::cofi_collection::ICofiCollectionDispatcherTrait;
+    use contracts::cofi_collection::{ICofiCollectionDispatcher, ICofiCollectionDispatcherTrait};
     use contracts::marketplace::{
-        IMarketplaceDispatcher, IMarketplaceDispatcherTrait, PAYMENT_TOKEN, MainnetConfig
+        IMarketplaceDispatcher, IMarketplaceDispatcherTrait, MainnetConfig, PAYMENT_TOKEN,
     };
     use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
-
     use openzeppelin::utils::serde::SerializedAppend;
     use snforge_std::{
-        declare, ContractClassTrait, DeclareResultTrait, start_cheat_caller_address,
-        stop_cheat_caller_address, cheat_caller_address, CheatSpan
+        CheatSpan, ContractClassTrait, DeclareResultTrait, cheat_caller_address, declare,
+        start_cheat_caller_address, stop_cheat_caller_address,
     };
     use starknet::ContractAddress;
     use starknet::syscalls::call_contract_syscall;
 
     fn OWNER() -> ContractAddress {
-        starknet::contract_address_const::<'OWNER'>()
+        'OWNER'.try_into().unwrap()
     }
 
     const STRK_TOKEN_MINTER_ADDRESS: felt252 =
@@ -77,7 +75,7 @@ mod test_marketplace {
         let marketplace = deploy_marketplace(cofi_collection.contract_address);
 
         start_cheat_caller_address(marketplace.contract_address, OWNER());
-        marketplace.assign_seller_role(OWNER());
+        marketplace.assign_consumer_role(OWNER());
     }
 
     #[test]
@@ -95,7 +93,7 @@ mod test_marketplace {
         let marketplace = deploy_marketplace(cofi_collection.contract_address);
 
         start_cheat_caller_address(marketplace.contract_address, OWNER());
-        let ANYONE = starknet::contract_address_const::<'ANYONE'>();
+        let ANYONE = 'ANYONE'.try_into().unwrap();
         marketplace.assign_admin_role(ANYONE);
     }
 
@@ -106,7 +104,7 @@ mod test_marketplace {
 
         // Create a producer
         start_cheat_caller_address(marketplace.contract_address, OWNER());
-        let PRODUCER = starknet::contract_address_const::<'PRODUCER'>();
+        let PRODUCER = 'PRODUCER'.try_into().unwrap();
         marketplace.assign_seller_role(PRODUCER);
 
         // Give marketplace permission to mint tokens
@@ -128,7 +126,7 @@ mod test_marketplace {
 
         // Create a producer
         start_cheat_caller_address(marketplace.contract_address, OWNER());
-        let PRODUCER = starknet::contract_address_const::<'PRODUCER'>();
+        let PRODUCER = 'PRODUCER'.try_into().unwrap();
         marketplace.assign_seller_role(PRODUCER);
 
         // Give marketplace permission to mint tokens
@@ -152,7 +150,7 @@ mod test_marketplace {
 
         // Create a producer
         start_cheat_caller_address(marketplace.contract_address, OWNER());
-        let PRODUCER = starknet::contract_address_const::<'PRODUCER'>();
+        let PRODUCER = 'PRODUCER'.try_into().unwrap();
         marketplace.assign_seller_role(PRODUCER);
 
         // Give marketplace permission to mint tokens
@@ -173,8 +171,8 @@ mod test_marketplace {
         let amount_to_buy = 10;
         let total_price_in_stark = marketplace
             .get_product_price(token_id, amount_to_buy, PAYMENT_TOKEN::STRK);
-        let minter_address = starknet::contract_address_const::<STRK_TOKEN_MINTER_ADDRESS>();
-        let token_address = starknet::contract_address_const::<MainnetConfig::STRK_ADDRESS>();
+        let minter_address = STRK_TOKEN_MINTER_ADDRESS.try_into().unwrap();
+        let token_address = MainnetConfig::STRK_ADDRESS.try_into().unwrap();
         let token_dispatcher = IERC20Dispatcher { contract_address: token_address };
 
         start_cheat_caller_address(token_address, minter_address);
@@ -202,7 +200,7 @@ mod test_marketplace {
         assert(minted_nfts == amount_to_buy, 'invalid minted nfts');
 
         // Check that the contract now has the expected balance in usdt
-        let usdc_token_address = starknet::contract_address_const::<MainnetConfig::USDC_ADDRESS>();
+        let usdc_token_address = MainnetConfig::USDC_ADDRESS.try_into().unwrap();
         let usdc_token_dispatcher = IERC20Dispatcher { contract_address: usdc_token_address };
         let usdc_in_contract = usdc_token_dispatcher.balance_of(marketplace.contract_address);
         assert(usdc_in_contract >= price * amount_to_buy, 'invalid usdc in contract');
@@ -217,7 +215,7 @@ mod test_marketplace {
 
         // Create a producer
         start_cheat_caller_address(marketplace.contract_address, OWNER());
-        let PRODUCER = starknet::contract_address_const::<'PRODUCER'>();
+        let PRODUCER = 'PRODUCER'.try_into().unwrap();
         marketplace.assign_seller_role(PRODUCER);
 
         // Give marketplace permission to mint tokens
@@ -238,8 +236,8 @@ mod test_marketplace {
         let amount_to_buy = 10;
         let total_price_in_usdt = marketplace
             .get_product_price(token_id, amount_to_buy, PAYMENT_TOKEN::USDT);
-        let minter_address = starknet::contract_address_const::<USDT_TOKEN_MINTER_ADDRESS>();
-        let token_address = starknet::contract_address_const::<MainnetConfig::USDT_ADDRESS>();
+        let minter_address = USDT_TOKEN_MINTER_ADDRESS.try_into().unwrap();
+        let token_address = MainnetConfig::USDT_ADDRESS.try_into().unwrap();
         let token_dispatcher = IERC20Dispatcher { contract_address: token_address };
 
         start_cheat_caller_address(token_address, minter_address);
@@ -266,7 +264,7 @@ mod test_marketplace {
         assert(minted_nfts == amount_to_buy, 'invalid minted nfts');
 
         // Check that the contract now has the expected balance in usdt
-        let usdc_token_address = starknet::contract_address_const::<MainnetConfig::USDC_ADDRESS>();
+        let usdc_token_address = MainnetConfig::USDC_ADDRESS.try_into().unwrap();
         let usdc_token_dispatcher = IERC20Dispatcher { contract_address: usdc_token_address };
         let usdc_in_contract = usdc_token_dispatcher.balance_of(marketplace.contract_address);
         assert(usdc_in_contract >= price * amount_to_buy, 'invalid usdc in contract');
@@ -281,7 +279,7 @@ mod test_marketplace {
 
         // Create a producer
         start_cheat_caller_address(marketplace.contract_address, OWNER());
-        let PRODUCER = starknet::contract_address_const::<'PRODUCER'>();
+        let PRODUCER = 'PRODUCER'.try_into().unwrap();
         marketplace.assign_seller_role(PRODUCER);
 
         // Give marketplace permission to mint tokens
@@ -299,8 +297,8 @@ mod test_marketplace {
         marketplace.assign_seller_role(CONSUMER);
 
         // Fund buyer wallet
-        let minter_address = starknet::contract_address_const::<STRK_TOKEN_MINTER_ADDRESS>();
-        let token_address = starknet::contract_address_const::<MainnetConfig::STRK_ADDRESS>();
+        let minter_address = STRK_TOKEN_MINTER_ADDRESS.try_into().unwrap();
+        let token_address = MainnetConfig::STRK_ADDRESS.try_into().unwrap();
         let token_dispatcher = IERC20Dispatcher { contract_address: token_address };
 
         let token1_price = marketplace.get_product_price(*token_ids.at(0), 2, PAYMENT_TOKEN::STRK);
@@ -335,7 +333,7 @@ mod test_marketplace {
 
         // Create a producer
         start_cheat_caller_address(marketplace.contract_address, OWNER());
-        let PRODUCER = starknet::contract_address_const::<'PRODUCER'>();
+        let PRODUCER = 'PRODUCER'.try_into().unwrap();
         marketplace.assign_seller_role(PRODUCER);
 
         // Give marketplace permission to mint tokens
@@ -366,7 +364,7 @@ mod test_marketplace {
 
         // Create a producer
         start_cheat_caller_address(marketplace.contract_address, OWNER());
-        let PRODUCER = starknet::contract_address_const::<'PRODUCER'>();
+        let PRODUCER = 'PRODUCER'.try_into().unwrap();
         marketplace.assign_seller_role(PRODUCER);
 
         // Give marketplace permission to mint tokens
@@ -421,8 +419,8 @@ mod test_marketplace {
         let amount_to_buy = 2;
         let total_price_in_stark = marketplace
             .get_product_price(token_id, amount_to_buy, PAYMENT_TOKEN::STRK);
-        let minter_address = starknet::contract_address_const::<STRK_TOKEN_MINTER_ADDRESS>();
-        let strk_token_address = starknet::contract_address_const::<MainnetConfig::STRK_ADDRESS>();
+        let minter_address = STRK_TOKEN_MINTER_ADDRESS.try_into().unwrap();
+        let strk_token_address = MainnetConfig::STRK_ADDRESS.try_into().unwrap();
         let strk_token_dispatcher = IERC20Dispatcher { contract_address: strk_token_address };
 
         start_cheat_caller_address(strk_token_address, minter_address);
@@ -446,7 +444,7 @@ mod test_marketplace {
         assert(minted_nfts == amount_to_buy, 'invalid minted nfts');
 
         // Claim the rewards
-        let usdc_token_address = starknet::contract_address_const::<MainnetConfig::USDC_ADDRESS>();
+        let usdc_token_address = MainnetConfig::USDC_ADDRESS.try_into().unwrap();
         let usdc_token_dispatcher = IERC20Dispatcher { contract_address: usdc_token_address };
         start_cheat_caller_address(usdc_token_address, marketplace.contract_address);
         start_cheat_caller_address(marketplace.contract_address, PRODUCER);
