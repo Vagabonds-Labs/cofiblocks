@@ -30,7 +30,11 @@ struct SwapResult {
 
 #[starknet::interface]
 pub trait IMarketplace<ContractState> {
-    fn assign_seller_role(ref self: ContractState, assignee: ContractAddress);
+    fn assign_producer_role(ref self: ContractState, assignee: ContractAddress);
+    fn assign_roaster_role(ref self: ContractState, assignee: ContractAddress);
+    fn assign_cambiatus_role(ref self: ContractState, assignee: ContractAddress);
+    fn assign_cofiblocks_role(ref self: ContractState, assignee: ContractAddress);
+    fn assign_cofounder_role(ref self: ContractState, assignee: ContractAddress);
     fn assign_consumer_role(ref self: ContractState, assignee: ContractAddress);
     fn assign_admin_role(ref self: ContractState, assignee: ContractAddress);
     fn buy_product(
@@ -53,8 +57,12 @@ pub trait IMarketplace<ContractState> {
     ) -> u256;
     fn delete_product(ref self: ContractState, token_id: u256);
     fn delete_products(ref self: ContractState, token_ids: Span<u256>);
-    fn claim_balance(self: @ContractState, producer: ContractAddress) -> u256;
-    fn claim(ref self: ContractState);
+    fn claim_consumer(ref self: ContractState);
+    fn claim_producer(ref self: ContractState);
+    fn claim_roaster(ref self: ContractState);
+    fn claim_cambiatus(ref self: ContractState);
+    fn claim_cofiblocks(ref self: ContractState);
+    fn claim_cofounder(ref self: ContractState);
     fn locked(ref self: ContractState, id: u32, data: Array<felt252>) -> Array<felt252>;
     fn withdraw(ref self: ContractState, token: PAYMENT_TOKEN);
 }
@@ -84,6 +92,7 @@ pub mod MainnetConfig {
 #[starknet::contract]
 mod Marketplace {
     use contracts::cofi_collection::{ICofiCollectionDispatcher, ICofiCollectionDispatcherTrait};
+    use contracts::distribution::{IDistributionDispatcher, IDistributionDispatcherTrait};
     use ekubo::components::shared_locker::{check_caller_is_core, handle_delta};
     use ekubo::interfaces::core::{ICoreDispatcher, ICoreDispatcherTrait, SwapParameters};
     use ekubo::types::i129::i129;
@@ -107,6 +116,10 @@ mod Marketplace {
 
     // Role definition
     const PRODUCER: felt252 = selector!("PRODUCER");
+    const ROASTER: felt252 = selector!("ROASTER");
+    const CAMBIATUS: felt252 = selector!("CAMBIATUS");
+    const COFIBLOCKS: felt252 = selector!("COFIBLOCKS");
+    const COFOUNDER: felt252 = selector!("COFOUNDER");
     const CONSUMER: felt252 = selector!("CONSUMER");
 
     // ERC1155Receiver
@@ -143,10 +156,12 @@ mod Marketplace {
         accesscontrol: AccessControlComponent::Storage,
         #[substorage(v0)]
         upgradeable: UpgradeableComponent::Storage,
+        distribution: IDistributionDispatcher,
         market_fee: u256,
         listed_product_stock: Map<u256, u256>,
         listed_product_price: Map<u256, u256>,
         seller_products: Map<u256, ContractAddress>,
+        seller_is_producer: Map<u256, bool>,
         cofi_collection_address: ContractAddress,
         claim_balances: Map<ContractAddress, u256>,
         current_token_id: u256,
@@ -230,6 +245,7 @@ mod Marketplace {
     fn constructor(
         ref self: ContractState,
         cofi_collection_address: ContractAddress,
+        distribution_address: ContractAddress,
         admin: ContractAddress,
         market_fee: u256,
     ) {
@@ -237,6 +253,7 @@ mod Marketplace {
         self.accesscontrol.initializer();
         self.accesscontrol._grant_role(DEFAULT_ADMIN_ROLE, admin);
         self.cofi_collection_address.write(cofi_collection_address);
+        self.distribution.write(IDistributionDispatcher { contract_address: distribution_address });
         self
             .ekubo
             .write(
@@ -315,9 +332,32 @@ mod Marketplace {
             arr
         }
 
-        fn assign_seller_role(ref self: ContractState, assignee: ContractAddress) {
+        fn assign_producer_role(ref self: ContractState, assignee: ContractAddress) {
             self.accesscontrol.assert_only_role(DEFAULT_ADMIN_ROLE);
             self.accesscontrol._grant_role(PRODUCER, assignee);
+        }
+
+        fn assign_roaster_role(ref self: ContractState, assignee: ContractAddress) {
+            self.accesscontrol.assert_only_role(DEFAULT_ADMIN_ROLE);
+            self.accesscontrol._grant_role(ROASTER, assignee);
+        }
+
+        fn assign_cambiatus_role(ref self: ContractState, assignee: ContractAddress) {
+            self.accesscontrol.assert_only_role(DEFAULT_ADMIN_ROLE);
+            self.accesscontrol._grant_role(CAMBIATUS, assignee);
+        }
+
+        fn assign_cofiblocks_role(ref self: ContractState, assignee: ContractAddress) {
+            self.accesscontrol.assert_only_role(DEFAULT_ADMIN_ROLE);
+            self.accesscontrol._grant_role(COFIBLOCKS, assignee);
+        }
+
+        fn assign_cofounder_role(ref self: ContractState, assignee: ContractAddress) {
+            self.accesscontrol.assert_only_role(DEFAULT_ADMIN_ROLE);
+            self.accesscontrol._grant_role(COFOUNDER, assignee);
+
+            let distribution = self.distribution.read();
+            distribution.add_cofounder(assignee);
         }
 
         fn assign_consumer_role(ref self: ContractState, assignee: ContractAddress) {
@@ -387,6 +427,13 @@ mod Marketplace {
                 .write(seller_address, self.claim_balances.read(seller_address) + producer_fee);
             let token_ids = array![token_id].span();
             self.emit(PaymentSeller { token_ids, seller: seller_address, payment: producer_fee });
+
+            // Register purchase in the distribution contract
+            let distribution = self.distribution.read();
+            let profit = self.calculate_fee(producer_fee, self.market_fee.read());
+            let is_producer = self.seller_is_producer.read(token_id);
+            distribution
+                .register_purchase(buyer, seller_address, is_producer, producer_fee, profit);
         }
 
         fn buy_products(
@@ -405,6 +452,7 @@ mod Marketplace {
             let mut producer_fee = 0_u256;
             let mut producers_found = array![];
             let mut total_required_tokens = 0_u256;
+            let distribution = self.distribution.read();
             loop {
                 if token_idx == token_ids.len() {
                     break;
@@ -479,6 +527,22 @@ mod Marketplace {
                 .claim_balances
                 .write(seller_address, self.claim_balances.read(seller_address) + producer_fee);
             self.emit(PaymentSeller { token_ids, seller: seller_address, payment: producer_fee });
+
+            // Register purchase in the distribution contract
+            token_idx = 0;
+            loop {
+                if token_idx == token_ids.len() {
+                    break;
+                }
+                let token_amount = *token_amount.at(token_idx);
+                let token_id = *token_ids.at(token_idx);
+                let producer_fee = self.listed_product_price.read(token_id) * token_amount;
+                let profit = self.calculate_fee(producer_fee, self.market_fee.read());
+                let is_producer = self.seller_is_producer.read(token_id);
+                distribution
+                    .register_purchase(buyer, seller_address, is_producer, producer_fee, profit);
+                token_idx += 1;
+            }
         }
 
         ///
@@ -490,7 +554,10 @@ mod Marketplace {
         fn create_product(
             ref self: ContractState, initial_stock: u256, price: u256, data: Span<felt252>,
         ) -> u256 {
-            self.accesscontrol.assert_only_role(PRODUCER);
+            let is_producer = self.accesscontrol.has_role(PRODUCER, get_caller_address());
+            let is_roaster = self.accesscontrol.has_role(ROASTER, get_caller_address());
+            assert(is_producer || is_roaster, 'Not producer or roaster');
+
             let token_id = self.current_token_id.read();
             let cofi_collection = ICofiCollectionDispatcher {
                 contract_address: self.cofi_collection_address.read(),
@@ -500,7 +567,7 @@ mod Marketplace {
             let producer = get_caller_address();
 
             self.current_token_id.write(token_id + 1);
-            self.initialize_product(token_id, producer, initial_stock, price);
+            self.initialize_product(token_id, producer, initial_stock, price, is_producer);
             token_id
         }
 
@@ -508,7 +575,11 @@ mod Marketplace {
             ref self: ContractState, initial_stock: Span<u256>, price: Span<u256>,
         ) -> Span<u256> {
             assert(initial_stock.len() == price.len(), 'wrong len of arrays');
-            self.accesscontrol.assert_only_role(PRODUCER);
+
+            let is_producer = self.accesscontrol.has_role(PRODUCER, get_caller_address());
+            let is_roaster = self.accesscontrol.has_role(ROASTER, get_caller_address());
+            assert(is_producer || is_roaster, 'Not producer or roaster');
+
             let producer = get_caller_address();
             let cofi_collection = ICofiCollectionDispatcher {
                 contract_address: self.cofi_collection_address.read(),
@@ -543,6 +614,7 @@ mod Marketplace {
                         producer,
                         *initial_stock.at(token_idx),
                         *price.at(token_idx),
+                        is_producer,
                     );
                 token_idx += 1;
             }
@@ -574,7 +646,10 @@ mod Marketplace {
         }
 
         fn delete_product(ref self: ContractState, token_id: u256) {
-            self.accesscontrol.assert_only_role(PRODUCER);
+            let is_producer = self.accesscontrol.has_role(PRODUCER, get_caller_address());
+            let is_roaster = self.accesscontrol.has_role(ROASTER, get_caller_address());
+            assert(is_producer || is_roaster, 'Not producer or roaster');
+
             let producer = get_caller_address();
             assert(self.seller_products.read(token_id) == producer, 'Not your product');
 
@@ -589,7 +664,10 @@ mod Marketplace {
         }
 
         fn delete_products(ref self: ContractState, token_ids: Span<u256>) {
-            self.accesscontrol.assert_only_role(PRODUCER);
+            let is_producer = self.accesscontrol.has_role(PRODUCER, get_caller_address());
+            let is_roaster = self.accesscontrol.has_role(ROASTER, get_caller_address());
+            assert(is_producer || is_roaster, 'Not producer or roaster');
+
             let producer = get_caller_address();
             let mut token_idx = 0;
             // Check that all nfts belongs to the caller
@@ -621,24 +699,56 @@ mod Marketplace {
             };
         }
 
-        fn claim_balance(self: @ContractState, producer: ContractAddress) -> u256 {
-            self.claim_balances.read(producer)
+        fn claim_consumer(ref self: ContractState) {
+            self.accesscontrol.assert_only_role(CONSUMER);
+            let buyer = get_caller_address();
+            let distribution = self.distribution.read();
+            let claim_balance = distribution.coffee_lover_claim_balance(buyer);
+            self.claim_balance(claim_balance, buyer);
+            distribution.coffee_lover_claim_reset(buyer);
         }
 
-        fn claim(ref self: ContractState) {
+        fn claim_producer(ref self: ContractState) {
             self.accesscontrol.assert_only_role(PRODUCER);
             let producer = get_caller_address();
-            let claim_balance = self.claim_balances.read(producer);
-            assert(claim_balance > 0, 'No tokens to claim');
-            let usdc_token_dispatcher = IERC20Dispatcher {
-                contract_address: MainnetConfig::USDC_ADDRESS.try_into().unwrap(),
-            };
-            let marketplace_balance = usdc_token_dispatcher.balance_of(get_contract_address());
-            assert(claim_balance <= marketplace_balance, 'Contract insufficient balance');
-            let transfer = usdc_token_dispatcher.transfer(producer, claim_balance);
-            assert(transfer, 'Error claiming');
+            let distribution = self.distribution.read();
+            let claim_balance = distribution.producer_claim_balance(producer);
+            self.claim_balance(claim_balance, producer);
+            distribution.producer_claim_reset(producer);
+        }
 
-            self.claim_balances.write(producer, 0);
+        fn claim_roaster(ref self: ContractState) {
+            self.accesscontrol.assert_only_role(ROASTER);
+            let roaster = get_caller_address();
+            let distribution = self.distribution.read();
+            let claim_balance = distribution.roaster_claim_balance(roaster);
+            self.claim_balance(claim_balance, roaster);
+            distribution.roaster_claim_reset(roaster);
+        }
+
+        fn claim_cambiatus(ref self: ContractState) {
+            self.accesscontrol.assert_only_role(CAMBIATUS);
+            let distribution = self.distribution.read();
+            let claim_balance = distribution.cambiatus_claim_balance();
+            self.claim_balance(claim_balance, get_caller_address());
+            distribution.cambiatus_claim_reset();
+        }
+
+        fn claim_cofiblocks(ref self: ContractState) {
+            self.accesscontrol.assert_only_role(COFIBLOCKS);
+            let distribution = self.distribution.read();
+            let claim_balance = distribution.cofiblocks_claim_balance();
+            self.claim_balance(claim_balance, get_caller_address());
+            distribution.cofiblocks_claim_reset();
+        }
+
+        fn claim_cofounder(ref self: ContractState) {
+            self.accesscontrol.assert_only_role(COFOUNDER);
+            let cofounder = get_caller_address();
+            let distribution = self.distribution.read();
+            let claim_balance = distribution.cofounder_claim_balance(cofounder);
+            self.claim_balance(claim_balance, cofounder);
+            distribution.cofounder_claim_reset(cofounder);
         }
 
         fn withdraw(ref self: ContractState, token: PAYMENT_TOKEN) {
@@ -664,12 +774,26 @@ mod Marketplace {
             producer: ContractAddress,
             stock: u256,
             price: u256,
+            is_producer: bool,
         ) {
             //let product = Product { stock, price };
             self.seller_products.write(token_id, producer);
+            self.seller_is_producer.write(token_id, is_producer);
             self.listed_product_stock.write(token_id, stock);
             self.listed_product_price.write(token_id, price);
             self.emit(CreateProduct { token_id, initial_stock: stock });
+        }
+
+        fn claim_balance(ref self: ContractState, claim_balance: u256, recipient: ContractAddress) {
+            assert(claim_balance > 0, 'No tokens to claim');
+
+            let usdc_token_dispatcher = IERC20Dispatcher {
+                contract_address: MainnetConfig::USDC_ADDRESS.try_into().unwrap(),
+            };
+            let marketplace_balance = usdc_token_dispatcher.balance_of(get_contract_address());
+            assert(claim_balance <= marketplace_balance, 'Contract insufficient balance');
+            let transfer = usdc_token_dispatcher.transfer(recipient, claim_balance);
+            assert(transfer, 'Error claiming');
         }
 
         fn update_stock(ref self: ContractState, token_id: u256, new_stock: u256) {

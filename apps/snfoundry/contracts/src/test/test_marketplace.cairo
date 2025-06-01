@@ -1,5 +1,6 @@
 mod test_marketplace {
     use contracts::cofi_collection::{ICofiCollectionDispatcher, ICofiCollectionDispatcherTrait};
+    use contracts::distribution::{IDistributionDispatcher, IDistributionDispatcherTrait};
     use contracts::marketplace::{
         IMarketplaceDispatcher, IMarketplaceDispatcherTrait, MainnetConfig, PAYMENT_TOKEN,
     };
@@ -14,6 +15,14 @@ mod test_marketplace {
 
     fn OWNER() -> ContractAddress {
         'OWNER'.try_into().unwrap()
+    }
+
+    fn COFOUNDER1() -> ContractAddress {
+        'COFOUNDER1'.try_into().unwrap()
+    }
+
+    fn COFOUNDER2() -> ContractAddress {
+        'COFOUNDER2'.try_into().unwrap()
     }
 
     const STRK_TOKEN_MINTER_ADDRESS: felt252 =
@@ -49,11 +58,26 @@ mod test_marketplace {
         cofi_collection
     }
 
-    fn deploy_marketplace(cofi_collection: ContractAddress) -> IMarketplaceDispatcher {
+    fn deploy_distribution() -> IDistributionDispatcher {
+        let contract = declare("Distribution").unwrap().contract_class();
+
+        let mut calldata: Array<felt252> = array![];
+        calldata.append_serde(OWNER()); // admin
+
+        let (contract_address, _) = contract.deploy(@calldata).unwrap();
+        let distribution = IDistributionDispatcher { contract_address };
+
+        distribution
+    }
+
+    fn deploy_marketplace(
+        cofi_collection: ContractAddress, distribution: ContractAddress,
+    ) -> IMarketplaceDispatcher {
         let contract = declare("Marketplace").unwrap().contract_class();
 
         let mut calldata: Array<felt252> = array![];
         calldata.append_serde(cofi_collection); // coffi_collection
+        calldata.append_serde(distribution); // distribution
         calldata.append_serde(OWNER()); // admin
         calldata.append_serde(MARKET_FEE); // market fee
 
@@ -69,28 +93,70 @@ mod test_marketplace {
         total_price + market_fee
     }
 
-    #[test]
-    fn test_assign_seller_role() {
+    fn deploy_contracts() -> (
+        ICofiCollectionDispatcher, IDistributionDispatcher, IMarketplaceDispatcher,
+    ) {
         let cofi_collection = deploy_cofi_collection();
-        let marketplace = deploy_marketplace(cofi_collection.contract_address);
+        let distribution = deploy_distribution();
+        let marketplace = deploy_marketplace(
+            cofi_collection.contract_address, distribution.contract_address,
+        );
+        cheat_caller_address(distribution.contract_address, OWNER(), CheatSpan::TargetCalls(1));
+        distribution.set_marketplace(marketplace.contract_address);
+        (cofi_collection, distribution, marketplace)
+    }
+
+    #[test]
+    fn test_assign_producer_role() {
+        let (_, _, marketplace) = deploy_contracts();
 
         start_cheat_caller_address(marketplace.contract_address, OWNER());
-        marketplace.assign_consumer_role(OWNER());
+        marketplace.assign_producer_role(OWNER());
     }
 
     #[test]
     fn test_assign_consumer_role() {
-        let cofi_collection = deploy_cofi_collection();
-        let marketplace = deploy_marketplace(cofi_collection.contract_address);
+        let (_, _, marketplace) = deploy_contracts();
 
         start_cheat_caller_address(marketplace.contract_address, OWNER());
         marketplace.assign_consumer_role(OWNER());
     }
 
     #[test]
+    fn test_assign_roaster_role() {
+        let (_, _, marketplace) = deploy_contracts();
+
+        start_cheat_caller_address(marketplace.contract_address, OWNER());
+        marketplace.assign_roaster_role(OWNER());
+    }
+
+    #[test]
+    fn test_assign_cambiatus_role() {
+        let (_, _, marketplace) = deploy_contracts();
+
+        start_cheat_caller_address(marketplace.contract_address, OWNER());
+        marketplace.assign_cambiatus_role(OWNER());
+    }
+
+    #[test]
+    fn test_assign_cofiblocks_role() {
+        let (_, _, marketplace) = deploy_contracts();
+
+        start_cheat_caller_address(marketplace.contract_address, OWNER());
+        marketplace.assign_cofiblocks_role(OWNER());
+    }
+
+    #[test]
+    fn test_assign_cofounder_role() {
+        let (_, _, marketplace) = deploy_contracts();
+
+        start_cheat_caller_address(marketplace.contract_address, OWNER());
+        marketplace.assign_cofounder_role(OWNER());
+    }
+
+    #[test]
     fn test_assign_admin_role() {
-        let cofi_collection = deploy_cofi_collection();
-        let marketplace = deploy_marketplace(cofi_collection.contract_address);
+        let (_, _, marketplace) = deploy_contracts();
 
         start_cheat_caller_address(marketplace.contract_address, OWNER());
         let ANYONE = 'ANYONE'.try_into().unwrap();
@@ -99,13 +165,12 @@ mod test_marketplace {
 
     #[test]
     fn test_create_product() {
-        let cofi_collection = deploy_cofi_collection();
-        let marketplace = deploy_marketplace(cofi_collection.contract_address);
+        let (cofi_collection, _, marketplace) = deploy_contracts();
 
         // Create a producer
         start_cheat_caller_address(marketplace.contract_address, OWNER());
         let PRODUCER = 'PRODUCER'.try_into().unwrap();
-        marketplace.assign_seller_role(PRODUCER);
+        marketplace.assign_producer_role(PRODUCER);
 
         // Give marketplace permission to mint tokens
         start_cheat_caller_address(cofi_collection.contract_address, OWNER());
@@ -121,13 +186,12 @@ mod test_marketplace {
 
     #[test]
     fn test_create_products() {
-        let cofi_collection = deploy_cofi_collection();
-        let marketplace = deploy_marketplace(cofi_collection.contract_address);
+        let (cofi_collection, _, marketplace) = deploy_contracts();
 
         // Create a producer
         start_cheat_caller_address(marketplace.contract_address, OWNER());
         let PRODUCER = 'PRODUCER'.try_into().unwrap();
-        marketplace.assign_seller_role(PRODUCER);
+        marketplace.assign_producer_role(PRODUCER);
 
         // Give marketplace permission to mint tokens
         start_cheat_caller_address(cofi_collection.contract_address, OWNER());
@@ -144,14 +208,13 @@ mod test_marketplace {
     #[test]
     #[fork("MAINNET_LATEST")]
     fn test_buy_product_stark() {
-        let cofi_collection = deploy_cofi_collection();
+        let (cofi_collection, _, marketplace) = deploy_contracts();
         let CONSUMER = deploy_receiver();
-        let marketplace = deploy_marketplace(cofi_collection.contract_address);
 
         // Create a producer
         start_cheat_caller_address(marketplace.contract_address, OWNER());
         let PRODUCER = 'PRODUCER'.try_into().unwrap();
-        marketplace.assign_seller_role(PRODUCER);
+        marketplace.assign_producer_role(PRODUCER);
 
         // Give marketplace permission to mint tokens
         start_cheat_caller_address(cofi_collection.contract_address, OWNER());
@@ -165,7 +228,7 @@ mod test_marketplace {
 
         // Create a consumer
         start_cheat_caller_address(marketplace.contract_address, OWNER());
-        marketplace.assign_seller_role(CONSUMER);
+        marketplace.assign_producer_role(CONSUMER);
 
         // Fund buyer wallet
         let amount_to_buy = 10;
@@ -209,14 +272,13 @@ mod test_marketplace {
     #[test]
     #[fork("MAINNET_LATEST")]
     fn test_buy_product_usdt() {
-        let cofi_collection = deploy_cofi_collection();
+        let (cofi_collection, _, marketplace) = deploy_contracts();
         let CONSUMER = deploy_receiver();
-        let marketplace = deploy_marketplace(cofi_collection.contract_address);
 
         // Create a producer
         start_cheat_caller_address(marketplace.contract_address, OWNER());
         let PRODUCER = 'PRODUCER'.try_into().unwrap();
-        marketplace.assign_seller_role(PRODUCER);
+        marketplace.assign_producer_role(PRODUCER);
 
         // Give marketplace permission to mint tokens
         start_cheat_caller_address(cofi_collection.contract_address, OWNER());
@@ -225,12 +287,12 @@ mod test_marketplace {
         // Create a product
         start_cheat_caller_address(marketplace.contract_address, PRODUCER);
         let data = array!['testing'].span();
-        let price = 40 * ONE_E6; // 1 USD
+        let price = 40 * ONE_E6; // 40 USD
         let token_id = marketplace.create_product(10, price, data);
 
         // Create a consumer
         start_cheat_caller_address(marketplace.contract_address, OWNER());
-        marketplace.assign_seller_role(CONSUMER);
+        marketplace.assign_producer_role(CONSUMER);
 
         // Fund buyer wallet
         let amount_to_buy = 10;
@@ -273,14 +335,13 @@ mod test_marketplace {
     #[test]
     #[fork("MAINNET_LATEST")]
     fn test_buy_products() {
-        let cofi_collection = deploy_cofi_collection();
+        let (cofi_collection, distribution, marketplace) = deploy_contracts();
         let CONSUMER = deploy_receiver();
-        let marketplace = deploy_marketplace(cofi_collection.contract_address);
 
         // Create a producer
         start_cheat_caller_address(marketplace.contract_address, OWNER());
         let PRODUCER = 'PRODUCER'.try_into().unwrap();
-        marketplace.assign_seller_role(PRODUCER);
+        marketplace.assign_producer_role(PRODUCER);
 
         // Give marketplace permission to mint tokens
         start_cheat_caller_address(cofi_collection.contract_address, OWNER());
@@ -294,7 +355,7 @@ mod test_marketplace {
 
         // Create a consumer
         start_cheat_caller_address(marketplace.contract_address, OWNER());
-        marketplace.assign_seller_role(CONSUMER);
+        marketplace.assign_producer_role(CONSUMER);
 
         // Fund buyer wallet
         let minter_address = STRK_TOKEN_MINTER_ADDRESS.try_into().unwrap();
@@ -324,24 +385,33 @@ mod test_marketplace {
         stop_cheat_caller_address(cofi_collection.contract_address);
         let token_amounts = array![2, 3].span();
         marketplace.buy_products(token_ids, token_amounts, PAYMENT_TOKEN::STRK);
+
+        // Distribute and check earnings
+        cheat_caller_address(distribution.contract_address, OWNER(), CheatSpan::TargetCalls(1));
+        distribution.distribute();
+
+        let buyer_claim = distribution.coffee_lover_claim_balance(CONSUMER);
+        // total sell: 2 * 1 USD + 3 * 2 USD = 8 USD
+        // profit: 8 * 2.5% = 0.2 USD
+        // buyer claim: 0.2 USD * 30% = 0.06 USD
+        assert(buyer_claim == 60_000, 'invalid buyer claim');
     }
 
     #[test]
     fn test_delete_product() {
-        let cofi_collection = deploy_cofi_collection();
-        let marketplace = deploy_marketplace(cofi_collection.contract_address);
+        let (cofi_collection, _, marketplace) = deploy_contracts();
 
-        // Create a producer
+        // Create a roaster
         start_cheat_caller_address(marketplace.contract_address, OWNER());
-        let PRODUCER = 'PRODUCER'.try_into().unwrap();
-        marketplace.assign_seller_role(PRODUCER);
+        let ROASTER = 'ROASTER'.try_into().unwrap();
+        marketplace.assign_roaster_role(ROASTER);
 
         // Give marketplace permission to mint tokens
         start_cheat_caller_address(cofi_collection.contract_address, OWNER());
         cofi_collection.set_minter(marketplace.contract_address);
 
         // Create a product
-        start_cheat_caller_address(marketplace.contract_address, PRODUCER);
+        start_cheat_caller_address(marketplace.contract_address, ROASTER);
         let data = array!['testing'].span();
         let price = 1 * ONE_E18; // 1 stark
         let token_id = marketplace.create_product(10, price, data);
@@ -359,13 +429,12 @@ mod test_marketplace {
 
     #[test]
     fn test_delete_products() {
-        let cofi_collection = deploy_cofi_collection();
-        let marketplace = deploy_marketplace(cofi_collection.contract_address);
+        let (cofi_collection, _, marketplace) = deploy_contracts();
 
         // Create a producer
         start_cheat_caller_address(marketplace.contract_address, OWNER());
         let PRODUCER = 'PRODUCER'.try_into().unwrap();
-        marketplace.assign_seller_role(PRODUCER);
+        marketplace.assign_producer_role(PRODUCER);
 
         // Give marketplace permission to mint tokens
         start_cheat_caller_address(cofi_collection.contract_address, OWNER());
@@ -392,14 +461,13 @@ mod test_marketplace {
     #[test]
     #[fork("MAINNET_LATEST")]
     fn test_claim() {
-        let cofi_collection = deploy_cofi_collection();
+        let (cofi_collection, distribution, marketplace) = deploy_contracts();
         let CONSUMER = deploy_receiver();
         let PRODUCER = deploy_receiver();
-        let marketplace = deploy_marketplace(cofi_collection.contract_address);
 
         // Create a producer
         start_cheat_caller_address(marketplace.contract_address, OWNER());
-        marketplace.assign_seller_role(PRODUCER);
+        marketplace.assign_producer_role(PRODUCER);
 
         // Give marketplace permission to mint tokens
         start_cheat_caller_address(cofi_collection.contract_address, OWNER());
@@ -413,7 +481,7 @@ mod test_marketplace {
 
         // Create a consumer
         start_cheat_caller_address(marketplace.contract_address, OWNER());
-        marketplace.assign_seller_role(CONSUMER);
+        marketplace.assign_producer_role(CONSUMER);
 
         // Fund buyer wallet
         let amount_to_buy = 2;
@@ -444,16 +512,16 @@ mod test_marketplace {
         assert(minted_nfts == amount_to_buy, 'invalid minted nfts');
 
         // Claim the rewards
+        cheat_caller_address(distribution.contract_address, OWNER(), CheatSpan::TargetCalls(1));
+        distribution.distribute();
+
         let usdc_token_address = MainnetConfig::USDC_ADDRESS.try_into().unwrap();
         let usdc_token_dispatcher = IERC20Dispatcher { contract_address: usdc_token_address };
         start_cheat_caller_address(usdc_token_address, marketplace.contract_address);
         start_cheat_caller_address(marketplace.contract_address, PRODUCER);
         let producer_usdc_before = usdc_token_dispatcher.balance_of(PRODUCER);
 
-        let claim_balance = marketplace.claim_balance(PRODUCER);
-        assert(claim_balance > 0, 'invalid claim balance');
-
-        marketplace.claim();
+        marketplace.claim_producer();
         let producer_usdc_after = usdc_token_dispatcher.balance_of(PRODUCER);
         assert(producer_usdc_before < producer_usdc_after, 'invalid producer starks');
     }
