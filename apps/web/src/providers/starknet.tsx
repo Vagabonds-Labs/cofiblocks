@@ -3,9 +3,9 @@
 import { mainnet, sepolia } from "@starknet-react/chains";
 import {
 	StarknetConfig,
-	publicProvider,
 	argent,
 	braavos,
+	publicProvider,
 } from "@starknet-react/core";
 
 export default function StarknetProvider({
@@ -13,10 +13,7 @@ export default function StarknetProvider({
 }: {
 	children: React.ReactNode;
 }) {
-	const connectors = [
-		argent(),
-		braavos(),
-	];
+	const connectors = [argent(), braavos()];
 
 	return (
 		<StarknetConfig

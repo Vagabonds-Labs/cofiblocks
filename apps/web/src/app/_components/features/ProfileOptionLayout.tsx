@@ -22,11 +22,7 @@ function ProfileOptionLayout({
 
 	return (
 		<Main>
-			<Header
-				profileOptions={
-					address ? <ProfileOptions /> : undefined
-				}
-			/>
+			<Header profileOptions={address ? <ProfileOptions /> : undefined} />
 			<div className="container mx-auto px-4 py-8">
 				<div className="flex items-center mb-6">
 					<Link href={backLink ?? "/marketplace"} className="mr-4">

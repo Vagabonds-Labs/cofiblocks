@@ -10,4 +10,4 @@ export const chipiConfig = {
 	apiKey: CHIPI_PUBLIC_KEY,
 	appId: CHIPI_APP_ID,
 	secretKey: CHIPI_SECRET_KEY,
-}; 
+};

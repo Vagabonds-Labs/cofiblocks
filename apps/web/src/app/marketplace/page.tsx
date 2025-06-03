@@ -1,18 +1,18 @@
 "use client";
 
+import { useUser } from "@clerk/nextjs";
 import Carousel from "@repo/ui/carousel";
 import { useAccount, useDisconnect } from "@starknet-react/core";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useUser } from "@clerk/nextjs";
 import ProductCatalog from "~/app/_components/features/ProductCatalog";
 import { ProfileOptions } from "~/app/_components/features/ProfileOptions";
 import WalletConnect from "~/app/_components/features/WalletConnect";
 import Header from "~/app/_components/layout/Header";
 import Main from "~/app/_components/layout/Main";
-import SearchBar from "../_components/features/SearchBar";
 import type { UnsafeMetadata } from "~/types";
+import SearchBar from "../_components/features/SearchBar";
 
 export default function Home() {
 	const { t } = useTranslation();
@@ -61,9 +61,7 @@ export default function Home() {
 	return (
 		<Main>
 			<div className="flex flex-col min-h-screen">
-				<Header
-					showCart={true}
-				/>
+				<Header showCart={true} />
 
 				<div className="flex-grow">
 					{/* Hero Section */}

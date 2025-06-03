@@ -22,7 +22,7 @@
 	},
 	"dependencies": {
 		"@auth/prisma-adapter": "^1.6.0",
-		"@chipi-pay/chipi-sdk": "^2.2.4",
+		"@chipi-pay/chipi-sdk": "^3.0.5",
 		"@prisma/client": "5.22.0",
 		"@radix-ui/react-tooltip": "^1.1.8",
 		"@repo/ui": "*",

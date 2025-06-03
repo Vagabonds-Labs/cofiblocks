@@ -1,12 +1,12 @@
 "use client";
 
 import { useCreateWallet } from "@chipi-pay/chipi-sdk";
-import { useUser } from "@clerk/nextjs";
-import { useState, useEffect } from "react";
+import { useAuth, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import type { UnsafeMetadata, WalletResponse } from "~/types";
 import { completeOnboarding } from "./_actions";
-import type { WalletResponse, UnsafeMetadata } from "~/types";
 
 interface ApiResponse {
 	success: boolean;
@@ -19,7 +19,9 @@ export default function OnboardingPage() {
 	const { t } = useTranslation();
 	const router = useRouter();
 	const { user, isLoaded: userLoaded } = useUser();
-	const { createWalletAsync, createWalletResponse, isLoading, isError } = useCreateWallet();
+	const { createWalletAsync, createWalletResponse, isLoading, isError } =
+		useCreateWallet();
+	const { getToken } = useAuth();
 	const [pin, setPin] = useState("");
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 	const [walletCreated, setWalletCreated] = useState(false);
@@ -33,10 +35,12 @@ export default function OnboardingPage() {
 		if (userLoaded && user) {
 			const metadata = user.unsafeMetadata as UnsafeMetadata | undefined;
 			const hasWallet = !!(metadata?.wallet || metadata?.walletCreated);
-			
+
 			if (hasWallet) {
-				console.log('[onboarding] User already has a wallet, redirecting to marketplace');
-				router.push('/marketplace');
+				console.log(
+					"[onboarding] User already has a wallet, redirecting to marketplace",
+				);
+				router.push("/marketplace");
 			} else {
 				setIsCheckingWallet(false);
 			}
@@ -61,18 +65,22 @@ export default function OnboardingPage() {
 
 		try {
 			setErrorMessage(null);
-			console.log('Creating PIN...');
-			
+			console.log("Creating PIN...");
+
 			// Intercept fetch to get the raw API response
 			const originalFetch = window.fetch;
 			let requestPublicKey: string | undefined;
 			let apiTxHash: string | undefined;
-			
+
 			window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
 				const url = input instanceof URL ? input.href : input.toString();
-				
+
 				// Capture the request payload for the wallet creation
-				if (url.includes("/chipi-wallets") && !url.includes("prepare-creation") && init?.body) {
+				if (
+					url.includes("/chipi-wallets") &&
+					!url.includes("prepare-creation") &&
+					init?.body
+				) {
 					try {
 						const payload = JSON.parse(init.body as string);
 						requestPublicKey = payload.publicKey;
@@ -80,24 +88,35 @@ export default function OnboardingPage() {
 						throw new Error("Failed to parse request payload");
 					}
 				}
-				
+
 				const response = await originalFetch(input, init);
-				
-				if (url.includes("/chipi-wallets") && !url.includes("prepare-creation")) {
-					const data = await response.clone().json() as ApiResponse;
+
+				if (
+					url.includes("/chipi-wallets") &&
+					!url.includes("prepare-creation")
+				) {
+					const data = (await response.clone().json()) as ApiResponse;
 					setApiResponse(data);
 					apiTxHash = data.txHash;
 				}
 				return response;
 			};
 
-			// Create wallet with PIN
-			const response = await createWalletAsync(pin);
+			const token = await getToken({ template: "cofiblocks" });
+			console.log("Token received:", token);
+			if (!token) {
+				throw new Error("No bearer token found");
+			}
+			const response = await createWalletAsync({
+				encryptKey: pin,
+				bearerToken: token,
+			});
+			console.log("createWalletAsync response:", response);
 			setResponse(response);
 
 			// Restore original fetch
 			window.fetch = originalFetch;
-			
+
 			if (!response || !response.success) {
 				throw new Error("Failed to create PIN - invalid response");
 			}
@@ -136,13 +155,12 @@ export default function OnboardingPage() {
 			}
 
 			setWalletCreated(true);
-			
 		} catch (err) {
 			console.error("PIN creation failed:", err);
 			setErrorMessage(
-				err instanceof Error 
-					? err.message 
-					: "Failed to create PIN - please try again"
+				err instanceof Error
+					? err.message
+					: "Failed to create PIN - please try again",
 			);
 			setWalletCreated(false);
 		}
@@ -151,16 +169,16 @@ export default function OnboardingPage() {
 	const handleContinue = async () => {
 		try {
 			setIsRedirecting(true);
-			console.log('Starting redirection to marketplace...');
-			
+			console.log("Starting redirection to marketplace...");
+
 			// Add a small delay to ensure the session is updated
-			await new Promise(resolve => setTimeout(resolve, 1000));
-			
-			console.log('Delay completed, attempting to redirect...');
+			await new Promise((resolve) => setTimeout(resolve, 1000));
+
+			console.log("Delay completed, attempting to redirect...");
 			// Use window.location.href for a full page reload
-			window.location.href = '/marketplace';
+			window.location.href = "/marketplace";
 		} catch (error) {
-			console.error('Error during redirection:', error);
+			console.error("Error during redirection:", error);
 			setIsRedirecting(false);
 		}
 	};
@@ -232,7 +250,9 @@ export default function OnboardingPage() {
 								disabled={isLoading || pin.length !== 4}
 								className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-black bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-400 disabled:bg-gray-400"
 							>
-								{isLoading ? t("onboarding.creating") : t("onboarding.create_button")}
+								{isLoading
+									? t("onboarding.creating")
+									: t("onboarding.create_button")}
 							</button>
 						</form>
 					) : (
@@ -240,20 +260,40 @@ export default function OnboardingPage() {
 							<div className="space-y-4">
 								<div className="text-center mb-6">
 									<div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 mb-4">
-										<svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+										<svg
+											className="w-6 h-6 text-green-600"
+											fill="none"
+											stroke="currentColor"
+											viewBox="0 0 24 24"
+											xmlns="http://www.w3.org/2000/svg"
+											aria-hidden="true"
+										>
 											<title>Success checkmark</title>
-											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+											<path
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												strokeWidth={2}
+												d="M5 13l4 4L19 7"
+											/>
 										</svg>
 									</div>
-									<h3 className="text-xl font-medium text-gray-900">{t("onboarding.success_title")}</h3>
-									<p className="mt-2 text-sm text-gray-600">{t("onboarding.success_message")}</p>
+									<h3 className="text-xl font-medium text-gray-900">
+										{t("onboarding.success_title")}
+									</h3>
+									<p className="mt-2 text-sm text-gray-600">
+										{t("onboarding.success_message")}
+									</p>
 								</div>
 
 								<div className="bg-gray-50 rounded-lg p-4">
 									<div className="space-y-3">
 										<div className="flex flex-col">
-											<span className="text-sm text-gray-500">{t("onboarding.wallet_ready")}</span>
-											<span className="font-medium">{t("onboarding.ready_message")}</span>
+											<span className="text-sm text-gray-500">
+												{t("onboarding.wallet_ready")}
+											</span>
+											<span className="font-medium">
+												{t("onboarding.ready_message")}
+											</span>
 										</div>
 									</div>
 								</div>
@@ -275,7 +315,9 @@ export default function OnboardingPage() {
 									disabled={isRedirecting}
 									className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-black bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-400 disabled:bg-gray-400"
 								>
-									{isRedirecting ? t("onboarding.redirecting") : t("onboarding.continue_button")}
+									{isRedirecting
+										? t("onboarding.redirecting")
+										: t("onboarding.continue_button")}
 								</button>
 							</div>
 						</div>
