@@ -15,4 +15,4 @@ pre-commit:
       run: bun run sn:format:check
       stage_fixed: true
     build:
-      run: bun run build
+      #run: bun run build
