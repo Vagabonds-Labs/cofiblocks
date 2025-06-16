@@ -140,7 +140,10 @@ declare module "@chipi-pay/chipi-sdk" {
 	}
 
 	export interface UseCreateWalletResult {
-		createWalletAsync: (pin: string) => Promise<WalletResponse>;
+		createWalletAsync: (params: {
+			encryptKey: string;
+			bearerToken: string;
+		}) => Promise<WalletResponse>;
 		createWalletResponse: WalletResponse | null;
 		isLoading: boolean;
 		isError: boolean;

@@ -22,7 +22,6 @@
 	},
 	"dependencies": {
 		"@auth/prisma-adapter": "^1.6.0",
-		"@chipi-pay/chipi-sdk": "^2.2.4",
 		"@clerk/nextjs": "^6.20.2",
 		"@prisma/client": "5.22.0",
 		"@radix-ui/react-tooltip": "^1.1.8",
@@ -58,6 +57,7 @@
 		"@storybook/addon-interactions": "^8.3.0",
 		"@storybook/addon-links": "^8.3.0",
 		"@storybook/addon-onboarding": "^8.3.0",
+		"@chipi-pay/a-sdk": "^3.1.2",
 		"@storybook/addon-styling-webpack": "^1.0.0",
 		"@storybook/addon-themes": "^8.3.0",
 		"@storybook/blocks": "^8.3.0",
