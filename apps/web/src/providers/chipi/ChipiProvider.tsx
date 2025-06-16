@@ -1,30 +1,19 @@
 "use client";
 
-import { ChipiProvider as ChipiSDKProvider } from "@chipi-pay/chipi-sdk";
-import type { ReactNode } from "react";
+import { ChipiProvider } from "@chipi-pay/chipi-sdk";
 
-interface ChipiProviderProps {
-	children: ReactNode;
-}
+// Use NEXT_PUBLIC_CHIPI_PUBLIC_KEY from .env file
+//const chipiPublicKey = process.env.NEXT_PUBLIC_CHIPI_PUBLIC_KEY;
 
-export function ChipiProvider({ children }: ChipiProviderProps) {
-	const apiKey = process.env.NEXT_PUBLIC_CHIPI_PUBLIC_KEY;
-	const appId = process.env.NEXT_PUBLIC_CHIPI_APP_ID;
-	const secretKey = process.env.NEXT_PUBLIC_CHIPI_SECRET_KEY;
-
-	if (!apiKey || !appId || !secretKey) {
-		throw new Error("Chipi configuration is not set");
-	}
-
+export function Providers({ children }: { children: React.ReactNode }) {
 	return (
-		<ChipiSDKProvider
+		<ChipiProvider
 			config={{
-				apiKey,
-				appId,
-				secretKey
+				//apiPublicKey: chipiPublicKey,
+				apiPublicKey: "pk_prod_c399b92e830cb2354327838d9a06d296",
 			}}
 		>
 			{children}
-		</ChipiSDKProvider>
+		</ChipiProvider>
 	);
-} 
+}
