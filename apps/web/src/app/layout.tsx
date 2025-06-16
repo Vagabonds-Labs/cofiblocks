@@ -13,7 +13,7 @@ import StarknetProvider from "~/providers/starknet";
 import { TRPCReactProvider } from "~/trpc/react";
 import NextTopLoader from "nextjs-toploader";
 import BetaAnnouncement from "./_components/ui/BetaAnnouncement";
-import { ChipiProvider } from "~/providers/chipi/ChipiProvider";
+import { Providers } from "~/providers/chipi/ChipiProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -69,10 +69,10 @@ export default function RootLayout({
 					<SessionProvider>
 						<StarknetProvider>
 							<TRPCReactProvider>
-								<ChipiProvider>
+								<Providers>
 									<BetaAnnouncement />
 									<div className="pb-20">{children}</div>
-								</ChipiProvider>
+								</Providers>
 							</TRPCReactProvider>
 						</StarknetProvider>
 						<Toaster
