@@ -8,7 +8,7 @@ const publicPaths = [
 	"/",
 	"/product/(.*)",
 	"/api/(.*)",
-	"/api/trpc/(.*)",  // Make tRPC endpoints public
+	"/api/trpc/(.*)", // Make tRPC endpoints public
 	"/sign-in",
 	"/sign-up",
 	"/clerk-demo",
@@ -32,12 +32,12 @@ function hasWallet(sessionClaims: unknown): boolean {
 	try {
 		const claims = sessionClaims as SessionClaims;
 		const metadata = claims?.unsafeMetadata as UnsafeMetadata | undefined;
-		console.log('[middleware] Checking wallet status:', {
+		console.log("[middleware] Checking wallet status:", {
 			hasMetadata: !!metadata,
 			hasWallet: !!metadata?.wallet,
 			walletCreated: metadata?.walletCreated,
 			walletAddress: metadata?.wallet?.address,
-			fullMetadata: metadata
+			fullMetadata: metadata,
 		});
 		// Check for either wallet data or walletCreated flag
 		return !!(metadata?.wallet || metadata?.walletCreated);
@@ -69,7 +69,7 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 
 	// For authenticated users, check wallet status
 	const userHasWallet = hasWallet(sessionClaims);
-	console.log('[middleware] User has wallet:', userHasWallet);
+	console.log("[middleware] User has wallet:", userHasWallet);
 
 	// If user has no wallet and is not on onboarding page, redirect to onboarding
 	if (!userHasWallet && path !== "/onboarding") {

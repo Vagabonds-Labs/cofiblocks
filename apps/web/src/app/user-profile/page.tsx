@@ -1,19 +1,25 @@
 "use client";
 
-import { ChevronRightIcon, UserIcon, ChevronDownIcon, ChevronUpIcon, WalletIcon } from "@heroicons/react/24/outline";
-import { useUser, useAuth } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
+import {
+	ChevronDownIcon,
+	ChevronRightIcon,
+	ChevronUpIcon,
+	UserIcon,
+	WalletIcon,
+} from "@heroicons/react/24/outline";
+import Button from "@repo/ui/button";
+import SkeletonLoader from "@repo/ui/skeleton";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ProfileCard } from "~/app/_components/features/ProfileCard";
 import { ProfileOptions } from "~/app/_components/features/ProfileOptions";
+import WalletDetails from "~/app/_components/features/WalletDetails";
 import Header from "~/app/_components/layout/Header";
 import Main from "~/app/_components/layout/Main";
-import WalletDetails from "~/app/_components/features/WalletDetails";
 import type { UnsafeMetadata } from "~/types";
-import Button from "@repo/ui/button";
-import SkeletonLoader from "@repo/ui/skeleton";
 
 type Badge = "lover" | "contributor" | "producer";
 
@@ -23,9 +29,10 @@ export default function UserProfile() {
 	const { isLoaded: clerkLoaded, isSignedIn, user } = useUser();
 	const { isSignedIn: authSignedIn } = useAuth();
 	const [isWalletExpanded, setIsWalletExpanded] = useState(false);
-	
+
 	// Get wallet info from Clerk metadata
-	const walletMetadata = (user?.unsafeMetadata as UnsafeMetadata | undefined)?.wallet;
+	const walletMetadata = (user?.unsafeMetadata as UnsafeMetadata | undefined)
+		?.wallet;
 	const hasWallet = !!walletMetadata?.encryptedPrivateKey;
 
 	useEffect(() => {
@@ -80,8 +87,11 @@ export default function UserProfile() {
 	const userProfile = {
 		name: user.fullName ?? t("unnamed_user"),
 		country: t("costa_rica"),
-		memberSince: user.createdAt ? new Date(user.createdAt).getFullYear() : new Date().getFullYear(),
-		walletAddress: walletMetadata?.address ?? "0x0000000000000000000000000000000000000000",
+		memberSince: user.createdAt
+			? new Date(user.createdAt).getFullYear()
+			: new Date().getFullYear(),
+		walletAddress:
+			walletMetadata?.address ?? "0x0000000000000000000000000000000000000000",
 		role: "user",
 		badges: ["lover", "contributor"] as Badge[],
 	};
@@ -97,16 +107,14 @@ export default function UserProfile() {
 				<Header profileOptions={<ProfileOptions />} />
 				<div className="max-w-3xl mx-auto space-y-6">
 					<ProfileCard user={userProfile} />
-					
+
 					{hasWallet && (
 						<div className="bg-white shadow rounded-lg overflow-hidden">
-							<div 
-								className="p-6"
-							>
-								<div 
+							<div className="p-6">
+								<div
 									onClick={toggleWalletDetails}
 									onKeyDown={(e) => {
-										if (e.key === 'Enter' || e.key === ' ') {
+										if (e.key === "Enter" || e.key === " ") {
 											toggleWalletDetails();
 										}
 									}}
@@ -119,10 +127,11 @@ export default function UserProfile() {
 										<WalletIcon className="w-5 h-5 mr-3" />
 										<span>{t("wallet_details")}</span>
 									</div>
-									{isWalletExpanded ? 
-										<ChevronDownIcon className="w-5 h-5 text-content-body-default" /> : 
+									{isWalletExpanded ? (
+										<ChevronDownIcon className="w-5 h-5 text-content-body-default" />
+									) : (
 										<ChevronRightIcon className="w-5 h-5 text-content-body-default" />
-									}
+									)}
 								</div>
 								{isWalletExpanded && (
 									<div className="mt-4 px-4">

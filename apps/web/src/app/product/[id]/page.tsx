@@ -1,5 +1,6 @@
 "use client";
 
+import Carousel from "@repo/ui/carousel";
 import Skeleton from "@repo/ui/skeleton";
 import { useAccount } from "@starknet-react/core";
 import { useSession } from "next-auth/react";
@@ -13,11 +14,8 @@ import WalletConnect from "~/app/_components/features/WalletConnect";
 import type { NftMetadata } from "~/app/_components/features/types";
 import Header from "~/app/_components/layout/Header";
 import Main from "~/app/_components/layout/Main";
-import {
-	useMarketplaceContract,
-} from "~/services/contractsInterface";
+import { useMarketplaceContract } from "~/services/contractsInterface";
 import { api } from "~/trpc/react";
-import Carousel from "@repo/ui/carousel";
 
 interface ParsedMetadata extends NftMetadata {
 	imageUrl: string;

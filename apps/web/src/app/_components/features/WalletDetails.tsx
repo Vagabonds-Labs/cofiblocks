@@ -1,19 +1,22 @@
 "use client";
 
-import { useTranslation } from "react-i18next";
 import { useUser } from "@clerk/nextjs";
-import { useState } from "react";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
-import type { UnsafeMetadata} from "~/types";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import type { UnsafeMetadata } from "~/types";
 
 export default function WalletDetails() {
 	const { t } = useTranslation();
 	const { user } = useUser();
 	const [showPrivateKey, setShowPrivateKey] = useState(false);
 
-	const walletMetadata = (user?.unsafeMetadata as UnsafeMetadata | undefined)?.wallet;
+	const walletMetadata = (user?.unsafeMetadata as UnsafeMetadata | undefined)
+		?.wallet;
 	const hasWallet = !!walletMetadata?.encryptedPrivateKey;
-	const walletCreated = (user?.unsafeMetadata as UnsafeMetadata | undefined)?.walletCreated || false;
+	const walletCreated =
+		(user?.unsafeMetadata as UnsafeMetadata | undefined)?.walletCreated ||
+		false;
 
 	const togglePrivateKeyVisibility = () => {
 		setShowPrivateKey(!showPrivateKey);
@@ -29,7 +32,9 @@ export default function WalletDetails() {
 				{/* Transaction Hash */}
 				{walletMetadata.txHash && (
 					<div className="flex flex-col">
-						<span className="font-medium text-sm">{t("transaction_hash")}:</span>
+						<span className="font-medium text-sm">
+							{t("transaction_hash")}:
+						</span>
 						<div className="flex items-center gap-2">
 							<code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono break-all">
 								{walletMetadata.txHash}
@@ -96,16 +101,22 @@ export default function WalletDetails() {
 				{/* Encrypted Private Key with toggle */}
 				{walletMetadata.encryptedPrivateKey && (
 					<div className="flex flex-col">
-						<span className="font-medium text-sm">{t("encrypted_private_key")}:</span>
+						<span className="font-medium text-sm">
+							{t("encrypted_private_key")}:
+						</span>
 						<div className="flex items-center gap-2">
-							<code className={`flex-1 bg-gray-100 px-2 py-1 rounded text-sm font-mono break-all ${!showPrivateKey ? 'filter blur-sm select-none' : ''}`}>
+							<code
+								className={`flex-1 bg-gray-100 px-2 py-1 rounded text-sm font-mono break-all ${!showPrivateKey ? "filter blur-sm select-none" : ""}`}
+							>
 								{walletMetadata.encryptedPrivateKey}
 							</code>
-							<button 
+							<button
 								type="button"
 								onClick={togglePrivateKeyVisibility}
 								className="flex-shrink-0 text-yellow-600 hover:text-yellow-800 text-sm flex items-center gap-1"
-								aria-label={showPrivateKey ? "Hide private key" : "Show private key"}
+								aria-label={
+									showPrivateKey ? "Hide private key" : "Show private key"
+								}
 							>
 								{showPrivateKey ? (
 									<>
@@ -125,4 +136,4 @@ export default function WalletDetails() {
 			</div>
 		</div>
 	);
-} 
+}

@@ -1,15 +1,15 @@
 "use client";
 
+import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import Button from "@repo/ui/button";
 import { PageHeader } from "@repo/ui/pageHeader";
 import { useAtom } from "jotai";
-import { SignedIn, SignedOut, UserButton, SignInButton } from "@clerk/nextjs";
-import Button from "@repo/ui/button";
 import React from "react";
 import { toast } from "react-hot-toast";
 import { useTranslation } from "react-i18next";
+import { ProfileOptions } from "~/app/_components/features/ProfileOptions";
 import { cartItemsAtom } from "~/store/cartAtom";
 import { api } from "~/trpc/react";
-import { ProfileOptions } from "~/app/_components/features/ProfileOptions";
 
 interface HeaderProps {
 	showCart?: boolean;
@@ -21,9 +21,7 @@ interface ProductMetadata {
 	description?: string;
 }
 
-function Header({
-	showCart,
-}: HeaderProps) {
+function Header({ showCart }: HeaderProps) {
 	const { t } = useTranslation();
 	const utils = api.useUtils();
 	const [, setItems] = useAtom(cartItemsAtom);
@@ -139,7 +137,9 @@ function Header({
 					title="CofiBlocks"
 					showCart={showCart}
 					cartItems={[]}
-					onRemoveFromCart={() => { /* No-op */ }}
+					onRemoveFromCart={() => {
+						/* No-op */
+					}}
 					cartTranslations={{
 						cartEmptyMessage: t("cart.empty_message"),
 						quantityLabel: t("cart.quantity_label"),

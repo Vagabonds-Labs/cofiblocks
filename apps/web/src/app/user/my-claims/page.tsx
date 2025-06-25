@@ -1,8 +1,6 @@
 "use client";
 
-import {
-	InformationCircleIcon,
-} from "@heroicons/react/24/solid";
+import { InformationCircleIcon } from "@heroicons/react/24/solid";
 import Button from "@repo/ui/button";
 import { useAccount, useProvider } from "@starknet-react/core";
 import { useState } from "react";

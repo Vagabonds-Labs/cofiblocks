@@ -7,13 +7,13 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { CheckCircleIcon } from "@heroicons/react/20/solid";
 import { GeistSans } from "geist/font/sans";
 import { SessionProvider } from "next-auth/react";
-import i18n from "~/i18n";
 import { Inter } from "next/font/google";
+import NextTopLoader from "nextjs-toploader";
+import i18n from "~/i18n";
+import { Providers } from "~/providers/chipi/ChipiProvider";
 import StarknetProvider from "~/providers/starknet";
 import { TRPCReactProvider } from "~/trpc/react";
-import NextTopLoader from "nextjs-toploader";
 import BetaAnnouncement from "./_components/ui/BetaAnnouncement";
-import { Providers } from "~/providers/chipi/ChipiProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -48,7 +48,8 @@ export default function RootLayout({
 					headerSubtitle: "text-gray-600",
 					dividerLine: "bg-yellow-500",
 					dividerText: "text-yellow-500",
-					socialButtonsBlockButton: "border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-white",
+					socialButtonsBlockButton:
+						"border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-white",
 					socialButtonsBlockButtonArrow: "text-yellow-500",
 					identityPreviewEditButton: "text-yellow-500",
 					formFieldAction: "text-yellow-500",

@@ -1,3 +1,4 @@
+import { UserButton, useUser } from "@clerk/nextjs";
 import {
 	AdjustmentsHorizontalIcon,
 	CubeIcon,
@@ -8,7 +9,6 @@ import {
 	TruckIcon,
 	UserIcon,
 } from "@heroicons/react/24/outline";
-import { useUser, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 
@@ -52,18 +52,17 @@ export function ProfileOptions() {
 
 	// Producer-specific options - Update logic based on Clerk metadata/roles later
 	// For now, assume user exists means show producer options (adjust as needed)
-	const producerOptions: ProfileOption[] =
-		user
-			? [
-					{ icon: TicketIcon, label: t("my_coffee"), href: "/user/my-coffee" },
-					{ icon: TruckIcon, label: t("my_sales"), href: "/user/my-sales" },
-					{
-						icon: CurrencyDollarIcon,
-						label: t("my_claims"),
-						href: "/user/my-claims",
-					},
-				]
-			: [];
+	const producerOptions: ProfileOption[] = user
+		? [
+				{ icon: TicketIcon, label: t("my_coffee"), href: "/user/my-coffee" },
+				{ icon: TruckIcon, label: t("my_sales"), href: "/user/my-sales" },
+				{
+					icon: CurrencyDollarIcon,
+					label: t("my_claims"),
+					href: "/user/my-claims",
+				},
+			]
+		: [];
 
 	const renderOption = (option: ProfileOption) => (
 		<div
@@ -117,7 +116,6 @@ export function ProfileOptions() {
 			{commonOptions.slice(4).map(renderOption)}
 
 			{/* Render UserButton styled like a menu item */}
-
 		</div>
 	);
 }

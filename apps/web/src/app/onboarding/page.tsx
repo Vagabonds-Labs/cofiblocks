@@ -73,7 +73,12 @@ export default function OnboardingPage() {
 			let apiTxHash: string | undefined;
 
 			window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
-				const url = input instanceof URL ? input.href : input instanceof Request ? input.url : input;
+				const url =
+					input instanceof URL
+						? input.href
+						: input instanceof Request
+							? input.url
+							: input;
 
 				// Capture the request payload for the wallet creation
 				if (
@@ -82,7 +87,9 @@ export default function OnboardingPage() {
 					init?.body
 				) {
 					try {
-						const payload = JSON.parse(init.body as string) as { publicKey?: string };
+						const payload = JSON.parse(init.body as string) as {
+							publicKey?: string;
+						};
 						requestPublicKey = payload.publicKey;
 					} catch (e) {
 						throw new Error("Failed to parse request payload");

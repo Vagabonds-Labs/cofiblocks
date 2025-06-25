@@ -70,12 +70,9 @@ export function useOrderFiltering({
 		setIsFiltersModalOpen(false);
 	}, []);
 
-	const applyFilters = useCallback(
-		() => {
-			closeFiltersModal();
-		},
-		[closeFiltersModal],
-	);
+	const applyFilters = useCallback(() => {
+		closeFiltersModal();
+	}, [closeFiltersModal]);
 
 	return {
 		searchTerm,
