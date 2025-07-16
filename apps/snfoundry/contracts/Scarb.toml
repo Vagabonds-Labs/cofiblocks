@@ -6,12 +6,13 @@ version = "0.3.0"
 # See more keys and their definitions at https://docs.swmansion.com/scarb/docs/reference/manifest.html
 
 [dependencies]
-openzeppelin = { git = "https://github.com/OpenZeppelin/cairo-contracts.git", tag = "v0.17.0" }
-snforge_std = { git = "https://github.com/foundry-rs/starknet-foundry", tag = "v0.31.0" }
-starknet = "2.8.2"
+openzeppelin = "1.0.0"
+ekubo = { git = "https://github.com/EkuboProtocol/abis", rev = "edb6de8c9baf515f1053bbab3d86825d54a63bc3" }
+starknet = "2.11.4"
 
 [dev-dependencies]
-assert_macros = "2.8.2"
+snforge_std = "0.44.0"
+assert_macros = "2.11.4"
 
 [scripts]
 test = "snforge test"
@@ -21,9 +22,17 @@ casm = true
 sierra = true
 
 [[tool.snforge.fork]]
-name = "SEPOLIA_LATEST"
-url = "https://starknet-sepolia.public.blastapi.io/rpc/v0_7"
+name = "MAINNET_LATEST"
+url = "https://starknet-mainnet.public.blastapi.io/rpc/v0_8"
 block_id.tag = "latest"
 
 [tool.fmt]
 sort-module-level-items = true
+
+[tool.scarb]
+allow-prebuilt-plugins = ["snforge_std"]
+
+[profile.dev.cairo]
+unstable-add-statements-code-locations-debug-info = true
+unstable-add-statements-functions-debug-info = true
+panic-backtrace = true

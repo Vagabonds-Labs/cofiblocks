@@ -2,6 +2,7 @@
 
 import { useAccount } from "@starknet-react/core";
 import { useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import WalletConnectFlow from "./WalletConnectFlow";
@@ -13,23 +14,34 @@ interface WalletConnectionCheckProps {
 export default function WalletConnectionCheck({
 	children,
 }: WalletConnectionCheckProps) {
-	const { data: session, status } = useSession();
+	const { status } = useSession();
 	const { address } = useAccount();
 	const [showConnectPrompt, setShowConnectPrompt] = useState(false);
 	const { t } = useTranslation();
+	const pathname = usePathname();
+
+	// Paths that should bypass wallet connection check
+	const bypassPaths = [
+		"/onboarding",
+		"/sign-in",
+		"/sign-up",
+		"/sign-out",
+		"/clerk-demo",
+	];
+	const shouldBypass = bypassPaths.some((path) => pathname?.startsWith(path));
 
 	useEffect(() => {
 		// Only show the connect prompt if there's a session but no wallet
-		// and we're not in a loading state
-		if (status === "authenticated" && session && !address) {
+		// and we're not in a loading state or bypass path
+		if (status === "authenticated" && !address && !shouldBypass) {
 			setShowConnectPrompt(true);
 		} else {
 			setShowConnectPrompt(false);
 		}
-	}, [session, address, status]);
+	}, [address, status, shouldBypass]);
 
 	// Don't show prompt during loading/transitioning states
-	if (status === "loading") {
+	if (status === "loading" || shouldBypass) {
 		return children;
 	}
 

@@ -10,8 +10,8 @@ void i18n.use(initReactI18next).init({
 		es: { common: esTranslation },
 		pt: { common: ptTranslation },
 	},
-	lng: "en",
-	fallbackLng: "en",
+	lng: "es",
+	fallbackLng: "es",
 	defaultNS: "common",
 	debug: true,
 	interpolation: {

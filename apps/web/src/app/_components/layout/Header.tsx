@@ -1,22 +1,19 @@
 "use client";
 
+import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import Button from "@repo/ui/button";
 import { PageHeader } from "@repo/ui/pageHeader";
-import { useDisconnect } from "@starknet-react/core";
 import { useAtom } from "jotai";
-import { signIn, signOut, useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "react-hot-toast";
 import { useTranslation } from "react-i18next";
+import { ProfileOptions } from "~/app/_components/features/ProfileOptions";
 import { cartItemsAtom } from "~/store/cartAtom";
 import { api } from "~/trpc/react";
 
 interface HeaderProps {
 	showCart?: boolean;
 	profileOptions?: React.ReactNode;
-	address?: string;
-	disconnect?: () => void;
-	onConnect?: () => void;
 }
 
 interface ProductMetadata {
@@ -24,29 +21,18 @@ interface ProductMetadata {
 	description?: string;
 }
 
-function Header({
-	showCart,
-	profileOptions,
-	address,
-	disconnect,
-	onConnect,
-}: HeaderProps) {
-	const router = useRouter();
+function Header({ showCart }: HeaderProps) {
 	const { t } = useTranslation();
-	const { data: session } = useSession();
 	const utils = api.useUtils();
 	const [, setItems] = useAtom(cartItemsAtom);
 
-	// Fetch cart data with proper caching
 	const { data: cartData } = api.cart.getUserCart.useQuery(undefined, {
-		enabled: !!session,
 		refetchOnMount: true,
 		refetchOnWindowFocus: true,
 		refetchOnReconnect: true,
 		retry: 3,
 	});
 
-	// Keep local state in sync with server data
 	React.useEffect(() => {
 		if (cartData?.items) {
 			const transformedItems = cartData.items.map((item) => {
@@ -75,7 +61,6 @@ function Header({
 		}
 	}, [cartData, setItems]);
 
-	// Remove from cart mutation with optimistic updates
 	const { mutate: removeFromCart } = api.cart.removeFromCart.useMutation({
 		onMutate: async (removedItem) => {
 			await utils.cart.getUserCart.cancel();
@@ -103,28 +88,6 @@ function Header({
 		},
 	});
 
-	const handleLogout = async () => {
-		// Disconnect Starknet wallet if available
-		if (disconnect) {
-			disconnect();
-		}
-		// Sign out from the session
-		await signOut();
-		// Clear cart data
-		setItems([]);
-		// Redirect to home
-		router.push("/");
-	};
-
-	const handleSignIn = () => {
-		router.push("/auth/signin");
-	};
-
-	const handleRemoveFromCart = (cartItemId: string) => {
-		removeFromCart({ cartItemId });
-	};
-
-	// Transform cart items to match the expected type
 	const transformedItems =
 		cartData?.items.map((item) => {
 			let metadata: ProductMetadata;
@@ -151,24 +114,50 @@ function Header({
 		}) ?? [];
 
 	return (
-		<PageHeader
-			title="CofiBlocks"
-			userEmail={session?.user?.email}
-			onLogout={handleLogout}
-			onSignIn={handleSignIn}
-			showCart={showCart}
-			cartItems={transformedItems}
-			onRemoveFromCart={handleRemoveFromCart}
-			cartTranslations={{
-				cartEmptyMessage: t("cart.empty_message"),
-				quantityLabel: t("cart.quantity_label"),
-				removeConfirmationTitle: t("cart.remove_confirmation_title"),
-				removeConfirmationYes: t("cart.remove_confirmation_yes"),
-				cancel: t("cart.cancel"),
-			}}
-			isAuthenticated={!!session}
-			profileOptions={profileOptions}
-		/>
+		<>
+			<SignedIn>
+				<PageHeader
+					title="CofiBlocks"
+					showCart={showCart}
+					cartItems={transformedItems}
+					onRemoveFromCart={(cartItemId) => removeFromCart({ cartItemId })}
+					cartTranslations={{
+						cartEmptyMessage: t("cart.empty_message"),
+						quantityLabel: t("cart.quantity_label"),
+						removeConfirmationTitle: t("cart.remove_confirmation_title"),
+						removeConfirmationYes: t("cart.remove_confirmation_yes"),
+						cancel: t("cart.cancel"),
+					}}
+					profileOptions={<ProfileOptions />}
+					isAuthenticated={true}
+				/>
+			</SignedIn>
+			<SignedOut>
+				<PageHeader
+					title="CofiBlocks"
+					showCart={showCart}
+					cartItems={[]}
+					onRemoveFromCart={() => {
+						/* No-op */
+					}}
+					cartTranslations={{
+						cartEmptyMessage: t("cart.empty_message"),
+						quantityLabel: t("cart.quantity_label"),
+						removeConfirmationTitle: t("cart.remove_confirmation_title"),
+						removeConfirmationYes: t("cart.remove_confirmation_yes"),
+						cancel: t("cart.cancel"),
+					}}
+					rightActions={
+						<SignInButton mode="modal">
+							<Button variant="primary" size="sm">
+								Sign in
+							</Button>
+						</SignInButton>
+					}
+					isAuthenticated={false}
+				/>
+			</SignedOut>
+		</>
 	);
 }
 

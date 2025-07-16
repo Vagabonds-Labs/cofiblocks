@@ -1,4 +1,3 @@
-import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
@@ -24,7 +23,6 @@ type ProfileCardProps = {
 
 function ProfileCard({ user }: ProfileCardProps) {
 	const { t } = useTranslation();
-	const { data: session } = useSession();
 
 	// Define badges and their validation rules
 	const badges: { type: Badge; active: boolean }[] = [

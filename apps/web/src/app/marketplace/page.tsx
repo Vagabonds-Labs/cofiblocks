@@ -1,21 +1,33 @@
 "use client";
 
+import { useUser } from "@clerk/nextjs";
 import Carousel from "@repo/ui/carousel";
 import { useAccount, useDisconnect } from "@starknet-react/core";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import ProductCatalog from "~/app/_components/features/ProductCatalog";
 import { ProfileOptions } from "~/app/_components/features/ProfileOptions";
 import WalletConnect from "~/app/_components/features/WalletConnect";
 import Header from "~/app/_components/layout/Header";
 import Main from "~/app/_components/layout/Main";
+import type { UnsafeMetadata } from "~/types";
 import SearchBar from "../_components/features/SearchBar";
 
 export default function Home() {
 	const { t } = useTranslation();
 	const { address } = useAccount();
-	const { disconnect } = useDisconnect();
+	const router = useRouter();
+	const { user } = useUser();
 	const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+
+	useEffect(() => {
+		// Check if user is signed in and has no wallet
+		const metadata = user?.unsafeMetadata as UnsafeMetadata | undefined;
+		if (user && !metadata?.wallet?.encryptedPrivateKey) {
+			router.push("/onboarding");
+		}
+	}, [user, router]);
 
 	const handleConnect = () => {
 		setIsWalletModalOpen(true);
@@ -49,15 +61,8 @@ export default function Home() {
 	return (
 		<Main>
 			<div className="flex flex-col min-h-screen">
-				<Header
-					address={address}
-					disconnect={disconnect}
-					showCart={true}
-					onConnect={handleConnect}
-					profileOptions={
-						address ? <ProfileOptions address={address} /> : undefined
-					}
-				/>
+				<Header showCart={true} />
+
 				<div className="flex-grow">
 					{/* Hero Section */}
 					<div className="mb-8">
@@ -78,7 +83,6 @@ export default function Home() {
 				<WalletConnect
 					isOpen={isWalletModalOpen}
 					onClose={handleCloseWalletModal}
-					onSuccess={handleCloseWalletModal}
 				/>
 			</div>
 		</Main>

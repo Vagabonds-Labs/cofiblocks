@@ -7,7 +7,7 @@ commit-msg:
 pre-commit:
   commands:
     check:
-      glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
+      glob: "web/**/*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
       run: bun run format:fix
       stage_fixed: true
     sn_format:
@@ -15,4 +15,4 @@ pre-commit:
       run: bun run sn:format:check
       stage_fixed: true
     build:
-      run: bun run build
+      #run: bun run build

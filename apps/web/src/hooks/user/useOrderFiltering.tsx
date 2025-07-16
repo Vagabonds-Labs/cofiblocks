@@ -1,6 +1,5 @@
 import type { OrderStatus } from "@prisma/client";
 import { useCallback, useEffect, useState } from "react";
-import { SalesStatus } from "~/types";
 
 interface OrderGroup {
 	date: string;
@@ -22,19 +21,6 @@ interface UseOrderFilteringProps {
 	filters: Record<string, boolean>;
 }
 
-const mapOrderStatusToSalesStatus = (status: OrderStatus): SalesStatus => {
-	switch (status) {
-		case "PENDING":
-			return SalesStatus.Paid;
-		case "COMPLETED":
-			return SalesStatus.Delivered;
-		case "CANCELLED":
-			return SalesStatus.Paid; // TODO: Add proper cancelled status
-		default:
-			return SalesStatus.Paid;
-	}
-};
-
 export function useOrderFiltering({
 	orders,
 	searchKey,
@@ -53,7 +39,7 @@ export function useOrderFiltering({
 					.includes(searchTerm.toLowerCase());
 
 				const statusFilters = Object.entries(filters).filter(
-					([key, value]) => value,
+					([, value]) => value,
 				);
 
 				if (statusFilters.length === 0) {
@@ -84,12 +70,9 @@ export function useOrderFiltering({
 		setIsFiltersModalOpen(false);
 	}, []);
 
-	const applyFilters = useCallback(
-		(values: Record<string, boolean>) => {
-			closeFiltersModal();
-		},
-		[closeFiltersModal],
-	);
+	const applyFilters = useCallback(() => {
+		closeFiltersModal();
+	}, [closeFiltersModal]);
 
 	return {
 		searchTerm,

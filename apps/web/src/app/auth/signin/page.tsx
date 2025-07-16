@@ -31,7 +31,7 @@ export default function SignIn() {
 			}
 
 			setIsLoggedIn(true);
-		} catch (_) {
+		} catch {
 			setError("An error occurred during sign in");
 		}
 	};

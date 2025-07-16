@@ -1,126 +1,161 @@
 "use client";
 
-import { ChevronRightIcon, UserIcon } from "@heroicons/react/24/outline";
-import { useAccount, useDisconnect } from "@starknet-react/core";
-import { useSession } from "next-auth/react";
+import { useAuth, useUser } from "@clerk/nextjs";
+import {
+	ChevronDownIcon,
+	ChevronRightIcon,
+	ChevronUpIcon,
+	UserIcon,
+	WalletIcon,
+} from "@heroicons/react/24/outline";
+import Button from "@repo/ui/button";
+import SkeletonLoader from "@repo/ui/skeleton";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { toast } from "react-hot-toast";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ProfileCard } from "~/app/_components/features/ProfileCard";
 import { ProfileOptions } from "~/app/_components/features/ProfileOptions";
-import WalletConnectFlow from "~/app/_components/features/WalletConnectFlow";
+import WalletDetails from "~/app/_components/features/WalletDetails";
 import Header from "~/app/_components/layout/Header";
 import Main from "~/app/_components/layout/Main";
-import { api } from "~/trpc/react";
+import type { UnsafeMetadata } from "~/types";
 
 type Badge = "lover" | "contributor" | "producer";
 
 export default function UserProfile() {
 	const { t } = useTranslation();
-	const { address } = useAccount();
-	const { disconnect } = useDisconnect();
 	const router = useRouter();
-	const { data: session, status } = useSession();
-	const userId = session?.user?.id;
+	const { isLoaded: clerkLoaded, isSignedIn, user } = useUser();
+	const { isSignedIn: authSignedIn } = useAuth();
+	const [isWalletExpanded, setIsWalletExpanded] = useState(false);
 
-	const { data: user, isLoading } = api.user.getUser.useQuery(
-		{ userId: userId ?? "" },
-		{
-			enabled: !!userId,
-			retry: false,
-		},
-	);
+	// Get wallet info from Clerk metadata
+	const walletMetadata = (user?.unsafeMetadata as UnsafeMetadata | undefined)
+		?.wallet;
+	const hasWallet = !!walletMetadata?.encryptedPrivateKey;
 
-	// Debug user data
 	useEffect(() => {
-		if (user) {
-			console.log("User Data:", {
-				walletAddress: user.walletAddress,
-				isPlaceholder: user.walletAddress?.startsWith("placeholder_"),
-				hasStarknetWallet: !!address,
-			});
+		if (clerkLoaded && isSignedIn && !hasWallet) {
+			router.push("/onboarding");
 		}
-	}, [user, address]);
+	}, [clerkLoaded, isSignedIn, hasWallet, router]);
 
 	// Show loading state while checking data
-	if (isLoading) {
+	if (!clerkLoaded) {
 		return (
 			<Main>
+				<Header />
 				<div className="container mx-auto px-4 py-8">
-					<Header address={address} disconnect={disconnect} />
-					<div className="animate-pulse">
-						<div className="h-48 bg-gray-200 rounded-lg mb-6" />
+					<div className="max-w-3xl mx-auto space-y-6">
+						<div className="bg-white shadow rounded-lg overflow-hidden">
+							<div className="p-6 w-full flex items-center justify-center">
+								<div className="w-full max-w-2xl">
+									<SkeletonLoader width="w-full" height="h-64" />
+								</div>
+							</div>
+						</div>
+						<div className="bg-white shadow rounded-lg overflow-hidden">
+							<div className="p-6 w-full flex items-center justify-center">
+								<div className="w-full max-w-2xl">
+									<SkeletonLoader width="w-full" height="h-48" />
+								</div>
+							</div>
+						</div>
 					</div>
 				</div>
 			</Main>
 		);
 	}
 
-	// Check if user needs to connect wallet
-	const needsWalletConnection = !address;
-
-	// Show wallet connection flow if needed
-	if (needsWalletConnection) {
+	if (!isSignedIn) {
 		return (
 			<Main>
-				<div className="min-h-screen flex items-center justify-center">
-					<div className="max-w-md w-full p-6 bg-white rounded-lg shadow-lg">
-						<h1 className="text-2xl font-bold text-center mb-6">
-							{t("connect_wallet")}
-						</h1>
-						<p className="text-gray-600 text-center mb-8">
-							{t("connect_wallet_description")}
-						</p>
-						<WalletConnectFlow />
+				<Header />
+				<div className="container mx-auto px-4 py-8">
+					<div className="text-center">
+						<p className="mb-4">{t("sign_in_required")}</p>
+						<Link href="/sign-in">
+							<Button variant="primary">{t("sign_in")}</Button>
+						</Link>
 					</div>
-				</div>
-			</Main>
-		);
-	}
-
-	// Only show profile if we have user data
-	if (!user) {
-		return (
-			<Main>
-				<div className="container mx-auto px-4 py-8 text-center">
-					<Header address={address} disconnect={disconnect} />
-					<p className="text-red-500">{t("error_loading_profile")}</p>
 				</div>
 			</Main>
 		);
 	}
 
 	const userProfile = {
-		name: user.name ?? t("unnamed_user"),
+		name: user.fullName ?? t("unnamed_user"),
 		country: t("costa_rica"),
-		memberSince: new Date(user.createdAt).getFullYear(),
-		walletAddress: user.walletAddress,
-		role: user.role,
+		memberSince: user.createdAt
+			? new Date(user.createdAt).getFullYear()
+			: new Date().getFullYear(),
+		walletAddress:
+			walletMetadata?.address ?? "0x0000000000000000000000000000000000000000",
+		role: "user",
 		badges: ["lover", "contributor"] as Badge[],
+	};
+
+	// Toggle wallet details visibility
+	const toggleWalletDetails = () => {
+		setIsWalletExpanded(!isWalletExpanded);
 	};
 
 	return (
 		<Main>
 			<div className="container mx-auto px-4 py-8">
-				<Header
-					address={address}
-					disconnect={disconnect}
-					profileOptions={<ProfileOptions address={address} />}
-				/>
-				<ProfileCard user={userProfile} />
-				<div className="mb-6">
-					<Link
-						href="/user/edit-profile/my-profile"
-						className="w-full bg-white text-content-title flex items-center justify-between p-4 rounded-lg hover:bg-surface-secondary-soft transition-colors"
-					>
-						<div className="flex items-center">
-							<UserIcon className="w-5 h-5 mr-3" />
-							<span>{t("edit_my_profile")}</span>
+				<Header profileOptions={<ProfileOptions />} />
+				<div className="max-w-3xl mx-auto space-y-6">
+					<ProfileCard user={userProfile} />
+
+					{hasWallet && (
+						<div className="bg-white shadow rounded-lg overflow-hidden">
+							<div className="p-6">
+								<div
+									onClick={toggleWalletDetails}
+									onKeyDown={(e) => {
+										if (e.key === "Enter" || e.key === " ") {
+											toggleWalletDetails();
+										}
+									}}
+									tabIndex={0}
+									role="button"
+									aria-expanded={isWalletExpanded}
+									className="w-full bg-white text-content-title flex items-center justify-between p-4 rounded-lg hover:bg-surface-secondary-soft transition-colors cursor-pointer"
+								>
+									<div className="flex items-center">
+										<WalletIcon className="w-5 h-5 mr-3" />
+										<span>{t("wallet_details")}</span>
+									</div>
+									{isWalletExpanded ? (
+										<ChevronDownIcon className="w-5 h-5 text-content-body-default" />
+									) : (
+										<ChevronRightIcon className="w-5 h-5 text-content-body-default" />
+									)}
+								</div>
+								{isWalletExpanded && (
+									<div className="mt-4 px-4">
+										<WalletDetails />
+									</div>
+								)}
+							</div>
 						</div>
-						<ChevronRightIcon className="w-5 h-5 text-content-body-default" />
-					</Link>
+					)}
+
+					<div className="bg-white shadow rounded-lg overflow-hidden">
+						<div className="p-6">
+							<Link
+								href="/user/edit-profile/my-profile"
+								className="w-full bg-white text-content-title flex items-center justify-between p-4 rounded-lg hover:bg-surface-secondary-soft transition-colors"
+							>
+								<div className="flex items-center">
+									<UserIcon className="w-5 h-5 mr-3" />
+									<span>{t("edit_my_profile")}</span>
+								</div>
+								<ChevronRightIcon className="w-5 h-5 text-content-body-default" />
+							</Link>
+						</div>
+					</div>
 				</div>
 			</div>
 		</Main>

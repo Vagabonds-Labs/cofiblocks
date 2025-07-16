@@ -1,6 +1,5 @@
 "use client";
 
-import { ArrowPathRoundedSquareIcon } from "@heroicons/react/24/outline";
 import { ClockIcon } from "@heroicons/react/24/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@repo/ui/button";

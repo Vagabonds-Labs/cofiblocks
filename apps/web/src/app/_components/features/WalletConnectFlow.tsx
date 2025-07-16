@@ -7,8 +7,6 @@ import { type Connector, useAccount, useConnect } from "@starknet-react/core";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { connect } from "starknetkit";
-import { ARGENT_WEBWALLET_URL } from "~/constants";
 
 export default function WalletConnectFlow() {
 	const [isClient, setIsClient] = useState(false);
@@ -25,39 +23,12 @@ export default function WalletConnectFlow() {
 				setIsConnecting(true);
 				setConnectionError(null);
 				connectWallet({ connector });
-				router.push("/marketplace");
 			} catch (error) {
 				console.error("Failed to connect wallet:", error);
 				setConnectionError(t("error_connecting_wallet"));
 			} finally {
 				setIsConnecting(false);
 			}
-		}
-	};
-
-	const handleConnectArgentMobile = async (): Promise<void> => {
-		try {
-			setIsConnecting(true);
-			setConnectionError(null);
-			const result = await connect({
-				webWalletUrl: ARGENT_WEBWALLET_URL,
-				argentMobileOptions: {
-					dappName: "CofiBlocks",
-					url: "https://web.argent.xyz",
-				},
-			});
-
-			if (result?.connector) {
-				connectWallet({
-					connector: result.connector as unknown as Connector,
-				});
-				router.push("/marketplace");
-			}
-		} catch (error) {
-			console.error("Error connecting Argent Mobile:", error);
-			setConnectionError(t("error_connecting_argent"));
-		} finally {
-			setIsConnecting(false);
 		}
 	};
 
