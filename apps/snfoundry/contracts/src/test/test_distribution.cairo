@@ -342,4 +342,52 @@ mod test_distribution {
         let cofounder2_claim = distribution.cofounder_claim_balance(COFOUNDER2());
         assert(cofounder2_claim == expected_cofounder_claim, 'Wrong Cofounder2 claim');
     }
+
+    #[test]
+    fn test_roaster_producer_relation() {
+        let distribution = deploy_distribution();
+
+        let roaster1 = 'ROASTER1'.try_into().unwrap();
+        let producer1 = 'PRODUCER1'.try_into().unwrap();
+
+        // Register roaster and producer
+        cheat_caller_address(distribution.contract_address, OWNER(), CheatSpan::TargetCalls(1));
+        distribution.set_roaster_producer(roaster1, producer1);
+
+        // Make two purchases
+        cheat_caller_address(
+            distribution.contract_address, MARKETPLACE(), CheatSpan::TargetCalls(2),
+        );
+        let buyer1 = 'BUYER1'.try_into().unwrap();
+        let product_price1 = 1000 * ONE_E6;
+        let profit1 = calculate_profit(product_price1);
+        distribution.register_purchase(buyer1, roaster1, false, product_price1, profit1);
+
+        let buyer2 = 'BUYER2'.try_into().unwrap();
+        let product_price2 = 2000 * ONE_E6;
+        let profit2 = calculate_profit(product_price2);
+        distribution.register_purchase(buyer2, roaster1, false, product_price2, profit2);
+
+        // Distribute profits
+        cheat_caller_address(distribution.contract_address, OWNER(), CheatSpan::TargetCalls(2));
+        distribution.distribute();
+
+        // Check claims for roasters
+        let total_profit = profit1 + profit2;
+        let total_purchases = product_price1 + product_price2 + total_profit;
+        let roaster_profits = (total_profit * 5 * 100) / 10_000; // 5% of total profit
+
+        // Check for roaster1
+        let roaster1_percentage = 100; // only one roaster
+        let expected_roaster1_claim = (roaster_profits * roaster1_percentage * 100) / 10_000;
+        let roaster1_claim = distribution.roaster_claim_balance(roaster1);
+        assert(roaster1_claim == expected_roaster1_claim, 'Wrong Roaster1 claim');
+
+        // Check for producer1
+        let producer_profits = (total_profit * 30 * 100) / 10_000; // 30% of total profit
+        let producer_percentage = 100; // only one producer
+        let expected_producer_claim = (producer_profits * producer_percentage * 100) / 10_000;
+        let producer_claim = distribution.producer_claim_balance(producer1);
+        assert(producer_claim == expected_producer_claim, 'Wrong producer1 claim');
+    }
 }
