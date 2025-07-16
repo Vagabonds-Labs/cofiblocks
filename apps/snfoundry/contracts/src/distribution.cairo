@@ -3,6 +3,11 @@ use starknet::ContractAddress;
 #[starknet::interface]
 pub trait IDistribution<TContractState> {
     fn set_marketplace(ref self: TContractState, marketplace: ContractAddress);
+    fn set_roaster_producer(
+        ref self: TContractState,
+        roaster_address: ContractAddress,
+        producer_address: ContractAddress,
+    );
     fn register_purchase(
         ref self: TContractState,
         buyer_address: ContractAddress,
@@ -109,6 +114,7 @@ mod Distribution {
         purchase_per_producer: Map<ContractAddress, u256>,
         producer_claim_balances: Map<ContractAddress, u256>,
         roasters: Vec<ContractAddress>,
+        roasters_producers: Map<ContractAddress, ContractAddress>,
         purchase_per_roaster: Map<ContractAddress, u256>,
         roaster_claim_balances: Map<ContractAddress, u256>,
         total_purchases: u256,
@@ -127,6 +133,15 @@ mod Distribution {
         fn set_marketplace(ref self: ContractState, marketplace: ContractAddress) {
             self.accesscontrol.assert_only_role(DEFAULT_ADMIN_ROLE);
             self.accesscontrol._grant_role(MARKETPLACE_ROLE, marketplace);
+        }
+
+        fn set_roaster_producer(
+            ref self: ContractState,
+            roaster_address: ContractAddress,
+            producer_address: ContractAddress,
+        ) {
+            self.accesscontrol.assert_only_role(DEFAULT_ADMIN_ROLE);
+            self.roasters_producers.write(roaster_address, producer_address);
         }
 
         fn add_cofounder(ref self: ContractState, address: ContractAddress) {
@@ -188,6 +203,19 @@ mod Distribution {
                 self
                     .purchase_per_roaster
                     .write(product_owner_address, current_roaster_amount + amount);
+
+                // Register roaster-producer relationship
+                let producer_address = self.roasters_producers.read(product_owner_address);
+                if producer_address != 0x00.try_into().unwrap() {
+                    let current_producer_amount = self.purchase_per_producer.read(producer_address);
+
+                    if current_producer_amount == 0 {
+                        self.producers.push(producer_address);
+                    }
+                    self
+                        .purchase_per_producer
+                        .write(producer_address, current_producer_amount + amount);
+                }
             }
             self.total_purchases.write(self.total_purchases.read() + amount);
             self.total_profit.write(self.total_profit.read() + profit);
