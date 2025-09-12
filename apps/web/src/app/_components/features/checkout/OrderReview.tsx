@@ -7,7 +7,7 @@ import { useAccount, useProvider } from "@starknet-react/core";
 import { useAtomValue, useSetAtom } from "jotai";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	ContractsInterface,
@@ -81,6 +81,7 @@ export default function OrderReview({
 		provider,
 	);
 
+	// Get current cart
 	const { data: cart } = api.cart.getUserCart.useQuery();
 
 	const productPrice = cartItems.reduce(
@@ -104,25 +105,21 @@ export default function OrderReview({
 			const token_ids = cartItems.map((item) => item.tokenId);
 			const token_amounts = cartItems.map((item) => item.quantity);
 
-			console.log("Attempting mock purchase with:", {
-				token_ids,
-				token_amounts,
-				totalPrice,
-			});
-			// Original contract call (commented out)
-			// await contract.buy_product(token_ids, token_amounts, totalPrice);
-
-			// SIMULATE SUCCESS FOR NOW - REPLACE WITH PIN LOGIC
-			await new Promise((resolve) => setTimeout(resolve, 1500)); // Simulate delay
-			console.log("Mock purchase simulation complete.");
+			// Execute the purchase transaction
+			await contract.buy_product(token_ids, token_amounts, totalPrice);
 
 			if (!cart?.id) {
 				throw new Error("Cart not found");
 			}
 
-			await createOrder.mutateAsync({ cartId: cart.id });
+			// Create order in the database
+			const result = await createOrder.mutateAsync({ cartId: cart.id });
+
+			// Clear the cart and close the cart sidebar
 			clearCart();
 			setIsCartOpen(false);
+
+			// Show confirmation and redirect to my-orders
 			setShowConfirmation(true);
 			router.push("/user/my-orders");
 		} catch (err) {
@@ -130,9 +127,8 @@ export default function OrderReview({
 			setError(
 				err instanceof Error ? err.message : "Failed to process payment",
 			);
-		} finally {
-			setIsProcessing(false);
 		}
+		setIsProcessing(false);
 	};
 
 	if (showConfirmation || isConfirmed) {

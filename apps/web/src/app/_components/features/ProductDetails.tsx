@@ -79,6 +79,7 @@ export default function ProductDetails({
 		process,
 		description,
 		region,
+		bagsAvailable,
 	} = product;
 
 	const { t } = useTranslation();

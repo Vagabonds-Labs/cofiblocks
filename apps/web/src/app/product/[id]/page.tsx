@@ -1,8 +1,7 @@
 "use client";
 
-import Carousel from "@repo/ui/carousel";
 import Skeleton from "@repo/ui/skeleton";
-import { useAccount } from "@starknet-react/core";
+import { useAccount, useDisconnect } from "@starknet-react/core";
 import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -14,7 +13,10 @@ import WalletConnect from "~/app/_components/features/WalletConnect";
 import type { NftMetadata } from "~/app/_components/features/types";
 import Header from "~/app/_components/layout/Header";
 import Main from "~/app/_components/layout/Main";
-import { useMarketplaceContract } from "~/services/contractsInterface";
+import {
+	useCofiCollectionContract,
+	useMarketplaceContract,
+} from "~/services/contractsInterface";
 import { api } from "~/trpc/react";
 
 interface ParsedMetadata extends NftMetadata {
@@ -38,6 +40,7 @@ export default function ProductPage() {
 	const { t } = useTranslation();
 	const { data: session } = useSession();
 	const { address } = useAccount();
+	const { disconnect } = useDisconnect();
 	const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 	const [bagsAvailable, setBagsAvailable] = useState<number | null>(null);
 	const marketplaceContract = useMarketplaceContract();
@@ -195,7 +198,10 @@ export default function ProductPage() {
 		<Main>
 			<div className="flex flex-col min-h-screen">
 				<Header
+					address={address}
+					disconnect={disconnect}
 					showCart={true}
+					onConnect={handleConnect}
 					profileOptions={
 						address ? <ProfileOptions address={address} /> : undefined
 					}
@@ -247,6 +253,7 @@ export default function ProductPage() {
 				<WalletConnect
 					isOpen={isWalletModalOpen}
 					onClose={handleCloseWalletModal}
+					onSuccess={handleCloseWalletModal}
 				/>
 			</div>
 		</Main>

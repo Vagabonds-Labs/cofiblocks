@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
+import { useAccount } from "@starknet-react/core";
 import Link from "next/link";
 import { useReducer } from "react";
 import { useTranslation } from "react-i18next";
@@ -14,6 +15,7 @@ import OrderReview from "~/app/_components/features/checkout/OrderReview";
 
 export default function CheckoutPage() {
 	const { t } = useTranslation();
+	const { address } = useAccount();
 	const [state, dispatch] = useReducer(CheckoutReducer, initialState);
 
 	const handleNextStep = (method: string, price: number, location?: string) => {
@@ -44,6 +46,14 @@ export default function CheckoutPage() {
 	const handleCurrencySelect = (currency: string) => {
 		dispatch({ type: "SET_CURRENCY", payload: currency });
 	};
+
+	if (!address) {
+		return (
+			<div className="flex items-center justify-center min-h-screen">
+				<p className="text-lg">{t("connect_wallet_to_checkout")}</p>
+			</div>
+		);
+	}
 
 	return (
 		<div className="max-w-md mx-auto bg-white min-h-screen">

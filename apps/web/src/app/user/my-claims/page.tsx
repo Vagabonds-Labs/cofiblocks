@@ -1,10 +1,15 @@
 "use client";
 
-import { InformationCircleIcon } from "@heroicons/react/24/solid";
+import {
+	FunnelIcon,
+	InformationCircleIcon,
+	MagnifyingGlassIcon,
+} from "@heroicons/react/24/solid";
 import Button from "@repo/ui/button";
 import { useAccount, useProvider } from "@starknet-react/core";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Provider } from "starknet";
+import OrderListItem from "~/app/_components/features/OrderListItem";
 import OrderListPriceItem from "~/app/_components/features/OrderListPriceItem";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
 import {
@@ -169,7 +174,7 @@ export default function MyClaims() {
 
 		try {
 			setIsLoading(true);
-			await contracts.claim();
+			const tx = await contracts.claim();
 			toast.success(t("status_updated"));
 			setMoneyToClaim(0);
 			setIsChecked(false);

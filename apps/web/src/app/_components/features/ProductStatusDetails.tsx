@@ -3,6 +3,7 @@
 import {
 	CheckCircleIcon,
 	ShoppingBagIcon,
+	TruckIcon,
 	WalletIcon,
 } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -31,6 +32,12 @@ enum DeliveryTypeEnum {
 	Meetup = "Meetup",
 	Delivery = "Delivery",
 }
+
+const OrderStatusEnum = {
+	PENDING: "PENDING",
+	COMPLETED: "COMPLETED",
+	CANCELLED: "CANCELLED",
+} as const;
 
 const orderStatusSchema = z.object({
 	status: z.enum(["PENDING", "COMPLETED", "CANCELLED"] as const),

@@ -24,7 +24,7 @@ pub trait ICofiCollection<TContractState> {
     /// * `accounts` - A list of addresses to query.
     /// * `token_ids` - A list of token IDs to query the balances of.
     fn balance_of_batch(
-        ref self: TContractState, accounts: Span<ContractAddress>, token_ids: Span<u256>,
+        ref self: TContractState, accounts: Span<ContractAddress>, token_ids: Span<u256>
     ) -> Span<u256>;
 
     /// Transfers `value` amount of `token_id` from `from` to `to`.
@@ -41,7 +41,7 @@ pub trait ICofiCollection<TContractState> {
         to: ContractAddress,
         token_id: u256,
         value: u256,
-        data: Span<felt252>,
+        data: Span<felt252>
     );
 
     /// Transfers multiple tokens from `from` to `to` in a batch.
@@ -58,7 +58,7 @@ pub trait ICofiCollection<TContractState> {
         to: ContractAddress,
         token_ids: Span<u256>,
         values: Span<u256>,
-        data: Span<felt252>,
+        data: Span<felt252>
     );
 
     /// Mints `value` amount of `token_id` to `account`.
@@ -105,7 +105,7 @@ pub trait ICofiCollection<TContractState> {
         token_id: u256,
         value: u256,
         data: Span<felt252>,
-        uri: ByteArray,
+        uri: ByteArray
     );
 
     /// Burns `value` amount of `token_id` from `account`.
@@ -135,7 +135,7 @@ pub trait ICofiCollection<TContractState> {
     /// * `account` - The owner of the assets.
     /// * `operator` - The address to check approval for.
     fn is_approved_for_all(
-        ref self: TContractState, account: ContractAddress, operator: ContractAddress,
+        ref self: TContractState, account: ContractAddress, operator: ContractAddress
     ) -> bool;
 
     /// Sets the approval of `operator` to manage all of `account`'s assets.
@@ -182,14 +182,14 @@ pub trait ICofiCollection<TContractState> {
 
 #[starknet::contract]
 mod CofiCollection {
-    use openzeppelin::access::accesscontrol::{AccessControlComponent, DEFAULT_ADMIN_ROLE};
-    use openzeppelin::introspection::src5::SRC5Component;
-    use openzeppelin::security::pausable::PausableComponent;
-    use openzeppelin::token::erc1155::ERC1155Component;
-    use openzeppelin::upgrades::UpgradeableComponent;
-    use openzeppelin::upgrades::interface::IUpgradeable;
+    use openzeppelin::{
+        access::accesscontrol::{AccessControlComponent, DEFAULT_ADMIN_ROLE},
+        introspection::src5::SRC5Component, security::pausable::PausableComponent,
+        token::erc1155::ERC1155Component, upgrades::{UpgradeableComponent, interface::IUpgradeable}
+    };
     use starknet::{ClassHash, ContractAddress, get_caller_address};
-    use super::{MINTER_ROLE, PAUSER_ROLE, UPGRADER_ROLE, URI_SETTER_ROLE};
+
+    use super::{PAUSER_ROLE, MINTER_ROLE, URI_SETTER_ROLE, UPGRADER_ROLE};
 
     component!(path: ERC1155Component, storage: erc1155, event: ERC1155Event);
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
@@ -312,7 +312,7 @@ mod CofiCollection {
             if account != caller {
                 assert(
                     self.erc1155.is_approved_for_all(account, caller),
-                    ERC1155Component::Errors::UNAUTHORIZED,
+                    ERC1155Component::Errors::UNAUTHORIZED
                 );
             }
             self.erc1155.burn(account, token_id, value);
@@ -329,7 +329,7 @@ mod CofiCollection {
             if account != caller {
                 assert(
                     self.erc1155.is_approved_for_all(account, caller),
-                    ERC1155Component::Errors::UNAUTHORIZED,
+                    ERC1155Component::Errors::UNAUTHORIZED
                 );
             }
             self.erc1155.batch_burn(account, token_ids, values);
@@ -354,7 +354,7 @@ mod CofiCollection {
             token_id: u256,
             value: u256,
             data: Span<felt252>,
-            uri: ByteArray,
+            uri: ByteArray
         ) {
             self.accesscontrol.assert_only_role(MINTER_ROLE);
             self.erc1155.mint_with_acceptance_check(recipient, token_id, value, data);

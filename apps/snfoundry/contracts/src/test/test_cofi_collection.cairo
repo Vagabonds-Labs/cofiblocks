@@ -1,10 +1,12 @@
-use contracts::cofi_collection::{ICofiCollectionDispatcher, ICofiCollectionDispatcherTrait};
+use contracts::cofi_collection::ICofiCollectionDispatcher;
+use contracts::cofi_collection::ICofiCollectionDispatcherTrait;
+
 use openzeppelin::utils::serde::SerializedAppend;
-use snforge_std::{ContractClassTrait, DeclareResultTrait, declare, start_cheat_caller_address};
+use snforge_std::{declare, ContractClassTrait, DeclareResultTrait, start_cheat_caller_address};
 use starknet::ContractAddress;
 
 fn OWNER() -> ContractAddress {
-    'OWNER'.try_into().unwrap()
+    starknet::contract_address_const::<'OWNER'>()
 }
 
 fn deploy_receiver() -> ContractAddress {
@@ -31,7 +33,6 @@ fn deploy_cofi_collection() -> ICofiCollectionDispatcher {
 }
 
 #[test]
-#[available_gas(l2_gas: 18446744073709551615)]
 fn test_safe_mint() {
     let cofi_collection = deploy_cofi_collection();
     let receiver = deploy_receiver();
@@ -71,7 +72,7 @@ fn test_balance_of() {
     assert(zero_balance == 0, 'Unexpected balance');
 
     // Test balance of different account
-    let different_account = 'DIFFERENT'.try_into().unwrap();
+    let different_account = starknet::contract_address_const::<'DIFFERENT'>();
     let different_account_balance = cofi_collection.balance_of(different_account, token_id);
     assert(different_account_balance == 0, 'Unexpected balance');
 }

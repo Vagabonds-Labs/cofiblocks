@@ -1,16 +1,24 @@
-import { UserButton, useUser } from "@clerk/nextjs";
 import {
 	AdjustmentsHorizontalIcon,
 	CubeIcon,
 	CurrencyDollarIcon,
 	HeartIcon,
+	NoSymbolIcon,
 	ShoppingCartIcon,
 	TicketIcon,
 	TruckIcon,
 	UserIcon,
 } from "@heroicons/react/24/outline";
+import type { Role } from "@prisma/client";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import LogoutModal from "~/app/_components/features/LogoutModal";
+
+interface ProfileOptionsProps {
+	address?: string;
+}
 
 type ProfileOption = {
 	icon: typeof UserIcon;
@@ -21,9 +29,18 @@ type ProfileOption = {
 	iconColor?: string;
 };
 
-export function ProfileOptions() {
+export function ProfileOptions({ address: _ }: ProfileOptionsProps) {
 	const { t } = useTranslation();
-	const { user } = useUser();
+	const { data: session } = useSession();
+	const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+
+	const closeLogoutModal = () => {
+		setIsLogoutModalOpen(false);
+	};
+
+	const openLogoutModal = () => {
+		setIsLogoutModalOpen(true);
+	};
 
 	// Common options that are always shown
 	const commonOptions: ProfileOption[] = [
@@ -50,19 +67,19 @@ export function ProfileOptions() {
 		},
 	];
 
-	// Producer-specific options - Update logic based on Clerk metadata/roles later
-	// For now, assume user exists means show producer options (adjust as needed)
-	const producerOptions: ProfileOption[] = user
-		? [
-				{ icon: TicketIcon, label: t("my_coffee"), href: "/user/my-coffee" },
-				{ icon: TruckIcon, label: t("my_sales"), href: "/user/my-sales" },
-				{
-					icon: CurrencyDollarIcon,
-					label: t("my_claims"),
-					href: "/user/my-claims",
-				},
-			]
-		: [];
+	// Producer-specific options that are shown only to producers
+	const producerOptions: ProfileOption[] =
+		session?.user?.role === "COFFEE_PRODUCER"
+			? [
+					{ icon: TicketIcon, label: t("my_coffee"), href: "/user/my-coffee" },
+					{ icon: TruckIcon, label: t("my_sales"), href: "/user/my-sales" },
+					{
+						icon: CurrencyDollarIcon,
+						label: t("my_claims"),
+						href: "/user/my-claims",
+					},
+				]
+			: [];
 
 	const renderOption = (option: ProfileOption) => (
 		<div
@@ -93,29 +110,17 @@ export function ProfileOptions() {
 
 	return (
 		<div id="profile-options" className="bg-white rounded-lg overflow-hidden">
-			<div className="relative">
-				<div className="flex items-center p-2">
-					{/* Apply similar structure/padding as renderOption links/buttons */}
-					{/* UserButton might need specific alignment adjustments */}
-					<div className="flex items-center gap-2">
-						<UserButton afterSignOutUrl="/" />
-						<div>User Profile</div>
-					</div>
-					{/* Optionally add a label next to it if desired */}
-					{/* <span className="ml-3">Account</span> */}
-				</div>
-				{/* No separator needed after the last item */}
-			</div>
-			{/* Common options part 1 */}
+			{/* Always render common options first */}
 			{commonOptions.slice(0, 4).map(renderOption)}
 
-			{/* Producer options (conditionally rendered) */}
-			{user && producerOptions.map(renderOption)}
+			{/* Only show producer options if user has COFFEE_PRODUCER role */}
+			{session?.user?.role === "COFFEE_PRODUCER" &&
+				producerOptions.map(renderOption)}
 
-			{/* Common options part 2 */}
+			{/* Always render remaining common options */}
 			{commonOptions.slice(4).map(renderOption)}
 
-			{/* Render UserButton styled like a menu item */}
+			<LogoutModal isOpen={isLogoutModalOpen} onClose={closeLogoutModal} />
 		</div>
 	);
 }

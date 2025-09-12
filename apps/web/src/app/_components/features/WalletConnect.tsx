@@ -8,16 +8,22 @@ import {
 	useAccount,
 	useConnect,
 	useDisconnect,
+	useSignTypedData,
 } from "@starknet-react/core";
+import { signIn, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import { useTranslation } from "react-i18next";
+import { connect } from "starknetkit";
+import { ARGENT_WEBWALLET_URL, MESSAGE } from "~/constants";
+import { api } from "~/trpc/react";
 import BottomModal from "../ui/BottomModal";
 
 interface WalletConnectProps {
 	isOpen?: boolean;
 	onClose?: () => void;
+	onSuccess?: () => void;
 	isModal?: boolean;
 }
 
@@ -26,6 +32,7 @@ export default function WalletConnect({
 	onClose = () => {
 		/* no-op */
 	},
+	onSuccess,
 	isModal = true,
 }: WalletConnectProps) {
 	const [isClient, setIsClient] = useState(false);
@@ -34,8 +41,10 @@ export default function WalletConnect({
 	const { address, isConnecting: isAutoConnecting } = useAccount();
 	const { connect: connectWallet, connectors } = useConnect();
 	const { disconnect } = useDisconnect();
+	const { signTypedDataAsync } = useSignTypedData(MESSAGE);
 	const { t } = useTranslation();
 	const router = useRouter();
+	const utils = api.useUtils();
 
 	// Reset error when modal opens
 	useEffect(() => {
@@ -58,6 +67,62 @@ export default function WalletConnect({
 			} finally {
 				setIsConnecting(false);
 			}
+		}
+	};
+
+	const handleConnectArgentMobile = async (): Promise<void> => {
+		try {
+			setIsConnecting(true);
+			setConnectionError(null);
+			const result = await connect({
+				webWalletUrl: ARGENT_WEBWALLET_URL,
+				argentMobileOptions: {
+					dappName: "CofiBlocks",
+					url: "https://web.argent.xyz",
+				},
+			});
+
+			if (result?.connector) {
+				connectWallet({
+					connector: result.connector as unknown as Connector,
+				});
+				router.push("/marketplace");
+			}
+		} catch (error) {
+			console.error("Error connecting Argent Mobile:", error);
+			setConnectionError(t("error_connecting_argent"));
+		} finally {
+			setIsConnecting(false);
+		}
+	};
+
+	const handleSignMessage = async (): Promise<void> => {
+		try {
+			setIsConnecting(true);
+			setConnectionError(null);
+			const signature = await signTypedDataAsync();
+
+			const signInResult = await signIn("credentials", {
+				address,
+				message: JSON.stringify(MESSAGE),
+				redirect: false,
+				signature,
+			});
+
+			if (signInResult?.ok) {
+				await utils.user.getMe.prefetch();
+				toast.success(t("successfully_signed_in"));
+				onSuccess?.();
+			} else {
+				setConnectionError(t("error_signing_in"));
+				toast.error(t("error_signing_in"));
+			}
+		} catch (err) {
+			console.error(t("error_signing_message"), err);
+			setConnectionError(t("error_signing_message"));
+			toast.error(t("error_signing_message"));
+		} finally {
+			setIsConnecting(false);
 		}
 	};
 

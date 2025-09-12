@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowLeftIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { useAccount } from "@starknet-react/core";
 import { useProvider } from "@starknet-react/core";
 import { useSetAtom } from "jotai";
 import Image from "next/image";
@@ -9,6 +10,13 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { type CartItem, cartItemsAtom } from "~/store/cartAtom";
 import { api } from "~/trpc/react";
+import {
+	ContractsError,
+	ContractsInterface,
+	useCofiCollectionContract,
+	useMarketplaceContract,
+	useStarkContract,
+} from "../../services/contractsInterface";
 
 const MARKET_FEE_BPS = 5000; // 50%
 
@@ -70,7 +78,15 @@ export default function ShoppingCart() {
 	const router = useRouter();
 	const { t } = useTranslation();
 	const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+	const { provider } = useProvider();
 	const setCartItems = useSetAtom(cartItemsAtom);
+	const contract = new ContractsInterface(
+		useAccount(),
+		useCofiCollectionContract(),
+		useMarketplaceContract(),
+		useStarkContract(),
+		provider,
+	);
 
 	// Get cart data from server
 	const { data: cart, refetch: refetchCart } = api.cart.getUserCart.useQuery();
@@ -95,6 +111,12 @@ export default function ShoppingCart() {
 			void refetchCart();
 		},
 	});
+	const { mutate: clearCart } = api.cart.clearCart.useMutation({
+		onSuccess: () => {
+			setCartItems([]);
+			void refetchCart();
+		},
+	});
 
 	const handleRemove = (cartItemId: string) => {
 		setItemToDelete(cartItemId);
@@ -109,6 +131,35 @@ export default function ShoppingCart() {
 
 	const cancelDelete = () => {
 		setItemToDelete(null);
+	};
+
+	const handleBuy = async () => {
+		if (!cart) return;
+
+		const token_ids = cart.items.map((item) => item.product.tokenId);
+		const token_amounts = cart.items.map((item) => item.quantity);
+		const totalPrice = cart.items.reduce(
+			(total, item) => total + item.product.price * item.quantity,
+			0,
+		);
+
+		console.log("buying items", token_ids, token_amounts, totalPrice);
+		try {
+			const tx_hash = await contract.buy_product(
+				token_ids,
+				token_amounts,
+				totalPrice,
+			);
+			alert(`Items bought successfully tx hash: ${tx_hash}`);
+			// Clear cart after successful purchase
+			clearCart();
+			void refetchCart();
+		} catch (error) {
+			if (error instanceof ContractsError) {
+				alert(error.message);
+			}
+			console.error("Error buying items:", error);
+		}
 	};
 
 	const calculateTotalPrice = (price: number): number => {
