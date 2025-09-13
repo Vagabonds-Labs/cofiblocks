@@ -32,6 +32,7 @@
 		"@trpc/client": "^11.0.0-rc.446",
 		"@trpc/react-query": "^11.0.0-rc.446",
 		"@trpc/server": "^11.0.0-rc.446",
+		"axios": "^1.12.1",
 		"bcrypt": "^5.1.1",
 		"cavos-service-sdk": "^1.2.38",
 		"framer-motion": "^11.3.30",

@@ -1,28 +1,19 @@
 "use client";
 
 import {
-	FunnelIcon,
 	InformationCircleIcon,
-	MagnifyingGlassIcon,
 } from "@heroicons/react/24/solid";
 import Button from "@repo/ui/button";
-import { useAccount, useProvider } from "@starknet-react/core";
-import { useEffect, useState } from "react";
-import type { Provider } from "starknet";
-import OrderListItem from "~/app/_components/features/OrderListItem";
+import { useState } from "react";
 import OrderListPriceItem from "~/app/_components/features/OrderListPriceItem";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
-import {
-	ContractsInterface,
-	useCofiCollectionContract,
-	useMarketplaceContract,
-	useStarkContract,
-} from "~/services/contractsInterface";
 import { DeliveryMethod, SalesStatus } from "~/types";
+import { api } from "~/trpc/react";
 
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { useTranslation } from "react-i18next";
+import { useSession } from "next-auth/react";
 
 // Interface for blockchain events
 interface BlockchainOrder {
@@ -69,94 +60,89 @@ export default function MyClaims() {
 	const [isChecked, setIsChecked] = useState(false);
 	const { t } = useTranslation();
 	const router = useRouter();
-
-	const { provider } = useProvider();
-	const starknetProvider = provider as Provider;
-	const { address } = useAccount();
-	const contracts = new ContractsInterface(
-		useAccount(),
-		useCofiCollectionContract(),
-		useMarketplaceContract(),
-		useStarkContract(),
-		starknetProvider,
-	);
+	const { data: session } = useSession();
 
 	const fetchBlockchainData = async () => {
-		if (!starknetProvider || !address || !contracts.marketplaceContract) return;
 
 		setIsFetching(true);
 		try {
 			// Get claim balance
-			const balance = await contracts.get_claim_balance();
-			setMoneyToClaim(Number(balance));
+			const isProducer = session?.user?.role === "COFFEE_PRODUCER";
+			if (isProducer) {
+				const balance = await api.distribution.getclaimBalanceProducer.useQuery();
+				setMoneyToClaim(Number(balance));
+			} else {
+				const balance = await api.distribution.getclaimBalanceCoffeeLover.useQuery();
+				setMoneyToClaim(Number(balance));
+			}
 
 			// Get events for this seller
-			const eventsResponse = await starknetProvider.getEvents({
-				address: contracts.marketplaceContract.address,
-				from_block: { block_number: 0 },
-				to_block: "latest",
-				chunk_size: 100,
-				keys: [[contracts.marketplaceContract.address]],
-			});
+			// const eventsResponse = await starknetProvider.getEvents({
+			// 	address: contracts.marketplaceContract.address,
+			// 	from_block: { block_number: 0 },
+			// 	to_block: "latest",
+			// 	chunk_size: 100,
+			// 	keys: [[contracts.marketplaceContract.address]],
+			// });
 
-			// Convert events to our format
-			const events: BlockchainEvent[] = (eventsResponse.events ?? []).map(
-				(event: StarknetEvent) => ({
-					name: event.keys[0] ?? "",
-					data: event.data,
-					timestamp: Date.now() / 1000, // Using current timestamp as fallback
-				}),
-			);
+			// // Convert events to our format
+			// const events: BlockchainEvent[] = (eventsResponse.events ?? []).map(
+			// 	(event: StarknetEvent) => ({
+			// 		name: event.keys[0] ?? "",
+			// 		data: event.data,
+			// 		timestamp: Date.now() / 1000, // Using current timestamp as fallback
+			// 	}),
+			// );
 
-			// Process events into orders
-			const processedOrders: BlockchainOrder[] = events
-				.filter(
-					(event) =>
-						event.data.includes(address.toLowerCase()) &&
-						event.name === "BuyProduct",
-				)
-				.map((event) => ({
-					token_id: event.data[0] ?? "0",
-					amount: event.data[1] ?? "0",
-					price: event.data[2] ?? "0",
-					timestamp: event.timestamp,
-					claimed: false,
-				}));
+			// // Process events into orders
+			// const processedOrders: BlockchainOrder[] = events
+			// 	.filter(
+			// 		(event) =>
+			// 			event.data.includes(address.toLowerCase()) &&
+			// 			event.name === "BuyProduct",
+			// 	)
+			// 	.map((event) => ({
+			// 		token_id: event.data[0] ?? "0",
+			// 		amount: event.data[1] ?? "0",
+			// 		price: event.data[2] ?? "0",
+			// 		timestamp: event.timestamp,
+			// 		claimed: false,
+			// 	}));
 
-			// Group orders by month
-			const groupedOrders = processedOrders.reduce<OrderGroup[]>(
-				(acc, order) => {
-					const date = new Date(order.timestamp * 1000);
-					const monthYear = date.toLocaleString("default", {
-						month: "long",
-						year: "numeric",
-					});
+			// // Group orders by month
+			// const groupedOrders = processedOrders.reduce<OrderGroup[]>(
+			// 	(acc, order) => {
+			// 		const date = new Date(order.timestamp * 1000);
+			// 		const monthYear = date.toLocaleString("default", {
+			// 			month: "long",
+			// 			year: "numeric",
+			// 		});
 
-					const orderItem: OrderItem = {
-						id: order.token_id,
-						productName: `Product #${order.token_id}`,
-						buyerName: "Anonymous Buyer",
-						status: SalesStatus.Delivered,
-						delivery: DeliveryMethod.Address,
-						price: Number(order.price) / 1e18,
-						claimed: order.claimed,
-					};
+			// 		const orderItem: OrderItem = {
+			// 			id: order.token_id,
+			// 			productName: `Product #${order.token_id}`,
+			// 			buyerName: "Anonymous Buyer",
+			// 			status: SalesStatus.Delivered,
+			// 			delivery: DeliveryMethod.Address,
+			// 			price: Number(order.price) / 1e18,
+			// 			claimed: order.claimed,
+			// 		};
 
-					const existingGroup = acc.find((group) => group.date === monthYear);
-					if (existingGroup) {
-						existingGroup.items.push(orderItem);
-					} else {
-						acc.push({
-							date: monthYear,
-							items: [orderItem],
-						});
-					}
-					return acc;
-				},
-				[],
-			);
+			// 		const existingGroup = acc.find((group) => group.date === monthYear);
+			// 		if (existingGroup) {
+			// 			existingGroup.items.push(orderItem);
+			// 		} else {
+			// 			acc.push({
+			// 				date: monthYear,
+			// 				items: [orderItem],
+			// 			});
+			// 		}
+			// 		return acc;
+			// 	},
+			// 	[],
+			// );
 
-			setOrdersToClaim(groupedOrders);
+			setOrdersToClaim([]);
 			setIsChecked(true);
 		} catch (error) {
 			console.error("Error fetching blockchain data:", error);
@@ -174,7 +160,12 @@ export default function MyClaims() {
 
 		try {
 			setIsLoading(true);
-			const tx = await contracts.claim();
+			const isProducer = session?.user?.role === "COFFEE_PRODUCER";
+			if (isProducer) {
+				const tx = await api.marketplace.claimProducer.useMutation();
+			} else {
+				const tx = await api.marketplace.claimConsumer.useMutation();
+			}
 			toast.success(t("status_updated"));
 			setMoneyToClaim(0);
 			setIsChecked(false);

@@ -4,9 +4,7 @@ import NFTCard from "@repo/ui/nftCard";
 import { useAccount } from "@starknet-react/core";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { Contract } from "starknet";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
-import { useCofiCollectionContract } from "~/services/contractsInterface";
 import { api } from "~/trpc/react";
 
 interface NFTMetadata {
@@ -29,16 +27,11 @@ interface CollectibleDisplay {
 	totalQuantity: number;
 }
 
-interface CofiCollectionContract extends Contract {
-	balance_of: (address: string, tokenId: string) => Promise<bigint>;
-}
-
 export default function Collectibles() {
 	const { t } = useTranslation();
 	const { address, status } = useAccount();
 	const [collectibles, setCollectibles] = useState<CollectibleDisplay[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
-	const cofiCollection = useCofiCollectionContract();
 
 	const productsQuery = api.product.getProducts.useQuery(
 		{ limit: 100, cursor: undefined },
@@ -47,13 +40,7 @@ export default function Collectibles() {
 
 	useEffect(() => {
 		async function fetchCollectibles() {
-			if (!address || !cofiCollection || !productsQuery.data) {
-				console.log("Missing dependencies:", {
-					hasAddress: !!address,
-					hasContract: !!cofiCollection,
-					hasProducts: !!productsQuery.data,
-					walletStatus: status,
-				});
+			if (!productsQuery.data) {
 				setIsLoading(false);
 				return;
 			}
@@ -69,10 +56,8 @@ export default function Collectibles() {
 					try {
 						console.log("Checking balance for token", product.tokenId);
 
-						const contract = cofiCollection as CofiCollectionContract;
-						const balance = await contract.balance_of(
-							address,
-							product.tokenId.toString(),
+						const balance = await api.cofiCollection.getBalanceOf.useQuery(
+							{ tokenId: product.tokenId.toString() }
 						);
 						const balanceNumber = Number(balance);
 
@@ -120,7 +105,7 @@ export default function Collectibles() {
 		}
 
 		void fetchCollectibles();
-	}, [address, cofiCollection, productsQuery.data, status]);
+	}, [address, productsQuery.data, status]);
 
 	if (isLoading || productsQuery.isLoading) {
 		return (

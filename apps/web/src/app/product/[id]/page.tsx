@@ -13,10 +13,6 @@ import WalletConnect from "~/app/_components/features/WalletConnect";
 import type { NftMetadata } from "~/app/_components/features/types";
 import Header from "~/app/_components/layout/Header";
 import Main from "~/app/_components/layout/Main";
-import {
-	useCofiCollectionContract,
-	useMarketplaceContract,
-} from "~/services/contractsInterface";
 import { api } from "~/trpc/react";
 
 interface ParsedMetadata extends NftMetadata {
@@ -43,7 +39,6 @@ export default function ProductPage() {
 	const { disconnect } = useDisconnect();
 	const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 	const [bagsAvailable, setBagsAvailable] = useState<number | null>(null);
-	const marketplaceContract = useMarketplaceContract();
 	const params = useParams();
 	const idParam = params?.id;
 	const id =
@@ -123,12 +118,10 @@ export default function ProductPage() {
 
 	useEffect(() => {
 		async function getStock() {
-			if (!marketplaceContract || !product?.tokenId) return;
+			if (!product?.tokenId) return;
 			try {
-				const stock = await marketplaceContract.call("listed_product_stock", [
-					product.tokenId,
-					"0x0",
-				]);
+				const { data: stock } = await api.marketplace.getProductStock.useQuery({ 
+					tokenId: product.tokenId.toString() });
 				setBagsAvailable(Number(stock));
 			} catch (error) {
 				console.error("Error getting stock:", error);
@@ -136,7 +129,7 @@ export default function ProductPage() {
 			}
 		}
 		void getStock();
-	}, [marketplaceContract, product?.tokenId]);
+	}, [product?.tokenId]);
 
 	const handleConnect = () => {
 		setIsWalletModalOpen(true);

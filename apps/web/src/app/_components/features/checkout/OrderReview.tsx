@@ -9,12 +9,6 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-	ContractsInterface,
-	useCofiCollectionContract,
-	useMarketplaceContract,
-	useStarkContract,
-} from "~/services/contractsInterface";
 import { useCreateOrder } from "~/services/useCreateOrder";
 import { cartItemsAtom, clearCartAtom, isCartOpenAtom } from "~/store/cartAtom";
 import type { CartItem } from "~/store/cartAtom";
@@ -71,16 +65,6 @@ export default function OrderReview({
 	const router = useRouter();
 	const createOrder = useCreateOrder();
 
-	const account = useAccount();
-	const { provider } = useProvider();
-	const contract = new ContractsInterface(
-		account,
-		useCofiCollectionContract(),
-		useMarketplaceContract(),
-		useStarkContract(),
-		provider,
-	);
-
 	// Get current cart
 	const { data: cart } = api.cart.getUserCart.useQuery();
 
@@ -106,7 +90,15 @@ export default function OrderReview({
 			const token_amounts = cartItems.map((item) => item.quantity);
 
 			// Execute the purchase transaction
-			await contract.buy_product(token_ids, token_amounts, totalPrice);
+			if (token_ids.length > 0 && token_amounts.length > 0 && token_ids[0] && token_amounts[0]) {
+				console.log("Buying product", token_ids[0], token_amounts[0]);
+				const mutation = api.marketplace.buyProduct.useMutation();
+				await mutation.mutateAsync({
+					tokenId: token_ids[0].toString(),
+					tokenAmount: token_amounts[0].toString(), 
+					paymentToken: "USDC"
+				});
+			}
 
 			if (!cart?.id) {
 				throw new Error("Cart not found");
