@@ -39,19 +39,6 @@ interface OrderGroup {
 	items: OrderItem[];
 }
 
-interface BlockchainEvent {
-	name: string;
-	data: string[];
-	timestamp: number;
-}
-
-interface StarknetEvent {
-	keys: string[];
-	data: string[];
-	block_number: number;
-	transaction_hash: string;
-}
-
 export default function MyClaims() {
 	const [OrdersToClaim, setOrdersToClaim] = useState<OrderGroup[]>([]);
 	const [MoneyToClaim, setMoneyToClaim] = useState(0);
@@ -76,71 +63,59 @@ export default function MyClaims() {
 				setMoneyToClaim(Number(balance));
 			}
 
-			// Get events for this seller
-			// const eventsResponse = await starknetProvider.getEvents({
-			// 	address: contracts.marketplaceContract.address,
-			// 	from_block: { block_number: 0 },
-			// 	to_block: "latest",
-			// 	chunk_size: 100,
-			// 	keys: [[contracts.marketplaceContract.address]],
-			// });
+			const { data: events = [] } = await api.marketplace.getEvents.useQuery();
+			const { data: userAddress } = await api.user.getUserAddress.useQuery();
+			if (!userAddress) {
+				throw new Error("User address not found");
+			}
 
-			// // Convert events to our format
-			// const events: BlockchainEvent[] = (eventsResponse.events ?? []).map(
-			// 	(event: StarknetEvent) => ({
-			// 		name: event.keys[0] ?? "",
-			// 		data: event.data,
-			// 		timestamp: Date.now() / 1000, // Using current timestamp as fallback
-			// 	}),
-			// );
+			// Process events into orders
+			const processedOrders: BlockchainOrder[] = events
+				.filter(
+					(event) =>
+						event.data.includes(userAddress.toLowerCase()) &&
+						event.name === "BuyProduct",
+				)
+				.map((event) => ({
+					token_id: event.data[0] ?? "0",
+					amount: event.data[1] ?? "0",
+					price: event.data[2] ?? "0",
+					timestamp: event.timestamp,
+					claimed: false,
+				}));
 
-			// // Process events into orders
-			// const processedOrders: BlockchainOrder[] = events
-			// 	.filter(
-			// 		(event) =>
-			// 			event.data.includes(address.toLowerCase()) &&
-			// 			event.name === "BuyProduct",
-			// 	)
-			// 	.map((event) => ({
-			// 		token_id: event.data[0] ?? "0",
-			// 		amount: event.data[1] ?? "0",
-			// 		price: event.data[2] ?? "0",
-			// 		timestamp: event.timestamp,
-			// 		claimed: false,
-			// 	}));
+			// Group orders by month
+			const groupedOrders = processedOrders.reduce<OrderGroup[]>(
+				(acc, order) => {
+					const date = new Date(order.timestamp * 1000);
+					const monthYear = date.toLocaleString("default", {
+						month: "long",
+						year: "numeric",
+					});
 
-			// // Group orders by month
-			// const groupedOrders = processedOrders.reduce<OrderGroup[]>(
-			// 	(acc, order) => {
-			// 		const date = new Date(order.timestamp * 1000);
-			// 		const monthYear = date.toLocaleString("default", {
-			// 			month: "long",
-			// 			year: "numeric",
-			// 		});
+					const orderItem: OrderItem = {
+						id: order.token_id,
+						productName: `Product #${order.token_id}`,
+						buyerName: "Anonymous Buyer",
+						status: SalesStatus.Delivered,
+						delivery: DeliveryMethod.Address,
+						price: Number(order.price) / 1e18,
+						claimed: order.claimed,
+					};
 
-			// 		const orderItem: OrderItem = {
-			// 			id: order.token_id,
-			// 			productName: `Product #${order.token_id}`,
-			// 			buyerName: "Anonymous Buyer",
-			// 			status: SalesStatus.Delivered,
-			// 			delivery: DeliveryMethod.Address,
-			// 			price: Number(order.price) / 1e18,
-			// 			claimed: order.claimed,
-			// 		};
-
-			// 		const existingGroup = acc.find((group) => group.date === monthYear);
-			// 		if (existingGroup) {
-			// 			existingGroup.items.push(orderItem);
-			// 		} else {
-			// 			acc.push({
-			// 				date: monthYear,
-			// 				items: [orderItem],
-			// 			});
-			// 		}
-			// 		return acc;
-			// 	},
-			// 	[],
-			// );
+					const existingGroup = acc.find((group) => group.date === monthYear);
+					if (existingGroup) {
+						existingGroup.items.push(orderItem);
+					} else {
+						acc.push({
+							date: monthYear,
+							items: [orderItem],
+						});
+					}
+					return acc;
+				},
+				[],
+			);
 
 			setOrdersToClaim([]);
 			setIsChecked(true);

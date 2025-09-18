@@ -11,6 +11,7 @@ import {
     claimProducer,
     claimConsumer,
 } from "~/services/contracts/marketplace";
+import { getEvents, CofiBlocksContracts } from "~/utils/contracts";
 import { registerUser } from "~/services/cavos";
 
 
@@ -91,5 +92,10 @@ export const marketplaceRouter = createTRPCRouter({
             }
             const userAuthData = await registerUser(ctx.session.user.email, "1234");
             return await claimConsumer(userAuthData);
+        }),
+
+    getEvents: protectedProcedure
+        .query(async ({ }) => {
+            return await getEvents(CofiBlocksContracts.MARKETPLACE);
         }),
 });

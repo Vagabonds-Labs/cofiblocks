@@ -1,12 +1,27 @@
 
 import { RpcProvider, Account, Abi, Contract } from "starknet";
-import configExternalContracts from "../contracts/configExternalContracts";
+import configExternalContracts from "../contracts/deployedContracts";
+import { useAccount, useProvider } from "@starknet-react/core";
+import type { Provider } from "starknet";
 
 export const getMarketplaceAddress = () => {
     const env = (process.env.NEXT_PUBLIC_STARKNET_ENV ??
         "sepolia") as keyof typeof configExternalContracts;
     return configExternalContracts[env].Marketplace.address;
 };
+
+interface BlockchainEvent {
+	name: string;
+	data: string[];
+	timestamp: number;
+}
+
+interface StarknetEvent {
+	keys: string[];
+	data: string[];
+	block_number: number;
+	transaction_hash: string;
+}
 
 export enum PaymentToken {
     STRK = "STRK",
@@ -41,13 +56,34 @@ export const getCallToContract = async (
     entrypoint: string,
     calldata: any[]
 ) => {
-    const env = (process.env.NEXT_PUBLIC_STARKNET_ENV ??
-        "sepolia") as keyof typeof configExternalContracts;
     const account = localAccount();
     const contractInstance = new Contract(
-        configExternalContracts[env][contract].abi,
-        configExternalContracts[env][contract].address,
+        configExternalContracts.mainnet[contract].abi,
+        configExternalContracts.mainnet[contract].address,
         account
     );
     await contractInstance.invoke(entrypoint, calldata);
+}
+
+export async function getEvents(contract: CofiBlocksContracts): Promise<BlockchainEvent[]> {
+    const { provider } = useProvider();
+	const starknetProvider = provider as Provider;
+    const eventsResponse = await starknetProvider.getEvents({
+        address: configExternalContracts.mainnet[contract].address,
+        from_block: { block_number: 0 },
+        to_block: "latest",
+        chunk_size: 100,
+        keys: [[configExternalContracts.mainnet[contract].address]],
+    });
+
+    // Convert events to our format
+    const events: BlockchainEvent[] = (eventsResponse.events ?? []).map(
+    	(event: StarknetEvent) => ({
+    		name: event.keys[0] ?? "",
+    		data: event.data,
+    		timestamp: Date.now() / 1000, // Using current timestamp as fallback
+    	}),
+    );
+
+    return events;
 }
