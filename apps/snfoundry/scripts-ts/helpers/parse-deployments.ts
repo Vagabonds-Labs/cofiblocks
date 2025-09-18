@@ -1,5 +1,5 @@
-import fs from "node:fs";
-import path from "node:path";
+import fs from "fs";
+import path from "path";
 import prettier from "prettier";
 import type { Abi, CompiledSierra } from "starknet";
 
@@ -21,7 +21,7 @@ const getContractDataFromDeployments = (): Record<
 		Record<string, { address: string; abi: Abi; classHash: string }>
 	> = {};
 
-	for (const file of files) {
+	files.forEach((file) => {
 		if (path.extname(file) === ".json" && file.endsWith("_latest.json")) {
 			const filePath = path.join(deploymentsDir, file);
 			const content: Record<
@@ -34,7 +34,7 @@ const getContractDataFromDeployments = (): Record<
 			> = JSON.parse(fs.readFileSync(filePath, "utf8"));
 			const chainId = path.basename(file, "_latest.json");
 
-			for (const [contractName, contractData] of Object.entries(content)) {
+			Object.entries(content).forEach(([contractName, contractData]) => {
 				try {
 					const abiFilePath = path.join(
 						__dirname,
@@ -53,9 +53,9 @@ const getContractDataFromDeployments = (): Record<
 						},
 					};
 				} catch (e) {}
-			}
+			});
 		}
-	}
+	});
 
 	return allContractsData;
 };
@@ -75,22 +75,18 @@ const generateTsAbis = async () => {
 		fs.mkdirSync(TARGET_DIR);
 	}
 
-	const formattedContent = await prettier.format(
+	const formatted = await prettier.format(
 		`${generatedContractComment}\n\nconst deployedContracts = {${fileContent}} as const;\n\nexport default deployedContracts;`,
 		{
 			parser: "typescript",
 		},
 	);
 
-	fs.writeFileSync(
-		path.join(TARGET_DIR, "deployedContracts.ts"),
-		formattedContent,
-	);
+	fs.writeFileSync(path.join(TARGET_DIR, "deployedContracts.ts"), formatted);
 
 	console.log(
 		`📝 Updated TypeScript contract definition file on ${TARGET_DIR}/deployedContracts.ts`,
 	);
 };
 
-// Change the function call to handle the Promise
-generateTsAbis().catch(console.error);
+generateTsAbis();

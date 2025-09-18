@@ -60,8 +60,7 @@ const deployScript = async (): Promise<void> => {
 	console.log("🚀 Creating deployment calls...");
 
 	const { address: cofiCollectionAddress } = await deployContract({
-		contract: "cofi_collection.cairo",
-		contractName: "CofiCollection",
+		contract: "CofiCollection",
 		constructorArgs: {
 			default_admin: deployer.address,
 			pauser: deployer.address,
@@ -71,11 +70,18 @@ const deployScript = async (): Promise<void> => {
 		},
 	});
 
+	const { address: distributionAddress } = await deployContract({
+		contract: "Distribution",
+		constructorArgs: {
+			admin: deployer.address,
+		},
+	});
+
 	const { address: marketplaceAddress } = await deployContract({
-		contract: "marketplace.cairo",
-		contractName: "Marketplace",
+		contract: "Marketplace",
 		constructorArgs: {
 			cofi_collection_address: cofiCollectionAddress,
+			distribution_address: distributionAddress,
 			admin: deployer.address,
 			market_fee: BigInt(5000), // 50 %
 		},
@@ -85,10 +91,11 @@ const deployScript = async (): Promise<void> => {
 		"CofiCollection will be deployed at:",
 		green(cofiCollectionAddress),
 	);
+	console.log("Distribution will be deployed at:", green(distributionAddress));
 	console.log("Marketplace will be deployed at:", green(marketplaceAddress));
 	await executeDeployCalls();
 
-	console.log("🚀 Setting marketplace as minter and setting base uri...");
+	console.log("🚀 Performing initial configs...");
 	const base_uri_txt = process.env.TOKEN_METADATA_URL || "";
 	console.log("Base URI:", base_uri_txt);
 	const transactions = [
@@ -103,6 +110,13 @@ const deployScript = async (): Promise<void> => {
 			contractAddress: cofiCollectionAddress,
 			entrypoint: "set_base_uri",
 			calldata: string_to_byte_array(base_uri_txt),
+		},
+		{
+			contractAddress: distributionAddress,
+			entrypoint: "set_marketplace",
+			calldata: {
+				marketplace: marketplaceAddress,
+			},
 		},
 	];
 	const { transaction_hash } = await deployer.execute(transactions);
