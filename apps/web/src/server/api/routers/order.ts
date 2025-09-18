@@ -8,7 +8,8 @@ import {
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { serverContracts } from "~/services/serverContracts";
+import { registerUser } from "~/services/cavos";
+import { balanceOf } from "~/services/contracts/cofi_collection";
 
 interface Collectible {
 	id: number;
@@ -268,10 +269,11 @@ export const orderRouter = createTRPCRouter({
 			const collectibles = await Promise.all(
 				products.map(async (product) => {
 					try {
-						const balance = await serverContracts.getBalance(
-							user.walletAddress,
-							product.tokenId.toString(),
-						);
+						if (!ctx.session.user.email) {
+							throw new Error("User email not found");
+						}
+						const userAuthData = await registerUser(ctx.session.user.email, "1234");
+						const balance = await balanceOf(userAuthData, BigInt(product.tokenId));
 
 						if (Number(balance) === 0) {
 							return null;
