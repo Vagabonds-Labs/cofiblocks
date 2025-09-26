@@ -3,7 +3,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@repo/ui/button";
 import InputField from "@repo/ui/form/inputField";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -11,6 +10,7 @@ import { toast } from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
+import { useCavosAuth } from "~/providers/cavos-auth";
 import { api } from "~/trpc/react";
 
 const schema = z.object({
@@ -24,7 +24,7 @@ type FormData = z.infer<typeof schema>;
 function EditMyProfile() {
 	const utils = api.useUtils();
 	const { t } = useTranslation();
-	const { data: session } = useSession();
+	const { user: cavosUser, isAuthenticated } = useCavosAuth();
 	const router = useRouter();
 
 	const { handleSubmit, control, reset } = useForm<FormData>({
@@ -36,7 +36,7 @@ function EditMyProfile() {
 		},
 	});
 
-	const userId = session?.user?.id;
+	const userId = cavosUser?.id;
 
 	const {
 		data: user,
@@ -50,9 +50,9 @@ function EditMyProfile() {
 		},
 	);
 
-	// If there's an error fetching the user, redirect to home
+	// If there's an error fetching the user or not authenticated, redirect to home
 	useEffect(() => {
-		if (!userId) {
+		if (!isAuthenticated || !userId) {
 			router.push("/");
 			return;
 		}
@@ -61,7 +61,7 @@ function EditMyProfile() {
 			toast.error(t("error_fetching_profile"));
 			router.push("/");
 		}
-	}, [userError, router, t, userId]);
+	}, [userError, router, t, userId, isAuthenticated]);
 
 	useEffect(() => {
 		if (user) {
@@ -95,7 +95,7 @@ function EditMyProfile() {
 		});
 
 	const onSubmit = (data: FormData) => {
-		if (!userId) {
+		if (!isAuthenticated || !userId) {
 			toast.error(t("session_expired"));
 			router.push("/");
 			return;

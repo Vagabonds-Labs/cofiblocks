@@ -52,8 +52,18 @@ export const orderRouter = createTRPCRouter({
 
 	// Get user's orders
 	getUserOrders: protectedProcedure.query(async ({ ctx }) => {
+		// Get user ID from session
+		const userId = ctx.session?.user?.id;
+
+		if (!userId) {
+			throw new TRPCError({
+				code: "UNAUTHORIZED",
+				message: "User not authenticated",
+			});
+		}
+
 		return ctx.db.order.findMany({
-			where: { userId: ctx.session.user.id },
+			where: { userId },
 			include: {
 				items: {
 					include: {

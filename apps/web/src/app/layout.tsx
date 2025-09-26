@@ -5,8 +5,8 @@ import "~/styles/globals.css";
 import "~/i18n";
 import { CheckCircleIcon } from "@heroicons/react/20/solid";
 import { GeistSans } from "geist/font/sans";
-import { SessionProvider } from "next-auth/react";
 import i18n from "~/i18n";
+import { CavosAuthProvider } from "~/providers/cavos-auth";
 import StarknetProvider from "~/providers/starknet";
 import { TRPCReactProvider } from "~/trpc/react";
 import WalletConnectionCheck from "./_components/features/WalletConnectionCheck";
@@ -29,19 +29,19 @@ export default function RootLayout({
 			suppressHydrationWarning
 			lang="en"
 			data-theme="cofiblocks"
-			className={`${GeistSans.variable}`}
+			className={`${GeistSans.variable} h-full`}
 		>
-			<body>
-				<SessionProvider>
+			<body className="min-h-screen h-full">
+				<CavosAuthProvider>
 					<StarknetProvider>
 						<TRPCReactProvider>
 							<WalletConnectionCheck>
 								<BetaAnnouncement />
-								<div className="pb-20">{children}</div>
+								<div className="min-h-screen h-full pb-20">{children}</div>
 							</WalletConnectionCheck>
 						</TRPCReactProvider>
 					</StarknetProvider>
-				</SessionProvider>
+				</CavosAuthProvider>
 				<Toaster
 					position="top-center"
 					toastOptions={{

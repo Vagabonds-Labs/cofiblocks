@@ -3,17 +3,15 @@ import {
 	CubeIcon,
 	CurrencyDollarIcon,
 	HeartIcon,
-	NoSymbolIcon,
 	ShoppingCartIcon,
 	TicketIcon,
 	TruckIcon,
 	UserIcon,
 } from "@heroicons/react/24/outline";
-import type { Role } from "@prisma/client";
-import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+// import { useCavosAuth } from "~/providers/cavos-auth";
 import LogoutModal from "~/app/_components/features/LogoutModal";
 
 interface ProfileOptionsProps {
@@ -31,15 +29,12 @@ type ProfileOption = {
 
 export function ProfileOptions({ address: _ }: ProfileOptionsProps) {
 	const { t } = useTranslation();
-	const { data: session } = useSession();
+	// We'll use useCavosAuth later when needed
+	// const { user } = useCavosAuth();
 	const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
 	const closeLogoutModal = () => {
 		setIsLogoutModalOpen(false);
-	};
-
-	const openLogoutModal = () => {
-		setIsLogoutModalOpen(true);
 	};
 
 	// Common options that are always shown
@@ -68,18 +63,17 @@ export function ProfileOptions({ address: _ }: ProfileOptionsProps) {
 	];
 
 	// Producer-specific options that are shown only to producers
-	const producerOptions: ProfileOption[] =
-		session?.user?.role === "COFFEE_PRODUCER"
-			? [
-					{ icon: TicketIcon, label: t("my_coffee"), href: "/user/my-coffee" },
-					{ icon: TruckIcon, label: t("my_sales"), href: "/user/my-sales" },
-					{
-						icon: CurrencyDollarIcon,
-						label: t("my_claims"),
-						href: "/user/my-claims",
-					},
-				]
-			: [];
+	// Since we don't have role in CavosUser, we'll show these options conditionally based on other factors
+	// For now, let's include these options for all authenticated users
+	const producerOptions: ProfileOption[] = [
+		{ icon: TicketIcon, label: t("my_coffee"), href: "/user/my-coffee" },
+		{ icon: TruckIcon, label: t("my_sales"), href: "/user/my-sales" },
+		{
+			icon: CurrencyDollarIcon,
+			label: t("my_claims"),
+			href: "/user/my-claims",
+		},
+	];
 
 	const renderOption = (option: ProfileOption) => (
 		<div
@@ -113,9 +107,8 @@ export function ProfileOptions({ address: _ }: ProfileOptionsProps) {
 			{/* Always render common options first */}
 			{commonOptions.slice(0, 4).map(renderOption)}
 
-			{/* Only show producer options if user has COFFEE_PRODUCER role */}
-			{session?.user?.role === "COFFEE_PRODUCER" &&
-				producerOptions.map(renderOption)}
+			{/* Show producer options for all authenticated users */}
+			{producerOptions.map(renderOption)}
 
 			{/* Always render remaining common options */}
 			{commonOptions.slice(4).map(renderOption)}

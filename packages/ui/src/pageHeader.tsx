@@ -3,9 +3,10 @@
 import {
 	Bars3Icon,
 	ChevronLeftIcon,
+	Cog6ToothIcon,
 	ShoppingCartIcon,
 } from "@heroicons/react/24/outline";
-import Image from "next/image";
+import NextImage from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -26,13 +27,12 @@ interface CartItem {
 }
 
 interface PageHeaderProps {
-	title: string;
-	userEmail?: string | null;
+	title?: string;
 	onLogout?: () => void;
 	onSignIn?: () => void;
 	showCart?: boolean;
 	cartItems?: CartItem[];
-	onRemoveFromCart?: (cartItemId: string) => void;
+	onRemoveFromCart?: (itemId: string) => void;
 	cartTranslations?: {
 		cartEmptyMessage: string;
 		quantityLabel: string;
@@ -48,8 +48,7 @@ interface PageHeaderProps {
 }
 
 export function PageHeader({
-	title,
-	userEmail,
+	title = "CofiBlocks",
 	onLogout,
 	onSignIn,
 	showCart,
@@ -95,9 +94,9 @@ export function PageHeader({
 						/>
 					)}
 					<Link href="/" className="flex items-center gap-2">
-						<Image
+						<NextImage
 							src="/images/logo.png"
-							alt="Logo"
+							alt={title}
 							width={40}
 							height={64}
 							className="w-10 h-16"
@@ -107,24 +106,33 @@ export function PageHeader({
 
 				<div className="flex items-center gap-4">
 					{rightActions}
-					{isAuthenticated ? (
-						<div className="flex items-center gap-4">
-							{showCart && (
-								<button
-									type="button"
-									onClick={() => setIsCartOpen(true)}
-									className="relative p-3 hover:bg-surface-primary-soft rounded-full transition-colors"
-									aria-label="Shopping cart"
-								>
-									<ShoppingCartIcon className="w-6 h-6 text-content-body-default" />
-									{cartItemsCount > 0 && (
-										<span className="absolute -right-1 -top-1 rounded-full bg-error-default px-2 py-1 text-xs text-surface-inverse min-w-[20px] h-5 flex items-center justify-center">
-											{cartItemsCount}
-										</span>
-									)}
-								</button>
-							)}
 
+					<Link
+						href="/user/settings"
+						className="p-3 hover:bg-surface-primary-soft rounded-full transition-colors"
+						aria-label="Settings"
+					>
+						<Cog6ToothIcon className="w-6 h-6 text-content-body-default" />
+					</Link>
+
+					{showCart && (
+						<button
+							type="button"
+							onClick={() => setIsCartOpen(true)}
+							className="relative p-3 hover:bg-surface-primary-soft rounded-full transition-colors"
+							aria-label="Shopping cart"
+						>
+							<ShoppingCartIcon className="w-6 h-6 text-content-body-default" />
+							{cartItemsCount > 0 && (
+								<span className="absolute -right-1 -top-1 rounded-full bg-error-default px-2 py-1 text-xs text-surface-inverse min-w-[20px] h-5 flex items-center justify-center">
+									{cartItemsCount}
+								</span>
+							)}
+						</button>
+					)}
+
+					{isAuthenticated ? (
+						<>
 							<button
 								type="button"
 								onClick={() => setIsMenuOpen(true)}
@@ -133,50 +141,48 @@ export function PageHeader({
 							>
 								<Bars3Icon className="w-6 h-6 text-content-body-default" />
 							</button>
-
-							<CartSidebar
-								isOpen={isCartOpen}
-								onClose={() => setIsCartOpen(false)}
-								title="Shopping Cart"
-								totalPrice={totalPrice}
-								onCheckout={handleCheckout}
-							>
-								<CartContent
-									items={cartItems}
-									onRemoveItem={onRemoveFromCart}
-									translations={cartTranslations}
-								/>
-							</CartSidebar>
-
 							<Sidebar
 								isOpen={isMenuOpen}
 								onClose={() => setIsMenuOpen(false)}
 								title="Menu"
 							>
 								<div className="flex flex-col space-y-4">
-									<span className="text-sm text-content-body-default">
-										{userEmail}
-									</span>
 									{profileOptions}
-									<Button onClick={onLogout} variant="primary" size="sm">
-										Sign out
-									</Button>
+									{onLogout && (
+										<Button onClick={onLogout} variant="primary" size="sm">
+											Sign out
+										</Button>
+									)}
 								</div>
 							</Sidebar>
-						</div>
+						</>
 					) : (
 						<div className="flex items-center space-x-4">
 							<Button onClick={onSignIn} variant="primary" size="sm">
 								Sign in
 							</Button>
 							<Link
-								href="/auth/signup"
+								href="/auth?mode=signup"
 								className="text-sm font-medium text-content-body-default hover:text-content-title transition-colors"
 							>
 								Create account
 							</Link>
 						</div>
 					)}
+
+					<CartSidebar
+						isOpen={isCartOpen}
+						onClose={() => setIsCartOpen(false)}
+						title="Shopping Cart"
+						totalPrice={totalPrice}
+						onCheckout={handleCheckout}
+					>
+						<CartContent
+							items={cartItems}
+							onRemoveItem={onRemoveFromCart}
+							translations={cartTranslations}
+						/>
+					</CartSidebar>
 				</div>
 			</div>
 		</header>

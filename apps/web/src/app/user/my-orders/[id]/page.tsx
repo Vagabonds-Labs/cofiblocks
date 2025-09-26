@@ -1,12 +1,12 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import ProductStatusDetails from "~/app/_components/features/ProductStatusDetails";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
 import { CoffeeIcon } from "~/app/_components/icons/CoffeeIcon";
+import { useCavosAuth } from "~/providers/cavos-auth";
 import { api } from "~/trpc/react";
 
 interface RawMetadata {
@@ -45,14 +45,15 @@ const parseMetadata = (metadata: string | null): { roast: string } => {
 export default function OrderDetails() {
 	const { t } = useTranslation();
 	const { id: orderId } = useParams();
-	const { data: session } = useSession();
-	const isProducer = session?.user?.role === "COFFEE_PRODUCER";
-	const userId = session?.user?.id;
+	const { user: cavosUser, isAuthenticated } = useCavosAuth();
+	// Temporarily assume user is not a producer since CavosUser doesn't have a role property
+	const isProducer = false; // Will need to be updated when role information is available from Cavos
+	const userId = cavosUser?.id;
 
 	const { data: user } = api.user.getUser.useQuery(
 		{ userId: userId ?? "" },
 		{
-			enabled: !!userId,
+			enabled: isAuthenticated && !!userId,
 		},
 	);
 

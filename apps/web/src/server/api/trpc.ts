@@ -28,11 +28,23 @@ import { db } from "~/server/db";
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
+	// Get Next Auth session
 	const session = await getServerAuthSession();
+
+	// Check for Cavos Auth token in headers
+	const authHeader = opts.headers.get("authorization");
+	const cavosToken = authHeader?.startsWith("Bearer ")
+		? authHeader.substring(7)
+		: null;
+
+	// Extract userId from headers if available (sent by client for Cavos Auth)
+	const cavosUserId = opts.headers.get("x-user-id");
 
 	return {
 		db,
 		session,
+		cavosToken,
+		cavosUserId,
 		...opts,
 	};
 };
@@ -122,13 +134,36 @@ export const publicProcedure = t.procedure.use(timingMiddleware);
 export const protectedProcedure = t.procedure
 	.use(timingMiddleware)
 	.use(({ ctx, next }) => {
-		if (!ctx.session || !ctx.session.user) {
+		// Check for Next Auth session
+		const hasNextAuthSession = !!ctx.session?.user;
+
+		// Check for Cavos Auth
+		const hasCavosAuth = !!ctx.cavosToken && !!ctx.cavosUserId;
+
+		// Allow access if either auth method is valid
+		if (!hasNextAuthSession && !hasCavosAuth) {
 			throw new TRPCError({ code: "UNAUTHORIZED" });
 		}
+
+		// If using Next Auth, keep the session as is
+		if (hasNextAuthSession) {
+			return next({
+				ctx: {
+					session: { ...ctx.session, user: ctx.session.user },
+				},
+			});
+		}
+
+		// If using Cavos Auth, create a compatible session object
 		return next({
 			ctx: {
-				// infers the `session` as non-nullable
-				session: { ...ctx.session, user: ctx.session.user },
+				session: {
+					user: {
+						id: ctx.cavosUserId as string,
+						// Default role for Cavos users
+						role: "COFFEE_BUYER",
+					},
+				},
 			},
 		});
 	});
