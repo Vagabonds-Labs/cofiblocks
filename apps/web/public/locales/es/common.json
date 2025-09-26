@@ -352,5 +352,55 @@
 		"low_stock_left": "Solo quedan {{count}}",
 		"stock_available": "{{count}} disponibles",
 		"sold_out": "Agotado"
+	},
+
+	"app": {
+		"name": "CofiBlocks"
+	},
+
+	"auth": {
+		"welcome_to": "Bienvenido a",
+		"create_account": "Crear Cuenta",
+		"create_account_link": "Crear una Cuenta",
+		"already_have_account": "¿Ya tienes una cuenta? Inicia Sesión",
+		"email_placeholder": "Correo electrónico",
+		"password_placeholder": "Contraseña",
+		"confirm_password_placeholder": "Confirmar Contraseña",
+		"show_password": "Mostrar contraseña",
+		"hide_password": "Ocultar contraseña",
+		"signing_in": "Iniciando sesión...",
+		"creating_account": "Creando Cuenta...",
+		"sign_in": "Iniciar Sesión",
+		"sign_up": "Registrarse",
+		"or_continue_with": "O continuar con",
+		"sign_in_with_google": "Iniciar sesión con Google",
+		"continue_with_google": "Continuar con Google",
+		"verification_email_sent": "Correo de Verificación Enviado",
+		"check_email_instructions": "Por favor revisa tu correo y haz clic en el enlace de verificación para completar tu registro.",
+		"email_sent_to": "Correo enviado a:",
+		"back_to_signin": "Volver a Iniciar Sesión",
+		"verification_required": "Se requiere verificación de correo",
+		"verification_success": "Correo verificado con éxito. Ahora puedes iniciar sesión.",
+		"verification_important": "Importante",
+		"verification_must_return": "Después de verificar tu correo, debes volver para iniciar sesión con tus credenciales.",
+		"click_after_verification": "Haz clic aquí después de verificar tu correo",
+		"use_google_signin": "Por favor usa Google para registrarte en lugar del registro directo."
+	},
+
+	"wallet": {
+		"address": "Dirección de Billetera",
+		"copy": "Copiar dirección de billetera",
+		"copied": "¡Copiado!",
+		"copied_message": "¡Dirección de billetera copiada al portapapeles!"
+	},
+
+	"error": {
+		"invalid_credentials": "Correo electrónico o contraseña inválidos",
+		"registration_failed": "Error al registrarse. Por favor intente de nuevo.",
+		"auth_callback_failed": "Autenticación fallida. Por favor intente de nuevo.",
+		"email_verification_required": "Por favor verifica tu correo antes de iniciar sesión.",
+		"passwords_do_not_match": "Las contraseñas no coinciden. Por favor intente de nuevo.",
+		"user_already_exists_signin": "Este correo ya está registrado. Por favor usa el formulario de registro.",
+		"user_already_exists_signup": "Este correo ya está registrado. Por favor inicia sesión."
 	}
 }

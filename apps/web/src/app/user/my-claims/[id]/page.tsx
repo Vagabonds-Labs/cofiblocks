@@ -1,21 +1,22 @@
 "use client";
 
 import type { OrderStatus } from "@prisma/client";
-import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import ProductStatusDetails from "~/app/_components/features/ProductStatusDetails";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
+import { useCavosAuth } from "~/providers/cavos-auth";
 import type { SaleDetailsType } from "~/types";
 
 export default function MySaleDetails() {
 	const { id: saleId } = useParams();
 	const { t } = useTranslation();
-	const { data: session } = useSession();
+	const { user: cavosUser } = useCavosAuth();
 
 	const [saleDetails, setSaleDetails] = useState<SaleDetailsType | null>(null);
-	const isProducer = session?.user?.role === "COFFEE_PRODUCER";
+	// Temporarily assume user is not a producer since CavosUser doesn't have a role property
+	const isProducer = false; // Will need to be updated when role information is available from Cavos
 
 	useEffect(() => {
 		// TODO: Fetch sale details based on saleId

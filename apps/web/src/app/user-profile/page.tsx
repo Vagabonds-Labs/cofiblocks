@@ -1,31 +1,25 @@
 "use client";
 
-import { ChevronRightIcon, UserIcon } from "@heroicons/react/24/outline";
-import { useAccount, useDisconnect } from "@starknet-react/core";
-import { useSession } from "next-auth/react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+// import { ChevronRightIcon, UserIcon } from "@heroicons/react/24/outline";
+// import Link from "next/link";
 import { useEffect } from "react";
-import { toast } from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { ProfileCard } from "~/app/_components/features/ProfileCard";
 import { ProfileOptions } from "~/app/_components/features/ProfileOptions";
-import WalletConnectFlow from "~/app/_components/features/WalletConnectFlow";
 import Header from "~/app/_components/layout/Header";
 import Main from "~/app/_components/layout/Main";
+import { useCavosAuth } from "~/providers/cavos-auth";
 import { api } from "~/trpc/react";
 
 type Badge = "lover" | "contributor" | "producer";
 
 export default function UserProfile() {
 	const { t } = useTranslation();
-	const { address } = useAccount();
-	const { disconnect } = useDisconnect();
-	const router = useRouter();
-	const { data: session, status } = useSession();
-	const userId = session?.user?.id;
+	const { user: cavosUser, isAuthenticated } = useCavosAuth();
+	const userId = cavosUser?.id;
 
-	const { data: user, isLoading } = api.user.getUser.useQuery(
+	// Get user data from API if we have a userId
+	const { data: userData, isLoading } = api.user.getUser.useQuery(
 		{ userId: userId ?? "" },
 		{
 			enabled: !!userId,
@@ -35,21 +29,21 @@ export default function UserProfile() {
 
 	// Debug user data
 	useEffect(() => {
-		if (user) {
+		if (userData) {
 			console.log("User Data:", {
-				walletAddress: user.walletAddress,
-				isPlaceholder: user.walletAddress?.startsWith("placeholder_"),
-				hasStarknetWallet: !!address,
+				walletAddress: userData.walletAddress,
+				isPlaceholder: userData.walletAddress?.startsWith("placeholder_"),
+				cavosUser: cavosUser,
 			});
 		}
-	}, [user, address]);
+	}, [userData, cavosUser]);
 
 	// Show loading state while checking data
 	if (isLoading) {
 		return (
 			<Main>
 				<div className="container mx-auto px-4 py-8">
-					<Header address={address} disconnect={disconnect} />
+					<Header />
 					<div className="animate-pulse">
 						<div className="h-48 bg-gray-200 rounded-lg mb-6" />
 					</div>
@@ -58,46 +52,27 @@ export default function UserProfile() {
 		);
 	}
 
-	// Check if user needs to connect wallet
-	const needsWalletConnection = !address;
-
-	// Show wallet connection flow if needed
-	if (needsWalletConnection) {
-		return (
-			<Main>
-				<div className="min-h-screen flex items-center justify-center">
-					<div className="max-w-md w-full p-6 bg-white rounded-lg shadow-lg">
-						<h1 className="text-2xl font-bold text-center mb-6">
-							{t("connect_wallet")}
-						</h1>
-						<p className="text-gray-600 text-center mb-8">
-							{t("connect_wallet_description")}
-						</p>
-						<WalletConnectFlow />
-					</div>
-				</div>
-			</Main>
-		);
-	}
-
 	// Only show profile if we have user data
-	if (!user) {
+	if (!isAuthenticated || !cavosUser) {
 		return (
 			<Main>
 				<div className="container mx-auto px-4 py-8 text-center">
-					<Header address={address} disconnect={disconnect} />
+					<Header />
 					<p className="text-red-500">{t("error_loading_profile")}</p>
 				</div>
 			</Main>
 		);
 	}
 
+	// Create user profile from Cavos user data and API data
 	const userProfile = {
-		name: user.name ?? t("unnamed_user"),
+		name: userData?.name ?? cavosUser.email ?? t("unnamed_user"),
 		country: t("costa_rica"),
-		memberSince: new Date(user.createdAt).getFullYear(),
-		walletAddress: user.walletAddress,
-		role: user.role,
+		memberSince: userData?.createdAt
+			? new Date(userData.createdAt).getFullYear()
+			: new Date().getFullYear(),
+		walletAddress: cavosUser.walletAddress ?? "",
+		role: userData?.role ?? "USER",
 		badges: ["lover", "contributor"] as Badge[],
 	};
 
@@ -105,23 +80,12 @@ export default function UserProfile() {
 		<Main>
 			<div className="container mx-auto px-4 py-8">
 				<Header
-					address={address}
-					disconnect={disconnect}
-					profileOptions={<ProfileOptions address={address} />}
+					profileOptions={
+						<ProfileOptions address={userProfile.walletAddress} />
+					}
 				/>
 				<ProfileCard user={userProfile} />
-				<div className="mb-6">
-					<Link
-						href="/user/edit-profile/my-profile"
-						className="w-full bg-white text-content-title flex items-center justify-between p-4 rounded-lg hover:bg-surface-secondary-soft transition-colors"
-					>
-						<div className="flex items-center">
-							<UserIcon className="w-5 h-5 mr-3" />
-							<span>{t("edit_my_profile")}</span>
-						</div>
-						<ChevronRightIcon className="w-5 h-5 text-content-body-default" />
-					</Link>
-				</div>
+				{/* Edit profile link removed as requested, but component kept for later use */}
 			</div>
 		</Main>
 	);

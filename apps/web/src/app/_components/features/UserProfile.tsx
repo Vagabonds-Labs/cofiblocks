@@ -1,8 +1,7 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import { useTranslation } from "react-i18next";
-import WalletConnectFlow from "./WalletConnectFlow";
+import { useCavosAuth } from "~/providers/cavos-auth";
 
 type Badge = "lover" | "contributor" | "producer";
 
@@ -35,15 +34,22 @@ const BadgeComponent = ({ type, active }: { type: Badge; active: boolean }) => {
 };
 
 export default function UserProfile() {
-	const { data: session } = useSession();
+	const { user: cavosUser, isAuthenticated } = useCavosAuth();
 	const { t } = useTranslation();
-	const user = session?.user as CustomUser | undefined;
 
-	if (!user) return null;
+	// Create a custom user from Cavos user
+	const user: CustomUser | undefined = cavosUser
+		? {
+				email: cavosUser.email,
+				name: cavosUser.name || null,
+				walletAddress: cavosUser.walletAddress || "",
+				role: "USER", // Default role since CavosUser doesn't have a role property
+			}
+		: undefined;
 
-	const isPlaceholderWallet =
-		typeof user.walletAddress === "string" &&
-		user.walletAddress.startsWith("placeholder_");
+	if (!isAuthenticated || !user) return null;
+
+	// No need to check for placeholder wallet since Cavos provides real wallets
 
 	// Determine which badges are active based on user role
 	const badges: { type: Badge; active: boolean }[] = [
@@ -80,14 +86,15 @@ export default function UserProfile() {
 							))}
 						</div>
 					</div>
-				</div>
 
-				{/* Show wallet connect flow if no wallet is connected */}
-				{!isPlaceholderWallet && (
-					<div className="mt-6">
-						<WalletConnectFlow />
-					</div>
-				)}
+					{/* Display wallet address if available */}
+					{user.walletAddress && (
+						<div className="mt-4">
+							<p className="text-sm font-medium mb-1">Wallet:</p>
+							<p className="text-xs break-all">{user.walletAddress}</p>
+						</div>
+					)}
+				</div>
 			</div>
 		</div>
 	);

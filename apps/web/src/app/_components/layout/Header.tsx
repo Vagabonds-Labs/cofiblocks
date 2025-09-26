@@ -1,13 +1,13 @@
 "use client";
 
 import { PageHeader } from "@repo/ui/pageHeader";
-import { useDisconnect } from "@starknet-react/core";
 import { useAtom } from "jotai";
-import { signIn, signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "react-hot-toast";
 import { useTranslation } from "react-i18next";
+import { ProfileOptions } from "~/app/_components/features/ProfileOptions";
+import { useCavosAuth } from "~/providers/cavos-auth";
 import { cartItemsAtom } from "~/store/cartAtom";
 import { api } from "~/trpc/react";
 
@@ -27,19 +27,62 @@ interface ProductMetadata {
 function Header({
 	showCart,
 	profileOptions,
-	address,
+	address: _address,
 	disconnect,
-	onConnect,
+	onConnect: _onConnect,
 }: HeaderProps) {
 	const router = useRouter();
 	const { t } = useTranslation();
-	const { data: session } = useSession();
+	const { isAuthenticated, user, signOut, refreshSession } = useCavosAuth();
 	const utils = api.useUtils();
 	const [, setItems] = useAtom(cartItemsAtom);
 
+	// Debug authentication state and refresh session if needed
+	React.useEffect(() => {
+		console.log("Header auth state:", {
+			isAuthenticated,
+			user,
+			email: user?.email,
+			walletAddress: user?.walletAddress,
+			localStorage: {
+				accessToken:
+					typeof window !== "undefined"
+						? !!localStorage.getItem("accessToken")
+						: null,
+				userEmail:
+					typeof window !== "undefined"
+						? localStorage.getItem("userEmail")
+						: null,
+				walletAddress:
+					typeof window !== "undefined"
+						? localStorage.getItem("walletAddress")
+						: null,
+				userId:
+					typeof window !== "undefined"
+						? !!localStorage.getItem("userId")
+						: null,
+				oauthLogin:
+					typeof window !== "undefined"
+						? localStorage.getItem("oauthLogin")
+						: null,
+			},
+		});
+
+		// Check if we should be authenticated but aren't
+		if (typeof window !== "undefined") {
+			const hasToken = !!localStorage.getItem("accessToken");
+			const hasEmail = !!localStorage.getItem("userEmail");
+
+			if (hasToken && hasEmail && !isAuthenticated) {
+				console.log("Detected auth mismatch, refreshing session...");
+				refreshSession();
+			}
+		}
+	}, [isAuthenticated, user, refreshSession]);
+
 	// Fetch cart data with proper caching
 	const { data: cartData } = api.cart.getUserCart.useQuery(undefined, {
-		enabled: !!session,
+		enabled: isAuthenticated,
 		refetchOnMount: true,
 		refetchOnWindowFocus: true,
 		refetchOnReconnect: true,
@@ -49,26 +92,39 @@ function Header({
 	// Keep local state in sync with server data
 	React.useEffect(() => {
 		if (cartData?.items) {
-			const transformedItems = cartData.items.map((item) => {
-				let metadata: ProductMetadata;
-				try {
-					metadata = JSON.parse(
-						item.product.nftMetadata as string,
-					) as ProductMetadata;
-				} catch (e) {
-					console.error("Failed to parse product metadata:", e);
-					metadata = { imageUrl: "/default-image.webp" };
-				}
+			const transformedItems = cartData.items.map(
+				(item: {
+					id: string;
+					product: {
+						name: string;
+						price: number;
+						tokenId: number;
+						nftMetadata: unknown;
+					};
+					quantity: number;
+				}) => {
+					let metadata: ProductMetadata;
+					try {
+						metadata = JSON.parse(
+							typeof item.product.nftMetadata === "string"
+								? item.product.nftMetadata
+								: "{}",
+						) as ProductMetadata;
+					} catch (e) {
+						console.error("Failed to parse product metadata:", e);
+						metadata = { imageUrl: "/default-image.webp" };
+					}
 
-				return {
-					id: item.id,
-					tokenId: item.product.tokenId,
-					name: item.product.name,
-					quantity: item.quantity,
-					price: item.product.price,
-					imageUrl: metadata.imageUrl ?? "/default-image.webp",
-				};
-			});
+					return {
+						id: item.id,
+						tokenId: item.product.tokenId,
+						name: item.product.name,
+						quantity: item.quantity,
+						price: item.product.price,
+						imageUrl: metadata.imageUrl ?? "/default-image.webp",
+					};
+				},
+			);
 			setItems(transformedItems);
 		} else {
 			setItems([]);
@@ -85,7 +141,7 @@ function Header({
 				utils.cart.getUserCart.setData(undefined, {
 					...previousCart,
 					items: previousCart.items.filter(
-						(item) => item.id !== removedItem.cartItemId,
+						(item: { id: string }) => item.id !== removedItem.cartItemId,
 					),
 				});
 			}
@@ -103,13 +159,13 @@ function Header({
 		},
 	});
 
-	const handleLogout = async () => {
+	const handleLogout = () => {
 		// Disconnect Starknet wallet if available
 		if (disconnect) {
 			disconnect();
 		}
-		// Sign out from the session
-		await signOut();
+		// Sign out using Cavos auth
+		signOut();
 		// Clear cart data
 		setItems([]);
 		// Redirect to home
@@ -117,7 +173,7 @@ function Header({
 	};
 
 	const handleSignIn = () => {
-		router.push("/auth/signin");
+		router.push("/auth");
 	};
 
 	const handleRemoveFromCart = (cartItemId: string) => {
@@ -126,34 +182,58 @@ function Header({
 
 	// Transform cart items to match the expected type
 	const transformedItems =
-		cartData?.items.map((item) => {
-			let metadata: ProductMetadata;
-			try {
-				metadata = JSON.parse(
-					item.product.nftMetadata as string,
-				) as ProductMetadata;
-			} catch (e) {
-				console.error("Failed to parse product metadata:", e);
-				metadata = { imageUrl: "/default-image.webp" };
-			}
+		cartData?.items.map(
+			(item: {
+				id: string;
+				product: { name: string; price: number; nftMetadata: unknown };
+				quantity: number;
+			}) => {
+				let metadata: ProductMetadata;
+				try {
+					metadata = JSON.parse(
+						typeof item.product.nftMetadata === "string"
+							? item.product.nftMetadata
+							: "{}",
+					) as ProductMetadata;
+				} catch (e) {
+					console.error("Failed to parse product metadata:", e);
+					metadata = { imageUrl: "/default-image.webp" };
+				}
 
-			return {
-				id: item.id,
-				product: {
-					name: item.product.name,
-					price: item.product.price,
-					nftMetadata: JSON.stringify({
-						imageUrl: metadata.imageUrl ?? "/default-image.webp",
-					}),
-				},
-				quantity: item.quantity,
-			};
-		}) ?? [];
+				return {
+					id: item.id,
+					product: {
+						name: item.product.name,
+						price: item.product.price,
+						nftMetadata: JSON.stringify({
+							imageUrl: metadata.imageUrl ?? "/default-image.webp",
+						}),
+					},
+					quantity: item.quantity,
+				};
+			},
+		) ?? [];
+
+	// Get wallet address from user object or localStorage
+	const walletAddress =
+		user?.walletAddress ??
+		(typeof window !== "undefined"
+			? localStorage.getItem("walletAddress")
+			: null);
+
+	// If no profile options are provided but user is authenticated, create default options
+	const effectiveProfileOptions =
+		profileOptions ??
+		(isAuthenticated ? (
+			<>
+				{/* Use ProfileOptions component to show menu items */}
+				<ProfileOptions address={walletAddress ?? ""} />
+			</>
+		) : undefined);
 
 	return (
 		<PageHeader
 			title="CofiBlocks"
-			userEmail={session?.user?.email}
 			onLogout={handleLogout}
 			onSignIn={handleSignIn}
 			showCart={showCart}
@@ -166,8 +246,8 @@ function Header({
 				removeConfirmationYes: t("cart.remove_confirmation_yes"),
 				cancel: t("cart.cancel"),
 			}}
-			isAuthenticated={!!session}
-			profileOptions={profileOptions}
+			isAuthenticated={isAuthenticated}
+			profileOptions={effectiveProfileOptions}
 		/>
 	);
 }

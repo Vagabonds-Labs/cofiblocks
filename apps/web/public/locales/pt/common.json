@@ -334,5 +334,55 @@
 		"low_stock_left": "Apenas {{count}} restantes",
 		"stock_available": "{{count}} disponíveis",
 		"sold_out": "Esgotado"
+	},
+
+	"app": {
+		"name": "CofiBlocks"
+	},
+
+	"auth": {
+		"welcome_to": "Bem-vindo a",
+		"create_account": "Criar Conta",
+		"create_account_link": "Criar uma Conta",
+		"already_have_account": "Já tem uma conta? Faça Login",
+		"email_placeholder": "E-mail",
+		"password_placeholder": "Senha",
+		"confirm_password_placeholder": "Confirmar Senha",
+		"show_password": "Mostrar senha",
+		"hide_password": "Ocultar senha",
+		"signing_in": "Fazendo login...",
+		"creating_account": "Criando Conta...",
+		"sign_in": "Entrar",
+		"sign_up": "Cadastrar",
+		"or_continue_with": "Ou continuar com",
+		"sign_in_with_google": "Entrar com Google",
+		"continue_with_google": "Continuar com Google",
+		"verification_email_sent": "E-mail de Verificação Enviado",
+		"check_email_instructions": "Por favor, verifique seu e-mail e clique no link de verificação para completar seu registro.",
+		"email_sent_to": "E-mail enviado para:",
+		"back_to_signin": "Voltar para Login",
+		"verification_required": "Verificação de e-mail necessária",
+		"verification_success": "E-mail verificado com sucesso. Agora você pode fazer login.",
+		"verification_important": "Importante",
+		"verification_must_return": "Após verificar seu e-mail, você deve voltar para fazer login com suas credenciais.",
+		"click_after_verification": "Clique aqui após verificar seu e-mail",
+		"use_google_signin": "Por favor, use o Google para se registrar em vez do registro direto."
+	},
+
+	"wallet": {
+		"address": "Endereço da Carteira",
+		"copy": "Copiar endereço da carteira",
+		"copied": "Copiado!",
+		"copied_message": "Endereço da carteira copiado para a área de transferência!"
+	},
+
+	"error": {
+		"invalid_credentials": "E-mail ou senha inválidos",
+		"registration_failed": "Falha no registro. Por favor, tente novamente.",
+		"auth_callback_failed": "Falha na autenticação. Por favor, tente novamente.",
+		"email_verification_required": "Por favor, verifique seu e-mail antes de fazer login.",
+		"passwords_do_not_match": "As senhas não coincidem. Por favor, tente novamente.",
+		"user_already_exists_signin": "Este e-mail já está registrado. Por favor, use o formulário de cadastro.",
+		"user_already_exists_signup": "Este e-mail já está registrado. Por favor, faça login."
 	}
 }

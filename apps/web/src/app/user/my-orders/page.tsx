@@ -5,7 +5,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { OrderStatus } from "@prisma/client";
 import Button from "@repo/ui/button";
 import CheckBox from "@repo/ui/form/checkBox";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { useForm } from "react-hook-form";
@@ -14,11 +13,9 @@ import OrderListItem from "~/app/_components/features/OrderListItem";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
 import BottomModal from "~/app/_components/ui/BottomModal";
 import { useOrderFiltering } from "~/hooks/user/useOrderFiltering";
+import { useCavosAuth } from "~/providers/cavos-auth";
 import { api } from "~/trpc/react";
-import type { RouterOutputs } from "~/trpc/react";
 import { type FormValues, filtersSchema } from "~/types";
-
-type OrderWithItems = RouterOutputs["order"]["getUserOrders"][number];
 
 interface GroupedOrderItem {
 	id: string;
@@ -47,20 +44,22 @@ const filtersDefaults = {
 export default function MyOrders() {
 	const { t } = useTranslation();
 	const router = useRouter();
-	const { data: session, status } = useSession();
-	const { data: orders, isLoading } = api.order.getUserOrders.useQuery(
-		undefined,
-		{
-			enabled: !!session?.user,
-		},
-	);
+	const {
+		user: cavosUser,
+		isAuthenticated,
+		isLoading: isAuthLoading,
+	} = useCavosAuth();
+	const { data: orders, isLoading: isOrdersLoading } =
+		api.order.getUserOrders.useQuery(undefined, {
+			enabled: isAuthenticated && !!cavosUser,
+		});
 
 	// Redirect to login if not authenticated
 	React.useEffect(() => {
-		if (status === "unauthenticated") {
-			router.push("/auth/signin");
+		if (!isAuthLoading && !isAuthenticated) {
+			router.push("/auth");
 		}
-	}, [status, router]);
+	}, [isAuthenticated, isAuthLoading, router]);
 
 	const groupedOrders = React.useMemo(() => {
 		if (!orders) return [];
@@ -121,7 +120,7 @@ export default function MyOrders() {
 	};
 
 	// Show loading state while checking authentication
-	if (status === "loading") {
+	if (isAuthLoading) {
 		return (
 			<ProfileOptionLayout title={t("my_orders")}>
 				<div className="space-y-4">
@@ -158,7 +157,7 @@ export default function MyOrders() {
 					</Button>
 				</div>
 
-				{isLoading ? (
+				{isOrdersLoading ? (
 					<div className="space-y-4">
 						<div className="animate-pulse h-6 bg-gray-200 rounded w-1/4" />
 						<div className="space-y-2">

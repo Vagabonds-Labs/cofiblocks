@@ -1,9 +1,9 @@
 "use client";
 
 import { useAccount } from "@starknet-react/core";
-import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useCavosAuth } from "~/providers/cavos-auth";
 import WalletConnectFlow from "./WalletConnectFlow";
 
 interface WalletConnectionCheckProps {
@@ -13,23 +13,28 @@ interface WalletConnectionCheckProps {
 export default function WalletConnectionCheck({
 	children,
 }: WalletConnectionCheckProps) {
-	const { data: session, status } = useSession();
+	const { isAuthenticated, user, isLoading } = useCavosAuth();
 	const { address } = useAccount();
 	const [showConnectPrompt, setShowConnectPrompt] = useState(false);
 	const { t } = useTranslation();
 
 	useEffect(() => {
-		// Only show the connect prompt if there's a session but no wallet
-		// and we're not in a loading state
-		if (status === "authenticated" && session && !address) {
-			setShowConnectPrompt(true);
-		} else {
-			setShowConnectPrompt(false);
+		// Since Cavos provides the wallets, we don't need to show the connect prompt
+		// The wallet should be available after authentication
+		setShowConnectPrompt(false);
+
+		// Log wallet information for debugging
+		if (isAuthenticated && user) {
+			console.log("User wallet information:", {
+				isAuthenticated,
+				userWallet: user.walletAddress,
+				starknetAddress: address,
+			});
 		}
-	}, [session, address, status]);
+	}, [user, address, isAuthenticated]);
 
 	// Don't show prompt during loading/transitioning states
-	if (status === "loading") {
+	if (isLoading) {
 		return children;
 	}
 

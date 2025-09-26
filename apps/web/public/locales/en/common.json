@@ -375,5 +375,59 @@
 		"low_stock_left": "Only {{count}} left",
 		"stock_available": "{{count}} available",
 		"sold_out": "Sold Out"
+	},
+
+	"app": {
+		"name": "CofiBlocks"
+	},
+
+	"auth": {
+		"welcome_to": "Welcome to",
+		"create_account": "Create Account",
+		"create_account_link": "Create an Account",
+		"already_have_account": "Already have an account? Sign In",
+		"email_placeholder": "Email",
+		"password_placeholder": "Password",
+		"confirm_password_placeholder": "Confirm Password",
+		"show_password": "Show password",
+		"hide_password": "Hide password",
+		"signing_in": "Signing in...",
+		"creating_account": "Creating Account...",
+		"sign_in": "Sign In",
+		"sign_up": "Sign Up",
+		"or_continue_with": "Or continue with",
+		"recommended_option": "Recommended option",
+		"google_sign_in_recommended": "Google Sign-In is the recommended registration method",
+		"sign_in_with_google": "Sign in with Google",
+		"continue_with_google": "Continue with Google",
+		"verification_email_sent": "Verification Email Sent",
+		"check_email_instructions": "Please check your email and click the verification link to complete your registration.",
+		"email_sent_to": "Email sent to:",
+		"back_to_signin": "Back to Sign In",
+		"verification_required": "Email verification required",
+		"verification_success": "Email verified successfully. You can now sign in.",
+		"verification_important": "Important",
+		"verification_must_return": "After verifying your email, you must return to sign in with your credentials.",
+		"click_after_verification": "Click here after verifying your email",
+		"use_google_signin": "Please use Google Sign-In instead of direct registration."
+	},
+
+	"wallet": {
+		"address": "Wallet Address",
+		"copy": "Copy wallet address",
+		"copied": "Copied!",
+		"copied_message": "Wallet address copied to clipboard!"
+	},
+
+	"error": {
+		"invalid_credentials": "Invalid email or password",
+		"registration_failed": "Registration failed. Please try again.",
+		"auth_callback_failed": "Authentication failed. Please try again.",
+		"missing_org_secret": "Authentication configuration error. Please contact support.",
+		"invalid_org_secret": "Authentication configuration error. Please contact support.",
+		"email_verification_required": "Please verify your email before signing in.",
+		"passwords_do_not_match": "Passwords do not match. Please try again.",
+		"user_already_exists_signin": "This email is already registered. Please use the sign-up form instead.",
+		"user_already_exists_signup": "This email is already registered. Please sign in instead."
 	}
 }

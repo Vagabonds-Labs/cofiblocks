@@ -3,10 +3,10 @@
 import type { JsonValue } from "@prisma/client/runtime/library";
 import { ProductCard } from "@repo/ui/productCard";
 import { useAtom } from "jotai";
-import { useSession } from "next-auth/react";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
+import { useCavosAuth } from "~/providers/cavos-auth";
 import { addItemAtom } from "~/store/cartAtom";
 import { api } from "~/trpc/react";
 
@@ -34,7 +34,7 @@ export default function Favorites() {
 	const { t } = useTranslation();
 	const [addedProduct, setAddedProduct] = React.useState<number | null>(null);
 	const [, addItem] = useAtom(addItemAtom);
-	const { data: session } = useSession();
+	const { user: cavosUser, isAuthenticated } = useCavosAuth();
 
 	// Get favorites from the database
 	const {
@@ -43,9 +43,10 @@ export default function Favorites() {
 		error: favoritesError,
 	} = api.favorites.getUserFavorites.useQuery(undefined, {
 		retry: false,
+		enabled: isAuthenticated && !!cavosUser,
 	});
 
-	console.log("Debug - Session:", session);
+	console.log("Debug - User:", cavosUser);
 	console.log("Debug - Favorites:", favorites);
 	console.log("Debug - Favorites Error:", favoritesError);
 
