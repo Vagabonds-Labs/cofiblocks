@@ -90,13 +90,18 @@ export default function OrderReview({
 			const token_amounts = cartItems.map((item) => item.quantity);
 
 			// Execute the purchase transaction
-			if (token_ids.length > 0 && token_amounts.length > 0 && token_ids[0] && token_amounts[0]) {
+			if (
+				token_ids.length > 0 &&
+				token_amounts.length > 0 &&
+				token_ids[0] &&
+				token_amounts[0]
+			) {
 				console.log("Buying product", token_ids[0], token_amounts[0]);
 				const mutation = api.marketplace.buyProduct.useMutation();
 				await mutation.mutateAsync({
 					tokenId: token_ids[0].toString(),
-					tokenAmount: token_amounts[0].toString(), 
-					paymentToken: "USDC"
+					tokenAmount: token_amounts[0].toString(),
+					paymentToken: "USDC",
 				});
 			}
 

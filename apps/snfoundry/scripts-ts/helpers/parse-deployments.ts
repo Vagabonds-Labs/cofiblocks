@@ -1,5 +1,5 @@
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import prettier from "prettier";
 import type { Abi, CompiledSierra } from "starknet";
 
@@ -21,7 +21,7 @@ const getContractDataFromDeployments = (): Record<
 		Record<string, { address: string; abi: Abi; classHash: string }>
 	> = {};
 
-	files.forEach((file) => {
+	for (const file of files) {
 		if (path.extname(file) === ".json" && file.endsWith("_latest.json")) {
 			const filePath = path.join(deploymentsDir, file);
 			const content: Record<
@@ -34,7 +34,7 @@ const getContractDataFromDeployments = (): Record<
 			> = JSON.parse(fs.readFileSync(filePath, "utf8"));
 			const chainId = path.basename(file, "_latest.json");
 
-			Object.entries(content).forEach(([contractName, contractData]) => {
+			for (const [contractName, contractData] of Object.entries(content)) {
 				try {
 					const abiFilePath = path.join(
 						__dirname,
@@ -52,10 +52,12 @@ const getContractDataFromDeployments = (): Record<
 							classHash: contractData.classHash,
 						},
 					};
-				} catch (e) {}
-			});
+				} catch (e) {
+					// Ignore errors for missing ABI files
+				}
+			}
 		}
-	});
+	}
 
 	return allContractsData;
 };

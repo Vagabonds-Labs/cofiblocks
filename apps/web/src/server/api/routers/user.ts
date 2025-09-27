@@ -114,12 +114,11 @@ export const userRouter = createTRPCRouter({
 			});
 		}),
 
-	getUserAddress: protectedProcedure
-		.query(async ({ ctx }) => {
-			if (!ctx.session.user.email) {
-				throw new Error("User email not found");
-			}
-			const userAuthData = await registerUser(ctx.session.user.email, "1234");
-			return userAuthData.wallet_address;
-		}),
+	getUserAddress: protectedProcedure.query(async ({ ctx }) => {
+		if (!ctx.session.user.email) {
+			throw new Error("User email not found");
+		}
+		const userAuthData = await registerUser(ctx.session.user.email, "1234");
+		return userAuthData.wallet_address;
+	}),
 });

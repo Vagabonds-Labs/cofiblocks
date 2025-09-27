@@ -19,19 +19,19 @@ export function formatPrice(
 }
 
 export interface FormattedNumber {
-    high: string;
-    low: string;
+	high: string;
+	low: string;
 }
 
 export function format_number(n: bigint): FormattedNumber {
-    let hexString = n.toString(16);
-    if (hexString.length > 32) {
-        const high = "0x" + hexString.slice(0, 32);
-        const low = "0x" + hexString.slice(32);
-        return { high, low };
-    }
-    return {
-        high: "0x" + hexString,
-        low: "0x0",
-    };
+	const hexString = n.toString(16);
+	if (hexString.length > 32) {
+		const high = `0x${hexString.slice(0, 32)}`;
+		const low = `0x${hexString.slice(32)}`;
+		return { high, low };
+	}
+	return {
+		high: `0x${hexString}`,
+		low: "0x0",
+	};
 }

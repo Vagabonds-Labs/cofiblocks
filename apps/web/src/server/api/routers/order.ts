@@ -272,8 +272,14 @@ export const orderRouter = createTRPCRouter({
 						if (!ctx.session.user.email) {
 							throw new Error("User email not found");
 						}
-						const userAuthData = await registerUser(ctx.session.user.email, "1234");
-						const balance = await balanceOf(userAuthData, BigInt(product.tokenId));
+						const userAuthData = await registerUser(
+							ctx.session.user.email,
+							"1234",
+						);
+						const balance = await balanceOf(
+							userAuthData,
+							BigInt(product.tokenId),
+						);
 
 						if (Number(balance) === 0) {
 							return null;

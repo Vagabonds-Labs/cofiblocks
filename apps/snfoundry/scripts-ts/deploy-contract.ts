@@ -1,5 +1,5 @@
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import {
 	constants,
 	CallData,
@@ -71,7 +71,10 @@ const declareIfNot_NotWait = async (
 					),
 				);
 
-				const receiptAny = receipt as any;
+				const receiptAny = receipt as {
+					execution_status?: string;
+					revert_reason?: string;
+				};
 				if (receiptAny.execution_status !== "SUCCEEDED") {
 					const revertReason = receiptAny.revert_reason || "Unknown reason";
 					throw new Error(
@@ -122,8 +125,7 @@ const findContractFile = (
 
 	if (!matchingFile) {
 		throw new Error(
-			`Could not find ${fileType} file for contract "${contract}". ` +
-				`Try removing snfoundry/contracts/target, then run 'yarn compile' and check if your contract name is correct inside the contracts/target/dev directory.`,
+			`Could not find ${fileType} file for contract "${contract}". Try removing snfoundry/contracts/target, then run 'yarn compile' and check if your contract name is correct inside the contracts/target/dev directory.`,
 		);
 	}
 
@@ -166,14 +168,13 @@ const deployContract = async (
 			const errorMessage = `The wallet you're using to deploy the contract is not deployed in the ${networkName} network.`;
 			console.error(red(errorMessage));
 			throw new Error(errorMessage);
-		} else {
-			console.error(red("Error getting contract version: "), e);
-			throw e;
 		}
+		console.error(red("Error getting contract version: "), e);
+		throw e;
 	}
 
-	let compiledContractCasm;
-	let compiledContractSierra;
+	let compiledContractCasm: unknown;
+	let compiledContractSierra: unknown;
 
 	try {
 		compiledContractCasm = JSON.parse(
@@ -264,7 +265,10 @@ const executeDeployCalls = async (options?: UniversalDetails) => {
 		});
 		if (networkName === "sepolia" || networkName === "mainnet") {
 			const receipt = await provider.waitForTransaction(transaction_hash);
-			const receiptAny = receipt as any;
+			const receiptAny = receipt as {
+				execution_status?: string;
+				revert_reason?: string;
+			};
 			if (receiptAny.execution_status !== "SUCCEEDED") {
 				const revertReason = receiptAny.revert_reason;
 				throw new Error(red(`Deploy Calls Failed: ${revertReason}`));

@@ -1,4 +1,4 @@
-import path from "path";
+import path from "node:path";
 import dotenv from "dotenv";
 import { constants, Account, RpcProvider } from "starknet";
 import type { Networks } from "../types";

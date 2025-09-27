@@ -120,8 +120,9 @@ export default function ProductPage() {
 		async function getStock() {
 			if (!product?.tokenId) return;
 			try {
-				const { data: stock } = await api.marketplace.getProductStock.useQuery({ 
-					tokenId: product.tokenId.toString() });
+				const { data: stock } = await api.marketplace.getProductStock.useQuery({
+					tokenId: product.tokenId.toString(),
+				});
 				setBagsAvailable(Number(stock));
 			} catch (error) {
 				console.error("Error getting stock:", error);

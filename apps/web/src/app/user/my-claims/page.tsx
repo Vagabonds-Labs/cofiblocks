@@ -1,19 +1,17 @@
 "use client";
 
-import {
-	InformationCircleIcon,
-} from "@heroicons/react/24/solid";
+import { InformationCircleIcon } from "@heroicons/react/24/solid";
 import Button from "@repo/ui/button";
 import { useState } from "react";
 import OrderListPriceItem from "~/app/_components/features/OrderListPriceItem";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
-import { DeliveryMethod, SalesStatus } from "~/types";
 import { api } from "~/trpc/react";
+import { DeliveryMethod, SalesStatus } from "~/types";
 
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { useTranslation } from "react-i18next";
-import { useSession } from "next-auth/react";
 
 // Interface for blockchain events
 interface BlockchainOrder {
@@ -50,16 +48,17 @@ export default function MyClaims() {
 	const { data: session } = useSession();
 
 	const fetchBlockchainData = async () => {
-
 		setIsFetching(true);
 		try {
 			// Get claim balance
 			const isProducer = session?.user?.role === "COFFEE_PRODUCER";
 			if (isProducer) {
-				const balance = await api.distribution.getclaimBalanceProducer.useQuery();
+				const balance =
+					await api.distribution.getclaimBalanceProducer.useQuery();
 				setMoneyToClaim(Number(balance));
 			} else {
-				const balance = await api.distribution.getclaimBalanceCoffeeLover.useQuery();
+				const balance =
+					await api.distribution.getclaimBalanceCoffeeLover.useQuery();
 				setMoneyToClaim(Number(balance));
 			}
 

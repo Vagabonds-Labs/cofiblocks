@@ -56,9 +56,9 @@ export default function Collectibles() {
 					try {
 						console.log("Checking balance for token", product.tokenId);
 
-						const balance = await api.cofiCollection.getBalanceOf.useQuery(
-							{ tokenId: product.tokenId.toString() }
-						);
+						const balance = await api.cofiCollection.getBalanceOf.useQuery({
+							tokenId: product.tokenId.toString(),
+						});
 						const balanceNumber = Number(balance);
 
 						console.log(
@@ -105,7 +105,7 @@ export default function Collectibles() {
 		}
 
 		void fetchCollectibles();
-	}, [address, productsQuery.data, status]);
+	}, [productsQuery.data]);
 
 	if (isLoading || productsQuery.isLoading) {
 		return (
