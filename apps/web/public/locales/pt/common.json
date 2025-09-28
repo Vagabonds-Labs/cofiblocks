@@ -383,6 +383,11 @@
 		"email_verification_required": "Por favor, verifique seu e-mail antes de fazer login.",
 		"passwords_do_not_match": "As senhas não coincidem. Por favor, tente novamente.",
 		"user_already_exists_signin": "Este e-mail já está registrado. Por favor, use o formulário de cadastro.",
-		"user_already_exists_signup": "Este e-mail já está registrado. Por favor, faça login."
+		"user_already_exists_signup": "Este e-mail já está registrado. Por favor, faça login.",
+		"access_denied": "Acesso Negado",
+		"insufficient_permissions": "Você não tem as permissões necessárias para acessar esta página.",
+		"contact_admin_for_access": "Por favor, entre em contato com um administrador se acredita que isso é um erro.",
+		"go_to_marketplace": "Ir para o Mercado",
+		"become_coffee_producer": "Tornar-se Produtor de Café"
 	}
 }

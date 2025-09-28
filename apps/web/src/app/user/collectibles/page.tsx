@@ -32,6 +32,7 @@ export default function Collectibles() {
 	const { address, status } = useAccount();
 	const [collectibles, setCollectibles] = useState<CollectibleDisplay[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
+	const utils = api.useUtils();
 
 	const productsQuery = api.product.getProducts.useQuery(
 		{ limit: 100, cursor: undefined },
@@ -56,7 +57,7 @@ export default function Collectibles() {
 					try {
 						console.log("Checking balance for token", product.tokenId);
 
-						const balance = await api.cofiCollection.getBalanceOf.useQuery({
+						const balance = await utils.cofiCollection.getBalanceOf.fetch({
 							tokenId: product.tokenId.toString(),
 						});
 						const balanceNumber = Number(balance);
@@ -105,7 +106,7 @@ export default function Collectibles() {
 		}
 
 		void fetchCollectibles();
-	}, [productsQuery.data]);
+	}, [productsQuery.data, utils.cofiCollection.getBalanceOf.fetch]);
 
 	if (isLoading || productsQuery.isLoading) {
 		return (

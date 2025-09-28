@@ -46,6 +46,9 @@ export default function MyClaims() {
 	const { t } = useTranslation();
 	const router = useRouter();
 	const { data: session } = useSession();
+	const utils = api.useUtils();
+	const claimProducerMutation = api.marketplace.claimProducer.useMutation();
+	const claimConsumerMutation = api.marketplace.claimConsumer.useMutation();
 
 	const fetchBlockchainData = async () => {
 		setIsFetching(true);
@@ -54,16 +57,16 @@ export default function MyClaims() {
 			const isProducer = session?.user?.role === "COFFEE_PRODUCER";
 			if (isProducer) {
 				const balance =
-					await api.distribution.getclaimBalanceProducer.useQuery();
+					await utils.distribution.getclaimBalanceProducer.fetch();
 				setMoneyToClaim(Number(balance));
 			} else {
 				const balance =
-					await api.distribution.getclaimBalanceCoffeeLover.useQuery();
+					await utils.distribution.getclaimBalanceCoffeeLover.fetch();
 				setMoneyToClaim(Number(balance));
 			}
 
-			const { data: events = [] } = await api.marketplace.getEvents.useQuery();
-			const { data: userAddress } = await api.user.getUserAddress.useQuery();
+			const events = await utils.marketplace.getEvents.fetch();
+			const userAddress = await utils.user.getUserAddress.fetch();
 			if (!userAddress) {
 				throw new Error("User address not found");
 			}
@@ -136,9 +139,9 @@ export default function MyClaims() {
 			setIsLoading(true);
 			const isProducer = session?.user?.role === "COFFEE_PRODUCER";
 			if (isProducer) {
-				const tx = await api.marketplace.claimProducer.useMutation();
+				await claimProducerMutation.mutateAsync();
 			} else {
-				const tx = await api.marketplace.claimConsumer.useMutation();
+				await claimConsumerMutation.mutateAsync();
 			}
 			toast.success(t("status_updated"));
 			setMoneyToClaim(0);

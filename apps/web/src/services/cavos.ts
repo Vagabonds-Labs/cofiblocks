@@ -25,13 +25,13 @@ const getHeaders = (token: string) => ({
 	"Content-Type": "application/json",
 });
 
-const NETWORK = process.env.CAVOS_NETWORK;
-const ORG_ID = process.env.CAVOS_ORG_ID;
-const API_SECRET = process.env.CAVOS_API_SECRET;
+const NETWORK = process.env.NEXT_PUBLIC_CAVOS_NETWORK;
+const ORG_ID = process.env.NEXT_PUBLIC_CAVOS_APP_ID;
+const API_SECRET = process.env.NEXT_PUBLIC_CAVOS_ORG_SECRET;
 
 if (!NETWORK || !ORG_ID || !API_SECRET) {
 	throw new Error(
-		"Missing required environment variables: CAVOS_NETWORK, CAVOS_ORG_ID, CAVOS_API_SECRET",
+		"Missing required environment variables: CAVOS_NETWORK, CAVOS_ORG_ID, CAVOS_ORG_SECRET",
 	);
 }
 
@@ -39,6 +39,9 @@ export async function registerUser(
 	email: string,
 	password: string,
 ): Promise<UserAuthData> {
+	if (!API_SECRET) {
+		throw new Error("API_SECRET is required");
+	}
 	const payload = { email: email, password: password, network: NETWORK };
 	const headers = getHeaders(API_SECRET);
 
@@ -76,6 +79,9 @@ export async function authenticateUser(
 	password: string,
 ): Promise<UserAuthData> {
 	const payload = { email, password, network: NETWORK };
+	if (!API_SECRET) {
+		throw new Error("API_SECRET is required");
+	}
 	const headers = getHeaders(API_SECRET);
 
 	try {

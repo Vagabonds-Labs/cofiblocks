@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next";
 import GoogleAuth from "~/app/_components/features/GoogleAuth";
 import Spinner from "~/app/_components/ui/Spinner";
 import { useCavosAuth } from "~/providers/cavos-auth";
+import { api } from "~/trpc/react";
 
 interface AuthFormProps {
 	initialMode?: "signin" | "signup";
@@ -18,6 +19,7 @@ export default function AuthForm({ initialMode = "signin" }: AuthFormProps) {
 	const { t } = useTranslation();
 	const router = useRouter();
 	const { signIn, signUp, error: authError } = useCavosAuth();
+	const registerUserMutation = api.user.registerUser.useMutation();
 	const [mode, setMode] = useState<"signin" | "signup">(initialMode);
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -37,7 +39,7 @@ export default function AuthForm({ initialMode = "signin" }: AuthFormProps) {
 		}
 	}, [mode, router]);
 
-	// Set error from auth context
+	// Set error from auth context only if no local error is set
 	useEffect(() => {
 		if (authError) {
 			setError(authError);
@@ -78,6 +80,7 @@ export default function AuthForm({ initialMode = "signin" }: AuthFormProps) {
 						setError(t("error.invalid_credentials"));
 					}
 					setIsLoading(false);
+					return; // Prevent error from bubbling up to outer catch block
 				}
 			} else {
 				// Sign Up
@@ -89,7 +92,21 @@ export default function AuthForm({ initialMode = "signin" }: AuthFormProps) {
 				}
 
 				try {
-					await signUp(email, password);
+					const cavosResult = await signUp(email, password);
+
+					// Register user in database after successful Cavos signup
+					try {
+						await registerUserMutation.mutateAsync({
+							email,
+							name: email.split("@")[0],
+							password: password,
+							role: "COFFEE_BUYER",
+							walletAddress: cavosResult.wallet?.address ?? "",
+						});
+						console.log("User successfully registered in database");
+					} catch (dbError) {
+						console.error("Failed to register user in database:", dbError);
+					}
 
 					// Only show verification UI if signup was successful
 					setVerificationSent(true);
@@ -121,12 +138,14 @@ export default function AuthForm({ initialMode = "signin" }: AuthFormProps) {
 							// If verification is needed, show verification UI
 							setVerificationSent(true);
 						} else {
+							console.error("Setting error as: %s", signupError.message);
 							setError(signupError.message);
 						}
 					} else {
 						setError(t("error.registration_failed"));
 					}
 					setIsLoading(false);
+					return; // Prevent error from bubbling up to outer catch block
 				}
 			}
 		} catch (error) {

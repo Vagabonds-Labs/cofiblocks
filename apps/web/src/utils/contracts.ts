@@ -1,6 +1,4 @@
-import { useAccount, useProvider } from "@starknet-react/core";
-import { Abi, Account, Contract, RpcProvider } from "starknet";
-import type { Provider } from "starknet";
+import { Account, Contract, Provider, RpcProvider } from "starknet";
 import configExternalContracts from "../contracts/deployedContracts";
 
 export const getMarketplaceAddress = () => {
@@ -71,8 +69,9 @@ export const getCallToContract = async (
 export async function getEvents(
 	contract: CofiBlocksContracts,
 ): Promise<BlockchainEvent[]> {
-	const { provider } = useProvider();
-	const starknetProvider = provider as Provider;
+	const starknetProvider = new RpcProvider({
+		nodeUrl: "https://starknet-mainnet.public.blastapi.io",
+	});
 	const eventsResponse = await starknetProvider.getEvents({
 		address: configExternalContracts.mainnet[contract].address,
 		from_block: { block_number: 0 },

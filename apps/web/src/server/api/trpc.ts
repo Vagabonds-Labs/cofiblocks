@@ -155,11 +155,15 @@ export const protectedProcedure = t.procedure
 		}
 
 		// If using Cavos Auth, create a compatible session object
+		if (!ctx.cavosUserId) {
+			throw new Error("Cavos user ID is required");
+		}
+
 		return next({
 			ctx: {
 				session: {
 					user: {
-						id: ctx.cavosUserId as string,
+						id: ctx.cavosUserId,
 						// Default role for Cavos users
 						role: "COFFEE_BUYER",
 					},

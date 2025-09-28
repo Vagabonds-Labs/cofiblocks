@@ -407,6 +407,11 @@
 		"verification_required": "Email verification required",
 		"verification_success": "Email verified successfully. You can now sign in.",
 		"verification_important": "Important",
+		"access_denied": "Access Denied",
+		"insufficient_permissions": "You don't have the required permissions to access this page.",
+		"contact_admin_for_access": "Please contact an administrator if you believe this is an error.",
+		"go_to_marketplace": "Go to Marketplace",
+		"become_coffee_producer": "Become a Coffee Producer",
 		"verification_must_return": "After verifying your email, you must return to sign in with your credentials.",
 		"click_after_verification": "Click here after verifying your email",
 		"use_google_signin": "Please use Google Sign-In instead of direct registration."
