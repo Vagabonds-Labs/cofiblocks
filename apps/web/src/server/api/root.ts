@@ -1,5 +1,8 @@
 import { cartRouter } from "~/server/api/routers/cart";
+import { cofiCollectionRouter } from "~/server/api/routers/cofi_collection";
+import { distributionRouter } from "~/server/api/routers/distribution";
 import { favoritesRouter } from "~/server/api/routers/favorites";
+import { marketplaceRouter } from "~/server/api/routers/marketplace";
 import { orderRouter } from "~/server/api/routers/order";
 import { producerRouter } from "~/server/api/routers/producer";
 import { productRouter } from "~/server/api/routers/product";
@@ -13,6 +16,9 @@ import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
  */
 export const appRouter = createTRPCRouter({
 	product: productRouter,
+	marketplace: marketplaceRouter,
+	distribution: distributionRouter,
+	cofiCollection: cofiCollectionRouter,
 	user: userRouter,
 	cart: cartRouter,
 	favorites: favoritesRouter,

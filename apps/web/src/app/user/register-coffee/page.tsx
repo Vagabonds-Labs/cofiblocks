@@ -14,13 +14,6 @@ import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { ImageUpload } from "~/app/_components/features/ImageUpload";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
-import {
-	ContractsError,
-	ContractsInterface,
-	useCofiCollectionContract,
-	useMarketplaceContract,
-	useStarkContract,
-} from "~/services/contractsInterface";
 import { api } from "~/trpc/react";
 import { RoastLevel } from "~/types";
 
@@ -42,13 +35,6 @@ export default function RegisterCoffee() {
 	const { t } = useTranslation();
 	const { provider } = useProvider();
 	const router = useRouter();
-	const contracts = new ContractsInterface(
-		useAccount(),
-		useCofiCollectionContract(),
-		useMarketplaceContract(),
-		useStarkContract(),
-		provider,
-	);
 	const mutation = api.product.createProduct.useMutation();
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -78,12 +64,13 @@ export default function RegisterCoffee() {
 			price: Number.parseFloat(data.price),
 		};
 		try {
-			const token_id = await contracts.register_product(
-				submissionData.price,
-				submissionData.bagsAvailable,
-			);
+			const marketplaceMutation = api.marketplace.createProduct.useMutation();
+			const resp = await marketplaceMutation.mutateAsync({
+				initialStock: submissionData.bagsAvailable.toString(),
+				price_usd: submissionData.price.toString(),
+			});
 			await mutation.mutateAsync({
-				tokenId: token_id,
+				tokenId: resp.token_id,
 				name: submissionData.variety,
 				price: submissionData.price,
 				description: submissionData.description,
@@ -96,16 +83,8 @@ export default function RegisterCoffee() {
 			toast.success(t("product_registered_successfully"));
 			router.push("/marketplace");
 		} catch (error) {
-			if (error instanceof ContractsError) {
-				if (error.code === ContractsError.USER_MISSING_ROLE) {
-					toast.error(t("user_not_registered_as_seller"));
-				} else if (error.code === ContractsError.USER_NOT_CONNECTED) {
-					toast.error(t("user_disconnected"));
-				}
-			} else {
-				console.log("error registering", error);
-				toast.error(t("error_registering_product"));
-			}
+			console.log("error registering", error);
+			toast.error(t("error_registering_product"));
 		} finally {
 			setIsSubmitting(false);
 		}

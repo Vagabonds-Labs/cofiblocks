@@ -52,7 +52,9 @@ const getContractDataFromDeployments = (): Record<
 							classHash: contractData.classHash,
 						},
 					};
-				} catch (e) {}
+				} catch (e) {
+					// Ignore errors for missing ABI files
+				}
 			}
 		}
 	}
@@ -75,22 +77,18 @@ const generateTsAbis = async () => {
 		fs.mkdirSync(TARGET_DIR);
 	}
 
-	const formattedContent = await prettier.format(
+	const formatted = await prettier.format(
 		`${generatedContractComment}\n\nconst deployedContracts = {${fileContent}} as const;\n\nexport default deployedContracts;`,
 		{
 			parser: "typescript",
 		},
 	);
 
-	fs.writeFileSync(
-		path.join(TARGET_DIR, "deployedContracts.ts"),
-		formattedContent,
-	);
+	fs.writeFileSync(path.join(TARGET_DIR, "deployedContracts.ts"), formatted);
 
 	console.log(
 		`📝 Updated TypeScript contract definition file on ${TARGET_DIR}/deployedContracts.ts`,
 	);
 };
 
-// Change the function call to handle the Promise
-generateTsAbis().catch(console.error);
+generateTsAbis();

@@ -48,6 +48,10 @@
 	},
 	"dependencies": {
 		"react": "^18.2.0",
-		"@radix-ui/react-tooltip": "^1.0.7"
+		"@radix-ui/react-tooltip": "^1.0.7",
+		"class-variance-authority": "^0.7.0",
+		"classnames": "^2.5.1",
+		"framer-motion": "^11.5.4",
+		"react-hook-form": "^7.53.0"
 	}
 }

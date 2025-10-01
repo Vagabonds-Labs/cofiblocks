@@ -152,7 +152,7 @@ export const productRouter = createTRPCRouter({
 					OR: [
 						{
 							nftMetadata: {
-								path: "$.region",
+								path: ["$.region"],
 								string_contains: normalizedSearchTerm,
 							},
 						},
@@ -163,7 +163,7 @@ export const productRouter = createTRPCRouter({
 						},
 						{
 							nftMetadata: {
-								path: "$.farmName",
+								path: ["$.farmName"],
 								string_contains: normalizedSearchTerm,
 							},
 						},
@@ -193,7 +193,7 @@ export const productRouter = createTRPCRouter({
 				const normalizedStrength = normalizeText(strength);
 				conditions.push({
 					nftMetadata: {
-						path: "$.strength",
+						path: ["$.strength"],
 						string_contains: normalizedStrength,
 					},
 				});
@@ -203,7 +203,7 @@ export const productRouter = createTRPCRouter({
 				const normalizedRegion = normalizeText(region);
 				conditions.push({
 					nftMetadata: {
-						path: "$.region",
+						path: ["$.region"],
 						string_contains: normalizedRegion,
 					},
 				});

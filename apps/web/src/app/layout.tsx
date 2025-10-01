@@ -9,7 +9,6 @@ import i18n from "~/i18n";
 import { CavosAuthProvider } from "~/providers/cavos-auth";
 import StarknetProvider from "~/providers/starknet";
 import { TRPCReactProvider } from "~/trpc/react";
-import WalletConnectionCheck from "./_components/features/WalletConnectionCheck";
 import BetaAnnouncement from "./_components/ui/BetaAnnouncement";
 
 export default function RootLayout({
@@ -35,10 +34,8 @@ export default function RootLayout({
 				<CavosAuthProvider>
 					<StarknetProvider>
 						<TRPCReactProvider>
-							<WalletConnectionCheck>
-								<BetaAnnouncement />
-								<div className="min-h-screen h-full pb-20">{children}</div>
-							</WalletConnectionCheck>
+							<BetaAnnouncement />
+							<div className="min-h-screen h-full pb-20">{children}</div>
 						</TRPCReactProvider>
 					</StarknetProvider>
 				</CavosAuthProvider>

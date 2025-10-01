@@ -9,14 +9,9 @@ import { toast } from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import ProductDetails from "~/app/_components/features/ProductDetails";
 import { ProfileOptions } from "~/app/_components/features/ProfileOptions";
-import WalletConnect from "~/app/_components/features/WalletConnect";
 import type { NftMetadata } from "~/app/_components/features/types";
 import Header from "~/app/_components/layout/Header";
 import Main from "~/app/_components/layout/Main";
-import {
-	useCofiCollectionContract,
-	useMarketplaceContract,
-} from "~/services/contractsInterface";
 import { api } from "~/trpc/react";
 
 interface ParsedMetadata extends NftMetadata {
@@ -43,7 +38,7 @@ export default function ProductPage() {
 	const { disconnect } = useDisconnect();
 	const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 	const [bagsAvailable, setBagsAvailable] = useState<number | null>(null);
-	const marketplaceContract = useMarketplaceContract();
+	const utils = api.useUtils();
 	const params = useParams();
 	const idParam = params?.id;
 	const id =
@@ -123,12 +118,11 @@ export default function ProductPage() {
 
 	useEffect(() => {
 		async function getStock() {
-			if (!marketplaceContract || !product?.tokenId) return;
+			if (!product?.tokenId) return;
 			try {
-				const stock = await marketplaceContract.call("listed_product_stock", [
-					product.tokenId,
-					"0x0",
-				]);
+				const stock = await utils.marketplace.getProductStock.fetch({
+					tokenId: product.tokenId.toString(),
+				});
 				setBagsAvailable(Number(stock));
 			} catch (error) {
 				console.error("Error getting stock:", error);
@@ -136,7 +130,7 @@ export default function ProductPage() {
 			}
 		}
 		void getStock();
-	}, [marketplaceContract, product?.tokenId]);
+	}, [product?.tokenId, utils.marketplace.getProductStock.fetch]);
 
 	const handleConnect = () => {
 		setIsWalletModalOpen(true);
@@ -249,12 +243,6 @@ export default function ProductPage() {
 						</div>
 					)}
 				</div>
-
-				<WalletConnect
-					isOpen={isWalletModalOpen}
-					onClose={handleCloseWalletModal}
-					onSuccess={handleCloseWalletModal}
-				/>
 			</div>
 		</Main>
 	);

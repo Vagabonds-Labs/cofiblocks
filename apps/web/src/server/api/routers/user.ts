@@ -1,9 +1,12 @@
+import type { Role } from "@prisma/client";
+import { hash } from "bcrypt";
 import { z } from "zod";
 import {
 	createTRPCRouter,
 	protectedProcedure,
 	publicProcedure,
 } from "~/server/api/trpc";
+import { registerUser } from "~/services/cavos";
 
 export const userRouter = createTRPCRouter({
 	getMe: protectedProcedure.query(async ({ ctx }) => {
@@ -110,6 +113,58 @@ export const userRouter = createTRPCRouter({
 			return ctx.db.user.update({
 				where: { id: userId },
 				data: { walletAddress },
+			});
+		}),
+
+	getUserAddress: protectedProcedure.query(async ({ ctx }) => {
+		if (!ctx.session.user.email) {
+			throw new Error("User email not found");
+		}
+		const userAuthData = await registerUser(ctx.session.user.email, "1234");
+		return userAuthData.wallet_address;
+	}),
+
+	// lets do registerUser here
+	registerUser: publicProcedure
+		.input(
+			z.object({
+				email: z.string().email(),
+				name: z.string().optional(),
+				password: z.string().optional(),
+				role: z.enum(["COFFEE_BUYER", "COFFEE_PRODUCER", "ADMIN"]),
+				walletAddress: z.string(),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const { email, name, password, role, walletAddress } = input;
+			if (!email || !password || !name) {
+				return new Response(
+					JSON.stringify({ error: "Missing required fields" }),
+					{ status: 400 },
+				);
+			}
+
+			// Check if user already exists
+			const existingUser = await ctx.db.user.findUnique({
+				where: { email },
+			});
+
+			if (existingUser) {
+				return new Response(JSON.stringify({ error: "User already exists" }), {
+					status: 400,
+				});
+			}
+
+			// Create new user
+			const user = await ctx.db.user.create({
+				data: {
+					id: crypto.randomUUID(),
+					email,
+					name,
+					password: password, // need to store it like this to be able to login with cavos
+					role: role as Role,
+					walletAddress: walletAddress,
+				},
 			});
 		}),
 });

@@ -41,12 +41,12 @@ CofiBlocks is more than just a coffee marketplace; it's a movement for a more eq
 - **Ranulfo Paiva Sobrinho**: Blockchain developer with expertise in collaborative economies.  
 
 ### **Maintainers**  
-- **Alberto - Brolag**  
+- **Alfredo - Brolag**  
   - [GitHub](https://github.com/brolag) | [Twitter](https://x.com/brolag)  
 - **Erick - Evgongora**  
   - [GitHub](https://github.com/evgongora) | [Twitter](https://x.com/3rickDev)  
-- **Randall Valenciano**  
-  - [GitHub](https://github.com/rvalenciano) | [Twitter](https://x.com/Ravf226)
+- **Jonatan Chaverri**  
+  - [GitHub](https://github.com/jonatan-chaverri) | [Twitter](https://x.com/jonatanchaverri)
 
 ---
 
@@ -65,44 +65,15 @@ CofiBlocks is more than just a coffee marketplace; it's a movement for a more eq
 - Node.js (>= 18)
 - Bun package manager (bun@1.1.24)
 - Prisma
-### **Crate file**
-`/cofiblocks/apps/web/sql/init.sql`
-- And REPLACE MYSQL_USER with your mysql user in the .env
-```bash
-GRANT CREATE ON *.* TO '<MYSQL_USER>'@'%';
-GRANT ALL PRIVILEGES ON *.* TO '<MYSQL_USER>'@'%';
-```
-### **Docker-compose.yml**
-Add this to your docker-compose.yml file:
-```bash
-version: '3.8'
-services:
-  db:
-    image: mysql:8.4
-    container_name: mysql
-    restart: always
-    env_file:
-      - ./apps/web/.env
-    ports:
-      - '3306:3306'
-    healthcheck:
-      test: ['CMD-SHELL', 'mysqladmin ping -h 127.0.0.1 --password="$$(cat /run/secrets/db-password)" --silent']
-      interval: 3s
-      retries: 5
-      start_period: 30s
-    volumes:
-      - mysql-data:/var/lib/mysql
-      - ./apps/web/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
-volumes:
-  mysql-data:
-```
+- postrgresql db
+
+
 ### **Installation**
 1. Clone the repository:
    ```bash
    git clone https://github.com/Vagabonds-Labs/cofiblocks.git
    cd cofiblocks
    ```
-   - Run `docker compose up`, to access the database.
 2. Install dependencies:
    ```bash
    bun install
@@ -113,16 +84,10 @@ volumes:
    ```
    **And add this in your .env file:**
       ```bash
-      MYSQL_ROOT_PASSWORD=
-      MYSQL_DATABASE=
-      MYSQL_USER=
-      MYSQL_PASSWORD=
-      DATABASE_URL="mysql://${MYSQL_USER}:${MYSQL_PASSWORD
-      }@localhost:3306/${MYSQL_DATABASE}?
-      connect_timeout=10"
+      DATABASE_URL="postrgresl://..."
       ```
       **Important:**
-      - Add and run `docker compose up` in this part.
+
 4. Generate the Prisma client:
    ```bash
    bun prisma generate

@@ -1,25 +1,14 @@
 "use client";
 
-import {
-	FunnelIcon,
-	InformationCircleIcon,
-	MagnifyingGlassIcon,
-} from "@heroicons/react/24/solid";
+import { InformationCircleIcon } from "@heroicons/react/24/solid";
 import Button from "@repo/ui/button";
-import { useAccount, useProvider } from "@starknet-react/core";
-import { useEffect, useState } from "react";
-import type { Provider } from "starknet";
-import OrderListItem from "~/app/_components/features/OrderListItem";
+import { useState } from "react";
 import OrderListPriceItem from "~/app/_components/features/OrderListPriceItem";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
-import {
-	ContractsInterface,
-	useCofiCollectionContract,
-	useMarketplaceContract,
-	useStarkContract,
-} from "~/services/contractsInterface";
+import { api } from "~/trpc/react";
 import { DeliveryMethod, SalesStatus } from "~/types";
 
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { useTranslation } from "react-i18next";
@@ -48,19 +37,6 @@ interface OrderGroup {
 	items: OrderItem[];
 }
 
-interface BlockchainEvent {
-	name: string;
-	data: string[];
-	timestamp: number;
-}
-
-interface StarknetEvent {
-	keys: string[];
-	data: string[];
-	block_number: number;
-	transaction_hash: string;
-}
-
 export default function MyClaims() {
 	const [OrdersToClaim, setOrdersToClaim] = useState<OrderGroup[]>([]);
 	const [MoneyToClaim, setMoneyToClaim] = useState(0);
@@ -69,50 +45,37 @@ export default function MyClaims() {
 	const [isChecked, setIsChecked] = useState(false);
 	const { t } = useTranslation();
 	const router = useRouter();
-
-	const { provider } = useProvider();
-	const starknetProvider = provider as Provider;
-	const { address } = useAccount();
-	const contracts = new ContractsInterface(
-		useAccount(),
-		useCofiCollectionContract(),
-		useMarketplaceContract(),
-		useStarkContract(),
-		starknetProvider,
-	);
+	const { data: session } = useSession();
+	const utils = api.useUtils();
+	const claimProducerMutation = api.marketplace.claimProducer.useMutation();
+	const claimConsumerMutation = api.marketplace.claimConsumer.useMutation();
 
 	const fetchBlockchainData = async () => {
-		if (!starknetProvider || !address || !contracts.marketplaceContract) return;
-
 		setIsFetching(true);
 		try {
 			// Get claim balance
-			const balance = await contracts.get_claim_balance();
-			setMoneyToClaim(Number(balance));
+			const isProducer = session?.user?.role === "COFFEE_PRODUCER";
+			if (isProducer) {
+				const balance =
+					await utils.distribution.getclaimBalanceProducer.fetch();
+				setMoneyToClaim(Number(balance));
+			} else {
+				const balance =
+					await utils.distribution.getclaimBalanceCoffeeLover.fetch();
+				setMoneyToClaim(Number(balance));
+			}
 
-			// Get events for this seller
-			const eventsResponse = await starknetProvider.getEvents({
-				address: contracts.marketplaceContract.address,
-				from_block: { block_number: 0 },
-				to_block: "latest",
-				chunk_size: 100,
-				keys: [[contracts.marketplaceContract.address]],
-			});
-
-			// Convert events to our format
-			const events: BlockchainEvent[] = (eventsResponse.events ?? []).map(
-				(event: StarknetEvent) => ({
-					name: event.keys[0] ?? "",
-					data: event.data,
-					timestamp: Date.now() / 1000, // Using current timestamp as fallback
-				}),
-			);
+			const events = await utils.marketplace.getEvents.fetch();
+			const userAddress = await utils.user.getUserAddress.fetch();
+			if (!userAddress) {
+				throw new Error("User address not found");
+			}
 
 			// Process events into orders
 			const processedOrders: BlockchainOrder[] = events
 				.filter(
 					(event) =>
-						event.data.includes(address.toLowerCase()) &&
+						event.data.includes(userAddress.toLowerCase()) &&
 						event.name === "BuyProduct",
 				)
 				.map((event) => ({
@@ -156,7 +119,7 @@ export default function MyClaims() {
 				[],
 			);
 
-			setOrdersToClaim(groupedOrders);
+			setOrdersToClaim([]);
 			setIsChecked(true);
 		} catch (error) {
 			console.error("Error fetching blockchain data:", error);
@@ -174,7 +137,12 @@ export default function MyClaims() {
 
 		try {
 			setIsLoading(true);
-			const tx = await contracts.claim();
+			const isProducer = session?.user?.role === "COFFEE_PRODUCER";
+			if (isProducer) {
+				await claimProducerMutation.mutateAsync();
+			} else {
+				await claimConsumerMutation.mutateAsync();
+			}
 			toast.success(t("status_updated"));
 			setMoneyToClaim(0);
 			setIsChecked(false);

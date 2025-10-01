@@ -43,10 +43,7 @@ interface CavosAuthContextType {
 // Initialize Cavos Auth using environment variables
 const NETWORK = process.env.NEXT_PUBLIC_CAVOS_NETWORK ?? "sepolia";
 const APP_ID = process.env.NEXT_PUBLIC_CAVOS_APP_ID ?? "";
-const ORG_SECRET =
-	process.env.CAVOS_ORG_SECRET ??
-	process.env.NEXT_PUBLIC_CAVOS_ORG_SECRET ??
-	"";
+const ORG_SECRET = process.env.NEXT_PUBLIC_CAVOS_ORG_SECRET ?? "";
 
 // Environment variables are loaded
 
@@ -213,7 +210,7 @@ export function CavosAuthProvider({ children }: { children: ReactNode }) {
 				const walletAddress =
 					typeof walletData.address === "string" ? walletData.address : "";
 
-				// Store tokens and user info
+				// Store tokens and user info in localStorage (client-side)
 				localStorage.setItem("accessToken", accessToken as string);
 				localStorage.setItem("refreshToken", refreshToken as string);
 				localStorage.setItem("walletAddress", walletAddress);
@@ -242,6 +239,44 @@ export function CavosAuthProvider({ children }: { children: ReactNode }) {
 		}
 	};
 
+	function getUserError(err: unknown): string {
+		const e = err as {
+			response?: {
+				data?: {
+					error?: string;
+					message?: string;
+				};
+			};
+			message?: string;
+		};
+
+		// 1) Axios-style
+		if (e?.response?.data) {
+			return (
+				e.response.data.error ||
+				e.response.data.message ||
+				e.message ||
+				"Unexpected error"
+			);
+		}
+
+		// 4) Fallback: parse trailing JSON from message
+		if (typeof e?.message === "string") {
+			const m = e.message.match(/{[\s\S]*}$/); // last {...} in the message
+			if (m) {
+				try {
+					const json = JSON.parse(m[0]);
+					return json.error || json.message || e.message;
+				} catch {
+					// ignore
+				}
+			}
+			return e.message;
+		}
+
+		return "Unexpected error";
+	}
+
 	const signUp = async (
 		email: string,
 		password: string,
@@ -255,14 +290,11 @@ export function CavosAuthProvider({ children }: { children: ReactNode }) {
 			}
 
 			// Attempting sign up
-
 			const result = (await cavosAuth.signUp(
 				email,
 				password,
 				ORG_SECRET,
 			)) as CavosAuthResponse;
-
-			// Process signup response
 
 			// Check for data property as in the example
 			if (
@@ -275,10 +307,14 @@ export function CavosAuthProvider({ children }: { children: ReactNode }) {
 				"wallet" in result.data &&
 				result.data.wallet &&
 				typeof result.data.wallet === "object" &&
-				"address" in result.data.wallet
+				"data" in result.data.wallet &&
+				result.data.wallet.data &&
+				typeof result.data.wallet.data === "object" &&
+				"address" in result.data.wallet.data
 			) {
 				const data = result.data as Record<string, unknown>;
 				const wallet = data.wallet as Record<string, unknown>;
+				const walletData = wallet.data as Record<string, unknown>;
 				const resultObj = result as Record<string, unknown>;
 
 				// Create a compatible response format
@@ -296,7 +332,8 @@ export function CavosAuthProvider({ children }: { children: ReactNode }) {
 						created_at: data.created_at,
 					},
 					wallet: {
-						address: typeof wallet.address === "string" ? wallet.address : "",
+						address:
+							typeof walletData.address === "string" ? walletData.address : "",
 					},
 					access_token:
 						typeof resultObj.access_token === "string"
@@ -316,7 +353,11 @@ export function CavosAuthProvider({ children }: { children: ReactNode }) {
 			// Check for the original expected format
 			if (
 				result?.user &&
-				result?.wallet?.address &&
+				result?.wallet?.data &&
+				typeof result.wallet.data === "object" &&
+				"address" in result.wallet.data &&
+				typeof result.wallet.data.address === "string" &&
+				result.wallet.data.address &&
 				result?.access_token &&
 				result?.refresh_token
 			) {
@@ -347,14 +388,10 @@ export function CavosAuthProvider({ children }: { children: ReactNode }) {
 						"Authentication service is temporarily unavailable. Please try again later.",
 					);
 				} else {
-					setError(
-						"Registration failed. Please try again or use Google Sign-In instead.",
-					);
+					setError(getUserError(error));
 				}
 			} else {
-				setError(
-					"Registration failed. Please try again or use Google Sign-In instead.",
-				);
+				setError(getUserError(error));
 			}
 
 			throw error;

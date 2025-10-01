@@ -1,18 +1,8 @@
 import { execSync } from "node:child_process";
 import path from "node:path";
 import yargs from "yargs";
-import deployedContracts from "../../web/contracts/deployedContracts.js";
+import deployedContracts from "../../web/src/contracts/deployedContracts";
 import { green, red, yellow } from "./helpers/colorize-log";
-
-interface ContractABIItem {
-	type: string;
-	interface_name?: string;
-}
-
-interface ContractInfo {
-	address: string;
-	abi: ContractABIItem[];
-}
 
 function main() {
 	// Parse command line arguments
@@ -48,7 +38,10 @@ function main() {
 	for (const [contractName, contractInfo] of Object.entries(
 		contractsToVerify,
 	)) {
-		const { address, abi } = contractInfo;
+		const { address, abi } = contractInfo as {
+			address: string;
+			abi: Array<{ type: string; interface_name?: string }>;
+		};
 		const interfaceNameItem = abi.find(
 			(item) => item.type === "impl" && item.interface_name,
 		);
@@ -56,7 +49,7 @@ function main() {
 			console.error(red(`Failed to find Contract for ${contractName}`));
 			continue;
 		}
-		const contractParts = interfaceNameItem.interface_name.split("::");
+		const contractParts = interfaceNameItem.interface_name?.split("::");
 		const contract = contractParts[contractParts.length - 2];
 
 		console.log(yellow(`Verifying ${contractName} on ${network}...`));

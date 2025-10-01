@@ -1,12 +1,17 @@
 {
 	"CofiCollection": {
-		"classHash": "0x7a108607024be2054d1558cbfd5de3fe264afe9e025bc7653b1bc5fc76d1af0",
-		"address": "0x5f1e5752fffa227c319c8baa9f69af1e4b598e04743dfaa6c35835f3ab51d33",
-		"contract": "cofi_collection.cairo"
+		"classHash": "0x7463d920bd22b863168f817135bfe755c739f237f36750918a2463fe491d99f",
+		"address": "0x363b0273330b018586eb056dcbc966b670e8a369a67d465e91f72b3b5f574f4",
+		"contract": "CofiCollection"
+	},
+	"Distribution": {
+		"classHash": "0x3253005fd4286bfb53d66ff63aa62ad5e75fe16af4bd14577ba4b7c289cff1",
+		"address": "0x2c166ca1e09819a1b461d03f6797a5de0ab8d43ed4087cb78e6b9303bd2f87e",
+		"contract": "Distribution"
 	},
 	"Marketplace": {
-		"classHash": "0x44eb6074fa74a9dbddb65c52394cd1bab274e3bc22e1fc36c26c37686d1e440",
-		"address": "0x1db72e3f25244efe8729c2d6acda7c8d83addc74d9cccff9da1a5c741a722d1",
-		"contract": "marketplace.cairo"
+		"classHash": "0x2fd2eeeb767380a2c8c8f364e771626e3c522e355fa49e21ce543d0c8940c12",
+		"address": "0x292fb6fb85b6cabddf94e7393d5b28d16c6ae81ea4d3ec18dd88acbbe5e44da",
+		"contract": "Marketplace"
 	}
 }

@@ -41,8 +41,8 @@ export default function UserProfile() {
 	const user: CustomUser | undefined = cavosUser
 		? {
 				email: cavosUser.email,
-				name: cavosUser.name || null,
-				walletAddress: cavosUser.walletAddress || "",
+				name: cavosUser.name ?? null,
+				walletAddress: cavosUser.walletAddress ?? "",
 				role: "USER", // Default role since CavosUser doesn't have a role property
 			}
 		: undefined;
