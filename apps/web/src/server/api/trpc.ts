@@ -149,7 +149,7 @@ export const protectedProcedure = t.procedure
 		if (hasNextAuthSession) {
 			return next({
 				ctx: {
-					session: { ...ctx.session, user: ctx.session.user },
+					session: { ...ctx.session, user: ctx.session?.user },
 				},
 			});
 		}

@@ -260,14 +260,6 @@ export function CavosAuthProvider({ children }: { children: ReactNode }) {
 			);
 		}
 
-		// 2) Direct data on the error
-		if (e?.data) {
-			return e.data.error || e.data.message || e.message || "Unexpected error";
-		}
-
-		// 3) tRPC client error (optional)
-		if (e?.shape?.message) return e.shape.message;
-
 		// 4) Fallback: parse trailing JSON from message
 		if (typeof e?.message === "string") {
 			const m = e.message.match(/{[\s\S]*}$/); // last {...} in the message
