@@ -52,6 +52,7 @@
 		"react-hook-form": "^7.53.0",
 		"react-hot-toast": "^2.5.1",
 		"react-i18next": "^15.0.2",
+		"resend": "^6.1.2",
 		"server-only": "^0.0.1",
 		"starknet": "^6.11.0",
 		"starknetkit": "^2.3.0",

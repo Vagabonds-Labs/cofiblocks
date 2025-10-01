@@ -238,7 +238,6 @@
 	"my_claims": "Mis Reclamaciones",
 	"my_orders": "Mis Pedidos",
 	"favorite_products": "Productos favoritos",
-	"wallet": "Billetera",
 	"wallets": "Billeteras",
 	"log_out": "Cerrar sesión",
 
@@ -384,7 +383,12 @@
 		"verification_important": "Importante",
 		"verification_must_return": "Después de verificar tu correo, debes volver para iniciar sesión con tus credenciales.",
 		"click_after_verification": "Haz clic aquí después de verificar tu correo",
-		"use_google_signin": "Por favor usa Google para registrarte en lugar del registro directo."
+		"use_google_signin": "Por favor usa Google para registrarte en lugar del registro directo.",
+		"verifying_email": "Verificando tu correo...",
+		"email_verified_success": "¡Correo Verificado Exitosamente!",
+		"redirecting_to_marketplace": "Redirigiendo al mercado...",
+		"verification_failed": "Falló la Verificación del Correo",
+		"back_to_auth": "Volver a Iniciar Sesión"
 	},
 
 	"wallet": {

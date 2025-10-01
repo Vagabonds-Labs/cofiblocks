@@ -1,0 +1,68 @@
+// src/server/services/auth-service.ts
+import crypto from "node:crypto";
+import type { PrismaClient } from "@prisma/client";
+
+type TokenType = "EMAIL_VERIFY" | "PASSWORD_RESET";
+
+export function createAuthService({
+	db,
+	mailer,
+	appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+}: {
+	db: PrismaClient;
+	mailer: { sendVerification(email: string, url: string): Promise<void> };
+	appUrl?: string;
+}) {
+	const createVerificationToken = async (opts: {
+		email: string;
+		ttlMinutes?: number;
+	}) => {
+		const { email, ttlMinutes = 1440 } = opts;
+
+		const raw = crypto.randomBytes(32).toString("hex");
+		console.log("****************************");
+		console.log("raw token", raw);
+		console.log("****************************");
+		const hash = crypto.createHash("sha256").update(raw).digest("hex");
+		const expires = new Date(Date.now() + ttlMinutes * 60_000);
+
+		await db.$transaction([
+			db.verificationToken.create({
+				data: {
+					identifier: email.toLowerCase(),
+					token: hash,
+					expires,
+				},
+			}),
+		]);
+
+		return { token: raw, expires };
+	};
+
+	const verifyToken = async (raw: string, type: TokenType) => {
+		const hash = crypto.createHash("sha256").update(raw).digest("hex");
+		const record = await db.verificationToken.findUnique({
+			where: { token: hash },
+		});
+
+		if (!record || record.expires < new Date()) {
+			return { ok: false as const, reason: "expired" as const };
+		}
+
+		await db.verificationToken.delete({ where: { token: hash } });
+		return { ok: true as const, email: record.identifier };
+	};
+
+	const requestEmailVerification = async (email: string) => {
+		const { token } = await createVerificationToken({ email });
+		const url = `${appUrl}/auth/verify?token=${encodeURIComponent(token)}`;
+		await mailer.sendVerification(email, url);
+		return { url };
+	};
+
+	return {
+		requestEmailVerification,
+		createVerificationToken,
+		verifyToken,
+	};
+}

@@ -1,3 +1,4 @@
+import { authRouter } from "~/server/api/routers/auth";
 import { cartRouter } from "~/server/api/routers/cart";
 import { cofiCollectionRouter } from "~/server/api/routers/cofi_collection";
 import { distributionRouter } from "~/server/api/routers/distribution";
@@ -20,6 +21,7 @@ export const appRouter = createTRPCRouter({
 	distribution: distributionRouter,
 	cofiCollection: cofiCollectionRouter,
 	user: userRouter,
+	auth: authRouter,
 	cart: cartRouter,
 	favorites: favoritesRouter,
 	producer: producerRouter,
