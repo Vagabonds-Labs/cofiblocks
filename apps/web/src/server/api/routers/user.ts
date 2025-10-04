@@ -6,23 +6,9 @@ import {
 	protectedProcedure,
 	publicProcedure,
 } from "~/server/api/trpc";
+import { CofiBlocksContracts, getCallToContract } from "~/utils/contracts";
 
 export const userRouter = createTRPCRouter({
-	getMe: protectedProcedure.query(async ({ ctx }) => {
-		console.log("Getting user data for ID:", ctx.session.user.id);
-		const user = await ctx.db.user.findUnique({
-			where: { id: ctx.session.user.id },
-		});
-
-		if (!user) {
-			console.error("User not found for ID:", ctx.session.user.id);
-			throw new Error("User not found");
-		}
-
-		console.log("Found user:", { id: user.id, role: user.role });
-		return user;
-	}),
-
 	getUser: publicProcedure
 		.input(z.object({ userId: z.string() }))
 		.query(({ ctx, input }) => {
@@ -31,18 +17,41 @@ export const userRouter = createTRPCRouter({
 			});
 		}),
 
-	checkRole: protectedProcedure.query(async ({ ctx }) => {
-		const user = await ctx.db.user.findUnique({
-			where: { id: ctx.session.user.id },
-			select: { role: true },
-		});
+	getUserBalances: publicProcedure
+		.input(z.object({ userId: z.string() }))
+		.query(async ({ ctx, input }) => {
+			const user = await ctx.db.user.findUnique({
+				where: { id: input.userId },
+			});
+			const calldata = [user?.walletAddress || "0x0"];
 
-		if (!user) {
-			throw new Error("User not found");
-		}
+			const stark_balance_result = await getCallToContract(
+				CofiBlocksContracts.STRK,
+				"balance_of",
+				calldata,
+			);
+			const stark_balance = Number(stark_balance_result) / 10 ** 18;
 
-		return { role: user.role };
-	}),
+			const usdt_balance_result = await getCallToContract(
+				CofiBlocksContracts.USDT,
+				"balance_of",
+				calldata,
+			);
+			const usdt_balance = Number(usdt_balance_result) / 10 ** 6;
+
+			const usdc_balance_result = await getCallToContract(
+				CofiBlocksContracts.USDC,
+				"balance_of",
+				calldata,
+			);
+			const usdc_balance = Number(usdc_balance_result) / 10 ** 6;
+
+			return {
+				starkBalance: Number(stark_balance),
+				usdtBalance: Number(usdt_balance),
+				usdcBalance: Number(usdc_balance),
+			};
+		}),
 
 	updateUserProfile: publicProcedure
 		.input(
@@ -86,32 +95,6 @@ export const userRouter = createTRPCRouter({
 			return ctx.db.farm.update({
 				where: { id: farmId },
 				data: updateData,
-			});
-		}),
-
-	updateWalletAddress: protectedProcedure
-		.input(
-			z.object({
-				walletAddress: z.string(),
-			}),
-		)
-		.mutation(async ({ ctx, input }) => {
-			const { walletAddress } = input;
-			const userId = ctx.session.user.id;
-
-			// Check if wallet address is already in use
-			const existingUser = await ctx.db.user.findUnique({
-				where: { walletAddress },
-			});
-
-			if (existingUser && existingUser.id !== userId) {
-				throw new Error("Wallet address already in use");
-			}
-
-			// Update user's wallet address
-			return ctx.db.user.update({
-				where: { id: userId },
-				data: { walletAddress },
 			});
 		}),
 

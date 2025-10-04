@@ -1,9 +1,14 @@
-import { Account, Contract, Provider, RpcProvider } from "starknet";
+import {
+	Account,
+	type ArgsOrCalldata,
+	Contract,
+	Provider,
+	RpcProvider,
+} from "starknet";
 import configExternalContracts from "../contracts/deployedContracts";
 
 export const getMarketplaceAddress = () => {
-	const env = (process.env.NEXT_PUBLIC_STARKNET_ENV ??
-		"sepolia") as keyof typeof configExternalContracts;
+	const env = "mainnet";
 	return configExternalContracts[env].Marketplace.address;
 };
 
@@ -33,15 +38,14 @@ export const PaymentTokenTag: Record<PaymentToken, string> = {
 };
 
 export const localAccount = () => {
-	const provider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" });
-
-	const DEVNET_PRIVATE_KEY = "0x…";
-	const DEVNET_ACCOUNT_ADDR = "0x…";
+	const provider = new RpcProvider({
+		nodeUrl: process.env.RPC_URL_MAINNET ?? "",
+	});
 
 	const account = new Account(
 		provider,
-		DEVNET_ACCOUNT_ADDR,
-		DEVNET_PRIVATE_KEY,
+		process.env.MAINNET_ACCOUNT_ADDR ?? "",
+		process.env.MAINNET_ACCOUNT_PRIVATE_KEY ?? "",
 	);
 	return account;
 };
@@ -50,12 +54,15 @@ export enum CofiBlocksContracts {
 	MARKETPLACE = "Marketplace",
 	COFI_COLLECTION = "CofiCollection",
 	DISTRIBUTION = "Distribution",
+	STRK = "STRK",
+	USDC = "USDC",
+	USDT = "USDT",
 }
 
 export const getCallToContract = async (
 	contract: CofiBlocksContracts,
 	entrypoint: string,
-	calldata: unknown[],
+	calldata: ArgsOrCalldata,
 ) => {
 	const account = localAccount();
 	const contractInstance = new Contract(
@@ -63,14 +70,14 @@ export const getCallToContract = async (
 		configExternalContracts.mainnet[contract].address,
 		account,
 	);
-	await contractInstance.invoke(entrypoint, calldata);
+	return await contractInstance.call(entrypoint, calldata);
 };
 
 export async function getEvents(
 	contract: CofiBlocksContracts,
 ): Promise<BlockchainEvent[]> {
 	const starknetProvider = new RpcProvider({
-		nodeUrl: "https://starknet-mainnet.public.blastapi.io",
+		nodeUrl: process.env.RPC_URL_MAINNET ?? "",
 	});
 	const eventsResponse = await starknetProvider.getEvents({
 		address: configExternalContracts.mainnet[contract].address,
