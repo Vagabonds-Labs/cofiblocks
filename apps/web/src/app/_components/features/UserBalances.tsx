@@ -14,6 +14,7 @@ interface UserBalancesProps {
 		starkBalance: ContractResult;
 		usdtBalance: ContractResult;
 		usdcBalance: ContractResult;
+		claimBalance?: number;
 	};
 }
 
@@ -32,9 +33,17 @@ function extractBalanceValue(result: ContractResult | number): number {
 
 	// Handle different possible result structures
 	if (result && typeof result === "object") {
-		// Try different possible properties
-		const hexValue = result.result?.[0] || result[0] || "0x0";
-		return Number.parseInt(hexValue, 16);
+		// Check if it's an array
+		if (Array.isArray(result)) {
+			const hexValue = result[0] || "0x0";
+			return Number.parseInt(hexValue, 16);
+		}
+
+		// Check if it has a result property
+		if ("result" in result && Array.isArray(result.result)) {
+			const hexValue = result.result[0] || "0x0";
+			return Number.parseInt(hexValue, 16);
+		}
 	}
 
 	return 0;
@@ -93,6 +102,39 @@ export function UserBalances({ balances }: UserBalancesProps) {
 					</div>
 				))}
 			</div>
+
+			{/* Claim Balance Section */}
+			{balances.claimBalance !== undefined && balances.claimBalance > 0 && (
+				<div className="mt-6 pt-6 border-t border-gray-200">
+					<h4 className="text-lg font-semibold text-gray-800 mb-4">
+						Claim Balance
+					</h4>
+					<div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
+						<div className="flex items-center space-x-3">
+							<div className="relative w-10 h-10">
+								<Image
+									src="/images/logo.png"
+									alt="USDT icon"
+									fill
+									className="object-contain rounded-full"
+								/>
+							</div>
+							<div>
+								<p className="text-lg font-bold text-green-800">
+									{balances.claimBalance.toLocaleString()} USDT
+								</p>
+								<p className="text-sm text-green-600">Available to claim</p>
+							</div>
+						</div>
+						<button
+							type="button"
+							className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+						>
+							Claim
+						</button>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }

@@ -118,6 +118,7 @@ export default function UserProfile() {
 							starkBalance: balances?.starkBalance ?? 0,
 							usdtBalance: balances?.usdtBalance ?? 0,
 							usdcBalance: balances?.usdcBalance ?? 0,
+							claimBalance: balances?.claimBalance ?? 0,
 						}}
 					/>
 				)}

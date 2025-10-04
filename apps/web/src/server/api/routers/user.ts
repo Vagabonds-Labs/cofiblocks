@@ -46,7 +46,20 @@ export const userRouter = createTRPCRouter({
 			);
 			const usdc_balance = Number(usdc_balance_result) / 10 ** 6;
 
+			let claim_endpoint = "coffee_lover_claim_balance";
+			if (user?.role === "COFFEE_PRODUCER") {
+				claim_endpoint = "producer_claim_balance";
+			}
+
+			const claim_balance_result = await getCallToContract(
+				CofiBlocksContracts.DISTRIBUTION,
+				claim_endpoint,
+				calldata,
+			);
+			const claim_balance = Number(claim_balance_result) / 10 ** 6;
+
 			return {
+				claimBalance: Number(claim_balance),
 				starkBalance: Number(stark_balance),
 				usdtBalance: Number(usdt_balance),
 				usdcBalance: Number(usdc_balance),
