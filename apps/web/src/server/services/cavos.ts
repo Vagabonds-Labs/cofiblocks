@@ -1,4 +1,7 @@
+import crypto from "node:crypto";
+import type { PrismaClient } from "@prisma/client";
 import axios, { AxiosResponse } from "axios";
+import { generateSecurePassword } from "~/utils/passwordValidation";
 
 const CAVOS_API_BASE = "https://services.cavos.xyz/api/v1/external";
 
@@ -7,7 +10,6 @@ export interface UserAuthData {
 	email: string;
 	wallet_address: string;
 	wallet_public_key: string;
-	wallet_private_key: string;
 	access_token: string;
 	refresh_token: string;
 	expires_in: number;
@@ -25,14 +27,72 @@ const getHeaders = (token: string) => ({
 	"Content-Type": "application/json",
 });
 
-const NETWORK = process.env.NEXT_PUBLIC_CAVOS_NETWORK;
-const ORG_ID = process.env.NEXT_PUBLIC_CAVOS_APP_ID;
-const API_SECRET = process.env.NEXT_PUBLIC_CAVOS_ORG_SECRET;
+const NETWORK = process.env.CAVOS_NETWORK;
+const ORG_ID = process.env.CAVOS_APP_ID;
+const API_SECRET = process.env.CAVOS_ORG_SECRET;
 
 if (!NETWORK || !ORG_ID || !API_SECRET) {
 	throw new Error(
 		"Missing required environment variables: CAVOS_NETWORK, CAVOS_ORG_ID, CAVOS_ORG_SECRET",
 	);
+}
+
+export async function registerUserCavos(
+	email: string,
+	db: PrismaClient,
+): Promise<UserAuthData> {
+	// Check if user already exists in our database and authenticate them
+	const existingUser = await db.userCavos.findUnique({
+		where: { email: email, network: process.env.CAVOS_NETWORK },
+	});
+	if (existingUser) {
+		const existingUserAuthData = await authenticateUser(
+			email,
+			existingUser.password,
+		);
+		await db.userCavos.update({
+			where: { email: email, network: process.env.CAVOS_NETWORK },
+			data: {
+				accessToken: existingUserAuthData.access_token,
+				accessExpiration: new Date(
+					existingUserAuthData.expires_in * 1000 +
+						existingUserAuthData.timestamp,
+				),
+				refreshToken: existingUserAuthData.refresh_token,
+				walletAddress: existingUserAuthData.wallet_address,
+			},
+		});
+		return existingUserAuthData;
+	}
+
+	// If user doesn't exist, create them with a random password that we can access later to authenticate
+	// Random password must have at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character
+	const randomPassword = generateSecurePassword();
+	const userAuthData = await registerUser(email, randomPassword);
+	const accessExpiration = new Date(
+		userAuthData.expires_in * 1000 + userAuthData.timestamp,
+	);
+
+	// Create or update user with Cavos User data
+	await db.userCavos.upsert({
+		where: { email: email, network: process.env.CAVOS_NETWORK },
+		update: {
+			accessToken: userAuthData.access_token,
+			accessExpiration: accessExpiration,
+			refreshToken: userAuthData.refresh_token,
+		},
+		create: {
+			email: email,
+			walletAddress: userAuthData.wallet_address,
+			password: randomPassword,
+			network: process.env.CAVOS_NETWORK,
+			accessToken: userAuthData.access_token,
+			accessExpiration: accessExpiration,
+			refreshToken: userAuthData.refresh_token,
+		},
+	});
+
+	return userAuthData;
 }
 
 export async function registerUser(
@@ -51,19 +111,14 @@ export async function registerUser(
 			validateStatus: () => true,
 		});
 		if (res.data.success !== true) {
-			if (res.data.message?.includes("already registered")) {
-				console.log("User already registered, authenticating...");
-				return await authenticateUser(email, password);
-			}
 			throw new Error(`Registration failed: ${JSON.stringify(res.data)}`);
 		}
 
 		return {
 			user_id: res.data.data.user_id,
 			email: res.data.data.email,
-			wallet_public_key: res.data.data.wallet.public_key,
-			wallet_private_key: res.data.data.wallet.private_key,
-			wallet_address: res.data.data.wallet.address,
+			wallet_public_key: res.data.data.wallet.data.public_key,
+			wallet_address: res.data.data.wallet.data.address,
 			access_token: res.data.data.authData.accessToken,
 			refresh_token: res.data.data.authData.refreshToken,
 			expires_in: res.data.data.authData.expiresIn,
@@ -100,7 +155,6 @@ export async function authenticateUser(
 			email: res.data.data.email,
 			wallet_address: res.data.data.wallet.address,
 			wallet_public_key: res.data.data.wallet.public_key,
-			wallet_private_key: res.data.data.wallet.private_key,
 			access_token: auth.accessToken,
 			refresh_token: auth.refreshToken,
 			expires_in: auth.expiresIn,

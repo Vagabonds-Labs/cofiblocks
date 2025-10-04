@@ -32,7 +32,7 @@ export default function VerifyEmailPage() {
 				setPhase("pending");
 				await verify.mutateAsync({ token }); // <-- explicit promise flow
 				setPhase("success");
-				const id = setTimeout(() => router.replace("/marketplace"), 2000);
+				const id = setTimeout(() => router.replace("/auth"), 2000);
 				return () => clearTimeout(id);
 			} catch (e) {
 				const err = e as TRPCClientError<AppRouter>;
@@ -88,7 +88,7 @@ export default function VerifyEmailPage() {
 							{t("auth.email_verified_success")}
 						</H1>
 						<Text className="text-content-body-default mb-4">
-							{t("auth.redirecting_to_marketplace")}
+							{t("auth.back_to_auth")}
 						</Text>
 					</div>
 				</div>

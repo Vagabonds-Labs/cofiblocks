@@ -1,7 +1,6 @@
 "use client";
 
 import Carousel from "@repo/ui/carousel";
-import { useAccount, useDisconnect } from "@starknet-react/core";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import ProductCatalog from "~/app/_components/features/ProductCatalog";
@@ -12,8 +11,6 @@ import SearchBar from "../_components/features/SearchBar";
 
 export default function Home() {
 	const { t } = useTranslation();
-	const { address } = useAccount();
-	const { disconnect } = useDisconnect();
 	const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
 	const handleConnect = () => {
@@ -49,13 +46,10 @@ export default function Home() {
 		<Main>
 			<div className="flex flex-col min-h-screen">
 				<Header
-					address={address}
-					disconnect={disconnect}
+					address={"address"}
 					showCart={true}
 					onConnect={handleConnect}
-					profileOptions={
-						address ? <ProfileOptions address={address} /> : undefined
-					}
+					profileOptions={<ProfileOptions address={"address"} />}
 				/>
 				<div className="flex-grow">
 					{/* Hero Section */}
@@ -70,7 +64,7 @@ export default function Home() {
 
 					{/* Product Catalog */}
 					<div className="px-4 md:px-6 lg:px-8">
-						<ProductCatalog isConnected={!!address} onConnect={handleConnect} />
+						<ProductCatalog isConnected={true} onConnect={handleConnect} />
 					</div>
 				</div>
 			</div>

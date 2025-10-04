@@ -3,58 +3,57 @@ import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-// Define protected routes and their allowed roles
-const protectedRoutes: Record<string, Role[]> = {
-	"/user/register-coffee": ["COFFEE_PRODUCER"],
-	"/user/my-coffee": ["COFFEE_PRODUCER"],
-	"/user/my-sales": ["COFFEE_PRODUCER"],
-	"/user/my-claims": ["COFFEE_PRODUCER"],
-	"/user/my-sales/[id]": ["COFFEE_PRODUCER"],
-	"/user/my-claims/[id]": ["COFFEE_PRODUCER"],
-} as const;
+// Map of "matcher" -> allowed roles. Use regex-like strings or startsWith checks.
+const protectedMatchers: Array<{
+	test: (p: string) => boolean;
+	roles: Role[];
+}> = [
+	{ test: (p) => p === "/user/register-coffee", roles: ["COFFEE_PRODUCER"] },
+	{ test: (p) => p.startsWith("/user/my-coffee"), roles: ["COFFEE_PRODUCER"] },
+	{ test: (p) => p.startsWith("/user/my-sales"), roles: ["COFFEE_PRODUCER"] },
+	{ test: (p) => p.startsWith("/user/my-claims"), roles: ["COFFEE_PRODUCER"] },
+];
 
 export async function middleware(request: NextRequest) {
-	const pathname = request.nextUrl.pathname;
-	const token = await getToken({ req: request });
+	const { pathname } = request.nextUrl;
 
-	// Check if the path is protected
-	const allowedRoles = protectedRoutes[pathname];
+	// Public root redirect if already signed in
+	const token = await getToken({
+		req: request,
+		secret: process.env.NEXTAUTH_SECRET,
+	});
 
-	if (allowedRoles) {
-		if (!token) {
-			// Redirect to login if not authenticated
-			return NextResponse.redirect(new URL("/", request.url));
-		}
-
-		// eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
-		const userRole = token?.role as Role;
-
-		if (!userRole || !allowedRoles.includes(userRole)) {
-			// Redirect to marketplace if not authorized
-			return NextResponse.redirect(new URL("/marketplace", request.url));
-		}
+	if (token && pathname === "/") {
+		return NextResponse.redirect(new URL("/marketplace", request.url));
 	}
 
-	// Handle default redirect for authenticated users
-	if (token && pathname === "/") {
+	const match = protectedMatchers.find((m) => m.test(pathname));
+	if (!match) {
+		return NextResponse.next();
+	}
+
+	// Require auth
+	if (!token) {
+		const url = new URL("/", request.url);
+		// optional: add callbackUrl to return after login
+		url.searchParams.set("callbackUrl", pathname);
+		return NextResponse.redirect(url);
+	}
+
+	// Require role
+	const userRole = token.role as Role | undefined;
+	if (!userRole || !match.roles.includes(userRole)) {
 		return NextResponse.redirect(new URL("/marketplace", request.url));
 	}
 
 	return NextResponse.next();
 }
 
+// Keep middleware off of NextAuth APIs and static assets
 export const config = {
 	matcher: [
-		/*
-		 * Match all request paths except for the ones starting with:
-		 * - api (API routes)
-		 * - _next/static (static files)
-		 * - _next/image (image optimization files)
-		 * - favicon.ico (favicon file)
-		 */
+		// everything except these:
 		"/((?!api|_next/static|_next/image|favicon.ico).*)",
-		"/user/register-coffee",
-		"/user/my-coffee",
-		"/user/my-sales",
+		// (the above already covers your /user/* paths)
 	],
 };

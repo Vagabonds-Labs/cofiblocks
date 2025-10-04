@@ -6,7 +6,6 @@ import {
 	protectedProcedure,
 	publicProcedure,
 } from "~/server/api/trpc";
-import { registerUser } from "~/services/cavos";
 
 export const userRouter = createTRPCRouter({
 	getMe: protectedProcedure.query(async ({ ctx }) => {
@@ -120,7 +119,6 @@ export const userRouter = createTRPCRouter({
 		if (!ctx.session.user.email) {
 			throw new Error("User email not found");
 		}
-		const userAuthData = await registerUser(ctx.session.user.email, "1234");
-		return userAuthData.wallet_address;
+		return crypto.randomUUID();
 	}),
 });

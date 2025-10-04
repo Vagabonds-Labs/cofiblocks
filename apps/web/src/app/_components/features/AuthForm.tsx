@@ -3,6 +3,7 @@
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import Button from "@repo/ui/button";
 import { H1, Text } from "@repo/ui/typography";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -22,7 +23,6 @@ export default function AuthForm({ initialMode = "signin" }: AuthFormProps) {
 	const { t } = useTranslation();
 	const router = useRouter();
 	const registerUserMutation = api.auth.registerUser.useMutation();
-	const loginUserMutation = api.auth.loginUser.useMutation();
 	const [mode, setMode] = useState<"signin" | "signup">(initialMode);
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -48,14 +48,21 @@ export default function AuthForm({ initialMode = "signin" }: AuthFormProps) {
 		setIsLoading(true);
 
 		if (mode === "signin") {
-			try {
-				await loginUserMutation.mutateAsync({ email, password });
-				router.push("/marketplace");
-			} catch (loginError) {
-				setError(t(getLoginErrorMessage(loginError as Error)));
+			setIsLoading(true);
+			const res = await signIn("credentials", {
+				redirect: false,
+				email,
+				password,
+			});
+
+			if (!res || res.error) {
+				setError(t("error.invalid_credentials"));
 				setIsLoading(false);
 				return;
 			}
+
+			router.refresh();
+			router.push("/marketplace");
 		} else {
 			// Sign Up
 			// Check if passwords match

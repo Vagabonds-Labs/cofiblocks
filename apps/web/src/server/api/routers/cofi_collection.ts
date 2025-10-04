@@ -1,6 +1,6 @@
 import z from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { registerUser } from "~/services/cavos";
+import { registerUser } from "~/server/services/cavos";
 import { balanceOf } from "~/services/contracts/cofi_collection";
 
 export const cofiCollectionRouter = createTRPCRouter({

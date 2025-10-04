@@ -7,6 +7,7 @@ import { CheckCircleIcon } from "@heroicons/react/20/solid";
 import { GeistSans } from "geist/font/sans";
 import i18n from "~/i18n";
 import { CavosAuthProvider } from "~/providers/cavos-auth";
+import SessionProvider from "~/providers/session";
 import StarknetProvider from "~/providers/starknet";
 import { TRPCReactProvider } from "~/trpc/react";
 import BetaAnnouncement from "./_components/ui/BetaAnnouncement";
@@ -31,14 +32,12 @@ export default function RootLayout({
 			className={`${GeistSans.variable} h-full`}
 		>
 			<body className="min-h-screen h-full">
-				<CavosAuthProvider>
-					<StarknetProvider>
-						<TRPCReactProvider>
-							<BetaAnnouncement />
-							<div className="min-h-screen h-full pb-20">{children}</div>
-						</TRPCReactProvider>
-					</StarknetProvider>
-				</CavosAuthProvider>
+				<SessionProvider>
+					<TRPCReactProvider>
+						<BetaAnnouncement />
+						<div className="min-h-screen h-full pb-20">{children}</div>
+					</TRPCReactProvider>
+				</SessionProvider>
 				<Toaster
 					position="top-center"
 					toastOptions={{

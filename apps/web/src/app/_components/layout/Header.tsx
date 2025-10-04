@@ -2,6 +2,7 @@
 
 import { PageHeader } from "@repo/ui/pageHeader";
 import { useAtom } from "jotai";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "react-hot-toast";
@@ -27,58 +28,16 @@ interface ProductMetadata {
 function Header({
 	showCart,
 	profileOptions,
-	address: _address,
 	disconnect,
 	onConnect: _onConnect,
 }: HeaderProps) {
 	const router = useRouter();
 	const { t } = useTranslation();
-	const { isAuthenticated, user, signOut, refreshSession } = useCavosAuth();
+	const { data, status } = useSession();
+	const user = data?.user;
+	const isAuthenticated = status === "authenticated";
 	const utils = api.useUtils();
 	const [, setItems] = useAtom(cartItemsAtom);
-
-	// Debug authentication state and refresh session if needed
-	React.useEffect(() => {
-		console.log("Header auth state:", {
-			isAuthenticated,
-			user,
-			email: user?.email,
-			walletAddress: user?.walletAddress,
-			localStorage: {
-				accessToken:
-					typeof window !== "undefined"
-						? !!localStorage.getItem("accessToken")
-						: null,
-				userEmail:
-					typeof window !== "undefined"
-						? localStorage.getItem("userEmail")
-						: null,
-				walletAddress:
-					typeof window !== "undefined"
-						? localStorage.getItem("walletAddress")
-						: null,
-				userId:
-					typeof window !== "undefined"
-						? !!localStorage.getItem("userId")
-						: null,
-				oauthLogin:
-					typeof window !== "undefined"
-						? localStorage.getItem("oauthLogin")
-						: null,
-			},
-		});
-
-		// Check if we should be authenticated but aren't
-		if (typeof window !== "undefined") {
-			const hasToken = !!localStorage.getItem("accessToken");
-			const hasEmail = !!localStorage.getItem("userEmail");
-
-			if (hasToken && hasEmail && !isAuthenticated) {
-				console.log("Detected auth mismatch, refreshing session...");
-				refreshSession();
-			}
-		}
-	}, [isAuthenticated, user, refreshSession]);
 
 	// Fetch cart data with proper caching
 	const { data: cartData } = api.cart.getUserCart.useQuery(undefined, {

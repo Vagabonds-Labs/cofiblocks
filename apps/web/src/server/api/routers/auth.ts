@@ -8,8 +8,9 @@ import {
 	publicProcedure,
 } from "~/server/api/trpc";
 import { createAuthService } from "~/server/services/auth-service";
+import { registerUserCavos } from "~/server/services/cavos";
 import { createEmailService } from "~/server/services/mail-service";
-import { registerUser } from "~/services/cavos";
+import { validatePasswordOrThrow } from "~/utils/passwordValidation";
 
 export const authRouter = createTRPCRouter({
 	// lets do registerUser here
@@ -17,16 +18,20 @@ export const authRouter = createTRPCRouter({
 		.input(
 			z.object({
 				email: z.string().email(),
-				password: z.string().optional(),
+				password: z.string().min(1, "Password is required"),
 				role: z.enum(["COFFEE_BUYER", "COFFEE_PRODUCER", "COFFEE_ROASTER"]),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
 			const { email, password, role } = input;
-			if (!email || !password) {
+
+			// Validate password meets security requirements
+			try {
+				validatePasswordOrThrow(password);
+			} catch (error) {
 				throw new TRPCError({
 					code: "BAD_REQUEST",
-					message: "Email or password is missing",
+					message: error instanceof Error ? error.message : "Invalid password",
 				});
 			}
 
@@ -51,7 +56,6 @@ export const authRouter = createTRPCRouter({
 					email,
 					password: encrypted_password,
 					role: role as Role,
-					walletAddress: crypto.randomUUID(),
 				},
 			});
 
@@ -82,13 +86,6 @@ export const authRouter = createTRPCRouter({
 			}
 
 			return { ok: true };
-		}),
-
-	loginUser: publicProcedure
-		.input(z.object({ email: z.string().email(), password: z.string() }))
-		.mutation(async ({ ctx, input }) => {
-			const { email, password } = input;
-			return {};
 		}),
 
 	requestEmailVerification: publicProcedure
@@ -128,16 +125,63 @@ export const authRouter = createTRPCRouter({
 				throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid token" });
 			}
 
+			// Try registering user with Cavos
+			let walletAddress = null;
+			try {
+				const userAuthData = await registerUserCavos(res.email, ctx.db);
+				walletAddress = userAuthData.wallet_address;
+			} catch (error) {
+				console.error("Error creating or updating Cavos User:", error);
+			}
+
 			await ctx.db.user.update({
 				where: { email: res.email },
-				data: { emailVerified: new Date() },
+				data: { emailVerified: new Date(), walletAddress: walletAddress },
 			});
 
 			// remove verification token
 			await ctx.db.verificationToken.deleteMany({
-				where: { identifier: res.email },
+				where: { email: res.email, type: "EMAIL_VERIFY" },
 			});
 
 			return { ok: true as const };
 		}),
+
+	registerUserCavos: protectedProcedure.mutation(async ({ ctx }) => {
+		const email = ctx.session?.user?.email;
+		const userId = ctx.session?.user?.id;
+		if (!email || !userId) {
+			throw new TRPCError({
+				code: "UNAUTHORIZED",
+				message: "Unauthorized user",
+			});
+		}
+		const user = await ctx.db.user.findUnique({
+			where: { id: userId },
+		});
+		if (!user?.emailVerified) {
+			throw new TRPCError({
+				code: "BAD_REQUEST",
+				message: "Email not verified",
+			});
+		}
+
+		let walletAddress = null;
+		try {
+			const userAuthData = await registerUserCavos(email, ctx.db);
+			walletAddress = userAuthData.wallet_address;
+		} catch (error) {
+			throw new TRPCError({
+				code: "INTERNAL_SERVER_ERROR",
+				message: `Unable to register user with Cavos: ${error}`,
+			});
+		}
+
+		// update user with Cavos User data
+		await ctx.db.user.update({
+			where: { id: userId },
+			data: { walletAddress: walletAddress },
+		});
+		return { ok: true as const };
+	}),
 });

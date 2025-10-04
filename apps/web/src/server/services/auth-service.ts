@@ -2,7 +2,7 @@
 import crypto from "node:crypto";
 import type { PrismaClient } from "@prisma/client";
 
-type TokenType = "EMAIL_VERIFY" | "PASSWORD_RESET";
+export type TokenType = "EMAIL_VERIFY" | "PASSWORD_RESET";
 
 export function createAuthService({
 	db,
@@ -29,7 +29,9 @@ export function createAuthService({
 		await db.$transaction([
 			db.verificationToken.create({
 				data: {
-					identifier: email.toLowerCase(),
+					id: crypto.randomUUID(),
+					type: "EMAIL_VERIFY",
+					email: email.toLowerCase(),
 					token: hash,
 					expires,
 				},
@@ -42,15 +44,15 @@ export function createAuthService({
 	const verifyToken = async (raw: string, type: TokenType) => {
 		const hash = crypto.createHash("sha256").update(raw).digest("hex");
 		const record = await db.verificationToken.findUnique({
-			where: { token: hash },
+			where: { token: hash, type: type },
 		});
 
 		if (!record || record.expires < new Date()) {
 			return { ok: false as const, reason: "expired" as const };
 		}
 
-		await db.verificationToken.delete({ where: { token: hash } });
-		return { ok: true as const, email: record.identifier };
+		await db.verificationToken.delete({ where: { token: hash, type: type } });
+		return { ok: true as const, email: record.email };
 	};
 
 	const requestEmailVerification = async (email: string) => {
