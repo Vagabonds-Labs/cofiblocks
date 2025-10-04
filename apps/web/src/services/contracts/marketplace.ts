@@ -1,3 +1,4 @@
+import { type UserAuthData, executeTransaction } from "~/server/services/cavos";
 import {
 	CofiBlocksContracts,
 	type PaymentToken,
@@ -6,7 +7,6 @@ import {
 	getMarketplaceAddress,
 } from "../../utils/contracts";
 import { format_number } from "../../utils/formatting";
-import { type UserAuthData, executeTransaction } from "../cavos";
 
 export async function buyProduct(
 	tokenId: bigint,

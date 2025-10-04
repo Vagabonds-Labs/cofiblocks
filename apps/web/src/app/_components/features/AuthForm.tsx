@@ -3,13 +3,17 @@
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import Button from "@repo/ui/button";
 import { H1, Text } from "@repo/ui/typography";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import GoogleAuth from "~/app/_components/features/GoogleAuth";
 import Spinner from "~/app/_components/ui/Spinner";
-import { useCavosAuth } from "~/providers/cavos-auth";
 import { api } from "~/trpc/react";
+import {
+	getLoginErrorMessage,
+	getRegisterErrorMessage,
+} from "~/utils/parseErrorMessages";
 
 interface AuthFormProps {
 	initialMode?: "signin" | "signup";
@@ -18,8 +22,7 @@ interface AuthFormProps {
 export default function AuthForm({ initialMode = "signin" }: AuthFormProps) {
 	const { t } = useTranslation();
 	const router = useRouter();
-	const { signIn, signUp, error: authError } = useCavosAuth();
-	const registerUserMutation = api.user.registerUser.useMutation();
+	const registerUserMutation = api.auth.registerUser.useMutation();
 	const [mode, setMode] = useState<"signin" | "signup">(initialMode);
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -39,138 +42,49 @@ export default function AuthForm({ initialMode = "signin" }: AuthFormProps) {
 		}
 	}, [mode, router]);
 
-	// Set error from auth context only if no local error is set
-	useEffect(() => {
-		if (authError) {
-			setError(authError);
-		}
-	}, [authError]);
-
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setError("");
 		setIsLoading(true);
 
-		try {
-			if (mode === "signin") {
-				// Sign In
-				try {
-					await signIn(email, password);
+		if (mode === "signin") {
+			setIsLoading(true);
+			const res = await signIn("credentials", {
+				redirect: false,
+				email,
+				password,
+			});
 
-					// Redirect to marketplace after successful login
-					router.push("/marketplace");
-				} catch (loginError) {
-					// Handle login errors with user-friendly messages
-					if (loginError instanceof Error) {
-						if (
-							loginError.message.includes("verification") ||
-							loginError.message.includes("verify") ||
-							loginError.message.includes("email")
-						) {
-							setError(t("error.email_verification_required"));
-						} else if (
-							loginError.message.includes("USER_ALREADY_EXISTS") ||
-							loginError.message.includes("already registered")
-						) {
-							setError(t("error.user_already_exists_signin"));
-						} else {
-							setError(t("error.invalid_credentials"));
-						}
-					} else {
-						setError(t("error.invalid_credentials"));
-					}
-					setIsLoading(false);
-					return; // Prevent error from bubbling up to outer catch block
-				}
-			} else {
-				// Sign Up
-				// Check if passwords match
-				if (password !== confirmPassword) {
-					setError(t("error.passwords_do_not_match"));
-					setIsLoading(false);
-					return;
-				}
-
-				try {
-					const cavosResult = await signUp(email, password);
-
-					// Register user in database after successful Cavos signup
-					try {
-						await registerUserMutation.mutateAsync({
-							email,
-							name: email.split("@")[0],
-							password: password,
-							role: "COFFEE_BUYER",
-							walletAddress: cavosResult.wallet?.address ?? "",
-						});
-						console.log("User successfully registered in database");
-					} catch (dbError) {
-						console.error("Failed to register user in database:", dbError);
-					}
-
-					// Only show verification UI if signup was successful
-					setVerificationSent(true);
-					setIsLoading(false);
-					return; // Exit early after showing verification message
-				} catch (signupError) {
-					// Handle all signup errors
-					if (signupError instanceof Error) {
-						// Check if user already exists - they should sign in instead
-						if (
-							signupError.message.includes("USER_ALREADY_EXISTS") ||
-							signupError.message.includes("already registered")
-						) {
-							setError(t("error.user_already_exists_signup"));
-						}
-						// Check if it's an organization token error
-						else if (
-							signupError.message.includes("INVALID_ORG_TOKEN") ||
-							signupError.message.includes("Invalid organization token")
-						) {
-							setError(t("auth.use_google_signin"));
-						}
-						// Check if the error is related to email verification
-						else if (
-							signupError.message.includes("verification") ||
-							signupError.message.includes("verify") ||
-							signupError.message.includes("email")
-						) {
-							// If verification is needed, show verification UI
-							setVerificationSent(true);
-						} else {
-							console.error("Setting error as: %s", signupError.message);
-							setError(signupError.message);
-						}
-					} else {
-						setError(t("error.registration_failed"));
-					}
-					setIsLoading(false);
-					return; // Prevent error from bubbling up to outer catch block
-				}
-			}
-		} catch (error) {
-			// Provide more specific error messages
-			if (error instanceof Error) {
-				if (error.message === "Missing organization secret") {
-					setError(t("error.missing_org_secret"));
-				} else if (
-					error.message.includes("401") ||
-					error.message.includes("INVALID_ORG_TOKEN")
-				) {
-					setError(t("error.invalid_org_secret"));
-					console.error(
-						"Organization token error. Please check your NEXT_PUBLIC_CAVOS_ORG_SECRET environment variable.",
-					);
-				} else {
-					setError(
-						mode === "signin"
-							? t("error.invalid_credentials")
-							: t("error.registration_failed"),
-					);
-				}
+			if (!res || res.error) {
+				setError(t("error.invalid_credentials"));
+				setIsLoading(false);
+				return;
 			}
 
-			setIsLoading(false);
+			router.refresh();
+			router.push("/marketplace");
+		} else {
+			// Sign Up
+			// Check if passwords match
+			if (password !== confirmPassword) {
+				setError(t("error.passwords_do_not_match"));
+				setIsLoading(false);
+				return;
+			}
+
+			try {
+				await registerUserMutation.mutateAsync({
+					email,
+					password,
+					role: "COFFEE_BUYER",
+				});
+				setVerificationSent(true);
+				setIsLoading(false);
+			} catch (signupError) {
+				setError(t(getRegisterErrorMessage(signupError as Error)));
+				setIsLoading(false);
+				return;
+			}
 		}
 	};
 

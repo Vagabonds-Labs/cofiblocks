@@ -1,7 +1,6 @@
 "use client";
 
 import Button from "@repo/ui/button";
-import { useDisconnect } from "@starknet-react/core";
 import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
@@ -15,11 +14,9 @@ interface LogoutModalProps {
 function LogoutModal({ isOpen, onClose }: LogoutModalProps) {
 	const { t } = useTranslation();
 	const router = useRouter();
-	const { disconnect } = useDisconnect();
 
 	const handleLogout = async () => {
 		await signOut();
-		disconnect();
 		onClose();
 		router.push("/");
 	};

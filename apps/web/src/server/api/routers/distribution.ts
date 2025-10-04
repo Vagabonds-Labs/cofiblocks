@@ -1,5 +1,5 @@
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { registerUser } from "~/services/cavos";
+import { registerUser } from "~/server/services/cavos";
 import {
 	getclaimBalanceCoffeeLover,
 	getclaimBalanceProducer,

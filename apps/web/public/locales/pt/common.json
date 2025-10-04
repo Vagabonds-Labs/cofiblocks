@@ -366,7 +366,12 @@
 		"verification_important": "Importante",
 		"verification_must_return": "Após verificar seu e-mail, você deve voltar para fazer login com suas credenciais.",
 		"click_after_verification": "Clique aqui após verificar seu e-mail",
-		"use_google_signin": "Por favor, use o Google para se registrar em vez do registro direto."
+		"use_google_signin": "Por favor, use o Google para se registrar em vez do registro direto.",
+		"verifying_email": "Verificando seu e-mail...",
+		"email_verified_success": "E-mail Verificado com Sucesso!",
+		"redirecting_to_marketplace": "Redirecionando para o mercado...",
+		"verification_failed": "Falha na Verificação do E-mail",
+		"back_to_auth": "Voltar para Login"
 	},
 
 	"wallet": {

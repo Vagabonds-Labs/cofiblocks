@@ -6,24 +6,9 @@ import {
 	protectedProcedure,
 	publicProcedure,
 } from "~/server/api/trpc";
-import { registerUser } from "~/services/cavos";
+import { CofiBlocksContracts, getCallToContract } from "~/utils/contracts";
 
 export const userRouter = createTRPCRouter({
-	getMe: protectedProcedure.query(async ({ ctx }) => {
-		console.log("Getting user data for ID:", ctx.session.user.id);
-		const user = await ctx.db.user.findUnique({
-			where: { id: ctx.session.user.id },
-		});
-
-		if (!user) {
-			console.error("User not found for ID:", ctx.session.user.id);
-			throw new Error("User not found");
-		}
-
-		console.log("Found user:", { id: user.id, role: user.role });
-		return user;
-	}),
-
 	getUser: publicProcedure
 		.input(z.object({ userId: z.string() }))
 		.query(({ ctx, input }) => {
@@ -32,18 +17,41 @@ export const userRouter = createTRPCRouter({
 			});
 		}),
 
-	checkRole: protectedProcedure.query(async ({ ctx }) => {
-		const user = await ctx.db.user.findUnique({
-			where: { id: ctx.session.user.id },
-			select: { role: true },
-		});
+	getUserBalances: publicProcedure
+		.input(z.object({ userId: z.string() }))
+		.query(async ({ ctx, input }) => {
+			const user = await ctx.db.user.findUnique({
+				where: { id: input.userId },
+			});
+			const calldata = [user?.walletAddress || "0x0"];
 
-		if (!user) {
-			throw new Error("User not found");
-		}
+			const stark_balance_result = await getCallToContract(
+				CofiBlocksContracts.STRK,
+				"balance_of",
+				calldata,
+			);
+			const stark_balance = Number(stark_balance_result) / 10 ** 18;
 
-		return { role: user.role };
-	}),
+			const usdt_balance_result = await getCallToContract(
+				CofiBlocksContracts.USDT,
+				"balance_of",
+				calldata,
+			);
+			const usdt_balance = Number(usdt_balance_result) / 10 ** 6;
+
+			const usdc_balance_result = await getCallToContract(
+				CofiBlocksContracts.USDC,
+				"balance_of",
+				calldata,
+			);
+			const usdc_balance = Number(usdc_balance_result) / 10 ** 6;
+
+			return {
+				starkBalance: Number(stark_balance),
+				usdtBalance: Number(usdt_balance),
+				usdcBalance: Number(usdc_balance),
+			};
+		}),
 
 	updateUserProfile: publicProcedure
 		.input(
@@ -90,81 +98,10 @@ export const userRouter = createTRPCRouter({
 			});
 		}),
 
-	updateWalletAddress: protectedProcedure
-		.input(
-			z.object({
-				walletAddress: z.string(),
-			}),
-		)
-		.mutation(async ({ ctx, input }) => {
-			const { walletAddress } = input;
-			const userId = ctx.session.user.id;
-
-			// Check if wallet address is already in use
-			const existingUser = await ctx.db.user.findUnique({
-				where: { walletAddress },
-			});
-
-			if (existingUser && existingUser.id !== userId) {
-				throw new Error("Wallet address already in use");
-			}
-
-			// Update user's wallet address
-			return ctx.db.user.update({
-				where: { id: userId },
-				data: { walletAddress },
-			});
-		}),
-
 	getUserAddress: protectedProcedure.query(async ({ ctx }) => {
 		if (!ctx.session.user.email) {
 			throw new Error("User email not found");
 		}
-		const userAuthData = await registerUser(ctx.session.user.email, "1234");
-		return userAuthData.wallet_address;
+		return crypto.randomUUID();
 	}),
-
-	// lets do registerUser here
-	registerUser: publicProcedure
-		.input(
-			z.object({
-				email: z.string().email(),
-				name: z.string().optional(),
-				password: z.string().optional(),
-				role: z.enum(["COFFEE_BUYER", "COFFEE_PRODUCER", "ADMIN"]),
-				walletAddress: z.string(),
-			}),
-		)
-		.mutation(async ({ ctx, input }) => {
-			const { email, name, password, role, walletAddress } = input;
-			if (!email || !password || !name) {
-				return new Response(
-					JSON.stringify({ error: "Missing required fields" }),
-					{ status: 400 },
-				);
-			}
-
-			// Check if user already exists
-			const existingUser = await ctx.db.user.findUnique({
-				where: { email },
-			});
-
-			if (existingUser) {
-				return new Response(JSON.stringify({ error: "User already exists" }), {
-					status: 400,
-				});
-			}
-
-			// Create new user
-			const user = await ctx.db.user.create({
-				data: {
-					id: crypto.randomUUID(),
-					email,
-					name,
-					password: password, // need to store it like this to be able to login with cavos
-					role: role as Role,
-					walletAddress: walletAddress,
-				},
-			});
-		}),
 });

@@ -31,20 +31,12 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
 	// Get Next Auth session
 	const session = await getServerAuthSession();
 
-	// Check for Cavos Auth token in headers
+	// Check for Auth token in headers
 	const authHeader = opts.headers.get("authorization");
-	const cavosToken = authHeader?.startsWith("Bearer ")
-		? authHeader.substring(7)
-		: null;
-
-	// Extract userId from headers if available (sent by client for Cavos Auth)
-	const cavosUserId = opts.headers.get("x-user-id");
 
 	return {
 		db,
 		session,
-		cavosToken,
-		cavosUserId,
 		...opts,
 	};
 };

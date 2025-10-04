@@ -414,7 +414,12 @@
 		"become_coffee_producer": "Become a Coffee Producer",
 		"verification_must_return": "After verifying your email, you must return to sign in with your credentials.",
 		"click_after_verification": "Click here after verifying your email",
-		"use_google_signin": "Please use Google Sign-In instead of direct registration."
+		"use_google_signin": "Please use Google Sign-In instead of direct registration.",
+		"verifying_email": "Verifying your email...",
+		"email_verified_success": "Email Verified Successfully!",
+		"redirecting_to_marketplace": "Redirecting you to the marketplace...",
+		"verification_failed": "Email Verification Failed",
+		"back_to_auth": "Back to Sign In"
 	},
 
 	"wallet": {
