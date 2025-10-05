@@ -11,12 +11,9 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useSession } from "next-auth/react";
 // import { useCavosAuth } from "~/providers/cavos-auth";
 import LogoutModal from "~/app/_components/features/LogoutModal";
-
-interface ProfileOptionsProps {
-	address?: string;
-}
 
 type ProfileOption = {
 	icon: typeof UserIcon;
@@ -27,8 +24,10 @@ type ProfileOption = {
 	iconColor?: string;
 };
 
-export function ProfileOptions({ address: _ }: ProfileOptionsProps) {
+export function ProfileOptions() {
 	const { t } = useTranslation();
+	const { data: session } = useSession();
+	const user = session?.user;
 	// We'll use useCavosAuth later when needed
 	// const { user } = useCavosAuth();
 	const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
@@ -107,8 +106,8 @@ export function ProfileOptions({ address: _ }: ProfileOptionsProps) {
 			{/* Always render common options first */}
 			{commonOptions.slice(0, 4).map(renderOption)}
 
-			{/* Show producer options for all authenticated users */}
-			{producerOptions.map(renderOption)}
+			{/* Show producer options only for producers */}
+			{user?.role === "COFFEE_PRODUCER" && producerOptions.map(renderOption)}
 
 			{/* Always render remaining common options */}
 			{commonOptions.slice(4).map(renderOption)}

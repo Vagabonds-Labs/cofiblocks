@@ -34,20 +34,25 @@ model ShoppingCart {
 }
 
 model Product {
-  id           Int      @id @default(autoincrement())
-  tokenId      Int
-  name         String
-  price        Float
-  nftMetadata  Json
-  hidden       Boolean? @default(false)
-  stock        Int      @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id              Int      @id @default(autoincrement())
+  tokenId         Int
+  name            String
+  price           Float
+  nftMetadata     Json
+  hidden          Boolean? @default(false)
+  stock           Int      @default(0)
+  owner           String?
+  initial_stock   Int?
+  creation_tx_hash String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
   shoppingCartItems ShoppingCartItem[]
   orderItems        OrderItem[]
   favorites         Favorite[]
+  ownerUser         User?     @relation("ProductOwner", fields: [owner], references: [id])
 
   @@index([name])
+  @@index([owner])
 }
 
 model ShoppingCartItem {
@@ -121,6 +126,7 @@ model User {
   farms          Farm[]
   password      String?
   favorites     Favorite[]
+  ownedProducts Product[]      @relation("ProductOwner")  // Products owned by this user
 }
 
 model Farm {

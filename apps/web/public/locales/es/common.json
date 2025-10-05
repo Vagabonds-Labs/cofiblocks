@@ -255,7 +255,15 @@
 	"october_18": "18 de Octubre",
 	"september_20": "20 de Septiembre",
 	"product_name": "Producto de muestra",
-
+	
+	"next": "Siguiente",
+	"im_in": "Estoy en",
+	"im_in_gam": "Estoy en GAM",
+	"im_not_in_gam": "No estoy en GAM",
+	"check_meetup_calendar": "Ver calendario de encuentros",
+	"free": "Gratis",
+	"pick_up_at_meetup": "Recoger en encuentro",
+	"send_to_my_home": "Enviar a mi casa",
 	"buyer1_fullname": "Comprador 1",
 	"buyer2_fullname": "Comprador 2",
 	"seller1_fullname": "Vendedor 1",
@@ -410,6 +418,10 @@
 		"insufficient_permissions": "No tienes los permisos necesarios para acceder a esta página.",
 		"contact_admin_for_access": "Por favor contacta a un administrador si crees que esto es un error.",
 		"go_to_marketplace": "Ir al Mercado",
-		"become_coffee_producer": "Convertirse en Productor de Café"
+		"become_coffee_producer": "Convertirse en Productor de Café",
+		"user_not_verified": "Este correo no está verificado. Por favor verifica tu correo antes de iniciar sesión.",
+		"resend_verification_email": "Reenviar correo de verificación",
+		"resending_verification": "Reenviando correo de verificación...",
+		"verification_email_resent": "Correo de verificación enviado exitosamente"
 	}
 }

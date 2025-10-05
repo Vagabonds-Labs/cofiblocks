@@ -62,9 +62,7 @@ export default function UserProfile() {
 		<Main>
 			<div className="container mx-auto px-4 py-8">
 				<Header
-					profileOptions={
-						<ProfileOptions address={userProfile.walletAddress} />
-					}
+					profileOptions={<ProfileOptions />}
 				/>
 				<ProfileCard user={userProfile} />
 
@@ -118,6 +116,7 @@ export default function UserProfile() {
 							starkBalance: balances?.starkBalance ?? 0,
 							usdtBalance: balances?.usdtBalance ?? 0,
 							usdcBalance: balances?.usdcBalance ?? 0,
+							claimBalance: balances?.claimBalance ?? 0,
 						}}
 					/>
 				)}

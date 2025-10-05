@@ -1,7 +1,6 @@
 "use client";
 
 import Skeleton from "@repo/ui/skeleton";
-import { useAccount, useDisconnect } from "@starknet-react/core";
 import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -34,8 +33,6 @@ interface RawMetadata {
 export default function ProductPage() {
 	const { t } = useTranslation();
 	const { data: session } = useSession();
-	const { address } = useAccount();
-	const { disconnect } = useDisconnect();
 	const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 	const [bagsAvailable, setBagsAvailable] = useState<number | null>(null);
 	const utils = api.useUtils();
@@ -55,7 +52,7 @@ export default function ProductPage() {
 		api.favorites.isProductFavorited.useQuery(
 			{ productId },
 			{
-				enabled: !!productId && !!address && !!session,
+				enabled: !!productId && !!session,
 				retry: false,
 			},
 		);
@@ -192,13 +189,9 @@ export default function ProductPage() {
 		<Main>
 			<div className="flex flex-col min-h-screen">
 				<Header
-					address={address}
-					disconnect={disconnect}
 					showCart={true}
 					onConnect={handleConnect}
-					profileOptions={
-						address ? <ProfileOptions address={address} /> : undefined
-					}
+					profileOptions={<ProfileOptions />}
 				/>
 				<div className="flex-grow px-4 md:px-6 lg:px-8 pt-24">
 					{isLoadingProduct ? (
@@ -231,8 +224,6 @@ export default function ProductPage() {
 									.description,
 								stock: product.stock ?? 0,
 							}}
-							isConnected={!!address}
-							onConnect={handleConnect}
 							isFavorited={isFavorited}
 							onToggleFavorite={handleToggleFavorite}
 							isLoadingFavorite={isTogglingFavorite}

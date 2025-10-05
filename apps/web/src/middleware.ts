@@ -17,30 +17,29 @@ const protectedMatchers: Array<{
 export async function middleware(request: NextRequest) {
 	const { pathname } = request.nextUrl;
 
-	// Public root redirect if already signed in
 	const token = await getToken({
 		req: request,
 		secret: process.env.NEXTAUTH_SECRET,
 	});
 
-	if (token && pathname === "/") {
+	// If no token is found, only allow /marketplace and auth routes
+	if (!token) {
+		if (pathname === "/marketplace" || pathname === "/" || pathname.startsWith("/auth")) {
+			return NextResponse.next();
+		}
+		// Redirect to marketplace for any other route when not authenticated
 		return NextResponse.redirect(new URL("/marketplace", request.url));
 	}
 
+	// If token is found, check for protected routes
 	const match = protectedMatchers.find((m) => m.test(pathname));
+	
+	// If no protected route match, allow access
 	if (!match) {
 		return NextResponse.next();
 	}
 
-	// Require auth
-	if (!token) {
-		const url = new URL("/", request.url);
-		// optional: add callbackUrl to return after login
-		url.searchParams.set("callbackUrl", pathname);
-		return NextResponse.redirect(url);
-	}
-
-	// Require role
+	// For protected routes, check if user has required role
 	const userRole = token.role as Role | undefined;
 	if (!userRole || !match.roles.includes(userRole)) {
 		return NextResponse.redirect(new URL("/marketplace", request.url));

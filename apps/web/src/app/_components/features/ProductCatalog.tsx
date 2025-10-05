@@ -18,15 +18,8 @@ import type { NftMetadata, Product } from "./types";
 
 const MARKET_FEE_BPS = 5000; // 50%
 
-interface ProductCatalogProps {
-	isConnected?: boolean;
-	onConnect?: () => void;
-}
 
-export default function ProductCatalog({
-	isConnected,
-	onConnect,
-}: ProductCatalogProps) {
+export default function ProductCatalog() {
 	const { t } = useTranslation();
 	const [products, setProducts] = useState<Product[]>([]);
 	const [results, setSearchResults] = useAtom(searchResultsAtom);
@@ -118,10 +111,6 @@ export default function ProductCatalog({
 			: "/images/cafe1.webp";
 
 		const handleAddToCart = () => {
-			if (!isConnected && onConnect) {
-				onConnect();
-				return;
-			}
 
 			setAddingToCart(product.id);
 			addToCart(
@@ -154,7 +143,7 @@ export default function ProductCatalog({
 				badgeText={t(`strength.${metadata?.strength?.toLowerCase()}`)}
 				onClick={() => accessProductDetails(product.id)}
 				onAddToCart={handleAddToCart}
-				isConnected={isConnected}
+				isConnected={true}
 				isAddingToShoppingCart={addingToCart === product.id}
 			/>
 		);

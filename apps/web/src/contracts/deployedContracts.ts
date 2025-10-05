@@ -7,7 +7,7 @@ const deployedContracts = {
 	mainnet: {
 		CofiCollection: {
 			address:
-				"0x363b0273330b018586eb056dcbc966b670e8a369a67d465e91f72b3b5f574f4",
+				"0xb2ca9397f4b97c240496be6b5a4974a4de0a0e5c1d01892d4e47ba31e61e87",
 			abi: [
 				{
 					type: "impl",
@@ -1136,7 +1136,7 @@ const deployedContracts = {
 		},
 		Distribution: {
 			address:
-				"0x2c166ca1e09819a1b461d03f6797a5de0ab8d43ed4087cb78e6b9303bd2f87e",
+				"0x3cb078ac63f2d922f364de07d0ff20a1350a8ca29c3dd60b79c468121af2d33",
 			abi: [
 				{
 					type: "impl",
@@ -1245,7 +1245,7 @@ const deployedContracts = {
 									type: "core::integer::u256",
 								},
 							],
-							state_mutability: "external",
+							state_mutability: "view",
 						},
 						{
 							type: "function",
@@ -1273,7 +1273,7 @@ const deployedContracts = {
 									type: "core::integer::u256",
 								},
 							],
-							state_mutability: "external",
+							state_mutability: "view",
 						},
 						{
 							type: "function",
@@ -1301,7 +1301,7 @@ const deployedContracts = {
 									type: "core::integer::u256",
 								},
 							],
-							state_mutability: "external",
+							state_mutability: "view",
 						},
 						{
 							type: "function",
@@ -1324,7 +1324,7 @@ const deployedContracts = {
 									type: "core::integer::u256",
 								},
 							],
-							state_mutability: "external",
+							state_mutability: "view",
 						},
 						{
 							type: "function",
@@ -1342,7 +1342,7 @@ const deployedContracts = {
 									type: "core::integer::u256",
 								},
 							],
-							state_mutability: "external",
+							state_mutability: "view",
 						},
 						{
 							type: "function",
@@ -1365,7 +1365,7 @@ const deployedContracts = {
 									type: "core::integer::u256",
 								},
 							],
-							state_mutability: "external",
+							state_mutability: "view",
 						},
 						{
 							type: "function",
@@ -1782,11 +1782,11 @@ const deployedContracts = {
 				},
 			],
 			classHash:
-				"0x3253005fd4286bfb53d66ff63aa62ad5e75fe16af4bd14577ba4b7c289cff1",
+				"0x19a04b0531e4bb2b57d75e8d4cf5c6e536280f626aa015fe4cfecbde0defc8c",
 		},
 		Marketplace: {
 			address:
-				"0x292fb6fb85b6cabddf94e7393d5b28d16c6ae81ea4d3ec18dd88acbbe5e44da",
+				"0x17c66a7dd4cf8289b2c9f1a1e0a4631057d6607d6dfbc6589b03d8a3522d9",
 			abi: [
 				{
 					type: "impl",
@@ -2039,7 +2039,7 @@ const deployedContracts = {
 									type: "core::integer::u256",
 								},
 							],
-							state_mutability: "external",
+							state_mutability: "view",
 						},
 						{
 							type: "function",
@@ -2671,7 +2671,7 @@ const deployedContracts = {
 				},
 			],
 			classHash:
-				"0x2fd2eeeb767380a2c8c8f364e771626e3c522e355fa49e21ce543d0c8940c12",
+				"0x304f16ea92268104a3b728bc365a3d64b8edfc19c8ea93820accf5cfec01868",
 		},
 		STRK: {
 			address:

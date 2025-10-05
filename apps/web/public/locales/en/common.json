@@ -419,7 +419,10 @@
 		"email_verified_success": "Email Verified Successfully!",
 		"redirecting_to_marketplace": "Redirecting you to the marketplace...",
 		"verification_failed": "Email Verification Failed",
-		"back_to_auth": "Back to Sign In"
+		"back_to_auth": "Back to Sign In",
+		"resend_verification_email": "Resend verification email",
+		"resending_verification": "Resending verification email...",
+		"verification_email_resent": "Verification email sent successfully"
 	},
 
 	"wallet": {
@@ -438,6 +441,7 @@
 		"email_verification_required": "Please verify your email before signing in.",
 		"passwords_do_not_match": "Passwords do not match. Please try again.",
 		"user_already_exists_signin": "This email is already registered. Please use the sign-up form instead.",
-		"user_already_exists_signup": "This email is already registered. Please sign in instead."
+		"user_already_exists_signup": "This email is already registered. Please sign in instead.",
+		"user_not_verified": "This email is not verified. Please verify your email before signing in."
 	}
 }

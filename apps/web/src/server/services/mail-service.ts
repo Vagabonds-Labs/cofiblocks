@@ -15,7 +15,7 @@ export type EmailServiceDeps = {
 
 export const createEmailService = (deps?: EmailServiceDeps) => {
 	//const resend = new Resend(deps?.apiKey ?? process.env.RESEND_API_KEY);
-	const from = deps?.from ?? process.env.EMAIL_FROM ?? "no-reply@example.com";
+	const from = deps?.from ?? process.env.EMAIL_FROM ?? "no-reply@cofiblocks.com";
 
 	//   if (!resend) {
 	//     throw new Error("Resend client not initialized: missing RESEND_API_KEY");
@@ -44,11 +44,10 @@ export const createEmailService = (deps?: EmailServiceDeps) => {
 
 	// ---- Templates (Spanish copy) ----
 	const renderVerificationEmail = (params: {
-		appName?: string;
 		userName?: string | null;
 		verifyUrl: string;
 	}) => {
-		const appName = params.appName ?? "Cofiblocks";
+		const appName = "Cofiblocks";
 		const saludo = params.userName ? `¡Hola ${params.userName}!` : "¡Hola!";
 		const text = [
 			`${saludo}`,
@@ -159,10 +158,8 @@ export const createEmailService = (deps?: EmailServiceDeps) => {
 		to: string;
 		verifyUrl: string;
 		userName?: string | null;
-		appName?: string;
 	}) => {
 		const tpl = renderVerificationEmail({
-			appName: opts.appName,
 			userName: opts.userName ?? null,
 			verifyUrl: opts.verifyUrl,
 		});

@@ -8,11 +8,8 @@ pre-commit:
   commands:
     check:
       glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
-      run: bun run format:fix
-      stage_fixed: true
-    sn_format:
-      glob: "apps/snfoundry/contracts/**/*.cairo"
-      run: bun run sn:format:check
+      exclude: "apps/snfoundry/**"
+      run: find . -name "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}" -not -path "./apps/snfoundry/*" -not -path "./node_modules/*" | xargs biome check --write
       stage_fixed: true
     build:
       #run: bun run build

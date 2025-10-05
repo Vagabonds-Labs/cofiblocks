@@ -3,7 +3,6 @@
 import { ArrowDownIcon } from "@heroicons/react/24/outline";
 import Button from "@repo/ui/button";
 import { Separator } from "@repo/ui/separator";
-import { useAccount, useProvider } from "@starknet-react/core";
 import { useAtomValue, useSetAtom } from "jotai";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -15,6 +14,7 @@ import type { CartItem } from "~/store/cartAtom";
 import { api } from "~/trpc/react";
 import Confirmation from "./Confirmation";
 import { CurrencySelector } from "./CurrencySelector";
+import { PaymentToken } from "~/utils/contracts";
 
 const getImageUrl = (src: string) => {
 	if (src.startsWith("Qm")) {
@@ -45,7 +45,7 @@ interface OrderReviewProps {
 	readonly isConfirmed: boolean;
 }
 
-const MARKET_FEE_BPS = 5000; // 50%
+const MARKET_FEE_BPS = process.env.MARKET_FEE_BPS ? parseInt(process.env.MARKET_FEE_BPS) : 5000;
 
 export default function OrderReview({
 	onCurrencySelect,
@@ -58,7 +58,7 @@ export default function OrderReview({
 	const clearCart = useSetAtom(clearCartAtom);
 	const setIsCartOpen = useSetAtom(isCartOpenAtom);
 	const [isCurrencySelectorOpen, setIsCurrencySelectorOpen] = useState(false);
-	const [selectedCurrency, setSelectedCurrency] = useState("USD");
+	const [selectedCurrency, setSelectedCurrency] = useState("USDC");
 	const [showConfirmation, setShowConfirmation] = useState(false);
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -68,17 +68,31 @@ export default function OrderReview({
 	// Get current cart
 	const { data: cart } = api.cart.getUserCart.useQuery();
 
-	const productPrice = cartItems.reduce(
-		(total, item) => total + item.price * item.quantity,
-		0,
+	// Get unit prices for cart items
+	const { data: priceData, isLoading: isLoadingPrices } = api.cart.getCartUnitPrices.useQuery(
+		{
+			cartId: cart?.id ?? "",
+			paymentToken: selectedCurrency as "STRK" | "USDC" | "USDT",
+		},
+		{
+			enabled: !!cart?.id && !!selectedCurrency,
+		}
 	);
-	const platformFee = (productPrice * MARKET_FEE_BPS) / 10000;
-	const totalPrice = productPrice + platformFee + deliveryPrice;
+
+	// Calculate prices using fetched unit prices or fallback to cart item prices
+	const productPrice = cartItems.reduce((total, item) => {
+		const unitPrice = priceData?.unitPrices?.[item.id] 
+			? Number(priceData.unitPrices[item.id]) 
+			: 0;
+		return total + unitPrice * item.quantity;
+	}, 0);
+
+	const totalPrice = productPrice + deliveryPrice;
 
 	const handleCurrencySelect = (currency: string) => {
-		setSelectedCurrency(currency);
+		setSelectedCurrency(currency.toUpperCase());
 		setIsCurrencySelectorOpen(false);
-		onCurrencySelect(currency);
+		onCurrencySelect(currency.toUpperCase());
 	};
 
 	const handleProceedToPayment = async () => {
@@ -86,31 +100,14 @@ export default function OrderReview({
 			setIsProcessing(true);
 			setError(null);
 
-			const token_ids = cartItems.map((item) => item.tokenId);
-			const token_amounts = cartItems.map((item) => item.quantity);
-
-			// Execute the purchase transaction
-			if (
-				token_ids.length > 0 &&
-				token_amounts.length > 0 &&
-				token_ids[0] &&
-				token_amounts[0]
-			) {
-				console.log("Buying product", token_ids[0], token_amounts[0]);
-				const mutation = api.marketplace.buyProduct.useMutation();
-				await mutation.mutateAsync({
-					tokenId: token_ids[0].toString(),
-					tokenAmount: token_amounts[0].toString(),
-					paymentToken: "USDC",
-				});
-			}
-
 			if (!cart?.id) {
 				throw new Error("Cart not found");
 			}
 
 			// Create order in the database
-			const result = await createOrder.mutateAsync({ cartId: cart.id });
+			const result = await createOrder.mutateAsync(
+				{ cartId: cart.id, paymentToken: selectedCurrency as PaymentToken }
+			);
 
 			// Clear the cart and close the cart sidebar
 			clearCart();
@@ -162,17 +159,34 @@ export default function OrderReview({
 							<div className="flex justify-between py-2">
 								<span className="text-gray-600">{t("product_price")}</span>
 								<div className="flex flex-col items-end">
-									<span className="text-sm text-gray-500">
-										{(item.price * item.quantity).toFixed(2)} {selectedCurrency}
-									</span>
-									<span className="font-medium">
-										{(
-											item.price *
-											(1 + MARKET_FEE_BPS / 10000) *
-											item.quantity
-										).toFixed(2)}{" "}
-										{selectedCurrency}
-									</span>
+									{isLoadingPrices ? (
+										<div className="flex items-center gap-2">
+											<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
+											<span className="text-sm text-gray-500">{t("loading_prices")}</span>
+										</div>
+									) : (
+										<>
+											<span className="text-sm text-gray-500">
+												{(() => {
+													const unitPrice = priceData?.unitPrices?.[item.id]
+														? Number(priceData.unitPrices[item.id]) 
+														: 0;
+													return (unitPrice * item.quantity).toFixed(2);
+												})()} {selectedCurrency}
+											</span>
+											<span className="font-medium">
+												{(() => {
+													const unitPrice = priceData?.unitPrices?.[item.id] 
+														? Number(priceData.unitPrices[item.id]) 
+														: item.price;
+													return (
+														unitPrice
+													).toFixed(2);
+												})()}{" "}
+												{selectedCurrency}
+											</span>
+										</>
+									)}
 								</div>
 							</div>
 							<Separator />
@@ -197,17 +211,31 @@ export default function OrderReview({
 
 					<div className="flex justify-between py-2">
 						<span className="text-gray-600">{t("subtotal")}</span>
-						<span>
-							{productPrice.toFixed(2)} {selectedCurrency}
-						</span>
+						{isLoadingPrices ? (
+							<div className="flex items-center gap-2">
+								<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
+								<span className="text-sm text-gray-500">{t("loading")}</span>
+							</div>
+						) : (
+							<span>
+								{productPrice.toFixed(2)} {selectedCurrency}
+							</span>
+						)}
 					</div>
 					<Separator />
 
 					<div className="flex justify-between py-2">
-						<span className="text-gray-600">{t("operating_fee")} (50%)</span>
-						<span>
-							+{platformFee.toFixed(2)} {selectedCurrency}
-						</span>
+						<span className="text-gray-600">{t("operating_fee")} (50% incluido en el precio)</span>
+						{isLoadingPrices ? (
+							<div className="flex items-center gap-2">
+								<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
+								<span className="text-sm text-gray-500">{t("loading")}</span>
+							</div>
+						) : (
+							<span>
+								{totalPrice/2} {selectedCurrency}
+							</span>
+						)}
 					</div>
 					<Separator />
 
@@ -222,12 +250,19 @@ export default function OrderReview({
 					<div className="flex justify-between items-center py-2">
 						<span className="font-medium text-lg">{t("total_price")}</span>
 						<div className="flex flex-col items-end gap-1">
-							<div className="flex items-center gap-2">
-								<span className="font-bold text-lg">
-									{totalPrice.toFixed(2)} {selectedCurrency}
-								</span>
-								<ArrowDownIcon className="h-4 w-4 text-yellow-500" />
-							</div>
+							{isLoadingPrices ? (
+								<div className="flex items-center gap-2">
+									<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
+									<span className="text-sm text-gray-500">{t("loading")}</span>
+								</div>
+							) : (
+								<div className="flex items-center gap-2">
+									<span className="font-bold text-lg">
+										{totalPrice.toFixed(2)} {selectedCurrency}
+									</span>
+									<ArrowDownIcon className="h-4 w-4 text-yellow-500" />
+								</div>
+							)}
 						</div>
 					</div>
 				</div>
@@ -241,17 +276,17 @@ export default function OrderReview({
 				<Button
 					onClick={() => setIsCurrencySelectorOpen(true)}
 					className="w-full bg-white border border-gray-300 text-black mt-6 h-14"
-					disabled={isProcessing || cartItems.length === 0}
+					disabled={isProcessing || cartItems.length === 0 || isLoadingPrices}
 				>
 					{t("change_currency")}
 				</Button>
 
 				<Button
 					onClick={handleProceedToPayment}
-					className={`w-full bg-yellow-400 hover:bg-yellow-500 text-black mt-6 h-14 ${cartItems.length === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
-					disabled={isProcessing || cartItems.length === 0}
+					className={`w-full bg-yellow-400 hover:bg-yellow-500 text-black mt-6 h-14 ${cartItems.length === 0 || isLoadingPrices ? "opacity-50 cursor-not-allowed" : ""}`}
+					disabled={isProcessing || cartItems.length === 0 || isLoadingPrices}
 				>
-					{isProcessing ? t("processing_payment") : t("proceed_to_payment")}
+					{isProcessing ? t("processing_payment") : isLoadingPrices ? t("loading_prices") : t("proceed_to_payment")}
 				</Button>
 			</div>
 

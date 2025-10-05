@@ -7,10 +7,12 @@ import {
 } from "starknet";
 import configExternalContracts from "../contracts/deployedContracts";
 
-export const getMarketplaceAddress = () => {
+export const getContractAddress = (contract: CofiBlocksContracts) => {
 	const env = "mainnet";
-	return configExternalContracts[env].Marketplace.address;
+	return configExternalContracts[env][contract].address;
 };
+
+export const CURRENT_TOKEN_ID_SELECTOR = "0x02d1f2240a2ec0158271955aa86d008519cb3eb290544ba488a608bb086c40a7";
 
 interface BlockchainEvent {
 	name: string;
@@ -31,6 +33,8 @@ export enum PaymentToken {
 	USDT = "USDT",
 }
 
+
+// This should be defined as js object, not enum
 export const PaymentTokenTag: Record<PaymentToken, string> = {
 	[PaymentToken.STRK]: "0x0",
 	[PaymentToken.USDC]: "0x1",
@@ -71,6 +75,17 @@ export const getCallToContract = async (
 		account,
 	);
 	return await contractInstance.call(entrypoint, calldata);
+};
+
+export const readStorageAt = async (
+	contract: CofiBlocksContracts,
+	selector: string,
+) => {
+	const account = localAccount();
+	return await account.getStorageAt(
+		configExternalContracts.mainnet[contract].address,
+		selector,
+	)
 };
 
 export async function getEvents(

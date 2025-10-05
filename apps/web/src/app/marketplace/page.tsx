@@ -64,7 +64,7 @@ export default function Home() {
 
 					{/* Product Catalog */}
 					<div className="px-4 md:px-6 lg:px-8">
-						<ProductCatalog isConnected={true} onConnect={handleConnect} />
+						<ProductCatalog />
 					</div>
 				</div>
 			</div>

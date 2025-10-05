@@ -233,13 +233,17 @@
 	"my_claims": "Minhas Reclamações",
 	"my_orders": "Meus Pedidos",
 	"favorite_products": "Produtos favoritos",
-	"wallet": "Carteira",
 	"wallets": "Carteiras",
 	"log_out": "Sair",
 
 	"variety": "Variedade",
 	"badge_text": "Texto do distintivo",
 
+	"next": "Próximo",
+	"im_in": "Estou em",
+	"im_in_gam": "Estou em GAM",
+	"im_not_in_gam": "Não estou em GAM",
+	"check_meetup_calendar": "Ver calendário de encontros",
 	"search_seller_placeholder": "Procurar pelo nome do vendedor",
 	"date": "Data: {{date}}",
 	"status": "Status",
@@ -252,6 +256,9 @@
 	"september_20": "20 de Setembro",
 	"product_name": "Produto de amostra",
 
+	"free": "Grátis",
+	"pick_up_at_meetup": "Recolher no encontro",
+	"send_to_my_home": "Enviar para minha casa",
 	"buyer1_fullname": "Comprador 1",
 	"buyer2_fullname": "Comprador 2",
 	"seller1_fullname": "Vendedor 1",
@@ -393,6 +400,10 @@
 		"insufficient_permissions": "Você não tem as permissões necessárias para acessar esta página.",
 		"contact_admin_for_access": "Por favor, entre em contato com um administrador se acredita que isso é um erro.",
 		"go_to_marketplace": "Ir para o Mercado",
-		"become_coffee_producer": "Tornar-se Produtor de Café"
+		"become_coffee_producer": "Tornar-se Produtor de Café",
+		"user_not_verified": "Este e-mail não está verificado. Por favor, verifique seu e-mail antes de fazer login.",
+		"resend_verification_email": "Reenviar e-mail de verificação",
+		"resending_verification": "Reenviando e-mail de verificação...",
+		"verification_email_resent": "E-mail de verificação enviado com sucesso"
 	}
 }

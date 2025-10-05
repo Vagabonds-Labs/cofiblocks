@@ -16,17 +16,17 @@ pub trait IDistribution<TContractState> {
         product_price: u256,
         profit: u256,
     );
-    fn coffee_lover_claim_balance(ref self: TContractState, address: ContractAddress) -> u256;
+    fn coffee_lover_claim_balance(self: @TContractState, address: ContractAddress) -> u256;
     fn coffee_lover_claim_reset(ref self: TContractState, address: ContractAddress);
-    fn producer_claim_balance(ref self: TContractState, address: ContractAddress) -> u256;
+    fn producer_claim_balance(self: @TContractState, address: ContractAddress) -> u256;
     fn producer_claim_reset(ref self: TContractState, address: ContractAddress);
-    fn roaster_claim_balance(ref self: TContractState, address: ContractAddress) -> u256;
+    fn roaster_claim_balance(self: @TContractState, address: ContractAddress) -> u256;
     fn roaster_claim_reset(ref self: TContractState, address: ContractAddress);
-    fn cambiatus_claim_balance(ref self: TContractState) -> u256;
+    fn cambiatus_claim_balance(self: @TContractState) -> u256;
     fn cambiatus_claim_reset(ref self: TContractState);
-    fn cofiblocks_claim_balance(ref self: TContractState) -> u256;
+    fn cofiblocks_claim_balance(self: @TContractState) -> u256;
     fn cofiblocks_claim_reset(ref self: TContractState);
-    fn cofounder_claim_balance(ref self: TContractState, address: ContractAddress) -> u256;
+    fn cofounder_claim_balance(self: @TContractState, address: ContractAddress) -> u256;
     fn cofounder_claim_reset(ref self: TContractState, address: ContractAddress);
     fn add_cofounder(ref self: TContractState, address: ContractAddress);
     fn distribute(ref self: TContractState);
@@ -221,7 +221,7 @@ mod Distribution {
             self.total_profit.write(self.total_profit.read() + profit);
         }
 
-        fn coffee_lover_claim_balance(ref self: ContractState, address: ContractAddress) -> u256 {
+        fn coffee_lover_claim_balance(self: @ContractState, address: ContractAddress) -> u256 {
             self.cl_claim_balances.read(address)
         }
 
@@ -230,7 +230,7 @@ mod Distribution {
             self.cl_claim_balances.write(address, 0);
         }
 
-        fn producer_claim_balance(ref self: ContractState, address: ContractAddress) -> u256 {
+        fn producer_claim_balance(self: @ContractState, address: ContractAddress) -> u256 {
             self.producer_claim_balances.read(address)
         }
 
@@ -239,7 +239,7 @@ mod Distribution {
             self.producer_claim_balances.write(address, 0);
         }
 
-        fn roaster_claim_balance(ref self: ContractState, address: ContractAddress) -> u256 {
+        fn roaster_claim_balance(self: @ContractState, address: ContractAddress) -> u256 {
             self.roaster_claim_balances.read(address)
         }
 
@@ -248,7 +248,7 @@ mod Distribution {
             self.roaster_claim_balances.write(address, 0);
         }
 
-        fn cambiatus_claim_balance(ref self: ContractState) -> u256 {
+        fn cambiatus_claim_balance(self: @ContractState) -> u256 {
             self.cambiatus_claim_balance.read()
         }
 
@@ -257,7 +257,7 @@ mod Distribution {
             self.cambiatus_claim_balance.write(0);
         }
 
-        fn cofiblocks_claim_balance(ref self: ContractState) -> u256 {
+        fn cofiblocks_claim_balance(self: @ContractState) -> u256 {
             self.cofiblocks_claim_balance.read()
         }
 
@@ -266,7 +266,7 @@ mod Distribution {
             self.cofiblocks_claim_balance.write(0);
         }
 
-        fn cofounder_claim_balance(ref self: ContractState, address: ContractAddress) -> u256 {
+        fn cofounder_claim_balance(self: @ContractState, address: ContractAddress) -> u256 {
             self.cofounders_claim_balances.read(address)
         }
 

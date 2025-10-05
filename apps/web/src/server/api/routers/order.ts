@@ -115,6 +115,7 @@ export const orderRouter = createTRPCRouter({
 		.input(
 			z.object({
 				cartId: z.string(),
+				paymentToken: z.enum(["STRK", "USDC", "USDT"]),
 			}),
 		)
 		.mutation(async ({ ctx, input }): Promise<OrderWithRelations> => {
@@ -309,4 +310,5 @@ export const orderRouter = createTRPCRouter({
 			return [];
 		}
 	}),
+
 });
