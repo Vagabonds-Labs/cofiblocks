@@ -2,21 +2,18 @@
 
 import { PageHeader } from "@repo/ui/pageHeader";
 import { useAtom } from "jotai";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { ProfileOptions } from "~/app/_components/features/ProfileOptions";
-import { useCavosAuth } from "~/providers/cavos-auth";
 import { cartItemsAtom } from "~/store/cartAtom";
 import { api } from "~/trpc/react";
 
 interface HeaderProps {
 	showCart?: boolean;
 	profileOptions?: React.ReactNode;
-	address?: string;
-	disconnect?: () => void;
 	onConnect?: () => void;
 }
 
@@ -28,7 +25,6 @@ interface ProductMetadata {
 function Header({
 	showCart,
 	profileOptions,
-	disconnect,
 	onConnect: _onConnect,
 }: HeaderProps) {
 	const router = useRouter();
@@ -119,10 +115,6 @@ function Header({
 	});
 
 	const handleLogout = () => {
-		// Disconnect Starknet wallet if available
-		if (disconnect) {
-			disconnect();
-		}
 		// Sign out using Cavos auth
 		signOut();
 		// Clear cart data
@@ -173,20 +165,13 @@ function Header({
 			},
 		) ?? [];
 
-	// Get wallet address from user object or localStorage
-	const walletAddress =
-		user?.walletAddress ??
-		(typeof window !== "undefined"
-			? localStorage.getItem("walletAddress")
-			: null);
-
 	// If no profile options are provided but user is authenticated, create default options
 	const effectiveProfileOptions =
 		profileOptions ??
 		(isAuthenticated ? (
 			<>
 				{/* Use ProfileOptions component to show menu items */}
-				<ProfileOptions address={walletAddress ?? ""} />
+				<ProfileOptions />
 			</>
 		) : undefined);
 

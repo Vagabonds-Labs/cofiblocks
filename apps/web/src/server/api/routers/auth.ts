@@ -23,7 +23,8 @@ export const authRouter = createTRPCRouter({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
-			const { email, password, role } = input;
+			const { email: email_raw, password, role } = input;
+			const email = email_raw.toLowerCase();
 
 			// Validate password meets security requirements
 			try {
@@ -69,7 +70,6 @@ export const authRouter = createTRPCRouter({
 							await emailSvc.sendVerificationEmail({
 								to: email,
 								verifyUrl: url,
-								appName: "CofiBlocks",
 							});
 						},
 					},
@@ -91,7 +91,8 @@ export const authRouter = createTRPCRouter({
 	requestEmailVerification: publicProcedure
 		.input(z.object({ email: z.string().email() }))
 		.mutation(async ({ ctx, input }) => {
-			const { email } = input;
+			const { email: email_raw } = input;
+			const email = email_raw.toLowerCase();
 			const emailSvc = createEmailService();
 			const svc = createAuthService({
 				db: ctx.db,
@@ -100,7 +101,6 @@ export const authRouter = createTRPCRouter({
 						await emailSvc.sendVerificationEmail({
 							to: email,
 							verifyUrl: url,
-							appName: "CofiBlocks",
 						});
 					},
 				},

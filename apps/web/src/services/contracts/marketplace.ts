@@ -1,12 +1,14 @@
 import { type UserAuthData, executeTransaction } from "~/server/services/cavos";
+import { CairoCustomEnum } from 'starknet';
 import {
 	CofiBlocksContracts,
 	type PaymentToken,
 	PaymentTokenTag,
 	getCallToContract,
-	getMarketplaceAddress,
+	getContractAddress,
 } from "../../utils/contracts";
 import { format_number } from "../../utils/formatting";
+import configExternalContracts from "~/contracts/deployedContracts";
 
 export async function buyProduct(
 	tokenId: bigint,
@@ -17,15 +19,15 @@ export async function buyProduct(
 	const formattedTokenId = format_number(tokenId);
 	const formattedTokenAmount = format_number(tokenAmount);
 	const calldata = [
-		formattedTokenId.low,
 		formattedTokenId.high,
-		formattedTokenAmount.low,
+		formattedTokenId.low,
 		formattedTokenAmount.high,
+		formattedTokenAmount.low,
 		PaymentTokenTag[paymentToken],
 	];
 
 	const transaction = {
-		contract_address: getMarketplaceAddress(),
+		contract_address: getContractAddress(CofiBlocksContracts.MARKETPLACE),
 		entrypoint: "buy_product",
 		calldata: calldata,
 	};
@@ -44,10 +46,10 @@ export async function buyProducts(
 	for (let i = 0; i < tokenId.length; i++) {
 		const formattedTokenId = format_number(tokenId[i] ?? 0n);
 		const formattedTokenAmount = format_number(tokenAmount[i] ?? 0n);
-		formattedTokenIds.push(formattedTokenId.low);
 		formattedTokenIds.push(formattedTokenId.high);
-		formattedTokenAmounts.push(formattedTokenAmount.low);
+		formattedTokenIds.push(formattedTokenId.low);
 		formattedTokenAmounts.push(formattedTokenAmount.high);
+		formattedTokenAmounts.push(formattedTokenAmount.low);
 	}
 	const calldata = [
 		`0x${tokenId.length.toString(16)}`,
@@ -58,7 +60,7 @@ export async function buyProducts(
 	];
 
 	const transaction = {
-		contract_address: getMarketplaceAddress(),
+		contract_address: getContractAddress(CofiBlocksContracts.MARKETPLACE),
 		entrypoint: "buy_products",
 		calldata: calldata,
 	};
@@ -72,18 +74,18 @@ export async function createProduct(
 	userAuthData: UserAuthData,
 ) {
 	const formattedInitialStock = format_number(initialStock);
-	const formattedPrice = format_number(price);
+	const formattedPrice = format_number(price * 10n**6n);
 	const calldata = [
-		formattedInitialStock.low,
 		formattedInitialStock.high,
-		formattedPrice.low,
+		formattedInitialStock.low,
 		formattedPrice.high,
+		formattedPrice.low,
 		"0x1",
 		"0x0",
 	];
 
 	const transaction = {
-		contract_address: getMarketplaceAddress(),
+		contract_address: getContractAddress(CofiBlocksContracts.MARKETPLACE),
 		entrypoint: "create_product",
 		calldata: calldata,
 	};
@@ -100,11 +102,11 @@ export async function createProducts(
 	const formattedPrices = [];
 	for (let i = 0; i < initialStock.length; i++) {
 		const formattedInitialStock = format_number(initialStock[i] ?? 0n);
-		const formattedPrice = format_number(price[i] ?? 0n);
-		formattedInitialStocks.push(formattedInitialStock.low);
+		const formattedPrice = format_number((price[i] ?? 0n) * 10n**6n);
 		formattedInitialStocks.push(formattedInitialStock.high);
-		formattedPrices.push(formattedPrice.low);
+		formattedInitialStocks.push(formattedInitialStock.low);
 		formattedPrices.push(formattedPrice.high);
+		formattedPrices.push(formattedPrice.low);
 	}
 	const calldata = [
 		`0x${initialStock.length.toString(16)}`,
@@ -114,7 +116,7 @@ export async function createProducts(
 	];
 
 	const transaction = {
-		contract_address: getMarketplaceAddress(),
+		contract_address: getContractAddress(CofiBlocksContracts.MARKETPLACE),
 		entrypoint: "create_products",
 		calldata: calldata,
 	};
@@ -127,16 +129,7 @@ export async function getProductPrice(
 	tokenAmount: bigint,
 	paymentToken: PaymentToken,
 ) {
-	const formattedTokenId = format_number(tokenId);
-	const formattedTokenAmount = format_number(tokenAmount);
-	const calldata = [
-		formattedTokenId.low,
-		formattedTokenId.high,
-		formattedTokenAmount.low,
-		formattedTokenAmount.high,
-		PaymentTokenTag[paymentToken],
-	];
-
+	const calldata = [tokenId, tokenAmount, new CairoCustomEnum({ [paymentToken]: {} })];
 	const tx = await getCallToContract(
 		CofiBlocksContracts.MARKETPLACE,
 		"get_product_price",
@@ -150,10 +143,10 @@ export async function deleteProduct(
 	userAuthData: UserAuthData,
 ) {
 	const formattedTokenId = format_number(tokenId);
-	const calldata = [formattedTokenId.low, formattedTokenId.high];
+	const calldata = [formattedTokenId.high, formattedTokenId.low];
 
 	const transaction = {
-		contract_address: getMarketplaceAddress(),
+		contract_address: getContractAddress(CofiBlocksContracts.MARKETPLACE),
 		entrypoint: "delete_product",
 		calldata: calldata,
 	};
@@ -174,7 +167,7 @@ export async function deleteProducts(
 	const calldata = [`0x${tokenId.length.toString(16)}`, ...formattedTokensIds];
 
 	const transaction = {
-		contract_address: getMarketplaceAddress(),
+		contract_address: getContractAddress(CofiBlocksContracts.MARKETPLACE),
 		entrypoint: "delete_products",
 		calldata: calldata,
 	};
@@ -184,7 +177,7 @@ export async function deleteProducts(
 
 export async function claimConsumer(userAuthData: UserAuthData) {
 	const transaction = {
-		contract_address: getMarketplaceAddress(),
+		contract_address: getContractAddress(CofiBlocksContracts.MARKETPLACE),
 		entrypoint: "claim_consumer",
 		calldata: [],
 	};
@@ -194,7 +187,7 @@ export async function claimConsumer(userAuthData: UserAuthData) {
 
 export async function claimProducer(userAuthData: UserAuthData) {
 	const transaction = {
-		contract_address: getMarketplaceAddress(),
+		contract_address: getContractAddress(CofiBlocksContracts.MARKETPLACE),
 		entrypoint: "claim_producer",
 		calldata: [],
 	};
@@ -204,7 +197,7 @@ export async function claimProducer(userAuthData: UserAuthData) {
 
 export async function claimRoaster(userAuthData: UserAuthData) {
 	const transaction = {
-		contract_address: getMarketplaceAddress(),
+		contract_address: getContractAddress(CofiBlocksContracts.MARKETPLACE),
 		entrypoint: "claim_roaster",
 		calldata: [],
 	};
@@ -214,7 +207,7 @@ export async function claimRoaster(userAuthData: UserAuthData) {
 
 export async function getProductStock(tokenId: bigint) {
 	const formattedTokenId = format_number(tokenId);
-	const calldata = [formattedTokenId.low, formattedTokenId.high];
+	const calldata = [formattedTokenId.high, formattedTokenId.low];
 
 	const tx = await getCallToContract(
 		CofiBlocksContracts.MARKETPLACE,

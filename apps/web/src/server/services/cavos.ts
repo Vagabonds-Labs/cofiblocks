@@ -95,6 +95,20 @@ export async function registerUserCavos(
 	return userAuthData;
 }
 
+export async function authenticateUserCavos(
+	email: string,
+	db: PrismaClient,
+): Promise<UserAuthData> {
+	const existingUser = await db.userCavos.findUnique({
+		where: { email: email, network: process.env.CAVOS_NETWORK },
+	});
+	if (!existingUser) {
+		throw new Error("User not found");
+	}
+	const userAuthData = await authenticateUser(email, existingUser.password);
+	return userAuthData;
+}
+
 export async function registerUser(
 	email: string,
 	password: string,

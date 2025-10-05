@@ -6,9 +6,13 @@
 // 4. Handling blockchain transaction confirmations
 
 import type { Prisma } from "@prisma/client";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, publicProcedure, protectedProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
+import { authenticateUserCavos } from "~/server/services/cavos";
+import {createProduct} from "~/services/contracts/marketplace";
+import { CofiBlocksContracts, CURRENT_TOKEN_ID_SELECTOR, readStorageAt } from "~/utils/contracts";
 
 const normalizeText = (text: string): string => {
 	return text
@@ -75,43 +79,65 @@ export const productRouter = createTRPCRouter({
 			}
 		}),
 
-	createProduct: publicProcedure
+	createProduct: protectedProcedure
 		.input(
 			z.object({
-				tokenId: z.number(),
 				name: z.string().min(1),
 				price: z.number().min(0),
 				description: z.string().min(1),
 				image: z.string().optional(),
 				strength: z.string().min(1),
-				region: z.string().optional(),
-				farmName: z.string().optional(),
 				stock: z.number().min(0),
 			}),
 		)
-		.mutation(async ({ input }) => {
-			try {
-				const newProduct = await db.product.create({
-					data: {
-						tokenId: input.tokenId,
-						name: input.name,
-						price: input.price,
-						stock: input.stock,
-						nftMetadata: JSON.stringify({
-							description: input.description,
-							imageUrl: input.image,
-							imageAlt: input.image,
-							region: input.region ?? "",
-							farmName: input.farmName ?? "",
-							strength: input.strength,
-						}),
-					},
-				});
-				return { success: true, product: newProduct };
-			} catch (error) {
-				console.error("Error creating product:", error);
-				throw new Error("Failed to create product");
+		.mutation(async ({ ctx, input }) => {
+			if (!ctx.session.user || !ctx.session.user.email) {
+				throw new Error("User email not found");
 			}
+			if (ctx.session.user.role !== "COFFEE_PRODUCER") {
+				throw new Error("User is not a producer");
+			}
+			// First create the product in blockchain
+			const userAuthData = await authenticateUserCavos(ctx.session.user.email, ctx.db);
+			let tx = "";
+
+			// Current token id is the id for the next product to be created
+			const tokenId_raw = await readStorageAt(CofiBlocksContracts.MARKETPLACE, CURRENT_TOKEN_ID_SELECTOR);
+			const tokenId = Number(tokenId_raw);
+
+			try {
+				tx = await createProduct(BigInt(input.stock), BigInt(input.price), userAuthData);
+			} catch (error) {
+				if (error instanceof Error && error.message.includes("Not producer or roaster")) {
+					throw new TRPCError({ code: "BAD_REQUEST", message: "User is not a producer or roaster" });
+				}
+				throw new TRPCError(
+					{ code: "INTERNAL_SERVER_ERROR", message: "Error creating product on marketplace" }
+				);
+			}
+			
+			// Create the product in the database
+			await db.product.create({
+				data: {
+					tokenId: tokenId,
+					name: input.name,
+					price: input.price,
+					nftMetadata: JSON.stringify({
+						description: input.description,
+						imageUrl: input.image,
+						imageAlt: input.image,
+						region: "",
+						farmName: "",
+						strength: input.strength,
+					}),
+					hidden: false,
+					stock: input.stock,
+					owner: ctx.session.user.id,
+					initial_stock: input.stock,
+					creation_tx_hash: tx,
+				},
+			});
+			return { success: true };
 		}),
 
 	// updateProductStock: publicProcedure

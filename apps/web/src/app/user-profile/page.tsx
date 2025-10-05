@@ -62,9 +62,7 @@ export default function UserProfile() {
 		<Main>
 			<div className="container mx-auto px-4 py-8">
 				<Header
-					profileOptions={
-						<ProfileOptions address={userProfile.walletAddress} />
-					}
+					profileOptions={<ProfileOptions />}
 				/>
 				<ProfileCard user={userProfile} />
 

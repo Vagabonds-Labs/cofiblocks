@@ -62,8 +62,6 @@ const getImageUrl = (src: string) => {
 
 export default function ProductDetails({
 	product,
-	isConnected,
-	onConnect,
 	isFavorited,
 	onToggleFavorite,
 	isLoadingFavorite,
@@ -171,12 +169,7 @@ export default function ProductDetails({
 	};
 
 	const handleFavoriteClick = () => {
-		console.log("Favorite clicked", { isConnected, isFavorited, session });
-		if (!session) {
-			// If not authenticated, trigger connect
-			onConnect?.();
-			return;
-		}
+		console.log("Favorite clicked", { isFavorited, session });
 		if (onToggleFavorite) {
 			onToggleFavorite();
 		}
@@ -379,8 +372,6 @@ export default function ProductDetails({
 								onQuantityChange={setQuantity}
 								onAddToCart={handleAddToCart}
 								isAddingToCart={isAddingToCart}
-								isConnected={isConnected}
-								onConnect={onConnect}
 							/>
 						)}
 

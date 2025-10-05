@@ -63,15 +63,15 @@ export const authOptions: NextAuthOptions = {
 			},
 			async authorize(credentials) {
 				if (!credentials?.email || !credentials?.password) {
-					return null;
+					throw new Error("Email and password are required");
 				}
 
 				const user = await db.user.findUnique({
-					where: { email: credentials.email },
+					where: { email: credentials.email.toLowerCase() },
 				});
 
 				if (!user?.password) {
-					return null;
+					throw new Error("Invalid email or password");
 				}
 
 				const isPasswordValid = await compare(
@@ -80,7 +80,11 @@ export const authOptions: NextAuthOptions = {
 				);
 
 				if (!isPasswordValid) {
-					return null;
+					throw new Error("Invalid email or password");
+				}
+
+				if (!user.emailVerified) {
+					throw new Error("Email not verified");
 				}
 
 				return {

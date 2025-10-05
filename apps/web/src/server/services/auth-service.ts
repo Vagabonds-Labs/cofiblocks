@@ -19,6 +19,11 @@ export function createAuthService({
 	}) => {
 		const { email, ttlMinutes = 1440 } = opts;
 
+		// Remove tokens already in the database
+		await db.verificationToken.deleteMany({
+			where: { email: email.toLowerCase(), type: "EMAIL_VERIFY" },
+		});
+
 		const raw = crypto.randomBytes(32).toString("hex");
 		console.log("****************************");
 		console.log("raw token", raw);

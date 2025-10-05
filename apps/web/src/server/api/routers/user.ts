@@ -6,7 +6,10 @@ import {
 	protectedProcedure,
 	publicProcedure,
 } from "~/server/api/trpc";
-import { CofiBlocksContracts, getCallToContract } from "~/utils/contracts";
+import { CofiBlocksContracts, getCallToContract, getContractAddress } from "~/utils/contracts";
+import { authenticateUser, executeTransaction } from "~/server/services/cavos";
+import { TRPCError } from "@trpc/server";
+import { format_number } from "~/utils/formatting";
 
 export const userRouter = createTRPCRouter({
 	getUser: publicProcedure
@@ -117,4 +120,47 @@ export const userRouter = createTRPCRouter({
 		}
 		return crypto.randomUUID();
 	}),
+
+	isUserVerified: publicProcedure
+		.input(z.object({ email: z.string() }))
+		.query(async ({ ctx, input }) => {
+			const user = await ctx.db.user.findUnique({ where: { email: input.email } });
+			return user?.emailVerified !== null;
+		}),
+
+	withdrawToken: protectedProcedure
+		.input(z.object({ token: z.enum(["STRK", "USDC", "USDT"]), recipient: z.string() }))
+		.mutation(async ({ ctx, input }) => {
+			if (!ctx.session.user || !ctx.session.user.email) {
+				throw new TRPCError({ code: "UNAUTHORIZED", message: "User not found" });
+			}
+
+			const cavosUser = await ctx.db.userCavos.findUnique({
+				where: { email: ctx.session.user.email, network: process.env.CAVOS_NETWORK },
+			});
+			if (!cavosUser) {
+				throw new TRPCError({ code: "UNAUTHORIZED", message: "User Cavos not found" });
+			}
+			const userAuthData = await authenticateUser(cavosUser.email, cavosUser.password);
+
+			// Check current balance
+			const balance_result = await getCallToContract(
+				CofiBlocksContracts[input.token],
+				"balance_of",
+				[cavosUser.walletAddress],
+			);
+			const balance = Number(balance_result);
+			if (balance === 0) {
+				throw new TRPCError({ code: "BAD_REQUEST", message: "No balance to withdraw" });
+			}
+
+			const formattedBalance = format_number(BigInt(balance));
+			const transaction = {
+				contract_address: getContractAddress(CofiBlocksContracts[input.token]),
+				entrypoint: "transfer",
+				calldata: [input.recipient, formattedBalance.high, formattedBalance.low],
+			};
+			const tx = await executeTransaction(userAuthData, transaction)
+			return tx;
+		}),
 });

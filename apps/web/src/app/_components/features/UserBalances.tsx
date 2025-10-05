@@ -1,4 +1,10 @@
 import Image from "next/image";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import Modal from "@repo/ui/modal";
+import InputField from "@repo/ui/form/inputField";
+import Button from "@repo/ui/button";
+import { api } from "~/trpc/react";
 
 // Type for contract call results - handling the Starknet Result type
 type ContractResult =
@@ -23,6 +29,10 @@ interface BalanceItem {
 	value: number;
 	icon: string;
 	symbol: string;
+}
+
+interface WithdrawalFormData {
+	walletAddress: string;
 }
 
 // Helper function to extract numeric value from contract result
@@ -50,6 +60,35 @@ function extractBalanceValue(result: ContractResult | number): number {
 }
 
 export function UserBalances({ balances }: UserBalancesProps) {
+	const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] = useState(false);
+	const [selectedBalance, setSelectedBalance] = useState<BalanceItem | null>(null);
+	
+	const { control, handleSubmit, reset, formState: { errors }, watch } = useForm<WithdrawalFormData>({
+		defaultValues: {
+			walletAddress: "",
+		},
+	});
+
+	const withdrawTokenMutation = api.user.withdrawToken.useMutation({
+		onSuccess: () => {
+			// Close modal and reset form on success
+			setIsWithdrawalModalOpen(false);
+			setSelectedBalance(null);
+			reset();
+		},
+		onError: (error) => {
+			console.error("Withdrawal failed:", error);
+		},
+	});
+
+	// Watch the wallet address field to validate it
+	const walletAddress = watch("walletAddress");
+	
+	// Validate wallet address: starts with "0x" and has 32 characters after (66 total)
+	const isValidWalletAddress = walletAddress && 
+		walletAddress.startsWith("0x") && 
+		walletAddress.length === 66;
+
 	const balanceItems: BalanceItem[] = [
 		{
 			label: "Stark",
@@ -71,6 +110,33 @@ export function UserBalances({ balances }: UserBalancesProps) {
 		},
 	];
 
+	const handleBalanceClick = (balance: BalanceItem) => {
+		// Prevent modal from opening if balance is 0
+		if (balance.value <= 0) {
+			return;
+		}
+		setSelectedBalance(balance);
+		setIsWithdrawalModalOpen(true);
+	};
+
+	const handleWithdraw = (data: WithdrawalFormData) => {
+		if (!selectedBalance || !isValidWalletAddress) {
+			return;
+		}
+
+		// Call the tRPC mutation
+		withdrawTokenMutation.mutate({
+			token: selectedBalance.symbol as "STRK" | "USDC" | "USDT",
+			recipient: data.walletAddress,
+		});
+	};
+
+	const handleCancelWithdrawal = () => {
+		setIsWithdrawalModalOpen(false);
+		setSelectedBalance(null);
+		reset();
+	};
+
 	return (
 		<div className="bg-white rounded-lg shadow-md p-6 mb-6">
 			<h3 className="text-lg font-semibold text-gray-800 mb-4">
@@ -78,9 +144,11 @@ export function UserBalances({ balances }: UserBalancesProps) {
 			</h3>
 			<div className="grid grid-cols-2 md:grid-cols-3 gap-4">
 				{balanceItems.map((item) => (
-					<div
+					<button
 						key={item.symbol}
-						className="flex flex-col items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+						type="button"
+						onClick={() => handleBalanceClick(item)}
+						className="flex flex-col items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
 					>
 						<div className="relative w-12 h-12 mb-3">
 							<Image
@@ -99,12 +167,12 @@ export function UserBalances({ balances }: UserBalancesProps) {
 							</p>
 							<p className="text-xs text-gray-500">{item.symbol}</p>
 						</div>
-					</div>
+					</button>
 				))}
 			</div>
 
 			{/* Claim Balance Section */}
-			{balances.claimBalance !== undefined && balances.claimBalance > 0 && (
+			{balances.claimBalance !== undefined && (
 				<div className="mt-6 pt-6 border-t border-gray-200">
 					<h4 className="text-lg font-semibold text-gray-800 mb-4">
 						Claim Balance
@@ -121,20 +189,74 @@ export function UserBalances({ balances }: UserBalancesProps) {
 							</div>
 							<div>
 								<p className="text-lg font-bold text-green-800">
-									{balances.claimBalance.toLocaleString()} USDT
+									{balances.claimBalance.toLocaleString()} USDC
 								</p>
 								<p className="text-sm text-green-600">Available to claim</p>
 							</div>
 						</div>
 						<button
 							type="button"
-							className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+							disabled={balances.claimBalance === undefined || balances.claimBalance === 0}
+							className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
 						>
 							Claim
 						</button>
 					</div>
 				</div>
 			)}
+
+			{/* Withdrawal Modal */}
+			<Modal
+				isOpen={isWithdrawalModalOpen}
+				onClose={handleCancelWithdrawal}
+				title={`Withdraw ${selectedBalance?.symbol}`}
+			>
+				<form onSubmit={handleSubmit(handleWithdraw)} className="space-y-4">
+					<div className="mb-4 p-3 bg-gray-50 rounded-lg">
+						<p className="text-sm text-gray-600 mb-1">Available Balance</p>
+						<p className="text-lg font-semibold text-gray-800">
+							{selectedBalance?.value.toLocaleString()} {selectedBalance?.symbol}
+						</p>
+					</div>
+					
+					<InputField
+						name="walletAddress"
+						control={control}
+						label="Wallet Address"
+						placeholder="Enter destination wallet address (0x...)"
+						className="mb-4"
+					/>
+					
+					{/* Show validation error if wallet address is invalid */}
+					{walletAddress && !isValidWalletAddress && (
+						<div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+							<p className="text-sm text-red-600">
+								Please enter a valid wallet address (starts with 0x and has 66 characters total)
+							</p>
+						</div>
+					)}
+					
+					<div className="flex space-x-3">
+						<Button
+							type="button"
+							variant="secondary"
+							onClick={handleCancelWithdrawal}
+							className="flex-1"
+							disabled={withdrawTokenMutation.isPending}
+						>
+							Cancel
+						</Button>
+						<Button
+							type="submit"
+							variant="primary"
+							className="flex-1"
+							disabled={!isValidWalletAddress || withdrawTokenMutation.isPending}
+						>
+							{withdrawTokenMutation.isPending ? "Processing..." : "Withdraw"}
+						</Button>
+					</div>
+				</form>
+			</Modal>
 		</div>
 	);
 }

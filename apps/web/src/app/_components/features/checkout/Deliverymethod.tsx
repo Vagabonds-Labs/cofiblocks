@@ -41,7 +41,7 @@ export default function DeliveryMethod({ onNext }: DeliveryMethodProps) {
 		<div className="flex flex-col min-h-[calc(100vh-120px)] font-manrope">
 			<div className="flex-1 p-4">
 				<h2 className="text-lg font-medium mb-4 text-content-title">
-					{t("delivery_method")}
+					{t("delivery_method_label")}
 				</h2>
 
 				<div className="space-y-3">

@@ -5,7 +5,6 @@ import { ClockIcon } from "@heroicons/react/24/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@repo/ui/button";
 import RadioButton from "@repo/ui/form/radioButton";
-import { useAccount, useProvider } from "@starknet-react/core";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -16,6 +15,7 @@ import { ImageUpload } from "~/app/_components/features/ImageUpload";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
 import { api } from "~/trpc/react";
 import { RoastLevel } from "~/types";
+import { TRPCClientError } from "@trpc/client";
 
 const MARKET_FEE_BPS = 5000; // 50%
 
@@ -33,7 +33,6 @@ type FormData = z.infer<typeof schema>;
 
 export default function RegisterCoffee() {
 	const { t } = useTranslation();
-	const { provider } = useProvider();
 	const router = useRouter();
 	const mutation = api.product.createProduct.useMutation();
 	const [isSubmitting, setIsSubmitting] = useState(false);
@@ -64,27 +63,23 @@ export default function RegisterCoffee() {
 			price: Number.parseFloat(data.price),
 		};
 		try {
-			const marketplaceMutation = api.marketplace.createProduct.useMutation();
-			const resp = await marketplaceMutation.mutateAsync({
-				initialStock: submissionData.bagsAvailable.toString(),
-				price_usd: submissionData.price.toString(),
-			});
 			await mutation.mutateAsync({
-				tokenId: resp.token_id,
 				name: submissionData.variety,
 				price: submissionData.price,
 				description: submissionData.description,
 				image: submissionData.image ?? "/images/cafe1.webp",
 				strength: submissionData.roast,
-				region: "",
-				farmName: "",
 				stock: submissionData.bagsAvailable,
 			});
 			toast.success(t("product_registered_successfully"));
 			router.push("/marketplace");
 		} catch (error) {
 			console.log("error registering", error);
-			toast.error(t("error_registering_product"));
+			if (error instanceof TRPCClientError && error.message.includes("User is not a producer or roaster")) {
+				toast.error(t(error.message));
+			} else {
+				toast.error(t("error_registering_product"));
+			}
 		} finally {
 			setIsSubmitting(false);
 		}

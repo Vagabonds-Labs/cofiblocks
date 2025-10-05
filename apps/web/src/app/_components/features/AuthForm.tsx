@@ -23,6 +23,7 @@ export default function AuthForm({ initialMode = "signin" }: AuthFormProps) {
 	const { t } = useTranslation();
 	const router = useRouter();
 	const registerUserMutation = api.auth.registerUser.useMutation();
+	const resendVerificationMutation = api.auth.requestEmailVerification.useMutation();
 	const [mode, setMode] = useState<"signin" | "signup">(initialMode);
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -32,6 +33,9 @@ export default function AuthForm({ initialMode = "signin" }: AuthFormProps) {
 	const [error, setError] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const [verificationSent, setVerificationSent] = useState(false);
+	const [sendVerification, setSendVerification] = useState(false);
+	const [isResendingVerification, setIsResendingVerification] = useState(false);
+	const [resendSuccess, setResendSuccess] = useState(false);
 
 	// Update URL when mode changes
 	useEffect(() => {
@@ -45,6 +49,7 @@ export default function AuthForm({ initialMode = "signin" }: AuthFormProps) {
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setError("");
+		setResendSuccess(false);
 		setIsLoading(true);
 
 		if (mode === "signin") {
@@ -55,8 +60,12 @@ export default function AuthForm({ initialMode = "signin" }: AuthFormProps) {
 				password,
 			});
 
-			if (!res || res.error) {
-				setError(t("error.invalid_credentials"));
+			if (res && !res.ok) {
+				const msg = getLoginErrorMessage(res.error ?? "");
+				if (msg === "error.user_not_verified") {
+					setSendVerification(true);
+				}
+				setError(t(msg));
 				setIsLoading(false);
 				return;
 			}
@@ -92,6 +101,25 @@ export default function AuthForm({ initialMode = "signin" }: AuthFormProps) {
 		setMode(mode === "signin" ? "signup" : "signin");
 		setError("");
 		setConfirmPassword("");
+		setSendVerification(false);
+		setResendSuccess(false);
+	};
+
+	const handleResendVerification = async () => {
+		if (!email) return;
+		
+		setIsResendingVerification(true);
+		setResendSuccess(false);
+		
+		try {
+			await resendVerificationMutation.mutateAsync({ email });
+			setResendSuccess(true);
+			setError("");
+		} catch (error) {
+			setError(t("error.registration_failed"));
+		} finally {
+			setIsResendingVerification(false);
+		}
 	};
 
 	return (
@@ -229,6 +257,26 @@ export default function AuthForm({ initialMode = "signin" }: AuthFormProps) {
 							{error && (
 								<div className="text-sm text-error-default text-center mt-2">
 									{error}
+									{sendVerification && (
+										<div className="mt-2">
+											<button
+												type="button"
+												onClick={handleResendVerification}
+												disabled={isResendingVerification}
+												className="text-sm text-blue-600 hover:text-blue-800 underline disabled:opacity-50 disabled:cursor-not-allowed"
+											>
+												{isResendingVerification 
+													? t("auth.resending_verification")
+													: t("auth.resend_verification_email")
+												}
+											</button>
+										</div>
+									)}
+								</div>
+							)}
+							{resendSuccess && (
+								<div className="text-sm text-green-600 text-center mt-2">
+									{t("auth.verification_email_resent")}
 								</div>
 							)}
 						</div>

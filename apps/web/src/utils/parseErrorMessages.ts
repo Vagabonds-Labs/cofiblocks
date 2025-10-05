@@ -1,20 +1,20 @@
-export function getLoginErrorMessage(loginError: Error): string {
+export function getLoginErrorMessage(loginError: string): string {
 	// Handle login errors with user-friendly messages
-	if (loginError instanceof Error) {
-		if (
-			loginError.message.includes("verification") ||
-			loginError.message.includes("verify") ||
-			loginError.message.includes("email")
-		) {
-			return "error.email_verification_required";
-		}
-		if (
-			loginError.message.includes("USER_ALREADY_EXISTS") ||
-			loginError.message.includes("already registered")
-		) {
-			return "error.user_already_exists_signin";
-		}
-		return "error.invalid_credentials";
+	if (
+		loginError.includes("verification") ||
+		loginError.includes("verify") ||
+		loginError.includes("email")
+	) {
+		return "error.email_verification_required";
+	}
+	if (
+		loginError.includes("USER_ALREADY_EXISTS") ||
+		loginError.includes("already registered")
+	) {
+		return "error.user_already_exists_signin";
+	}
+	if (loginError.includes("Email not verified")) {
+		return "error.user_not_verified";
 	}
 	return "error.invalid_credentials";
 }
