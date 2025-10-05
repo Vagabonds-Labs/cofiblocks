@@ -4,7 +4,7 @@ import {
 	getclaimBalanceCoffeeLover,
 	getclaimBalanceProducer,
 	getclaimBalanceRoaster,
-} from "~/services/contracts/distribution";
+} from "~/server/contracts/distribution";
 
 export const distributionRouter = createTRPCRouter({
 	// Get user's favorites

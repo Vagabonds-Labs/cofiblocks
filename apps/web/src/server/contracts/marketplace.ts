@@ -2,13 +2,12 @@ import { type UserAuthData, executeTransaction } from "~/server/services/cavos";
 import { CairoCustomEnum } from 'starknet';
 import {
 	CofiBlocksContracts,
-	type PaymentToken,
+	PaymentToken,
 	PaymentTokenTag,
 	getCallToContract,
 	getContractAddress,
 } from "../../utils/contracts";
 import { format_number } from "../../utils/formatting";
-import configExternalContracts from "~/contracts/deployedContracts";
 
 export async function buyProduct(
 	tokenId: bigint,
@@ -215,4 +214,31 @@ export async function getProductStock(tokenId: bigint) {
 		calldata,
 	);
 	return tx;
+}
+
+export async function getProductPrices(
+	tokenIds: bigint[], 
+	tokenAmounts: bigint[], 
+	paymentToken: PaymentToken,
+	formatted: boolean = true
+) {;
+	const unitPrices: Record<string, Number> = {};
+	for (let i = 0; i < tokenIds.length; i++) {
+		const tokenId = tokenIds[i];
+		const tokenAmount = tokenAmounts[i];
+		if (tokenId && tokenAmount) {
+			const result = await getProductPrice(tokenId, tokenAmount, paymentToken);
+			let price = BigInt(result.toString());
+			const decimals = paymentToken === PaymentToken.STRK ? 18n : 6n;
+			if (!formatted) {
+				unitPrices[tokenId.toString()] = Number(price.toString());
+				continue;
+			}
+			const human = price / (10n ** decimals); // integer division
+			const fractional = (price % (10n ** decimals)) / (10n ** (decimals - 2n)); // 2 decimals
+			const priceStr = `${human}.${fractional.toString().padStart(2, '0')}`;
+			unitPrices[tokenId.toString()] = Number(priceStr);
+		}
+	}
+	return unitPrices;
 }

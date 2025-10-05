@@ -90,6 +90,7 @@ export const authOptions: NextAuthOptions = {
 				return {
 					id: user.id,
 					email: user.email,
+					walletAddress: user.walletAddress,
 					name: user.name,
 					role: user.role,
 				};

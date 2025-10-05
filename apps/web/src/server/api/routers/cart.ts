@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { getProductPrice } from "~/services/contracts/marketplace";
+import { getProductPrices } from "~/server/contracts/marketplace";
 import { PaymentToken } from "~/utils/contracts";
 
 export const cartRouter = createTRPCRouter({
@@ -116,20 +116,16 @@ export const cartRouter = createTRPCRouter({
 				include: { product: true },
 			});
 			const tokenIds = shopItems.map((item) => BigInt(item.product.tokenId));
-			const cartItemIds = shopItems.map((item) => item.id);
-			const unitPrices: Record<string, string> = {};
-			for (let i = 0; i < cartItemIds.length; i++) {
-				const cartItemId = cartItemIds[i];
-				if (cartItemId) {
-					const result = await getProductPrice(tokenIds[i] ?? 0n, 1n, input.paymentToken as PaymentToken);
-					let price = BigInt(result.toString());
-					const decimals = input.paymentToken === PaymentToken.STRK ? 18n : 6n;
-					const human = price / (10n ** decimals); // integer division
-					const fractional = (price % (10n ** decimals)) / (10n ** (decimals - 2n)); // 2 decimals
-					const priceStr = `${human}.${fractional.toString().padStart(2, '0')}`;
-					unitPrices[cartItemId] = priceStr;
+			const tokenAmounts = shopItems.map((_) => BigInt(1));
+			const result: Record<string, string> = {};
+			const unitPrices = await getProductPrices(tokenIds, tokenAmounts, input.paymentToken as PaymentToken);
+			for (let i = 0; i < shopItems.length; i++) {
+				const shopItem = shopItems[i];
+				if (shopItem && shopItem.id) {
+					const tokenId = shopItem.product.tokenId;
+					result[shopItem.id] = unitPrices[tokenId.toString()] ?? "0";
 				}
 			}
-			return { unitPrices };
+			return { unitPrices: result };
 		}),
 });

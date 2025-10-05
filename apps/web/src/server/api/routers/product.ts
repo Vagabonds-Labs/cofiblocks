@@ -11,7 +11,7 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure, protectedProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
 import { authenticateUserCavos } from "~/server/services/cavos";
-import {createProduct} from "~/services/contracts/marketplace";
+import {createProduct} from "~/server/contracts/marketplace";
 import { CofiBlocksContracts, CURRENT_TOKEN_ID_SELECTOR, readStorageAt } from "~/utils/contracts";
 
 const normalizeText = (text: string): string => {

@@ -8,8 +8,12 @@ import {
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { registerUser } from "~/server/services/cavos";
-import { balanceOf } from "~/services/contracts/cofi_collection";
+import { authenticateUserCavos, registerUser } from "~/server/services/cavos";
+import { balanceOf } from "~/server/contracts/cofi_collection";
+import { getProductPrices, buyProduct } from "~/server/contracts/marketplace";
+import { PaymentToken } from "~/utils/contracts";
+import { getBalances, increaseAllowance } from "~/server/contracts/erc20";
+import { CofiBlocksContracts } from "~/utils/contracts";
 
 interface Collectible {
 	id: number;
@@ -118,8 +122,15 @@ export const orderRouter = createTRPCRouter({
 				paymentToken: z.enum(["STRK", "USDC", "USDT"]),
 			}),
 		)
-		.mutation(async ({ ctx, input }): Promise<OrderWithRelations> => {
+		.mutation(async ({ ctx, input }): Promise<OrderWithRelations[]> => {
 			// Start a transaction
+			const { user } = ctx.session;
+			if (!user) {
+				throw new TRPCError({
+					code: "UNAUTHORIZED",
+					message: "User not authenticated",
+				});
+			}
 			return ctx.db.$transaction(
 				async (tx) => {
 					// Get the cart with items
@@ -148,8 +159,61 @@ export const orderRouter = createTRPCRouter({
 						});
 					}
 
+					const tokenIds = cart.items.map((item) => BigInt(item.product.tokenId));
+					const tokenAmounts = cart.items.map((item) => BigInt(item.quantity));
+					const unitPrices = await getProductPrices(
+						tokenIds, tokenAmounts, input.paymentToken as PaymentToken, false
+					);
+					const totalPrice = cart.items.reduce((
+						sum, item) => sum + Number(unitPrices[item.product.tokenId.toString()]), 0
+					);
+					let userBalance = 0;
+					const userdb = await tx.user.findUnique({
+						where: { id: user.id },
+						select: { walletAddress: true },
+					});
+					if (!userdb) {
+						throw new TRPCError({
+							code: "NOT_FOUND",
+							message: "User not found",
+						});
+					}
+					if (!userdb.walletAddress) {
+						throw new TRPCError({
+							code: "NOT_FOUND",
+							message: "User wallet address not found",
+						});
+					}
+
+					if (input.paymentToken === PaymentToken.STRK){
+						userBalance = await getBalances(userdb.walletAddress, PaymentToken.STRK, false);
+					}
+					if (input.paymentToken === PaymentToken.USDT){
+						userBalance = await getBalances(userdb.walletAddress, PaymentToken.USDT, false);
+					}
+					if (input.paymentToken === PaymentToken.USDC){
+						userBalance = await getBalances(userdb.walletAddress, PaymentToken.USDC, false);
+					}
+					// Add 1% buffer to the total price for security
+					if (userBalance < (totalPrice * 1.01)) {
+						throw new TRPCError({
+							code: "BAD_REQUEST",
+							message: "Insufficient balance",
+						});
+					}
+
+					// Authenticate with Cavos
+					const userAuthData = await authenticateUserCavos(user.email ?? "", ctx.db);
+					await increaseAllowance(
+						BigInt(totalPrice * 1.01),
+						input.paymentToken as PaymentToken,
+						CofiBlocksContracts.MARKETPLACE,
+						userAuthData
+					);
+
 					// Validate stock for all items and prepare stock updates
 					const stockUpdates: Prisma.PrismaPromise<Product>[] = [];
+					let orders: OrderWithRelations[] = [];
 					for (const item of cart.items) {
 						if (item.quantity > item.product.stock) {
 							throw new TRPCError({
@@ -157,6 +221,13 @@ export const orderRouter = createTRPCRouter({
 								message: `Insufficient stock for ${item.product.name}. Available: ${item.product.stock}, Requested: ${item.quantity}`,
 							});
 						}
+
+						const buy_tx = await buyProduct(
+							BigInt(item.product.tokenId),
+							BigInt(item.quantity),
+							input.paymentToken as PaymentToken, 
+							userAuthData
+						);
 
 						// Prepare stock update
 						stockUpdates.push(
@@ -169,41 +240,12 @@ export const orderRouter = createTRPCRouter({
 								},
 							}),
 						);
-					}
 
-					// Find the seller (producer)
-					const seller = await tx.user.findFirst({
-						where: {
-							role: "COFFEE_PRODUCER",
-							walletAddress: {
-								not: "",
-							},
-						},
-					});
-
-					if (!seller) {
-						throw new TRPCError({
-							code: "NOT_FOUND",
-							message: "No eligible producer found for this order",
-						});
-					}
-
-					// Calculate total
-					const total = cart.items.reduce(
-						(sum, item) => sum + item.product.price * item.quantity,
-						0,
-					);
-
-					try {
-						// Execute all stock updates
-						await Promise.all(stockUpdates);
-
-						// Create the order
 						const order = (await tx.order.create({
 							data: {
-								userId: ctx.session.user.id,
-								sellerId: seller.id,
-								total,
+								userId: user.id,
+								sellerId: item.product.owner ?? "",
+								total: item.product.price * item.quantity,
 								status: OrderStatus.PENDING,
 								items: {
 									create: cart.items.map((item) => ({
@@ -223,6 +265,12 @@ export const orderRouter = createTRPCRouter({
 								seller: true,
 							},
 						})) as OrderWithRelations;
+						orders.push(order);
+					}
+
+					try {
+						// Execute all stock updates
+						await Promise.all(stockUpdates);
 
 						// Clean up the cart
 						await tx.shoppingCartItem.deleteMany({
@@ -233,7 +281,7 @@ export const orderRouter = createTRPCRouter({
 							where: { id: cart.id },
 						});
 
-						return order;
+						return orders;
 					} catch (error) {
 						// If anything fails, the transaction will be rolled back automatically
 						throw new TRPCError({
