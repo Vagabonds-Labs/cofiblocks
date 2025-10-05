@@ -75,6 +75,7 @@ model Order {
   sellerId  String
   total     Float
   status    OrderStatus
+  tx_hash   String?
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
   items     OrderItem[]

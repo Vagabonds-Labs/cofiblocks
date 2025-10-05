@@ -10,6 +10,8 @@ import { CofiBlocksContracts, getCallToContract, getContractAddress } from "~/ut
 import { authenticateUser, executeTransaction } from "~/server/services/cavos";
 import { TRPCError } from "@trpc/server";
 import { format_number } from "~/utils/formatting";
+import { getBalances } from "~/server/contracts/erc20";
+import { PaymentToken } from "~/utils/contracts";
 
 export const userRouter = createTRPCRouter({
 	getUser: publicProcedure
@@ -26,28 +28,9 @@ export const userRouter = createTRPCRouter({
 			const user = await ctx.db.user.findUnique({
 				where: { id: input.userId },
 			});
-			const calldata = [user?.walletAddress || "0x0"];
-
-			const stark_balance_result = await getCallToContract(
-				CofiBlocksContracts.STRK,
-				"balance_of",
-				calldata,
-			);
-			const stark_balance = Number(stark_balance_result) / 10 ** 18;
-
-			const usdt_balance_result = await getCallToContract(
-				CofiBlocksContracts.USDT,
-				"balance_of",
-				calldata,
-			);
-			const usdt_balance = Number(usdt_balance_result) / 10 ** 6;
-
-			const usdc_balance_result = await getCallToContract(
-				CofiBlocksContracts.USDC,
-				"balance_of",
-				calldata,
-			);
-			const usdc_balance = Number(usdc_balance_result) / 10 ** 6;
+			const stark_balance = await getBalances(user?.walletAddress || "0x0", PaymentToken.STRK);
+			const usdt_balance = await getBalances(user?.walletAddress || "0x0", PaymentToken.USDT);
+			const usdc_balance = await getBalances(user?.walletAddress || "0x0", PaymentToken.USDC);
 
 			let claim_endpoint = "coffee_lover_claim_balance";
 			if (user?.role === "COFFEE_PRODUCER") {
@@ -57,7 +40,7 @@ export const userRouter = createTRPCRouter({
 			const claim_balance_result = await getCallToContract(
 				CofiBlocksContracts.DISTRIBUTION,
 				claim_endpoint,
-				calldata,
+				[user?.walletAddress || "0x0"],
 			);
 			const claim_balance = Number(claim_balance_result) / 10 ** 6;
 

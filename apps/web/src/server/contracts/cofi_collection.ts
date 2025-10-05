@@ -6,8 +6,8 @@ export async function balanceOf(userAuthData: UserAuthData, tokenId: bigint) {
 	const formattedTokenId = format_number(tokenId);
 	const calldata = [
 		userAuthData.wallet_address,
-		formattedTokenId.low,
 		formattedTokenId.high,
+		formattedTokenId.low,
 	];
 	const tx = await getCallToContract(
 		CofiBlocksContracts.DISTRIBUTION,

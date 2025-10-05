@@ -14,7 +14,7 @@ import {
 	createProduct,
 	getProductPrice,
 	getProductStock,
-} from "~/services/contracts/marketplace";
+} from "~/server/contracts/marketplace";
 import type { PaymentToken } from "~/utils/contracts";
 import { CofiBlocksContracts, getEvents } from "~/utils/contracts";
 
