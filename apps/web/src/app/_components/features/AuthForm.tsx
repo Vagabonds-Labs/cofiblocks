@@ -307,7 +307,7 @@ export default function AuthForm({ initialMode = "signin" }: AuthFormProps) {
 						</Button>
 
 						{/* Divider */}
-						<div className="relative my-4">
+						{/* <div className="relative my-4">
 							<div className="absolute inset-0 flex items-center">
 								<div className="w-full border-t border-surface-border" />
 							</div>
@@ -321,7 +321,7 @@ export default function AuthForm({ initialMode = "signin" }: AuthFormProps) {
 						</div>
 
 						{/* Google Auth */}
-						<div className="w-full mb-4 flex justify-center">
+						{/* <div className="w-full mb-4 flex justify-center">
 							<div className="w-full">
 								<GoogleAuth finalRedirectUri="/auth/callback" />
 								{mode === "signup" && (
@@ -330,7 +330,7 @@ export default function AuthForm({ initialMode = "signin" }: AuthFormProps) {
 									</p>
 								)}
 							</div>
-						</div>
+						</div> */}
 					</form>
 
 					{/* Toggle Mode Button */}
