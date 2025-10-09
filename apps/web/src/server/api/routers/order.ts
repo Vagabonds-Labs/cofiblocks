@@ -299,11 +299,18 @@ export const orderRouter = createTRPCRouter({
 			);
 		}),
 
+
 	// Get user's NFT collectibles
 	getUserCollectibles: protectedProcedure.query(async ({ ctx }) => {
+		if (!ctx.session.user) {
+			throw new TRPCError({
+				code: "UNAUTHORIZED",
+				message: "User not authenticated",
+			});
+		}
+
 		const user = await ctx.db.user.findUnique({
-			where: { id: ctx.session.user.id },
-			select: { walletAddress: true },
+			where: { id: ctx.session.user.id }
 		});
 
 		if (!user?.walletAddress) {
@@ -311,20 +318,32 @@ export const orderRouter = createTRPCRouter({
 		}
 
 		try {
-			// Get NFTs from the contract
-			const products = await ctx.db.product.findMany();
+			// Get products from orders
+			const orders = await ctx.db.order.findMany({
+				where: { userId: ctx.session.user.id },
+				include: {
+					items: {
+						include: {
+							product: true,
+						},
+					},
+				},
+			});
+			const products = orders.flatMap((order) => order.items.map((item) => item.product));
+
+			// Authenticate with Cavos
+			if (!user.email) {
+				throw new Error("User email not found");
+			}
+			const userAuthData = await authenticateUserCavos(
+				user.email,
+				ctx.db,
+			);
 
 			// Get balances for each product
 			const collectibles = await Promise.all(
 				products.map(async (product) => {
 					try {
-						if (!ctx.session.user.email) {
-							throw new Error("User email not found");
-						}
-						const userAuthData = await registerUser(
-							ctx.session.user.email,
-							"1234",
-						);
 						const balance = await balanceOf(
 							userAuthData,
 							BigInt(product.tokenId),
@@ -350,7 +369,6 @@ export const orderRouter = createTRPCRouter({
 					}
 				}),
 			);
-
 			// Filter out null values (tokens with 0 balance or errors)
 			return collectibles.filter((item): item is Collectible => item !== null);
 		} catch (error) {

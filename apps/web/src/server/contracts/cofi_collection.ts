@@ -1,16 +1,13 @@
 import { CofiBlocksContracts, getCallToContract } from "../../utils/contracts";
-import { format_number } from "../../utils/formatting";
-import type { UserAuthData } from "../cavos";
+import type { UserAuthData } from "../services/cavos";
 
 export async function balanceOf(userAuthData: UserAuthData, tokenId: bigint) {
-	const formattedTokenId = format_number(tokenId);
 	const calldata = [
 		userAuthData.wallet_address,
-		formattedTokenId.high,
-		formattedTokenId.low,
+		tokenId,
 	];
 	const tx = await getCallToContract(
-		CofiBlocksContracts.DISTRIBUTION,
+		CofiBlocksContracts.COFI_COLLECTION,
 		"balance_of",
 		calldata,
 	);
