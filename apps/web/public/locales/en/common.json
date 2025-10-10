@@ -139,6 +139,8 @@
 	"bags_available": "Bags Available",
 	"bags": "bags",
 	"bags_available_count": "{{count}} bags available",
+	"ground_coffee_stock": "Ground Coffee Stock",
+	"beans_coffee_stock": "Beans Coffee Stock",
 	"unit_price": "Unit price ({{weight}})",
 	"sold_out": "SOLD OUT",
 	"add_to_favorites": "Add to favorites",
@@ -171,6 +173,8 @@
 		"bean": "Bean",
 		"grounded": "Grounded"
 	},
+	"available_stock": "Available Stock",
+	"units": "units",
 	"total": "total",
 	"adding_to_cart": "Adding to cart...",
 	"add_to_cart": "Add to cart",

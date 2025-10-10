@@ -12,6 +12,7 @@ datasource db {
 enum Role {
   ADMIN
   COFFEE_PRODUCER
+  COFFEE_ROASTER
   COFFEE_BUYER
 }
 
@@ -27,7 +28,7 @@ model ShoppingCart {
   updatedAt DateTime @updatedAt
   userId    String
   items     ShoppingCartItem[]
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([createdAt])
   @@index([userId])
@@ -35,12 +36,14 @@ model ShoppingCart {
 
 model Product {
   id              Int      @id @default(autoincrement())
-  tokenId         Int
+  tokenId         Int      @unique
   name            String
   price           Float
   nftMetadata     Json
   hidden          Boolean? @default(false)
   stock           Int      @default(0)
+  ground_stock    Int      @default(0)
+  bean_stock      Int      @default(0)
   owner           String?
   initial_stock   Int?
   creation_tx_hash String?
@@ -49,10 +52,11 @@ model Product {
   shoppingCartItems ShoppingCartItem[]
   orderItems        OrderItem[]
   favorites         Favorite[]
-  ownerUser         User?     @relation("ProductOwner", fields: [owner], references: [id])
+  ownerUser         User?     @relation("ProductOwner", fields: [owner], references: [id], onDelete: SetNull)
 
   @@index([name])
   @@index([owner])
+  @@index([tokenId])
 }
 
 model ShoppingCartItem {
@@ -60,11 +64,12 @@ model ShoppingCartItem {
   quantity       Int
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
-  shoppingCart   ShoppingCart @relation(fields: [shoppingCartId], references: [id])
+  shoppingCart   ShoppingCart @relation(fields: [shoppingCartId], references: [id], onDelete: Cascade)
   shoppingCartId String
-  product        Product      @relation(fields: [productId], references: [id])
+  product        Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId      Int
 
+  @@unique([shoppingCartId, productId])
   @@index([shoppingCartId])
   @@index([productId])
 }
@@ -79,11 +84,13 @@ model Order {
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
   items     OrderItem[]
-  user      User        @relation("UserOrders", fields: [userId], references: [id])
-  seller    User        @relation("SellerOrders", fields: [sellerId], references: [id])
+  user      User        @relation("UserOrders", fields: [userId], references: [id], onDelete: Cascade)
+  seller    User        @relation("SellerOrders", fields: [sellerId], references: [id], onDelete: Restrict)
 
   @@index([userId])
   @@index([sellerId])
+  @@index([status])
+  @@index([createdAt])
 }
 
 model OrderItem {
@@ -92,8 +99,8 @@ model OrderItem {
   productId Int
   quantity  Int
   price     Float
-  order     Order    @relation(fields: [orderId], references: [id])
-  product   Product  @relation(fields: [productId], references: [id])
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
 
   @@index([orderId])
   @@index([productId])
@@ -140,9 +147,12 @@ model Farm {
   farmImage String
   email     String
   userId    String
-  user      User @relation(fields: [userId], references: [id])
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([region])
 }
 
 model Favorite {
@@ -151,8 +161,8 @@ model Favorite {
   productId Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id])
-  product   Product  @relation(fields: [productId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([userId, productId])
   @@index([userId])

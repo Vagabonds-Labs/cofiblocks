@@ -9,6 +9,8 @@ interface SelectionTypeCardProps {
 	price: number;
 	quantity: number;
 	stock: number;
+	ground_stock: number;
+	bean_stock: number;
 	onQuantityChange: (quantity: number) => void;
 	onAddToCart: () => void;
 	isAddingToCart?: boolean;
@@ -18,6 +20,8 @@ export function SelectionTypeCard({
 	price,
 	quantity,
 	stock,
+	ground_stock,
+	bean_stock,
 	onQuantityChange,
 	onAddToCart,
 	isAddingToCart = false,
@@ -50,6 +54,37 @@ export function SelectionTypeCard({
 
 	return (
 		<InfoCard title={t("select_coffee_type")} options={coffeeOptions}>
+			{/* Stock Information */}
+			<div className="bg-gray-50 rounded-lg p-4 mb-4">
+				<Text className="text-sm font-medium text-gray-700 mb-2">
+					{t("available_stock")}
+				</Text>
+				<div className="grid grid-cols-2 gap-4">
+					<div className="flex items-center justify-between">
+						<div className="flex items-center">
+							<div className="w-3 h-3 bg-amber-600 rounded-full mr-2"></div>
+							<Text className="text-sm text-gray-600">
+								{t("coffee_type.bean")}
+							</Text>
+						</div>
+						<Text className="text-sm font-medium text-gray-900">
+							{bean_stock} {t("units")}
+						</Text>
+					</div>
+					<div className="flex items-center justify-between">
+						<div className="flex items-center">
+							<div className="w-3 h-3 bg-amber-800 rounded-full mr-2"></div>
+							<Text className="text-sm text-gray-600">
+								{t("coffee_type.grounded")}
+							</Text>
+						</div>
+						<Text className="text-sm font-medium text-gray-900">
+							{ground_stock} {t("units")}
+						</Text>
+					</div>
+				</div>
+			</div>
+
 			<div className="flex flex-col">
 				<Text className="text-sm text-content-body-default">
 					{t("unit_price", { weight: "340g" })}: {price} USD

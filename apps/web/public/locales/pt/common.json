@@ -126,6 +126,8 @@
 	"bags_available": "Sacos disponíveis",
 	"bags": "sacos",
 	"bags_available_count": "{{count}} sacos disponíveis",
+	"ground_coffee_stock": "Café moído",
+	"beans_coffee_stock": "Café grão",
 	"unit_price": "Preço por unidade ({{weight}})",
 	"sold_out": "ESGOTADO",
 	"add_to_favorites": "Adicionar aos favoritos",
@@ -158,6 +160,8 @@
 		"bean": "Grão",
 		"grounded": "Moído"
 	},
+	"available_stock": "Estoque Disponível",
+	"units": "unidades",
 	"total": "total",
 	"adding_to_cart": "Adicionando ao carrinho...",
 	"add_to_cart": "Adicionar ao carrinho",

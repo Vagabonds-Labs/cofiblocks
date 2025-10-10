@@ -200,6 +200,8 @@ export default function ProductPage() {
 								roastLevel: parseMetadata(product.nftMetadata as string)
 									.strength,
 								price: product.price,
+								ground_stock: product.ground_stock ?? 0,
+								bean_stock: product.bean_stock ?? 0,
 								type: "Buyer",
 								process: "Natural",
 								description: parseMetadata(product.nftMetadata as string)

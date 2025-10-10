@@ -87,7 +87,8 @@ export const productRouter = createTRPCRouter({
 				description: z.string().min(1),
 				image: z.string().optional(),
 				strength: z.string().min(1),
-				stock: z.number().min(0),
+				ground_coffee_stock: z.number().min(0),
+				beans_coffee_stock: z.number().min(0),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -105,14 +106,16 @@ export const productRouter = createTRPCRouter({
 			const tokenId_raw = await readStorageAt(CofiBlocksContracts.MARKETPLACE, CURRENT_TOKEN_ID_SELECTOR);
 			const tokenId = Number(tokenId_raw);
 
+			const stock = input.ground_coffee_stock + input.beans_coffee_stock;
+			console.log("Stock", stock);
 			try {
-				tx = await createProduct(BigInt(input.stock), BigInt(input.price), userAuthData);
+				tx = await createProduct(BigInt(stock), BigInt(input.price), userAuthData);
 			} catch (error) {
 				if (error instanceof Error && error.message.includes("Not producer or roaster")) {
 					throw new TRPCError({ code: "BAD_REQUEST", message: "User is not a producer or roaster" });
 				}
 				throw new TRPCError(
-					{ code: "INTERNAL_SERVER_ERROR", message: "Error creating product on marketplace" }
+					{ code: "INTERNAL_SERVER_ERROR", message: "Error creating product on marketplace" + error }
 				);
 			}
 			
@@ -131,9 +134,11 @@ export const productRouter = createTRPCRouter({
 						strength: input.strength,
 					}),
 					hidden: false,
-					stock: input.stock,
+					stock: stock,
+					ground_stock: input.ground_coffee_stock,
+					bean_stock: input.beans_coffee_stock,
 					owner: ctx.session.user.id,
-					initial_stock: input.stock,
+					initial_stock: stock,
 					creation_tx_hash: tx,
 				},
 			});

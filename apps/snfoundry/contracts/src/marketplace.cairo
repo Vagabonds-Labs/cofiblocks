@@ -65,6 +65,8 @@ pub trait IMarketplace<ContractState> {
     fn claim_cofounder(ref self: ContractState);
     fn locked(ref self: ContractState, id: u32, data: Array<felt252>) -> Array<felt252>;
     fn withdraw(ref self: ContractState, token: PAYMENT_TOKEN);
+    fn claim_payment(ref self: ContractState);
+    fn get_claim_payment(self: @ContractState) -> u256;
 }
 
 pub mod MainnetConfig {
@@ -763,6 +765,18 @@ mod Marketplace {
             assert(balance >= 0, 'No tokens to withdraw');
             let transfer = token_dispatcher.transfer(get_caller_address(), balance);
             assert(transfer, 'Error withdrawing');
+        }
+
+        fn claim_payment(ref self: ContractState) {
+            // Producers/roasters should call this function to receive their payment
+            let balance = self.claim_balances.read(get_caller_address());
+            self.claim_balance(balance, get_caller_address());
+            self.claim_balances.write(get_caller_address(), 0);
+        }
+
+        fn get_claim_payment(self: @ContractState) -> u256 {
+            // Producers/roasters can read their claim payment from here
+            self.claim_balances.read(get_caller_address())
         }
     }
 

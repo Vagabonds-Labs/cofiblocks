@@ -22,7 +22,8 @@ const MARKET_FEE_BPS = 5000; // 50%
 const schema = z.object({
 	roast: z.string().min(1, "Roast level is required"),
 	price: z.string().min(1, "Price is required"),
-	bagsAvailable: z.number().min(0, "Available bags must be a positive number"),
+	ground_coffee_stock: z.number().min(0, "Ground coffee stock must be a positive number"),
+	beans_coffee_stock: z.number().min(0, "Beans coffee stock must be a positive number"),
 	description: z.string().min(1, "Description is required"),
 	variety: z.string().min(1, "Variety is required"),
 	coffeeScore: z.number().optional(),
@@ -46,7 +47,8 @@ export default function RegisterCoffee() {
 			resolver: zodResolver(schema),
 			defaultValues: {
 				roast: RoastLevel.LIGHT,
-				bagsAvailable: 1,
+				ground_coffee_stock: 0,
+				beans_coffee_stock: 0,
 			},
 		});
 
@@ -69,7 +71,8 @@ export default function RegisterCoffee() {
 				description: submissionData.description,
 				image: submissionData.image ?? "/images/cafe1.webp",
 				strength: submissionData.roast,
-				stock: submissionData.bagsAvailable,
+				ground_coffee_stock: submissionData.ground_coffee_stock,
+				beans_coffee_stock: submissionData.beans_coffee_stock,
 			});
 			toast.success(t("product_registered_successfully"));
 			router.push("/marketplace");
@@ -267,17 +270,17 @@ export default function RegisterCoffee() {
 					</div>
 					<div className="my-6">
 						<label className="text-content-body-default block mb-1">
-							{t("bags_available")} (340g)
+							{t("ground_coffee_stock")} (340g)
 						</label>
 						<div className="flex items-center justify-between rounded-lg p-2 border border-surface-border">
 							<Button
 								className="!p-0 w-5 h-5 rounded-md text-white"
 								onClick={() => {
 									const currentValue = Number.parseInt(
-										getValues("bagsAvailable").toString(),
+										getValues("ground_coffee_stock").toString(),
 									);
 									if (currentValue > 0) {
-										setValue("bagsAvailable", currentValue - 1);
+										setValue("ground_coffee_stock", currentValue - 1);
 									}
 								}}
 								type="button"
@@ -287,14 +290,14 @@ export default function RegisterCoffee() {
 							<input
 								type="text"
 								className="w-16 text-center bg-transparent text-content-body-default text-lg"
-								{...register("bagsAvailable", {
+								{...register("ground_coffee_stock", {
 									onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
 										const value =
 											e.target.value === ""
 												? 0
 												: Number.parseInt(e.target.value);
 										if (!Number.isNaN(value) && value >= 0) {
-											setValue("bagsAvailable", value);
+											setValue("ground_coffee_stock", value);
 										}
 									},
 								})}
@@ -303,9 +306,57 @@ export default function RegisterCoffee() {
 								className="!p-0 w-5 h-5 rounded-md text-white"
 								onClick={() => {
 									const currentValue = Number.parseInt(
-										getValues("bagsAvailable").toString(),
+										getValues("ground_coffee_stock").toString(),
 									);
-									setValue("bagsAvailable", currentValue + 1);
+									setValue("ground_coffee_stock", currentValue + 1);
+								}}
+								type="button"
+							>
+								+
+							</Button>
+						</div>
+					</div>
+					<div className="my-6">
+						<label className="text-content-body-default block mb-1">
+							{t("beans_coffee_stock")} (340g)
+						</label>
+						<div className="flex items-center justify-between rounded-lg p-2 border border-surface-border">
+							<Button
+								className="!p-0 w-5 h-5 rounded-md text-white"
+								onClick={() => {
+									const currentValue = Number.parseInt(
+										getValues("beans_coffee_stock").toString(),
+									);
+									if (currentValue > 0) {
+										setValue("beans_coffee_stock", currentValue - 1);
+									}
+								}}
+								type="button"
+							>
+								-
+							</Button>
+							<input
+								type="text"
+								className="w-16 text-center bg-transparent text-content-body-default text-lg"
+								{...register("beans_coffee_stock", {
+									onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+										const value =
+											e.target.value === ""
+												? 0
+												: Number.parseInt(e.target.value);
+										if (!Number.isNaN(value) && value >= 0) {
+											setValue("beans_coffee_stock", value);
+										}
+									},
+								})}
+							/>
+							<Button
+								className="!p-0 w-5 h-5 rounded-md text-white"
+								onClick={() => {
+									const currentValue = Number.parseInt(
+										getValues("beans_coffee_stock").toString(),
+									);
+									setValue("beans_coffee_stock", currentValue + 1);
 								}}
 								type="button"
 							>

@@ -24,6 +24,8 @@ interface ProductDetailsProps {
 		farmName: string;
 		roastLevel: string;
 		stock: number;
+		ground_stock: number;
+		bean_stock: number;
 		price: number;
 		description: string;
 		type: "Buyer" | "Farmer" | "SoldOut";
@@ -368,6 +370,8 @@ export default function ProductDetails({
 								price={price}
 								quantity={quantity}
 								stock={stock}
+								ground_stock={product.ground_stock}
+								bean_stock={product.bean_stock}
 								onQuantityChange={setQuantity}
 								onAddToCart={handleAddToCart}
 								isAddingToCart={isAddingToCart}
