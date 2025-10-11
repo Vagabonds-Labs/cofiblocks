@@ -1,7 +1,7 @@
 import Button from "@repo/ui/button";
 import { InfoCard } from "@repo/ui/infoCard";
 import { Text } from "@repo/ui/typography";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 
@@ -14,6 +14,7 @@ interface SelectionTypeCardProps {
 	onQuantityChange: (quantity: number) => void;
 	onAddToCart: () => void;
 	isAddingToCart?: boolean;
+	onSelectionChange: (option: "bean" | "grounded") => void;
 }
 
 export function SelectionTypeCard({
@@ -25,25 +26,43 @@ export function SelectionTypeCard({
 	onQuantityChange,
 	onAddToCart,
 	isAddingToCart = false,
+	onSelectionChange,
 }: SelectionTypeCardProps) {
 	const [selectedOption, setSelectedOption] = useState<"bean" | "grounded">(
-		"bean",
+		ground_stock > 0 ? "grounded" : "bean",
 	);
 
 	const { t } = useTranslation();
+
+	// Notify parent of initial selection
+	useEffect(() => {
+		onSelectionChange(selectedOption);
+	}, [selectedOption, onSelectionChange]);
 
 	const coffeeOptions = [
 		{
 			label: t("coffee_type.bean"),
 			iconSrc: "/images/product-details/Menu-4.svg",
 			selected: selectedOption === "bean",
-			onClick: () => setSelectedOption("bean"),
+			disabled: bean_stock === 0,
+			onClick: () => {
+				if (bean_stock > 0) {
+					setSelectedOption("bean");
+					onSelectionChange("bean");
+				}
+			},
 		},
 		{
 			label: t("coffee_type.grounded"),
 			iconSrc: "/images/product-details/Menu-4.svg",
 			selected: selectedOption === "grounded",
-			onClick: () => setSelectedOption("grounded"),
+			disabled: ground_stock === 0,
+			onClick: () => {
+				if (ground_stock > 0) {
+					setSelectedOption("grounded");
+					onSelectionChange("grounded");
+				}
+			},
 		},
 	];
 

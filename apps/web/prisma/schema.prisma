@@ -20,6 +20,8 @@ enum OrderStatus {
   PENDING
   COMPLETED
   CANCELLED
+  FAILED
+  PAID
 }
 
 model ShoppingCart {
@@ -62,6 +64,7 @@ model Product {
 model ShoppingCartItem {
   id             String       @id @default(cuid())
   quantity       Int
+  is_grounded    Boolean      @default(false)
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   shoppingCart   ShoppingCart @relation(fields: [shoppingCartId], references: [id], onDelete: Cascade)
@@ -75,37 +78,53 @@ model ShoppingCartItem {
 }
 
 model Order {
-  id        String      @id @default(cuid())
-  userId    String
-  sellerId  String
-  total     Float
-  status    OrderStatus
-  tx_hash   String?
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  items     OrderItem[]
-  user      User        @relation("UserOrders", fields: [userId], references: [id], onDelete: Cascade)
-  seller    User        @relation("SellerOrders", fields: [sellerId], references: [id], onDelete: Restrict)
+  id            String      @id @default(cuid())
+  userId        String
+  total         Float
+  status        OrderStatus
+  home_delivery Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  items         OrderItem[]
+  deliveries    Delivery[]
+  user          User        @relation("UserOrders", fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@index([sellerId])
   @@index([status])
   @@index([createdAt])
 }
 
 model OrderItem {
-  id        String   @id @default(cuid())
-  orderId   String
-  productId Int
-  quantity  Int
-  price     Float
-  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  id              String   @id @default(cuid())
+  orderId         String
+  productId       Int
+  quantity        Int
+  price           Float
+  is_grounded     Boolean @default(false)
+  sellerId        String
+  payment_tx_hash String?
+  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
 
   @@index([orderId])
   @@index([productId])
+  @@index([sellerId])
 }
 
+model Delivery {
+  id             String   @id @default(uuid())
+  orderId        String
+  province       String
+  address        String
+  status         String
+  payment_tx_hash String?
+  createdAt      DateTime @default(now())
+  order          Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([status])
+  @@index([createdAt])
+}
 
 model Session {
   id           String   @id @default(cuid())
@@ -129,7 +148,6 @@ model User {
   updatedAt     DateTime       @updatedAt
   shoppingCarts ShoppingCart[]
   buyerOrders   Order[]        @relation("UserOrders")    // Orders made by this user as a buyer
-  sellerOrders  Order[]        @relation("SellerOrders")  // Orders where this user is the seller
   sessions      Session[]
   farms          Farm[]
   password      String?

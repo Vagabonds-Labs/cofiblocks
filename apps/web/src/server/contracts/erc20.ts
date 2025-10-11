@@ -39,3 +39,19 @@ export async function increaseAllowance(
 	const tx = await executeTransaction(userAuthData, transaction);
 	return tx;
 }
+
+export async function transfer(
+	amount: bigint,
+	paymentToken: PaymentToken,
+	recipient: string,
+	userAuthData: UserAuthData,
+) {
+	const formattedAmount = format_number(amount);
+	const transaction = {
+		contract_address: getContractAddress(CofiBlocksContracts[paymentToken]),
+		entrypoint: "transfer",
+		calldata: [recipient, formattedAmount.high, formattedAmount.low],
+	};
+	const tx = await executeTransaction(userAuthData, transaction);
+	return tx;
+}

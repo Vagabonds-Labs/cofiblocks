@@ -6,6 +6,7 @@ interface Option {
 	label: string;
 	iconSrc?: string;
 	selected?: boolean;
+	disabled?: boolean;
 	onClick?: () => void;
 }
 
@@ -27,15 +28,20 @@ export function InfoCard({ title, options, children }: InfoCardProps) {
 					{options.map((option) => (
 						<div
 							key={option.label}
-							className="p-6 bg-white rounded-lg flex items-center gap-4 cursor-pointer"
-							onClick={option.onClick}
+							className={`p-6 bg-white rounded-lg flex items-center gap-4 ${
+								option.disabled
+									? "cursor-not-allowed opacity-50"
+									: "cursor-pointer"
+							}`}
+							onClick={option.disabled ? undefined : option.onClick}
 							onKeyDown={(e) => {
+								if (option.disabled) return;
 								if (e.key === "Enter" || e.key === " ") {
 									option.onClick?.();
 								}
 							}}
 							role="button"
-							tabIndex={0}
+							tabIndex={option.disabled ? -1 : 0}
 						>
 							<div className="w-6 h-6 relative">
 								<Image

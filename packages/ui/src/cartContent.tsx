@@ -160,6 +160,11 @@ export function CartContent({
 									</button>
 								)}
 							</div>
+							<div>
+								<Text className="text-sm text-gray-500">
+									{item.is_grounded ? "Grano" : "Molido"}
+								</Text>
+							</div>
 						</div>
 					</div>
 				))}

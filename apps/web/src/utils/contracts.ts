@@ -113,3 +113,30 @@ export async function getEvents(
 
 	return events;
 }
+
+/**
+ * Normalizes province names by:
+ * - Converting to lowercase
+ * - Removing accents/diacritics
+ * - Replacing spaces with underscores
+ * - Trimming whitespace
+ */
+const normalizeProvinceName = (province: string): string => {
+	return province
+		.toLowerCase()
+		.trim()
+		.normalize("NFD") // Decompose accented characters
+		.replace(/[\u0300-\u036f]/g, "") // Remove diacritical marks
+		.replace(/\s+/g, "_") // Replace spaces with underscores
+		.replace(/[^a-z_]/g, ""); // Remove any non-alphabetic characters except underscores
+};
+
+export const getDeliveryFee = (province: string) => {
+	const gam = ["san_jose", "alajuela", "cartago", "heredia"];
+	const normalizedProvince = normalizeProvinceName(province);
+	console.log("normalizedProvince", normalizedProvince);
+	if (gam.includes(normalizedProvince)) {
+		return BigInt(1 * (10 ** 6));
+	}
+	return BigInt(20 * (10 ** 6));
+}

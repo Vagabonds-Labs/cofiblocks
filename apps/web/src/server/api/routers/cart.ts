@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { getProductPrices } from "~/server/contracts/marketplace";
@@ -25,11 +26,18 @@ export const cartRouter = createTRPCRouter({
 		.input(
 			z.object({
 				productId: z.number(),
+				is_grounded: z.boolean(),
 				quantity: z.number().min(1),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
 			// Find or create user's cart
+			if (!ctx.session.user) {
+				throw new TRPCError({
+					code: "UNAUTHORIZED",
+					message: "User not authenticated",
+				});
+			}
 			let cart = await ctx.db.shoppingCart.findFirst({
 				where: { userId: ctx.session.user.id },
 			});
@@ -45,6 +53,7 @@ export const cartRouter = createTRPCRouter({
 				where: {
 					shoppingCartId: cart.id,
 					productId: input.productId,
+					is_grounded: input.is_grounded,
 				},
 			});
 
@@ -63,6 +72,7 @@ export const cartRouter = createTRPCRouter({
 					shoppingCartId: cart.id,
 					productId: input.productId,
 					quantity: input.quantity,
+					is_grounded: input.is_grounded,
 				},
 				include: { product: true },
 			});
@@ -115,8 +125,12 @@ export const cartRouter = createTRPCRouter({
 				where: { shoppingCartId: input.cartId },
 				include: { product: true },
 			});
+			console.log("***************");
 			const tokenIds = shopItems.map((item) => BigInt(item.product.tokenId));
+			console.log("tokenIds", tokenIds);
 			const tokenAmounts = shopItems.map((_) => BigInt(1));
+			console.log("***************");
+			console.log("tokenAmounts", tokenAmounts);
 			const result: Record<string, string> = {};
 			const unitPrices = await getProductPrices(tokenIds, tokenAmounts, input.paymentToken as PaymentToken);
 			for (let i = 0; i < shopItems.length; i++) {

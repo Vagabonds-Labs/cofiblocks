@@ -95,8 +95,8 @@ export const productRouter = createTRPCRouter({
 			if (!ctx.session.user || !ctx.session.user.email) {
 				throw new Error("User email not found");
 			}
-			if (ctx.session.user.role !== "COFFEE_PRODUCER") {
-				throw new Error("User is not a producer");
+			if (ctx.session.user.role !== "COFFEE_PRODUCER" && ctx.session.user.role !== "COFFEE_ROASTER") {
+				throw new Error("User is not a producer or roaster");
 			}
 			// First create the product in blockchain
 			const userAuthData = await authenticateUserCavos(ctx.session.user.email, ctx.db);
@@ -253,4 +253,30 @@ export const productRouter = createTRPCRouter({
 				productsFound: products,
 			};
 		}),
+
+
+		getProductFarmInfo: publicProcedure
+			.input(z.object({ productId: z.number() }))
+			.query(async ({ input }) => {
+				const product = await db.product.findUnique({
+					where: { id: input.productId },
+				});
+
+				if (!product) {
+					throw new TRPCError({ code: "BAD_REQUEST", message: "Product not found" });
+				}
+				const farm = await db.farm.findFirst({
+					where: { userId: product.owner ?? '' },
+				});
+
+				const owner_sales = await db.orderItem.findMany({
+					where: { sellerId: product.owner ?? '' },
+				});
+
+				if (!farm) {
+					throw new TRPCError({ code: "BAD_REQUEST", message: "Farm not found" });
+				}
+
+				return { farm, owner_sales };
+			}),
 });

@@ -57,6 +57,7 @@ function Header({
 						nftMetadata: unknown;
 					};
 					quantity: number;
+					is_grounded: boolean;
 				}) => {
 					let metadata: ProductMetadata;
 					try {
@@ -77,6 +78,7 @@ function Header({
 						quantity: item.quantity,
 						price: item.product.price,
 						imageUrl: metadata.imageUrl ?? "/default-image.webp",
+						is_grounded: item.is_grounded,
 					};
 				},
 			);
@@ -138,6 +140,7 @@ function Header({
 				id: string;
 				product: { name: string; price: number; nftMetadata: unknown };
 				quantity: number;
+				is_grounded: boolean;
 			}) => {
 				let metadata: ProductMetadata;
 				try {
@@ -161,6 +164,7 @@ function Header({
 						}),
 					},
 					quantity: item.quantity,
+					is_grounded: item.is_grounded,
 				};
 			},
 		) ?? [];
