@@ -1,22 +1,19 @@
 import {
 	type Order,
-	OrderItem,
 	OrderStatus,
 	Prisma,
 	type Product,
 	type User,
 } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
-import { map, z } from "zod";
+import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { authenticateUserCavos, registerUser } from "~/server/services/cavos";
+import { authenticateUserCavos } from "~/server/services/cavos";
 import { balanceOf } from "~/server/contracts/cofi_collection";
 import { getProductPrices, buyProduct } from "~/server/contracts/marketplace";
 import { getDeliveryFee, PaymentToken } from "~/utils/contracts";
 import { getBalances, increaseAllowance, transfer } from "~/server/contracts/erc20";
 import { CofiBlocksContracts } from "~/utils/contracts";
-import { v4 as uuidv4 } from "uuid";
-import DeliveryMethod from "~/app/_components/features/checkout/Deliverymethod";
 
 interface Collectible {
 	id: number;
@@ -26,7 +23,7 @@ interface Collectible {
 	totalQuantity: number;
 }
 
-interface OrderWithRelations extends Order {
+interface _OrderWithRelations extends Order {
 	items: {
 		product: Product;
 		quantity: number;
@@ -338,7 +335,7 @@ export const orderRouter = createTRPCRouter({
 
 	getDeliveryFee: protectedProcedure.input(z.object({
 		province: z.string(),
-	})).query(async ({ ctx, input }) => {
+	})).query(async ({ input }) => {
 		if (input.province === "") {
 			return 0;
 		}

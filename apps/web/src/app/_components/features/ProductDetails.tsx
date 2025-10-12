@@ -6,7 +6,7 @@ import { H2, Text } from "@repo/ui/typography";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { api } from "~/trpc/react";
 import { ProducerInfo } from "./ProducerInfo";

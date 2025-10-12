@@ -21,7 +21,7 @@ import { api } from "~/trpc/react";
 import type { RouterOutputs } from "~/trpc/react";
 import { type FormValues, filtersSchema } from "~/types";
 
-type OrderWithItems = RouterOutputs["order"]["getProducerOrders"][number];
+type _OrderWithItems = RouterOutputs["order"]["getProducerOrders"][number];
 
 interface OrderItem {
 	id: string;

@@ -12,7 +12,7 @@ import { useSession } from "next-auth/react";
 
 export default function Home() {
 	const { t } = useTranslation();
-	const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+	const [_isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 	const { data: session } = useSession();
 	const user = session?.user;
 	const isAuthenticated = !!user;
@@ -21,7 +21,7 @@ export default function Home() {
 		setIsWalletModalOpen(true);
 	};
 
-	const handleCloseWalletModal = () => {
+	const _handleCloseWalletModal = () => {
 		setIsWalletModalOpen(false);
 	};
 
@@ -50,7 +50,6 @@ export default function Home() {
 		<Main>
 			<div className="flex flex-col min-h-screen">
 				<Header
-					address={"address"}
 					showCart={isAuthenticated}
 					onConnect={handleConnect}
 					profileOptions={<ProfileOptions/>}

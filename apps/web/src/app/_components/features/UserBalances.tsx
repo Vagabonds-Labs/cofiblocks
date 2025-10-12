@@ -45,13 +45,13 @@ function extractBalanceValue(result: ContractResult | number): number {
 	if (result && typeof result === "object") {
 		// Check if it's an array
 		if (Array.isArray(result)) {
-			const hexValue = result[0] || "0x0";
+			const hexValue = result[0] ?? "0x0";
 			return Number.parseInt(hexValue, 16);
 		}
 
 		// Check if it has a result property
 		if ("result" in result && Array.isArray(result.result)) {
-			const hexValue = result.result[0] || "0x0";
+			const hexValue = result.result[0] ?? "0x0";
 			return Number.parseInt(hexValue, 16);
 		}
 	}
@@ -63,7 +63,7 @@ export function UserBalances({ balances }: UserBalancesProps) {
 	const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] = useState(false);
 	const [selectedBalance, setSelectedBalance] = useState<BalanceItem | null>(null);
 	
-	const { control, handleSubmit, reset, formState: { errors }, watch } = useForm<WithdrawalFormData>({
+	const { control, handleSubmit, reset, formState: { errors: _errors }, watch } = useForm<WithdrawalFormData>({
 		defaultValues: {
 			walletAddress: "",
 		},

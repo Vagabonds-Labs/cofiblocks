@@ -30,7 +30,7 @@ function Header({
 	const router = useRouter();
 	const { t } = useTranslation();
 	const { data, status } = useSession();
-	const user = data?.user;
+	const _user = data?.user;
 	const isAuthenticated = status === "authenticated";
 	const utils = api.useUtils();
 	const [, setItems] = useAtom(cartItemsAtom);
@@ -118,7 +118,7 @@ function Header({
 
 	const handleLogout = () => {
 		// Sign out using Cavos auth
-		signOut();
+		void signOut();
 		// Clear cart data
 		setItems([]);
 		// Redirect to home

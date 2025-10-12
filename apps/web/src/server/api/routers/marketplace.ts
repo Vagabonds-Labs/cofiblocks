@@ -1,4 +1,3 @@
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import {
 	createTRPCRouter,
@@ -53,6 +52,9 @@ export const marketplaceRouter = createTRPCRouter({
 		.mutation(async ({ ctx, input }) => {
 			console.log("Receive request to buy product", input.tokenId);
 			// TODO need to get user pasword from db or something
+			if (!ctx.session.user) {
+				throw new Error("User not authenticated");
+			}
 			if (!ctx.session.user.email) {
 				throw new Error("User email not found");
 			}
@@ -76,6 +78,9 @@ export const marketplaceRouter = createTRPCRouter({
 		.mutation(async ({ ctx, input }) => {
 			console.log("Receive request to buy products", input.tokenIds);
 			// TODO need to get user pasword from db or something
+			if (!ctx.session.user) {
+				throw new Error("User not authenticated");
+			}
 			if (!ctx.session.user.email) {
 				throw new Error("User email not found");
 			}
@@ -100,11 +105,14 @@ export const marketplaceRouter = createTRPCRouter({
 		.mutation(async ({ ctx, input }) => {
 			console.log("Receive request to register product", input.initialStock);
 			// TODO need to get user pasword from db or something
+			if (!ctx.session.user) {
+				throw new Error("User not authenticated");
+			}
 			if (!ctx.session.user.email) {
 				throw new Error("User email not found");
 			}
 			const userAuthData = await registerUser(ctx.session.user.email, "1234");
-			const tx = await createProduct(
+			const _tx = await createProduct(
 				BigInt(input.initialStock),
 				BigInt(input.price_usd),
 				userAuthData,
@@ -114,6 +122,9 @@ export const marketplaceRouter = createTRPCRouter({
 		}),
 
 	claimProducer: protectedProcedure.mutation(async ({ ctx }) => {
+		if (!ctx.session.user) {
+			throw new Error("User not authenticated");
+		}
 		if (!ctx.session.user.email) {
 			throw new Error("User email not found");
 		}
@@ -122,6 +133,9 @@ export const marketplaceRouter = createTRPCRouter({
 	}),
 
 	claimConsumer: protectedProcedure.mutation(async ({ ctx }) => {
+		if (!ctx.session.user) {
+			throw new Error("User not authenticated");
+		}
 		if (!ctx.session.user.email) {
 			throw new Error("User email not found");
 		}

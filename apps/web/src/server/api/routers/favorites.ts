@@ -5,6 +5,9 @@ import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 export const favoritesRouter = createTRPCRouter({
 	// Get user's favorites
 	getUserFavorites: protectedProcedure.query(async ({ ctx }) => {
+		if (!ctx.session.user) {
+			throw new Error("User not authenticated");
+		}
 		try {
 			return await ctx.db.favorite.findMany({
 				where: { userId: ctx.session.user.id },
@@ -25,6 +28,9 @@ export const favoritesRouter = createTRPCRouter({
 	addToFavorites: protectedProcedure
 		.input(z.object({ productId: z.number() }))
 		.mutation(async ({ ctx, input }) => {
+			if (!ctx.session.user) {
+				throw new Error("User not authenticated");
+			}
 			try {
 				// First check if the product exists
 				const product = await ctx.db.product.findUnique({
@@ -62,6 +68,9 @@ export const favoritesRouter = createTRPCRouter({
 	removeFromFavorites: protectedProcedure
 		.input(z.object({ productId: z.number() }))
 		.mutation(async ({ ctx, input }) => {
+			if (!ctx.session.user) {
+				throw new Error("User not authenticated");
+			}
 			try {
 				return await ctx.db.favorite.delete({
 					where: {
@@ -84,6 +93,9 @@ export const favoritesRouter = createTRPCRouter({
 	isProductFavorited: protectedProcedure
 		.input(z.object({ productId: z.number() }))
 		.query(async ({ ctx, input }) => {
+			if (!ctx.session.user) {
+				throw new Error("User not authenticated");
+			}
 			try {
 				const favorite = await ctx.db.favorite.findUnique({
 					where: {

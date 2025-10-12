@@ -22,7 +22,7 @@ interface UseOrderFilteringProps {
 	filters: Record<string, boolean>;
 }
 
-const mapOrderStatusToSalesStatus = (status: OrderStatus): SalesStatus => {
+const _mapOrderStatusToSalesStatus = (status: OrderStatus): SalesStatus => {
 	switch (status) {
 		case "PENDING":
 			return SalesStatus.Paid;
@@ -85,7 +85,7 @@ export function useOrderFiltering({
 	}, []);
 
 	const applyFilters = useCallback(
-		(values: Record<string, boolean>) => {
+		(_values: Record<string, boolean>) => {
 			closeFiltersModal();
 		},
 		[closeFiltersModal],

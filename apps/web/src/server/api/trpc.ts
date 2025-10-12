@@ -32,7 +32,7 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
 	const session = await getServerAuthSession();
 
 	// Check for Auth token in headers
-	const authHeader = opts.headers.get("authorization");
+	const _authHeader = opts.headers.get("authorization");
 
 	return {
 		db,
@@ -129,39 +129,17 @@ export const protectedProcedure = t.procedure
 		// Check for Next Auth session
 		const hasNextAuthSession = !!ctx.session?.user;
 
-		// Check for Cavos Auth
-		const hasCavosAuth = !!ctx.cavosToken && !!ctx.cavosUserId;
-
-		// Allow access if either auth method is valid
-		if (!hasNextAuthSession && !hasCavosAuth) {
+		// Allow access if NextAuth session is valid
+		if (!hasNextAuthSession) {
 			throw new TRPCError({ code: "UNAUTHORIZED" });
-		}
-
-		// If using Next Auth, keep the session as is
-		if (hasNextAuthSession) {
-			return next({
-				ctx: {
-					session: { ...ctx.session, user: ctx.session?.user },
-				},
-			});
-		}
-
-		// If using Cavos Auth, create a compatible session object
-		if (!ctx.cavosUserId) {
-			throw new Error("Cavos user ID is required");
 		}
 
 		return next({
 			ctx: {
-				session: {
-					user: {
-						id: ctx.cavosUserId,
-						// Default role for Cavos users
-						role: "COFFEE_BUYER",
-					},
-				},
+				session: { ...ctx.session, user: ctx.session?.user },
 			},
 		});
+	
 	});
 
 /**

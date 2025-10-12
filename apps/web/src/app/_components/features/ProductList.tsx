@@ -89,6 +89,7 @@ export default function ProductList({ products }: ProductListProps) {
 					id: `temp-${Date.now()}`,
 					productId: product.id,
 					quantity: newItem.quantity,
+					is_grounded: newItem.is_grounded,
 					createdAt: now,
 					updatedAt: now,
 					shoppingCartId: "temp",

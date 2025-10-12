@@ -2,7 +2,6 @@ import {
 	Account,
 	type ArgsOrCalldata,
 	Contract,
-	Provider,
 	RpcProvider,
 } from "starknet";
 import configExternalContracts from "../contracts/deployedContracts";

@@ -6,7 +6,6 @@ import {
 	PaymentTokenTag,
 	getCallToContract,
 	getContractAddress,
-	readStorageAt,
 } from "../../utils/contracts";
 import { format_number } from "../../utils/formatting";
 
@@ -159,8 +158,8 @@ export async function deleteProducts(
 	userAuthData: UserAuthData,
 ) {
 	const formattedTokensIds = [];
-	for (let i = 0; i < tokenId.length; i++) {
-		const formattedTokenId = format_number(tokenId[i] ?? 0n);
+	for (const token of tokenId) {
+		const formattedTokenId = format_number(token ?? 0n);
 		formattedTokensIds.push(formattedTokenId.low);
 		formattedTokensIds.push(formattedTokenId.high);
 	}
@@ -242,15 +241,16 @@ export async function getProductPrices(
 	tokenIds: bigint[], 
 	tokenAmounts: bigint[], 
 	paymentToken: PaymentToken,
-	formatted: boolean = true
+	formatted = true
 ) {;
-	const unitPrices: Record<string, Number> = {};
+	const unitPrices: Record<string, number> = {};
 	for (let i = 0; i < tokenIds.length; i++) {
 		const tokenId = tokenIds[i];
 		const tokenAmount = tokenAmounts[i];
 		if (tokenId && tokenAmount) {
-			const result = await getProductPrice(tokenId, tokenAmount, paymentToken);
-			let price = BigInt(result.toString());
+			const result = await getProductPrice(tokenId, tokenAmount, paymentToken) as unknown;
+			const resultValue = Array.isArray(result) ? (result as unknown[])[0] : result;
+			const price = BigInt(String(resultValue as string | number | bigint ?? '0'));
 			const decimals = paymentToken === PaymentToken.STRK ? 18n : 6n;
 			if (!formatted) {
 				unitPrices[tokenId.toString()] = Number(price.toString());

@@ -1,4 +1,3 @@
-import type { Role } from "@prisma/client";
 import { hash } from "bcrypt";
 import { z } from "zod";
 import {
@@ -21,7 +20,10 @@ export const userRouter = createTRPCRouter({
 			const user = await ctx.db.user.findUnique({
 				where: { id: input.userId },
 			});
-			if (!user.walletAddress || !user.walletAddress.startsWith("0x")) {
+			if (!user) {
+				throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+			}
+			if (!user?.walletAddress?.startsWith("0x") && user.email) {
 				try {
 					const userAuthData = await authenticateUserCavos(user.email, ctx.db);
 					user.walletAddress = userAuthData.wallet_address;
@@ -46,9 +48,9 @@ export const userRouter = createTRPCRouter({
 			const user = await ctx.db.user.findUnique({
 				where: { id: input.userId },
 			});
-			const stark_balance = await getBalances(user?.walletAddress || "0x0", PaymentToken.STRK);
-			const usdt_balance = await getBalances(user?.walletAddress || "0x0", PaymentToken.USDT);
-			const usdc_balance = await getBalances(user?.walletAddress || "0x0", PaymentToken.USDC);
+			const stark_balance = await getBalances(user?.walletAddress ?? "0x0", PaymentToken.STRK);
+			const usdt_balance = await getBalances(user?.walletAddress ?? "0x0", PaymentToken.USDT);
+			const usdc_balance = await getBalances(user?.walletAddress ?? "0x0", PaymentToken.USDC);
 
 			let claim_endpoint = "coffee_lover_claim_balance";
 			if (user?.role === "COFFEE_PRODUCER") {
@@ -60,11 +62,11 @@ export const userRouter = createTRPCRouter({
 			const claim_balance_result = await getCallToContract(
 				CofiBlocksContracts.DISTRIBUTION,
 				claim_endpoint,
-				[user?.walletAddress || "0x0"],
+				[user?.walletAddress ?? "0x0"],
 			);
 			const claim_balance = Number(claim_balance_result) / 10 ** 6;
 
-			const claim_payment_result = await getClaimPayment(user?.walletAddress || "0x0");
+			const claim_payment_result = await getClaimPayment(user?.walletAddress ?? "0x0");
 			const claim_payment = Number(claim_payment_result) / 10 ** 6;
 
 			return {
@@ -86,10 +88,10 @@ export const userRouter = createTRPCRouter({
 		if (!user) {
 			throw new Error("User not found");
 		}
-		const userAuthData = await authenticateUserCavos(user?.email || "", ctx.db);
+		const userAuthData = await authenticateUserCavos(user?.email ?? "", ctx.db);
 		let claim_balance_success = false;
 		try {
-			await claim(userAuthData, user?.role || "COFFEE_BUYER");
+			await claim(userAuthData, user?.role ?? "COFFEE_BUYER");
 			claim_balance_success = true;
 		} catch (error) {
 			if (error instanceof Error && error.message.includes("No tokens to claim")) {
@@ -163,13 +165,6 @@ export const userRouter = createTRPCRouter({
 				data: updateData,
 			});
 		}),
-
-	getUserAddress: protectedProcedure.query(async ({ ctx }) => {
-		if (!ctx.session.user.email) {
-			throw new Error("User email not found");
-		}
-		return crypto.randomUUID();
-	}),
 
 	isUserVerified: publicProcedure
 		.input(z.object({ email: z.string() }))

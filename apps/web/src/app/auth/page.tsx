@@ -2,7 +2,7 @@
 
 import { motion, useAnimation } from "framer-motion";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import AuthForm from "~/app/_components/features/AuthForm";
 import LoginAnimation from "~/app/_components/ui/LoginAnimation";
 import {
@@ -10,7 +10,7 @@ import {
 	formContainerVariants,
 } from "~/utils/animationsConfig";
 
-export default function AuthPage() {
+function AuthPageContent() {
 	const searchParams = useSearchParams();
 	const mode = searchParams.get("mode") === "signup" ? "signup" : "signin";
 
@@ -65,5 +65,13 @@ export default function AuthPage() {
 				</motion.div>
 			</motion.div>
 		</div>
+	);
+}
+
+export default function AuthPage() {
+	return (
+		<Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+			<AuthPageContent />
+		</Suspense>
 	);
 }

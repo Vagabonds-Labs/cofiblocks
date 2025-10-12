@@ -1,8 +1,6 @@
 "use client";
 
 import { ArrowLeftIcon, TrashIcon } from "@heroicons/react/24/outline";
-import { useAccount } from "@starknet-react/core";
-import { useProvider } from "@starknet-react/core";
 import { useSetAtom } from "jotai";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -85,6 +83,7 @@ export default function ShoppingCart() {
 				quantity: item.quantity,
 				price: item.product.price,
 				imageUrl: getImageUrl(item.product.nftMetadata),
+				is_grounded: item.is_grounded,
 			}));
 			setCartItems(cartItems);
 		}
@@ -117,7 +116,7 @@ export default function ShoppingCart() {
 		setItemToDelete(null);
 	};
 
-	const handleBuy = async () => {
+	const _handleBuy = async () => {
 		if (!cart) return;
 
 		const token_ids = cart.items.map((item) => item.product.tokenId.toString());

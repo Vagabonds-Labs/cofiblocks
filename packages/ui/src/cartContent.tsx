@@ -14,6 +14,7 @@ interface CartItem {
 		nftMetadata: string;
 	};
 	quantity: number;
+	is_grounded: boolean;
 }
 
 interface CartContentProps {

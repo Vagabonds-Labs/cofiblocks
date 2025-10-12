@@ -447,5 +447,10 @@
 		"user_already_exists_signin": "This email is already registered. Please use the sign-up form instead.",
 		"user_already_exists_signup": "This email is already registered. Please sign in instead.",
 		"user_not_verified": "This email is not verified. Please verify your email before signing in."
-	}
+	},
+
+	"previous_slide": "Previous slide",
+	"next_slide": "Next slide",
+	"no_orders_found": "No orders found",
+	"loading_collectibles": "Loading collectibles..."
 }

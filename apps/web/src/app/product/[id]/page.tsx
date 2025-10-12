@@ -3,7 +3,7 @@
 import Skeleton from "@repo/ui/skeleton";
 import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import ProductDetails from "~/app/_components/features/ProductDetails";
@@ -33,8 +33,8 @@ interface RawMetadata {
 export default function ProductPage() {
 	const { t } = useTranslation();
 	const { data: session } = useSession();
-	const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
-	const utils = api.useUtils();
+	const [_isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+	const _utils = api.useUtils();
 	const params = useParams();
 	const idParam = params?.id;
 	const id =
@@ -116,7 +116,7 @@ export default function ProductPage() {
 		setIsWalletModalOpen(true);
 	};
 
-	const handleCloseWalletModal = () => {
+	const _handleCloseWalletModal = () => {
 		setIsWalletModalOpen(false);
 	};
 

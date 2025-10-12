@@ -3,13 +3,13 @@
 import { H1, Text } from "@repo/ui/typography";
 import type { TRPCClientError } from "@trpc/client";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Spinner from "~/app/_components/ui/Spinner";
 import type { AppRouter } from "~/server/api/root";
 import { api } from "~/trpc/react";
 
-export default function VerifyEmailPage() {
+function VerifyEmailPageContent() {
 	const { t } = useTranslation();
 	const router = useRouter();
 	const searchParams = useSearchParams();
@@ -27,7 +27,7 @@ export default function VerifyEmailPage() {
 		if (!token || firedRef.current) return;
 		firedRef.current = true;
 
-		(async () => {
+		void (async () => {
 			try {
 				setPhase("pending");
 				await verify.mutateAsync({ token }); // <-- explicit promise flow
@@ -115,5 +115,13 @@ export default function VerifyEmailPage() {
 				</div>
 			</div>
 		</div>
+	);
+}
+
+export default function VerifyEmailPage() {
+	return (
+		<Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+			<VerifyEmailPageContent />
+		</Suspense>
 	);
 }

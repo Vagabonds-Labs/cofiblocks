@@ -624,10 +624,7 @@ mod Marketplace {
         }
 
         fn get_product_price(
-            self: @ContractState,
-            token_id: u256,
-            token_amount: u256,
-            payment_token: PAYMENT_TOKEN,
+            self: @ContractState, token_id: u256, token_amount: u256, payment_token: PAYMENT_TOKEN,
         ) -> u256 {
             let stock = self.listed_product_stock.read(token_id);
             assert(stock > 0, 'Product not available');

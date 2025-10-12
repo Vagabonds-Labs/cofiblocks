@@ -20,7 +20,7 @@ interface SelectionTypeCardProps {
 export function SelectionTypeCard({
 	price,
 	quantity,
-	stock,
+	stock: _stock,
 	ground_stock,
 	bean_stock,
 	onQuantityChange,

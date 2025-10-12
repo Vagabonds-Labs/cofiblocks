@@ -36,7 +36,7 @@ export default function Favorites() {
 	const { t } = useTranslation();
 	const router = useRouter();
 	const [addedProduct, setAddedProduct] = React.useState<number | null>(null);
-	const [, addItem] = useAtom(addItemAtom);
+	const [, _addItem] = useAtom(addItemAtom);
 	const { data: session } = useSession();
 	const isAuthenticated = session?.user !== undefined;
 	const { refetch: refetchCart } = api.cart.getUserCart.useQuery();
@@ -49,8 +49,8 @@ export default function Favorites() {
 	// Get favorites from the database
 	const {
 		data: favorites,
-		refetch: refetchFavorites,
-		error: favoritesError,
+		refetch: _refetchFavorites,
+		error: _favoritesError,
 	} = api.favorites.getUserFavorites.useQuery(undefined, {
 		retry: false,
 		enabled: isAuthenticated,

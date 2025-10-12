@@ -409,5 +409,10 @@
 		"resend_verification_email": "Reenviar e-mail de verificação",
 		"resending_verification": "Reenviando e-mail de verificação...",
 		"verification_email_resent": "E-mail de verificação enviado com sucesso"
-	}
+	},
+
+	"previous_slide": "Slide anterior",
+	"next_slide": "Próximo slide",
+	"no_orders_found": "Nenhum pedido encontrado",
+	"loading_collectibles": "Carregando colecionáveis..."
 }

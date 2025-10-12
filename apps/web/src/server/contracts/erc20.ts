@@ -1,11 +1,12 @@
 import { PaymentToken } from "~/utils/contracts";
 import { CofiBlocksContracts, getCallToContract } from "~/utils/contracts";
-import { UserAuthData, executeTransaction } from "~/server/services/cavos";
+import type { UserAuthData } from "~/server/services/cavos";
+import { executeTransaction } from "~/server/services/cavos";
 import { getContractAddress } from "~/utils/contracts";
 import { format_number } from "~/utils/formatting";
 
 
-export const getBalances = async (walletAddress: string, token: PaymentToken, formatted: boolean = true) => {
+export const getBalances = async (walletAddress: string, token: PaymentToken, formatted = true) => {
     const calldata = [walletAddress];
     const balance_result = await getCallToContract(
         CofiBlocksContracts[token],

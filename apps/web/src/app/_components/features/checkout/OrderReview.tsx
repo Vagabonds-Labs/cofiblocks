@@ -14,7 +14,7 @@ import type { CartItem } from "~/store/cartAtom";
 import { api } from "~/trpc/react";
 import Confirmation from "./Confirmation";
 import { CurrencySelector } from "./CurrencySelector";
-import { PaymentToken } from "~/utils/contracts";
+import type { PaymentToken } from "~/utils/contracts";
 
 const getImageUrl = (src: string) => {
 	if (src.startsWith("Qm")) {
@@ -45,7 +45,7 @@ interface OrderReviewProps {
 	readonly isConfirmed: boolean;
 }
 
-const MARKET_FEE_BPS = process.env.MARKET_FEE_BPS ? parseInt(process.env.MARKET_FEE_BPS) : 5000;
+const _MARKET_FEE_BPS = process.env.MARKET_FEE_BPS ? parseInt(process.env.MARKET_FEE_BPS) : 5000;
 
 export default function OrderReview({
 	onCurrencySelect,
@@ -114,7 +114,7 @@ export default function OrderReview({
 			}
 
 			// Create order in the database
-			const result = await createOrder.mutateAsync({
+			const _result = await createOrder.mutateAsync({
 				cartId: cart.id, 
 				paymentToken: selectedCurrency as PaymentToken,
 				deliveryAddress: deliveryMethod === "home" ? deliveryAddress : undefined,

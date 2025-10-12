@@ -115,7 +115,7 @@ export const productRouter = createTRPCRouter({
 					throw new TRPCError({ code: "BAD_REQUEST", message: "User is not a producer or roaster" });
 				}
 				throw new TRPCError(
-					{ code: "INTERNAL_SERVER_ERROR", message: "Error creating product on marketplace" + error }
+					{ code: "INTERNAL_SERVER_ERROR", message: "Error creating product on marketplace" + String(error) }
 				);
 			}
 			

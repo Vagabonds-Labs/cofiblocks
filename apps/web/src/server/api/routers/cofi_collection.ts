@@ -8,6 +8,9 @@ export const cofiCollectionRouter = createTRPCRouter({
 	getBalanceOf: protectedProcedure
 		.input(z.object({ tokenId: z.string() }))
 		.query(async ({ ctx, input }) => {
+			if (!ctx.session.user) {
+				throw new Error("User not authenticated");
+			}
 			if (!ctx.session.user.email) {
 				throw new Error("User email not found");
 			}

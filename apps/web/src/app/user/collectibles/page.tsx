@@ -34,7 +34,7 @@ export default function Collectibles() {
 	const utils = api.useUtils();
 	const { data: session } = useSession();
 	const user_session = session?.user;
-	const isAuthenticated = !!user_session;
+	const _isAuthenticated = !!user_session;
 
 	const productsQuery = api.order.getUserCollectibles.useQuery();
 
@@ -87,7 +87,7 @@ export default function Collectibles() {
 		}
 
 		void fetchCollectibles();
-	}, [productsQuery.data, utils.cofiCollection.getBalanceOf.fetch]);
+	}, [productsQuery.data, utils.cofiCollection.getBalanceOf]);
 
 	if (isLoading || productsQuery.isLoading) {
 		return (

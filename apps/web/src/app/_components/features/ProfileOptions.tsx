@@ -1,7 +1,6 @@
 import {
 	AdjustmentsHorizontalIcon,
 	CubeIcon,
-	CurrencyDollarIcon,
 	HeartIcon,
 	ShoppingCartIcon,
 	TicketIcon,

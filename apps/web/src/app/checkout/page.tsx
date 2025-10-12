@@ -64,7 +64,6 @@ export default function CheckoutPage() {
 					onCurrencySelect={handleCurrencySelect}
 					deliveryAddress={state.deliveryAddress}
 					deliveryMethod={state.deliveryMethod}
-					deliveryPrice={state.deliveryPrice}
 					isConfirmed={state.isConfirmed}
 				/>
 			)}

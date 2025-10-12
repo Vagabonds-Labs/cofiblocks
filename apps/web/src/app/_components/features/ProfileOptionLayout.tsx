@@ -20,8 +20,7 @@ function ProfileOptionLayout({
 	return (
 		<Main>
 			<Header
-				address={""}
-				profileOptions={<ProfileOptions address={"address"} />}
+				profileOptions={<ProfileOptions/>}
 			/>
 			<div className="container mx-auto px-4 py-8">
 				<div className="flex items-center mb-6">

@@ -39,7 +39,7 @@ export async function middleware(request: NextRequest) {
 	}
 
 	// For protected routes, check if user has required role
-	const userRole = token.role as Role | undefined;
+	const userRole = token.role;
 	if (!userRole || !match.roles.includes(userRole)) {
 		return NextResponse.redirect(new URL("/marketplace", request.url));
 	}
