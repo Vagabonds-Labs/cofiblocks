@@ -7,7 +7,7 @@ const deployedContracts = {
   mainnet: {
     CofiCollection: {
       address:
-        "0x5a4432b2fb597ae7bfb836d85adef13bb0ce6020c65787bdaea0a93ef6f7648",
+        "0xf0b290b8659dd9d7e574c8495cd8edffeae8f61882e0310fb474c793b9caa",
       abi: [
         {
           type: "impl",
@@ -1136,7 +1136,7 @@ const deployedContracts = {
     },
     Distribution: {
       address:
-        "0x3ce2125677b8e2b527b244cf28a575c3055f255d090721601a98f1f46d7b214",
+        "0x627b2add5ef771dcecd55b67aebc2dbbefa0d1f804fca414640352b4159966e",
       abi: [
         {
           type: "impl",
@@ -1786,7 +1786,7 @@ const deployedContracts = {
     },
     Marketplace: {
       address:
-        "0x4f2373626d1256ce64baf489bc04097c1c799244d50e4d75286a415387f64e8",
+        "0x6533bab48a837b9a76088890b6391be12b8ede9f1e82895781212eabb85eb45",
       abi: [
         {
           type: "impl",
@@ -2149,7 +2149,12 @@ const deployedContracts = {
             {
               type: "function",
               name: "get_claim_payment",
-              inputs: [],
+              inputs: [
+                {
+                  name: "wallet_address",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
               outputs: [
                 {
                   type: "core::integer::u256",
@@ -2689,7 +2694,7 @@ const deployedContracts = {
         },
       ],
       classHash:
-        "0x2e0c6ca659d6e5d77f0369d39290fbd4feb1ffe5a233e09529cb5d662ed97",
+        "0x6f1abf4e3ed2e5596b1b9feadf3aa5ded6dab8929d79c9116b55def5ce5dee8",
     },
     STRK: {
 			address:
