@@ -15,6 +15,9 @@ const config = {
 	transpilePackages: ["@repo/ui"],
 	images: {
 		domains: ["gateway.pinata.cloud"],
+		unoptimized: process.env.NODE_ENV === "production" && process.env.VERCEL === "1",
+		loader: "default",
+		path: "/_next/image",
 	},
 	webpack: (config) => {
 		config.resolve.fallback = {
