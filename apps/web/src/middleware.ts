@@ -13,8 +13,22 @@ const protectedMatchers: Array<{
 	{ test: (p) => p.startsWith("/user/my-sales"), roles: ["COFFEE_PRODUCER", "COFFEE_ROASTER"] },
 ];
 
+// Early return for static/public files
+const PUBLIC_FILE = /\.[^/]+$/;
+
 export async function middleware(request: NextRequest) {
 	const { pathname } = request.nextUrl;
+
+	// ⬅️ Skip static assets and Next internals
+	if (
+		PUBLIC_FILE.test(pathname) ||
+		pathname.startsWith("/_next") ||
+		pathname === "/favicon.ico" ||
+		pathname === "/robots.txt" ||
+		pathname === "/sitemap.xml"
+	  ) {
+		return NextResponse.next();
+	  }
 
 	const token = await getToken({
 		req: request,
