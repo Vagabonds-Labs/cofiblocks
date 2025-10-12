@@ -1,4 +1,4 @@
-import { constants, RpcProvider, shortString } from "starknet";
+import { constants, RpcProvider } from "starknet";
 
 // Network and Chain Configuration
 export const CHAIN_ID =
@@ -46,23 +46,3 @@ export const ARGENT_WEBWALLET_URL =
 // Application Specific Constants
 export const SIGNER = process.env.NEXT_PUBLIC_SIGNER_ADDRESS ?? "0x123";
 export const DOMAIN_NAME = "CofiBlocks";
-export const WELCOME_MESSAGE = `Welcome to ${DOMAIN_NAME}!`;
-export const MESSAGE = {
-	message: {
-		message: WELCOME_MESSAGE,
-	},
-	types: {
-		StarkNetDomain: [
-			{ name: "name", type: "felt" },
-			{ name: "version", type: "felt" },
-			{ name: "chainId", type: "felt" },
-		],
-		Message: [{ name: "message", type: "felt" }],
-	},
-	primaryType: "Message",
-	domain: {
-		name: "CofiBlocks",
-		version: "1",
-		chainId: shortString.encodeShortString(CHAIN_ID),
-	},
-};

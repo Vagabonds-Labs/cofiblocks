@@ -1,7 +1,6 @@
 "use client";
 
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
-import { useAccount } from "@starknet-react/core";
 import Link from "next/link";
 import Header from "~/app/_components/layout/Header";
 import Main from "~/app/_components/layout/Main";
@@ -18,11 +17,11 @@ function ProfileOptionLayout({
 	children,
 	backLink,
 }: ProfileOptionLayoutProps) {
-	const { address } = useAccount();
-
 	return (
 		<Main>
-			<Header profileOptions={address ? <ProfileOptions /> : undefined} />
+			<Header
+				profileOptions={<ProfileOptions/>}
+			/>
 			<div className="container mx-auto px-4 py-8">
 				<div className="flex items-center mb-6">
 					<Link href={backLink ?? "/marketplace"} className="mr-4">

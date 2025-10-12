@@ -4,50 +4,45 @@ generator client {
 }
 
 datasource db {
-  provider     = "mysql"
+  provider     = "postgresql"
   url          = env("DATABASE_URL")
   relationMode = "prisma"
 }
 
-enum Role {
-  ADMIN
-  COFFEE_PRODUCER
-  COFFEE_BUYER
-}
-
-enum OrderStatus {
-  PENDING
-  COMPLETED
-  CANCELLED
-}
-
 model ShoppingCart {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        String             @id @default(cuid())
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
   userId    String
   items     ShoppingCartItem[]
-  user      User     @relation(fields: [userId], references: [id])
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([createdAt])
   @@index([userId])
 }
 
 model Product {
-  id           Int      @id @default(autoincrement())
-  tokenId      Int
-  name         String
-  price        Float
-  nftMetadata  Json
-  hidden       Boolean? @default(false)
-  stock        Int      @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                Int                @id @default(autoincrement())
+  tokenId           Int
+  name              String
+  price             Float
+  nftMetadata       Json
+  hidden            Boolean?           @default(false)
+  stock             Int                @default(0)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  owner             String?
+  initial_stock     Int?
+  creation_tx_hash  String?
+  ground_stock      Int                @default(0)
+  bean_stock        Int                @default(0)
   shoppingCartItems ShoppingCartItem[]
   orderItems        OrderItem[]
   favorites         Favorite[]
+  ownerUser         User?              @relation("ProductOwner", fields: [owner], references: [id], onDelete: SetNull)
 
   @@index([name])
+  @@index([owner])
 }
 
 model ShoppingCartItem {
@@ -55,62 +50,62 @@ model ShoppingCartItem {
   quantity       Int
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
-  shoppingCart   ShoppingCart @relation(fields: [shoppingCartId], references: [id])
   shoppingCartId String
-  product        Product      @relation(fields: [productId], references: [id])
   productId      Int
+  is_grounded    Boolean      @default(false)
+  shoppingCart   ShoppingCart @relation(fields: [shoppingCartId], references: [id], onDelete: Cascade)
+  product        Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@index([shoppingCartId])
   @@index([productId])
 }
 
 model Order {
-  id        String      @id @default(cuid())
-  userId    String
-  sellerId  String
-  total     Float
-  status    OrderStatus
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  items     OrderItem[]
-  user      User        @relation("UserOrders", fields: [userId], references: [id])
-  seller    User        @relation("SellerOrders", fields: [sellerId], references: [id])
+  id            String      @id @default(cuid())
+  userId        String
+  total         Float
+  status        OrderStatus
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  home_delivery Boolean     @default(false)
+  items         OrderItem[]
+  deliveries    Delivery[]
+  user          User        @relation("UserOrders", fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@index([sellerId])
 }
 
 model OrderItem {
-  id        String   @id @default(cuid())
-  orderId   String
-  productId Int
-  quantity  Int
-  price     Float
-  order     Order    @relation(fields: [orderId], references: [id])
-  product   Product  @relation(fields: [productId], references: [id])
+  id              String  @id @default(cuid())
+  orderId         String
+  productId       Int
+  quantity        Int
+  price           Float
+  is_grounded     Boolean @default(false)
+  sellerId        String  @default("")
+  payment_tx_hash String?
+  order           Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product         Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  seller          User    @relation("OrderItemSeller", fields: [sellerId], references: [id], onDelete: Restrict)
 
   @@index([orderId])
   @@index([productId])
+  @@index([sellerId])
 }
 
-model Account {
-  id                 String    @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String?   @db.Text
-  access_token       String?   @db.Text
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?   @db.Text
-  session_state      String?
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @default(now()) @updatedAt
-  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+model Delivery {
+  id              String   @id @default(uuid())
+  orderId         String
+  province        String
+  address         String
+  status          String
+  payment_tx_hash String?
+  createdAt       DateTime @default(now())
+  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
-  @@unique([provider, providerAccountId])
+  @@index([orderId])
+  @@index([status])
+  @@index([createdAt])
 }
 
 model Session {
@@ -122,40 +117,40 @@ model Session {
 }
 
 model User {
-  id            String         @id @default(cuid())
-  walletAddress String         @unique
+  id              String         @id @default(cuid())
+  walletAddress   String?        @unique
   physicalAddress String?
-  phone             String?
-  name              String?
-  email             String?        @unique
-  emailVerified DateTime?
-  image         String?
-  role          Role
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  shoppingCarts ShoppingCart[]
-  buyerOrders   Order[]        @relation("UserOrders")    // Orders made by this user as a buyer
-  sellerOrders  Order[]        @relation("SellerOrders")  // Orders where this user is the seller
-  accounts      Account[]
-  sessions      Session[]
-  farms          Farm[]
-  password      String?
-  favorites     Favorite[]
+  phone           String?
+  name            String?
+  email           String?        @unique
+  emailVerified   DateTime?
+  image           String?
+  role            Role
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  password        String?
+  shoppingCarts   ShoppingCart[]
+  buyerOrders     Order[]        @relation("UserOrders")
+  sessions        Session[]
+  farms           Farm[]
+  favorites       Favorite[]
+  ownedProducts   Product[]      @relation("ProductOwner")
+  soldOrderItems  OrderItem[]    @relation("OrderItemSeller")
 }
 
 model Farm {
-  id        Int      @id @default(autoincrement())
-  name      String
-  region    String
-  altitude  Int
+  id          Int      @id @default(autoincrement())
+  name        String
+  region      String
+  altitude    Int
   coordinates String
-  website   String
-  farmImage String
-  email     String
-  userId    String
-  user      User @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  website     String
+  farmImage   String
+  email       String
+  userId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Favorite {
@@ -164,8 +159,8 @@ model Favorite {
   productId Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id])
-  product   Product  @relation(fields: [productId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([userId, productId])
   @@index([userId])
@@ -173,9 +168,43 @@ model Favorite {
 }
 
 model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
+  token   String   @unique
+  expires DateTime
+  id      String   @id @default(cuid())
+  type    String
+  email   String
 
-  @@unique([identifier, token])
+  @@index([email])
+  @@index([type])
+}
+
+model UserCavos {
+  id               String    @id @default(dbgenerated("(gen_random_uuid())::text"))
+  email            String    @unique
+  walletAddress    String
+  password         String
+  network          String
+  createdAt        DateTime  @default(now())
+  accessToken      String?
+  accessExpiration DateTime?
+  refreshToken     String?
+
+  @@index([email])
+  @@index([walletAddress])
+  @@index([network])
+}
+
+enum Role {
+  ADMIN
+  COFFEE_PRODUCER
+  COFFEE_ROASTER
+  COFFEE_BUYER
+}
+
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+  FAILED
+  PAID
 }

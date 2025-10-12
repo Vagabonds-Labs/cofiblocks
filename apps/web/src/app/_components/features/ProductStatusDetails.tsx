@@ -32,6 +32,12 @@ enum DeliveryTypeEnum {
 	Delivery = "Delivery",
 }
 
+const _OrderStatusEnum = {
+	PENDING: "PENDING",
+	COMPLETED: "COMPLETED",
+	CANCELLED: "CANCELLED",
+} as const;
+
 const orderStatusSchema = z.object({
 	status: z.enum(["PENDING", "COMPLETED", "CANCELLED"] as const),
 });

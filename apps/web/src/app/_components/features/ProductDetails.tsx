@@ -6,7 +6,7 @@ import { H2, Text } from "@repo/ui/typography";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { api } from "~/trpc/react";
 import { ProducerInfo } from "./ProducerInfo";
@@ -24,6 +24,8 @@ interface ProductDetailsProps {
 		farmName: string;
 		roastLevel: string;
 		stock: number;
+		ground_stock: number;
+		bean_stock: number;
 		price: number;
 		description: string;
 		type: "Buyer" | "Farmer" | "SoldOut";
@@ -35,12 +37,6 @@ interface ProductDetailsProps {
 	isFavorited?: boolean;
 	onToggleFavorite?: () => void;
 	isLoadingFavorite?: boolean;
-}
-
-interface CoinGeckoResponse {
-	starknet: {
-		usd: number;
-	};
 }
 
 const getImageUrl = (src: string) => {
@@ -62,8 +58,6 @@ const getImageUrl = (src: string) => {
 
 export default function ProductDetails({
 	product,
-	isConnected,
-	onConnect,
 	isFavorited,
 	onToggleFavorite,
 	isLoadingFavorite,
@@ -84,48 +78,17 @@ export default function ProductDetails({
 	const { t } = useTranslation();
 	const [quantity, setQuantity] = useState(1);
 	const [selectedImage, setSelectedImage] = useState(0);
-	const [strkPrice, setStrkPrice] = useState<number | null>(null);
-	const [isLoadingPrice, setIsLoadingPrice] = useState(false);
+	const [selectedOption, setSelectedOption] = useState<"bean" | "grounded">("grounded");
 	const router = useRouter();
 	const [isAddingToCart, setIsAddingToCart] = useState(false);
 	const { refetch: refetchCart } = api.cart.getUserCart.useQuery();
+	const { data: farmInfo } = api.product.getProductFarmInfo.useQuery({ productId: product.id });
 	const { mutate: addToCart } = api.cart.addToCart.useMutation({
 		onSuccess: () => {
 			void refetchCart();
 		},
 	});
 	const { data: session } = useSession();
-
-	useEffect(() => {
-		const fetchStrkPrice = async () => {
-			try {
-				setIsLoadingPrice(true);
-				const response = await fetch(
-					"https://api.coingecko.com/api/v3/simple/price?ids=starknet&vs_currencies=usd",
-				);
-				const data = (await response.json()) as CoinGeckoResponse;
-				const strkUsdPrice = data.starknet.usd;
-				setStrkPrice(price / strkUsdPrice);
-			} catch (error) {
-				console.error("Error fetching STRK price:", error);
-				setStrkPrice(null);
-			} finally {
-				setIsLoadingPrice(false);
-			}
-		};
-
-		void fetchStrkPrice();
-
-		// Refresh price every 5 minutes
-		const interval = setInterval(
-			() => {
-				void fetchStrkPrice();
-			},
-			5 * 60 * 1000,
-		);
-
-		return () => clearInterval(interval);
-	}, [price]);
 
 	// Only mark as sold out if stock is 0 or type is SoldOut
 	const isSoldOut = stock === 0 || type === "SoldOut";
@@ -140,11 +103,13 @@ export default function ProductDetails({
 	];
 
 	const handleAddToCart = () => {
+		console.log("Adding to cart with selected option:", selectedOption);
 		setIsAddingToCart(true);
 		addToCart(
 			{
 				productId: product.id,
 				quantity: quantity,
+				is_grounded: selectedOption === "grounded",
 			},
 			{
 				onSuccess: () => {
@@ -170,12 +135,7 @@ export default function ProductDetails({
 	};
 
 	const handleFavoriteClick = () => {
-		console.log("Favorite clicked", { isConnected, isFavorited, session });
-		if (!session) {
-			// If not authenticated, trigger connect
-			onConnect?.();
-			return;
-		}
+		console.log("Favorite clicked", { isFavorited, session });
 		if (onToggleFavorite) {
 			onToggleFavorite();
 		}
@@ -335,24 +295,6 @@ export default function ProductDetails({
 									</Text>
 								</div>
 							</div>
-							{isLoadingPrice ? (
-								<Text className="text-sm text-gray-500 mt-1">
-									{t("loading_strk_price")}
-								</Text>
-							) : strkPrice ? (
-								<Text className="text-sm text-gray-500 mt-1">
-									≈ {strkPrice.toFixed(2)} STRK
-								</Text>
-							) : null}
-							{isSoldOut ? (
-								<Text className="text-sm text-red-600 font-medium mt-1">
-									{t("product_sold_out")}
-								</Text>
-							) : (
-								<Text className="text-sm text-gray-500 mt-1">
-									{t("stock_available", { count: stock })}
-								</Text>
-							)}
 						</div>
 
 						<Text className="text-gray-600">{description}</Text>
@@ -375,11 +317,12 @@ export default function ProductDetails({
 								price={price}
 								quantity={quantity}
 								stock={stock}
+								ground_stock={product.ground_stock}
+								bean_stock={product.bean_stock}
 								onQuantityChange={setQuantity}
 								onAddToCart={handleAddToCart}
 								isAddingToCart={isAddingToCart}
-								isConnected={isConnected}
-								onConnect={onConnect}
+								onSelectionChange={setSelectedOption}
 							/>
 						)}
 
@@ -388,12 +331,19 @@ export default function ProductDetails({
 								{t("farm_details")}
 							</H2>
 							<ProducerInfo
-								farmName={farmName}
+								farmName={farmInfo?.farm.name ?? ''}
 								rating={4}
-								salesCount={125}
-								altitude={1680}
-								coordinates="15 45 78 90 00 87 45"
-								onWebsiteClick={() => void 0}
+								salesCount={farmInfo?.owner_sales.length ?? 0}
+								altitude={farmInfo?.farm.altitude ?? 0}
+								coordinates={farmInfo?.farm.coordinates ?? ''}
+								onWebsiteClick={() => {
+									if (farmInfo?.farm.website) {
+										const url = farmInfo.farm.website.startsWith('http') 
+											? farmInfo.farm.website 
+											: `https://${farmInfo.farm.website}`;
+										window.open(url, '_blank');
+									}
+								}}
 								isEditable={isFarmer}
 							/>
 							{isFarmer && (

@@ -1,12 +1,10 @@
 "use client";
 
 import NFTCard from "@repo/ui/nftCard";
-import { useAccount } from "@starknet-react/core";
+import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { Contract } from "starknet";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
-import { useCofiCollectionContract } from "~/services/contractsInterface";
 import { api } from "~/trpc/react";
 
 interface NFTMetadata {
@@ -29,77 +27,46 @@ interface CollectibleDisplay {
 	totalQuantity: number;
 }
 
-interface CofiCollectionContract extends Contract {
-	balance_of: (address: string, tokenId: string) => Promise<bigint>;
-}
-
 export default function Collectibles() {
 	const { t } = useTranslation();
-	const { address, status } = useAccount();
 	const [collectibles, setCollectibles] = useState<CollectibleDisplay[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
-	const cofiCollection = useCofiCollectionContract();
+	const utils = api.useUtils();
+	const { data: session } = useSession();
+	const user_session = session?.user;
+	const _isAuthenticated = !!user_session;
 
-	const productsQuery = api.product.getProducts.useQuery(
-		{ limit: 100, cursor: undefined },
-		{ enabled: !!address },
-	);
+	const productsQuery = api.order.getUserCollectibles.useQuery();
 
 	useEffect(() => {
 		async function fetchCollectibles() {
-			if (!address || !cofiCollection || !productsQuery.data) {
-				console.log("Missing dependencies:", {
-					hasAddress: !!address,
-					hasContract: !!cofiCollection,
-					hasProducts: !!productsQuery.data,
-					walletStatus: status,
-				});
+			if (!productsQuery.data) {
 				setIsLoading(false);
 				return;
 			}
 
 			try {
-				const products = productsQuery.data.products;
-				console.log("Found products:", products.length);
+				const products = productsQuery.data;
 
 				const userCollectibles: CollectibleDisplay[] = [];
 
 				// Check balance for each product
 				for (const product of products) {
 					try {
-						console.log("Checking balance for token", product.tokenId);
 
-						const contract = cofiCollection as CofiCollectionContract;
-						const balance = await contract.balance_of(
-							address,
-							product.tokenId.toString(),
+						const metadataResponse = await fetch(
+							`/api/metadata/${product.tokenId}`,
 						);
-						const balanceNumber = Number(balance);
+						const metadata = (await metadataResponse.json()) as NFTMetadata;
 
-						console.log(
-							"Balance result for token",
-							product.tokenId,
-							":",
-							balance,
-						);
-						console.log("Parsed balance:", balanceNumber);
+						userCollectibles.push({
+							id: product.id,
+							tokenId: product.tokenId,
+							name: metadata.name,
+							metadata,
+							totalQuantity: 1,
+						});
 
-						if (balanceNumber > 0) {
-							console.log("Fetching metadata for token", product.tokenId);
-							const metadataResponse = await fetch(
-								`/api/metadata/${product.tokenId}`,
-							);
-							const metadata = (await metadataResponse.json()) as NFTMetadata;
-							console.log("Got metadata:", metadata);
-
-							userCollectibles.push({
-								id: product.id,
-								tokenId: product.tokenId,
-								name: metadata.name,
-								metadata,
-								totalQuantity: balanceNumber,
-							});
-						}
 					} catch (error) {
 						console.error(
 							"Error fetching balance for token",
@@ -120,7 +87,7 @@ export default function Collectibles() {
 		}
 
 		void fetchCollectibles();
-	}, [address, cofiCollection, productsQuery.data, status]);
+	}, [productsQuery.data, utils.cofiCollection.getBalanceOf]);
 
 	if (isLoading || productsQuery.isLoading) {
 		return (
@@ -128,19 +95,6 @@ export default function Collectibles() {
 				<div className="flex flex-col items-center justify-center py-12">
 					<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4" />
 					<p className="text-gray-600">{t("loading_collectibles")}</p>
-				</div>
-			</ProfileOptionLayout>
-		);
-	}
-
-	if (!address || status === "disconnected") {
-		return (
-			<ProfileOptionLayout title={t("my_collectibles")}>
-				<div className="text-center py-8">
-					<p className="text-gray-600 mb-4">
-						{t("connect_wallet_to_view_collectibles")}
-					</p>
-					<p className="text-sm text-gray-500">Current status: {status}</p>
 				</div>
 			</ProfileOptionLayout>
 		);

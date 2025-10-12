@@ -44,20 +44,13 @@ const filtersDefaults = {
 export default function MyOrders() {
 	const { t } = useTranslation();
 	const router = useRouter();
-	const { data: session, status } = useSession();
-	const { data: orders, isLoading } = api.order.getUserOrders.useQuery(
-		undefined,
-		{
-			enabled: !!session?.user,
-		},
-	);
-
-	// Redirect to login if not authenticated
-	React.useEffect(() => {
-		if (status === "unauthenticated") {
-			router.push("/auth/signin");
-		}
-	}, [status, router]);
+	const { data: session } = useSession();
+	const user = session?.user;
+	const isAuthenticated = !!user;
+	const { data: orders, isLoading: isOrdersLoading } =
+		api.order.getUserOrders.useQuery(undefined, {
+			enabled: isAuthenticated,
+		});
 
 	const groupedOrders = React.useMemo(() => {
 		if (!orders) return [];
@@ -73,7 +66,7 @@ export default function MyOrders() {
 			const orderItem = {
 				id: order.id,
 				productName: order.items[0]?.product.name ?? t("unknown_product"),
-				sellerName: order.seller?.name ?? t("unknown_seller"),
+				sellerName: order.items[0]?.seller.email ?? t("unknown_seller"),
 				status: order.status,
 			};
 
@@ -117,21 +110,6 @@ export default function MyOrders() {
 		router.push(`/user/my-orders/${id}`);
 	};
 
-	// Show loading state while checking authentication
-	if (status === "loading") {
-		return (
-			<ProfileOptionLayout title={t("my_orders")}>
-				<div className="space-y-4">
-					<div className="animate-pulse h-6 bg-gray-200 rounded w-1/4" />
-					<div className="space-y-2">
-						<div className="animate-pulse h-20 bg-gray-200 rounded" />
-						<div className="animate-pulse h-20 bg-gray-200 rounded" />
-					</div>
-				</div>
-			</ProfileOptionLayout>
-		);
-	}
-
 	return (
 		<ProfileOptionLayout title={t("my_orders")}>
 			<div className="bg-white rounded-lg p-6 space-y-6">
@@ -155,7 +133,7 @@ export default function MyOrders() {
 					</Button>
 				</div>
 
-				{isLoading ? (
+				{isOrdersLoading ? (
 					<div className="space-y-4">
 						<div className="animate-pulse h-6 bg-gray-200 rounded w-1/4" />
 						<div className="space-y-2">

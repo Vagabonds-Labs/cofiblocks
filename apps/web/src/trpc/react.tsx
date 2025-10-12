@@ -1,7 +1,7 @@
 "use client";
 
 import { type QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { httpLink, loggerLink } from "@trpc/client";
+import { httpBatchLink, loggerLink } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
 import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
 import { useState } from "react";
@@ -50,14 +50,29 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
 						process.env.NODE_ENV === "development" ||
 						(op.direction === "down" && op.result instanceof Error),
 				}),
-				httpLink({
+				httpBatchLink({
+					transformer: SuperJSON,
 					url: `${getBaseUrl()}/api/trpc`,
 					headers: () => {
 						const headers = new Headers();
 						headers.set("x-trpc-source", "nextjs-react");
+
+						// Add Cavos Auth token if available
+						if (typeof window !== "undefined") {
+							const accessToken = localStorage.getItem("accessToken");
+							const userId = localStorage.getItem("userId");
+
+							if (accessToken) {
+								headers.set("authorization", `Bearer ${accessToken}`);
+							}
+
+							if (userId) {
+								headers.set("x-user-id", userId);
+							}
+						}
+
 						return headers;
 					},
-					transformer: SuperJSON,
 				}),
 			],
 		}),

@@ -9,10 +9,12 @@ import { useTranslation } from "react-i18next";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
 import { addItemAtom } from "~/store/cartAtom";
 import { api } from "~/trpc/react";
+import { useRouter } from "next/navigation";
 
 interface Product {
 	id: number;
 	tokenId: number;
+	ground_stock: number;
 	name: string;
 	price: number;
 	nftMetadata: JsonValue;
@@ -32,44 +34,49 @@ interface FavoriteItem {
 
 export default function Favorites() {
 	const { t } = useTranslation();
+	const router = useRouter();
 	const [addedProduct, setAddedProduct] = React.useState<number | null>(null);
-	const [, addItem] = useAtom(addItemAtom);
+	const [, _addItem] = useAtom(addItemAtom);
 	const { data: session } = useSession();
+	const isAuthenticated = session?.user !== undefined;
+	const { refetch: refetchCart } = api.cart.getUserCart.useQuery();
+	const { mutate: addToCart } = api.cart.addToCart.useMutation({
+		onSuccess: () => {
+			void refetchCart();
+		},
+	});
 
 	// Get favorites from the database
 	const {
 		data: favorites,
-		refetch: refetchFavorites,
-		error: favoritesError,
+		refetch: _refetchFavorites,
+		error: _favoritesError,
 	} = api.favorites.getUserFavorites.useQuery(undefined, {
 		retry: false,
+		enabled: isAuthenticated,
 	});
 
-	console.log("Debug - Session:", session);
-	console.log("Debug - Favorites:", favorites);
-	console.log("Debug - Favorites Error:", favoritesError);
-
-	const { mutate: removeFromFavorites } =
-		api.favorites.removeFromFavorites.useMutation({
-			onSuccess: () => {
-				void refetchFavorites();
-			},
-		});
-
 	const handleAddToCart = (productId: number, product: Product) => {
-		addItem({
-			id: productId.toString(),
-			tokenId: productId,
-			name: product.name,
-			quantity: 1,
-			price: product.price,
-			imageUrl: getImageUrl(product.nftMetadata),
-		});
 		setAddedProduct(productId);
+		addToCart(
+			{
+				productId: product.id,
+				quantity: 1,
+				is_grounded: product.ground_stock > 0 ? true : false,
+			},
+			{
+				onSuccess: () => {
+					setAddedProduct(null);
+				},
+				onError: () => {
+					setAddedProduct(null);
+				},
+			},
+		);
 	};
 
-	const handleRemoveFromFavorites = (productId: number) => {
-		removeFromFavorites({ productId });
+	const handleProductClick = (productId: number) => {
+		router.push(`/product/${productId}`);
 	};
 
 	const getImageUrl = (nftMetadata: JsonValue): string => {
@@ -100,7 +107,7 @@ export default function Favorites() {
 							price={favorite.product.price}
 							badgeText={t("badge_text")}
 							stock={favorite.product.stock}
-							onClick={() => handleRemoveFromFavorites(favorite.product.id)}
+							onClick={() => handleProductClick(favorite.product.id)}
 							onAddToCart={() =>
 								handleAddToCart(favorite.product.id, favorite.product)
 							}

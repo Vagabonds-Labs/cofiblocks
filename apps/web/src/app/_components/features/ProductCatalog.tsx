@@ -15,18 +15,12 @@ import {
 } from "~/atoms/productAtom";
 import { api } from "~/trpc/react";
 import type { NftMetadata, Product } from "./types";
+import { useSession } from "next-auth/react";
 
 const MARKET_FEE_BPS = 5000; // 50%
 
-interface ProductCatalogProps {
-	isConnected?: boolean;
-	onConnect?: () => void;
-}
 
-export default function ProductCatalog({
-	isConnected,
-	onConnect,
-}: ProductCatalogProps) {
+export default function ProductCatalog() {
 	const { t } = useTranslation();
 	const [products, setProducts] = useState<Product[]>([]);
 	const [results, setSearchResults] = useAtom(searchResultsAtom);
@@ -35,6 +29,9 @@ export default function ProductCatalog({
 	const [query, setQuery] = useAtom(searchQueryAtom);
 	const router = useRouter();
 	const [addingToCart, setAddingToCart] = useState<number | null>(null);
+	const { data: session } = useSession();
+	const user = session?.user;
+	const isAuthenticated = !!user;
 
 	const { refetch: refetchCart } = api.cart.getUserCart.useQuery();
 	const { mutate: addToCart } = api.cart.addToCart.useMutation({
@@ -118,16 +115,13 @@ export default function ProductCatalog({
 			: "/images/cafe1.webp";
 
 		const handleAddToCart = () => {
-			if (!isConnected && onConnect) {
-				onConnect();
-				return;
-			}
 
 			setAddingToCart(product.id);
 			addToCart(
 				{
 					productId: product.id,
 					quantity: 1,
+					is_grounded: product.ground_stock > 0 ? true : false,
 				},
 				{
 					onSuccess: () => {
@@ -154,7 +148,7 @@ export default function ProductCatalog({
 				badgeText={t(`strength.${metadata?.strength?.toLowerCase()}`)}
 				onClick={() => accessProductDetails(product.id)}
 				onAddToCart={handleAddToCart}
-				isConnected={isConnected}
+				isConnected={isAuthenticated}
 				isAddingToShoppingCart={addingToCart === product.id}
 			/>
 		);

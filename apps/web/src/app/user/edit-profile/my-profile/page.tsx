@@ -13,6 +13,10 @@ import { z } from "zod";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
 import { api } from "~/trpc/react";
 
+// Force dynamic rendering to avoid static generation issues with auth context
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 const schema = z.object({
 	fullName: z.string().min(1, "full_name_required"),
 	email: z.string().email("invalid_email").optional(),
@@ -25,6 +29,8 @@ function EditMyProfile() {
 	const utils = api.useUtils();
 	const { t } = useTranslation();
 	const { data: session } = useSession();
+	const userId = session?.user?.id;
+	const isAuthenticated = !!userId;
 	const router = useRouter();
 
 	const { handleSubmit, control, reset } = useForm<FormData>({
@@ -35,8 +41,6 @@ function EditMyProfile() {
 			physicalAddress: "",
 		},
 	});
-
-	const userId = session?.user?.id;
 
 	const {
 		data: user,
@@ -50,9 +54,9 @@ function EditMyProfile() {
 		},
 	);
 
-	// If there's an error fetching the user, redirect to home
+	// If there's an error fetching the user or not authenticated, redirect to home
 	useEffect(() => {
-		if (!userId) {
+		if (!isAuthenticated || !userId) {
 			router.push("/");
 			return;
 		}
@@ -61,7 +65,7 @@ function EditMyProfile() {
 			toast.error(t("error_fetching_profile"));
 			router.push("/");
 		}
-	}, [userError, router, t, userId]);
+	}, [userError, router, t, userId, isAuthenticated]);
 
 	useEffect(() => {
 		if (user) {
@@ -95,7 +99,7 @@ function EditMyProfile() {
 		});
 
 	const onSubmit = (data: FormData) => {
-		if (!userId) {
+		if (!isAuthenticated || !userId) {
 			toast.error(t("session_expired"));
 			router.push("/");
 			return;

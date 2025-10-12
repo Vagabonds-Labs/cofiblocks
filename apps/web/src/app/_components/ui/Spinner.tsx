@@ -1,13 +1,20 @@
 interface SpinnerProps {
 	className?: string;
+	size?: "sm" | "md" | "lg";
 }
 
-export default function Spinner({ className = "" }: SpinnerProps) {
+export default function Spinner({ className = "", size = "md" }: SpinnerProps) {
+	const sizeClass = {
+		sm: "h-4 w-4",
+		md: "h-6 w-6",
+		lg: "h-8 w-8",
+	}[size];
+
 	return (
 		<output role="status" aria-live="polite" className={className}>
 			<svg
 				aria-hidden="true"
-				className="h-8 w-8 animate-spin text-gray-200 dark:text-gray-600"
+				className={`${sizeClass} animate-spin text-gray-200 dark:text-gray-600`}
 				viewBox="0 0 100 101"
 				fill="none"
 				xmlns="http://www.w3.org/2000/svg"

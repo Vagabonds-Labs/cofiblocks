@@ -10,14 +10,18 @@ interface CurrencySelectorProps {
 	readonly onSelect: (currency: string) => void;
 }
 
-const currencies = [{ id: "strk", name: "STRK" }];
+const currencies = [
+	{ id: "STRK", name: "STRK" },
+	{ id: "USDC", name: "USDC" },
+	{ id: "USDT", name: "USDT" }
+];
 
 export function CurrencySelector({
 	isOpen,
 	onClose,
 	onSelect,
 }: Readonly<CurrencySelectorProps>) {
-	const [selectedCurrency, setSelectedCurrency] = useState("usd");
+	const [selectedCurrency, setSelectedCurrency] = useState("USDC");
 
 	const handleCurrencyClick = (currencyId: string) => {
 		setSelectedCurrency(currencyId);

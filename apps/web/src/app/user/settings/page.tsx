@@ -38,7 +38,7 @@ export default function Settings() {
 	const { i18n, t } = useTranslation();
 	const [language, setLanguage] = useState<string>("en");
 
-	const { setValue } = useForm<FormValues>({
+	const { control: _control, handleSubmit: _handleSubmit, setValue } = useForm<FormValues>({
 		defaultValues: {
 			language: language,
 		},
@@ -61,6 +61,8 @@ export default function Settings() {
 		localStorage.setItem(LANGUAGE_KEY, langCode);
 		setValue("language", langCode);
 	};
+
+	const _currentLanguage = LANGUAGES.find((lang) => lang.code === language);
 
 	return (
 		<ProfileOptionLayout title={t("settings")}>

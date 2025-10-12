@@ -4,7 +4,6 @@ import { ClockIcon } from "@heroicons/react/24/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@repo/ui/button";
 import RadioButton from "@repo/ui/form/radioButton";
-import { useAccount, useProvider } from "@starknet-react/core";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -13,22 +12,17 @@ import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { ImageUpload } from "~/app/_components/features/ImageUpload";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
-import {
-	ContractsError,
-	ContractsInterface,
-	useCofiCollectionContract,
-	useMarketplaceContract,
-	useStarkContract,
-} from "~/services/contractsInterface";
 import { api } from "~/trpc/react";
 import { RoastLevel } from "~/types";
+import { TRPCClientError } from "@trpc/client";
 
 const MARKET_FEE_BPS = 5000; // 50%
 
 const schema = z.object({
 	roast: z.string().min(1, "Roast level is required"),
 	price: z.string().min(1, "Price is required"),
-	bagsAvailable: z.number().min(0, "Available bags must be a positive number"),
+	ground_coffee_stock: z.number().min(0, "Ground coffee stock must be a positive number"),
+	beans_coffee_stock: z.number().min(0, "Beans coffee stock must be a positive number"),
 	description: z.string().min(1, "Description is required"),
 	variety: z.string().min(1, "Variety is required"),
 	coffeeScore: z.number().optional(),
@@ -39,15 +33,7 @@ type FormData = z.infer<typeof schema>;
 
 export default function RegisterCoffee() {
 	const { t } = useTranslation();
-	const { provider } = useProvider();
 	const router = useRouter();
-	const contracts = new ContractsInterface(
-		useAccount(),
-		useCofiCollectionContract(),
-		useMarketplaceContract(),
-		useStarkContract(),
-		provider,
-	);
 	const mutation = api.product.createProduct.useMutation();
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -60,7 +46,8 @@ export default function RegisterCoffee() {
 			resolver: zodResolver(schema),
 			defaultValues: {
 				roast: RoastLevel.LIGHT,
-				bagsAvailable: 1,
+				ground_coffee_stock: 0,
+				beans_coffee_stock: 0,
 			},
 		});
 
@@ -77,32 +64,22 @@ export default function RegisterCoffee() {
 			price: Number.parseFloat(data.price),
 		};
 		try {
-			const token_id = await contracts.register_product(
-				submissionData.price,
-				submissionData.bagsAvailable,
-			);
 			await mutation.mutateAsync({
-				tokenId: token_id,
 				name: submissionData.variety,
 				price: submissionData.price,
 				description: submissionData.description,
 				image: submissionData.image ?? "/images/cafe1.webp",
 				strength: submissionData.roast,
-				region: "",
-				farmName: "",
-				stock: submissionData.bagsAvailable,
+				ground_coffee_stock: submissionData.ground_coffee_stock,
+				beans_coffee_stock: submissionData.beans_coffee_stock,
 			});
 			toast.success(t("product_registered_successfully"));
 			router.push("/marketplace");
 		} catch (error) {
-			if (error instanceof ContractsError) {
-				if (error.code === ContractsError.USER_MISSING_ROLE) {
-					toast.error(t("user_not_registered_as_seller"));
-				} else if (error.code === ContractsError.USER_NOT_CONNECTED) {
-					toast.error(t("user_disconnected"));
-				}
+			console.log("error registering", error);
+			if (error instanceof TRPCClientError && error.message.includes("User is not a producer or roaster")) {
+				toast.error(t(error.message));
 			} else {
-				console.log("error registering", error);
 				toast.error(t("error_registering_product"));
 			}
 		} finally {
@@ -292,17 +269,17 @@ export default function RegisterCoffee() {
 					</div>
 					<div className="my-6">
 						<label className="text-content-body-default block mb-1">
-							{t("bags_available")} (340g)
+							{t("ground_coffee_stock")} (340g)
 						</label>
 						<div className="flex items-center justify-between rounded-lg p-2 border border-surface-border">
 							<Button
 								className="!p-0 w-5 h-5 rounded-md text-white"
 								onClick={() => {
 									const currentValue = Number.parseInt(
-										getValues("bagsAvailable").toString(),
+										getValues("ground_coffee_stock").toString(),
 									);
 									if (currentValue > 0) {
-										setValue("bagsAvailable", currentValue - 1);
+										setValue("ground_coffee_stock", currentValue - 1);
 									}
 								}}
 								type="button"
@@ -312,14 +289,14 @@ export default function RegisterCoffee() {
 							<input
 								type="text"
 								className="w-16 text-center bg-transparent text-content-body-default text-lg"
-								{...register("bagsAvailable", {
+								{...register("ground_coffee_stock", {
 									onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
 										const value =
 											e.target.value === ""
 												? 0
 												: Number.parseInt(e.target.value);
 										if (!Number.isNaN(value) && value >= 0) {
-											setValue("bagsAvailable", value);
+											setValue("ground_coffee_stock", value);
 										}
 									},
 								})}
@@ -328,9 +305,57 @@ export default function RegisterCoffee() {
 								className="!p-0 w-5 h-5 rounded-md text-white"
 								onClick={() => {
 									const currentValue = Number.parseInt(
-										getValues("bagsAvailable").toString(),
+										getValues("ground_coffee_stock").toString(),
 									);
-									setValue("bagsAvailable", currentValue + 1);
+									setValue("ground_coffee_stock", currentValue + 1);
+								}}
+								type="button"
+							>
+								+
+							</Button>
+						</div>
+					</div>
+					<div className="my-6">
+						<label className="text-content-body-default block mb-1">
+							{t("beans_coffee_stock")} (340g)
+						</label>
+						<div className="flex items-center justify-between rounded-lg p-2 border border-surface-border">
+							<Button
+								className="!p-0 w-5 h-5 rounded-md text-white"
+								onClick={() => {
+									const currentValue = Number.parseInt(
+										getValues("beans_coffee_stock").toString(),
+									);
+									if (currentValue > 0) {
+										setValue("beans_coffee_stock", currentValue - 1);
+									}
+								}}
+								type="button"
+							>
+								-
+							</Button>
+							<input
+								type="text"
+								className="w-16 text-center bg-transparent text-content-body-default text-lg"
+								{...register("beans_coffee_stock", {
+									onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+										const value =
+											e.target.value === ""
+												? 0
+												: Number.parseInt(e.target.value);
+										if (!Number.isNaN(value) && value >= 0) {
+											setValue("beans_coffee_stock", value);
+										}
+									},
+								})}
+							/>
+							<Button
+								className="!p-0 w-5 h-5 rounded-md text-white"
+								onClick={() => {
+									const currentValue = Number.parseInt(
+										getValues("beans_coffee_stock").toString(),
+									);
+									setValue("beans_coffee_stock", currentValue + 1);
 								}}
 								type="button"
 							>

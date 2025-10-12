@@ -1,7 +1,7 @@
 import { execSync } from "node:child_process";
 import path from "node:path";
 import yargs from "yargs";
-import deployedContracts from "../../web/contracts/deployedContracts";
+import deployedContracts from "../../web/src/contracts/deployedContracts";
 import { green, red, yellow } from "./helpers/colorize-log";
 
 function main() {

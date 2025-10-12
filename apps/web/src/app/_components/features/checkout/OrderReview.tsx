@@ -3,24 +3,18 @@
 import { ArrowDownIcon } from "@heroicons/react/24/outline";
 import Button from "@repo/ui/button";
 import { Separator } from "@repo/ui/separator";
-import { useAccount, useProvider } from "@starknet-react/core";
 import { useAtomValue, useSetAtom } from "jotai";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-	ContractsInterface,
-	useCofiCollectionContract,
-	useMarketplaceContract,
-	useStarkContract,
-} from "~/services/contractsInterface";
 import { useCreateOrder } from "~/services/useCreateOrder";
 import { cartItemsAtom, clearCartAtom, isCartOpenAtom } from "~/store/cartAtom";
 import type { CartItem } from "~/store/cartAtom";
 import { api } from "~/trpc/react";
 import Confirmation from "./Confirmation";
 import { CurrencySelector } from "./CurrencySelector";
+import type { PaymentToken } from "~/utils/contracts";
 
 const getImageUrl = (src: string) => {
 	if (src.startsWith("Qm")) {
@@ -47,16 +41,16 @@ interface OrderReviewProps {
 		readonly city: string;
 		readonly zipCode: string;
 	};
-	readonly deliveryPrice: number;
+	readonly deliveryMethod: string;
 	readonly isConfirmed: boolean;
 }
 
-const MARKET_FEE_BPS = 5000; // 50%
+const _MARKET_FEE_BPS = process.env.MARKET_FEE_BPS ? parseInt(process.env.MARKET_FEE_BPS) : 5000;
 
 export default function OrderReview({
 	onCurrencySelect,
 	deliveryAddress,
-	deliveryPrice,
+	deliveryMethod,
 	isConfirmed,
 }: OrderReviewProps) {
 	const { t } = useTranslation();
@@ -64,36 +58,50 @@ export default function OrderReview({
 	const clearCart = useSetAtom(clearCartAtom);
 	const setIsCartOpen = useSetAtom(isCartOpenAtom);
 	const [isCurrencySelectorOpen, setIsCurrencySelectorOpen] = useState(false);
-	const [selectedCurrency, setSelectedCurrency] = useState("USD");
+	const [selectedCurrency, setSelectedCurrency] = useState("USDC");
 	const [showConfirmation, setShowConfirmation] = useState(false);
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const router = useRouter();
 	const createOrder = useCreateOrder();
 
-	const account = useAccount();
-	const { provider } = useProvider();
-	const contract = new ContractsInterface(
-		account,
-		useCofiCollectionContract(),
-		useMarketplaceContract(),
-		useStarkContract(),
-		provider,
-	);
-
+	// Get current cart
 	const { data: cart } = api.cart.getUserCart.useQuery();
 
-	const productPrice = cartItems.reduce(
-		(total, item) => total + item.price * item.quantity,
-		0,
+	// Get unit prices for cart items
+	const { data: priceData, isLoading: isLoadingPrices } = api.cart.getCartUnitPrices.useQuery(
+		{
+			cartId: cart?.id ?? "",
+			paymentToken: selectedCurrency as "STRK" | "USDC" | "USDT",
+		},
+		{
+			enabled: !!cart?.id && !!selectedCurrency,
+		}
 	);
-	const platformFee = (productPrice * MARKET_FEE_BPS) / 10000;
-	const totalPrice = productPrice + platformFee + deliveryPrice;
+
+	const { data: deliveryFee } = api.order.getDeliveryFee.useQuery(
+		{
+			province: deliveryAddress.city,
+		},
+		{
+			enabled: !!deliveryAddress.city,
+		}
+	);
+
+	// Calculate prices using fetched unit prices or fallback to cart item prices
+	const productPrice = cartItems.reduce((total, item) => {
+		const unitPrice = priceData?.unitPrices?.[item.id] 
+			? Number(priceData.unitPrices[item.id]) 
+			: 0;
+		return total + unitPrice * item.quantity;
+	}, 0);
+
+	const totalPrice = productPrice + (deliveryFee ?? 0);
 
 	const handleCurrencySelect = (currency: string) => {
-		setSelectedCurrency(currency);
+		setSelectedCurrency(currency.toUpperCase());
 		setIsCurrencySelectorOpen(false);
-		onCurrencySelect(currency);
+		onCurrencySelect(currency.toUpperCase());
 	};
 
 	const handleProceedToPayment = async () => {
@@ -101,28 +109,23 @@ export default function OrderReview({
 			setIsProcessing(true);
 			setError(null);
 
-			const token_ids = cartItems.map((item) => item.tokenId);
-			const token_amounts = cartItems.map((item) => item.quantity);
-
-			console.log("Attempting mock purchase with:", {
-				token_ids,
-				token_amounts,
-				totalPrice,
-			});
-			// Original contract call (commented out)
-			// await contract.buy_product(token_ids, token_amounts, totalPrice);
-
-			// SIMULATE SUCCESS FOR NOW - REPLACE WITH PIN LOGIC
-			await new Promise((resolve) => setTimeout(resolve, 1500)); // Simulate delay
-			console.log("Mock purchase simulation complete.");
-
 			if (!cart?.id) {
 				throw new Error("Cart not found");
 			}
 
-			await createOrder.mutateAsync({ cartId: cart.id });
+			// Create order in the database
+			const _result = await createOrder.mutateAsync({
+				cartId: cart.id, 
+				paymentToken: selectedCurrency as PaymentToken,
+				deliveryAddress: deliveryMethod === "home" ? deliveryAddress : undefined,
+				deliveryMethod: deliveryMethod,
+			});
+
+			// Clear the cart and close the cart sidebar
 			clearCart();
 			setIsCartOpen(false);
+
+			// Show confirmation and redirect to my-orders
 			setShowConfirmation(true);
 			router.push("/user/my-orders");
 		} catch (err) {
@@ -130,9 +133,8 @@ export default function OrderReview({
 			setError(
 				err instanceof Error ? err.message : "Failed to process payment",
 			);
-		} finally {
-			setIsProcessing(false);
 		}
+		setIsProcessing(false);
 	};
 
 	if (showConfirmation || isConfirmed) {
@@ -154,7 +156,8 @@ export default function OrderReview({
 								height={80}
 								className="rounded-lg object-cover bg-gray-100"
 							/>
-							<span className="text-lg">{item.name}</span>
+							<span className="text-lg">{item.name} - </span>
+							<span className="text-lg">{item.is_grounded ? "Grano" : "Molido"}</span>
 						</div>
 
 						<div className="space-y-4">
@@ -169,17 +172,26 @@ export default function OrderReview({
 							<div className="flex justify-between py-2">
 								<span className="text-gray-600">{t("product_price")}</span>
 								<div className="flex flex-col items-end">
-									<span className="text-sm text-gray-500">
-										{(item.price * item.quantity).toFixed(2)} {selectedCurrency}
-									</span>
-									<span className="font-medium">
-										{(
-											item.price *
-											(1 + MARKET_FEE_BPS / 10000) *
-											item.quantity
-										).toFixed(2)}{" "}
-										{selectedCurrency}
-									</span>
+									{isLoadingPrices ? (
+										<div className="flex items-center gap-2">
+											<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
+											<span className="text-sm text-gray-500">{t("loading_prices")}</span>
+										</div>
+									) : (
+										<>
+											<span className="font-medium">
+												{(() => {
+													const unitPrice = priceData?.unitPrices?.[item.id] 
+														? Number(priceData.unitPrices[item.id]) 
+														: item.price;
+													return (
+														unitPrice
+													).toFixed(2);
+												})()}{" "}
+												{selectedCurrency}
+											</span>
+										</>
+									)}
 								</div>
 							</div>
 							<Separator />
@@ -191,37 +203,40 @@ export default function OrderReview({
 					<div className="flex justify-between py-2">
 						<span className="text-gray-600">{t("delivery_address")}</span>
 						<div className="text-right">
-							<span className="block font-medium">{t("my_home")}</span>
-							<span className="block text-sm text-gray-500">
-								{deliveryAddress.street}, {deliveryAddress.apartment}
-							</span>
-							<span className="block text-sm text-gray-500">
-								{deliveryAddress.city} {deliveryAddress.zipCode}
-							</span>
+							<span className="block font-medium">{deliveryMethod === "home" ? t("my_home") : t("pick_up_at_meetup")}</span>
+							{deliveryMethod === "home" && (
+								<>
+									<span className="block text-sm text-gray-500">
+										{deliveryAddress.street}, {deliveryAddress.apartment}
+									</span>
+									<span className="block text-sm text-gray-500">
+										{deliveryAddress.city} {deliveryAddress.zipCode}
+									</span>
+								</>
+							)}
 						</div>
 					</div>
 					<Separator />
 
 					<div className="flex justify-between py-2">
 						<span className="text-gray-600">{t("subtotal")}</span>
-						<span>
-							{productPrice.toFixed(2)} {selectedCurrency}
-						</span>
-					</div>
-					<Separator />
-
-					<div className="flex justify-between py-2">
-						<span className="text-gray-600">{t("operating_fee")} (50%)</span>
-						<span>
-							+{platformFee.toFixed(2)} {selectedCurrency}
-						</span>
+						{isLoadingPrices ? (
+							<div className="flex items-center gap-2">
+								<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
+								<span className="text-sm text-gray-500">{t("loading")}</span>
+							</div>
+						) : (
+							<span>
+								{productPrice.toFixed(2)} {selectedCurrency}
+							</span>
+						)}
 					</div>
 					<Separator />
 
 					<div className="flex justify-between py-2">
 						<span className="text-gray-600">{t("delivery_price")}</span>
 						<span>
-							+{deliveryPrice.toFixed(2)} {selectedCurrency}
+							+{deliveryFee?.toFixed(2)} {selectedCurrency}
 						</span>
 					</div>
 					<Separator />
@@ -229,12 +244,19 @@ export default function OrderReview({
 					<div className="flex justify-between items-center py-2">
 						<span className="font-medium text-lg">{t("total_price")}</span>
 						<div className="flex flex-col items-end gap-1">
-							<div className="flex items-center gap-2">
-								<span className="font-bold text-lg">
-									{totalPrice.toFixed(2)} {selectedCurrency}
-								</span>
-								<ArrowDownIcon className="h-4 w-4 text-yellow-500" />
-							</div>
+							{isLoadingPrices ? (
+								<div className="flex items-center gap-2">
+									<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
+									<span className="text-sm text-gray-500">{t("loading")}</span>
+								</div>
+							) : (
+								<div className="flex items-center gap-2">
+									<span className="font-bold text-lg">
+										{totalPrice.toFixed(2)} {selectedCurrency}
+									</span>
+									<ArrowDownIcon className="h-4 w-4 text-yellow-500" />
+								</div>
+							)}
 						</div>
 					</div>
 				</div>
@@ -248,17 +270,17 @@ export default function OrderReview({
 				<Button
 					onClick={() => setIsCurrencySelectorOpen(true)}
 					className="w-full bg-white border border-gray-300 text-black mt-6 h-14"
-					disabled={isProcessing || cartItems.length === 0}
+					disabled={isProcessing || cartItems.length === 0 || isLoadingPrices || deliveryMethod === "home"}
 				>
 					{t("change_currency")}
 				</Button>
 
 				<Button
 					onClick={handleProceedToPayment}
-					className={`w-full bg-yellow-400 hover:bg-yellow-500 text-black mt-6 h-14 ${cartItems.length === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
-					disabled={isProcessing || cartItems.length === 0}
+					className={`w-full bg-yellow-400 hover:bg-yellow-500 text-black mt-6 h-14 ${cartItems.length === 0 || isLoadingPrices ? "opacity-50 cursor-not-allowed" : ""}`}
+					disabled={isProcessing || cartItems.length === 0 || isLoadingPrices}
 				>
-					{isProcessing ? t("processing_payment") : t("proceed_to_payment")}
+					{isProcessing ? t("processing_payment") : isLoadingPrices ? t("loading_prices") : t("proceed_to_payment")}
 				</Button>
 			</div>
 

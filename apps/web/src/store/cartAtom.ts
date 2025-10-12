@@ -5,6 +5,7 @@ export interface CartItem {
 	id: string;
 	tokenId: number;
 	name: string;
+	is_grounded: boolean;
 	quantity: number;
 	price: number;
 	imageUrl: string;
@@ -26,7 +27,7 @@ export const addItemAtom = atom(null, (get, set, newItem: CartItem) => {
 			cartItemsAtom,
 			items.map((item) =>
 				item.id === newItem.id
-					? { ...item, quantity: item.quantity + 1 }
+					? { ...item, quantity: item.quantity + 1, is_grounded: newItem.is_grounded }
 					: item,
 			),
 		);

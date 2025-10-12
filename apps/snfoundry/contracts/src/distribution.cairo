@@ -3,6 +3,11 @@ use starknet::ContractAddress;
 #[starknet::interface]
 pub trait IDistribution<TContractState> {
     fn set_marketplace(ref self: TContractState, marketplace: ContractAddress);
+    fn set_roaster_producer(
+        ref self: TContractState,
+        roaster_address: ContractAddress,
+        producer_address: ContractAddress,
+    );
     fn register_purchase(
         ref self: TContractState,
         buyer_address: ContractAddress,
@@ -11,17 +16,17 @@ pub trait IDistribution<TContractState> {
         product_price: u256,
         profit: u256,
     );
-    fn coffee_lover_claim_balance(ref self: TContractState, address: ContractAddress) -> u256;
+    fn coffee_lover_claim_balance(self: @TContractState, address: ContractAddress) -> u256;
     fn coffee_lover_claim_reset(ref self: TContractState, address: ContractAddress);
-    fn producer_claim_balance(ref self: TContractState, address: ContractAddress) -> u256;
+    fn producer_claim_balance(self: @TContractState, address: ContractAddress) -> u256;
     fn producer_claim_reset(ref self: TContractState, address: ContractAddress);
-    fn roaster_claim_balance(ref self: TContractState, address: ContractAddress) -> u256;
+    fn roaster_claim_balance(self: @TContractState, address: ContractAddress) -> u256;
     fn roaster_claim_reset(ref self: TContractState, address: ContractAddress);
-    fn cambiatus_claim_balance(ref self: TContractState) -> u256;
+    fn cambiatus_claim_balance(self: @TContractState) -> u256;
     fn cambiatus_claim_reset(ref self: TContractState);
-    fn cofiblocks_claim_balance(ref self: TContractState) -> u256;
+    fn cofiblocks_claim_balance(self: @TContractState) -> u256;
     fn cofiblocks_claim_reset(ref self: TContractState);
-    fn cofounder_claim_balance(ref self: TContractState, address: ContractAddress) -> u256;
+    fn cofounder_claim_balance(self: @TContractState, address: ContractAddress) -> u256;
     fn cofounder_claim_reset(ref self: TContractState, address: ContractAddress);
     fn add_cofounder(ref self: TContractState, address: ContractAddress);
     fn distribute(ref self: TContractState);
@@ -109,6 +114,7 @@ mod Distribution {
         purchase_per_producer: Map<ContractAddress, u256>,
         producer_claim_balances: Map<ContractAddress, u256>,
         roasters: Vec<ContractAddress>,
+        roasters_producers: Map<ContractAddress, ContractAddress>,
         purchase_per_roaster: Map<ContractAddress, u256>,
         roaster_claim_balances: Map<ContractAddress, u256>,
         total_purchases: u256,
@@ -127,6 +133,15 @@ mod Distribution {
         fn set_marketplace(ref self: ContractState, marketplace: ContractAddress) {
             self.accesscontrol.assert_only_role(DEFAULT_ADMIN_ROLE);
             self.accesscontrol._grant_role(MARKETPLACE_ROLE, marketplace);
+        }
+
+        fn set_roaster_producer(
+            ref self: ContractState,
+            roaster_address: ContractAddress,
+            producer_address: ContractAddress,
+        ) {
+            self.accesscontrol.assert_only_role(DEFAULT_ADMIN_ROLE);
+            self.roasters_producers.write(roaster_address, producer_address);
         }
 
         fn add_cofounder(ref self: ContractState, address: ContractAddress) {
@@ -188,12 +203,25 @@ mod Distribution {
                 self
                     .purchase_per_roaster
                     .write(product_owner_address, current_roaster_amount + amount);
+
+                // Register roaster-producer relationship
+                let producer_address = self.roasters_producers.read(product_owner_address);
+                if producer_address != 0x00.try_into().unwrap() {
+                    let current_producer_amount = self.purchase_per_producer.read(producer_address);
+
+                    if current_producer_amount == 0 {
+                        self.producers.push(producer_address);
+                    }
+                    self
+                        .purchase_per_producer
+                        .write(producer_address, current_producer_amount + amount);
+                }
             }
             self.total_purchases.write(self.total_purchases.read() + amount);
             self.total_profit.write(self.total_profit.read() + profit);
         }
 
-        fn coffee_lover_claim_balance(ref self: ContractState, address: ContractAddress) -> u256 {
+        fn coffee_lover_claim_balance(self: @ContractState, address: ContractAddress) -> u256 {
             self.cl_claim_balances.read(address)
         }
 
@@ -202,7 +230,7 @@ mod Distribution {
             self.cl_claim_balances.write(address, 0);
         }
 
-        fn producer_claim_balance(ref self: ContractState, address: ContractAddress) -> u256 {
+        fn producer_claim_balance(self: @ContractState, address: ContractAddress) -> u256 {
             self.producer_claim_balances.read(address)
         }
 
@@ -211,7 +239,7 @@ mod Distribution {
             self.producer_claim_balances.write(address, 0);
         }
 
-        fn roaster_claim_balance(ref self: ContractState, address: ContractAddress) -> u256 {
+        fn roaster_claim_balance(self: @ContractState, address: ContractAddress) -> u256 {
             self.roaster_claim_balances.read(address)
         }
 
@@ -220,7 +248,7 @@ mod Distribution {
             self.roaster_claim_balances.write(address, 0);
         }
 
-        fn cambiatus_claim_balance(ref self: ContractState) -> u256 {
+        fn cambiatus_claim_balance(self: @ContractState) -> u256 {
             self.cambiatus_claim_balance.read()
         }
 
@@ -229,7 +257,7 @@ mod Distribution {
             self.cambiatus_claim_balance.write(0);
         }
 
-        fn cofiblocks_claim_balance(ref self: ContractState) -> u256 {
+        fn cofiblocks_claim_balance(self: @ContractState) -> u256 {
             self.cofiblocks_claim_balance.read()
         }
 
@@ -238,7 +266,7 @@ mod Distribution {
             self.cofiblocks_claim_balance.write(0);
         }
 
-        fn cofounder_claim_balance(ref self: ContractState, address: ContractAddress) -> u256 {
+        fn cofounder_claim_balance(self: @ContractState, address: ContractAddress) -> u256 {
             self.cofounders_claim_balances.read(address)
         }
 

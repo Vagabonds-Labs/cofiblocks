@@ -18,6 +18,11 @@ interface Product {
 	price: number;
 	description: string;
 	stock: number;
+	ground_stock: number;
+	bean_stock: number;
+	owner?: string | null;
+	initial_stock?: number | null;
+	creation_tx_hash?: string | null;
 	hidden?: boolean | null;
 	nftMetadata: string | ProductMetadata;
 	createdAt: Date;
@@ -84,6 +89,7 @@ export default function ProductList({ products }: ProductListProps) {
 					id: `temp-${Date.now()}`,
 					productId: product.id,
 					quantity: newItem.quantity,
+					is_grounded: newItem.is_grounded,
 					createdAt: now,
 					updatedAt: now,
 					shoppingCartId: "temp",
@@ -94,6 +100,11 @@ export default function ProductList({ products }: ProductListProps) {
 						price: product.price,
 						hidden: product.hidden ?? false,
 						stock: product.stock,
+						ground_stock: product.ground_stock,
+						bean_stock: product.bean_stock,
+						owner: product.owner ?? null,
+						initial_stock: product.initial_stock ?? null,
+						creation_tx_hash: product.creation_tx_hash ?? null,
 						nftMetadata: JSON.stringify(metadata),
 						createdAt: now,
 						updatedAt: now,
@@ -125,9 +136,13 @@ export default function ProductList({ products }: ProductListProps) {
 			return;
 		}
 
+		// Default to grounded if available, otherwise bean
+		const isGrounded = product.ground_stock > 0;
+
 		addToCart({
 			productId: product.id,
 			quantity: 1,
+			is_grounded: isGrounded,
 		});
 
 		const metadata = parseMetadata(product.nftMetadata);
@@ -139,6 +154,7 @@ export default function ProductList({ products }: ProductListProps) {
 			price: product.price,
 			quantity: 1,
 			imageUrl: metadata.imageUrl,
+			is_grounded: isGrounded,
 		});
 	};
 

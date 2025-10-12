@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeftIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon } from "@heroicons/react/24/outline";;
 import Link from "next/link";
 import { useReducer } from "react";
 import { useTranslation } from "react-i18next";
@@ -63,7 +63,7 @@ export default function CheckoutPage() {
 				<OrderReview
 					onCurrencySelect={handleCurrencySelect}
 					deliveryAddress={state.deliveryAddress}
-					deliveryPrice={state.deliveryPrice}
+					deliveryMethod={state.deliveryMethod}
 					isConfirmed={state.isConfirmed}
 				/>
 			)}

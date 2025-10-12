@@ -1,6 +1,22 @@
 {
 	"$schema": "https://turbo.build/schema.json",
 	"ui": "tui",
+	"globalEnv": [
+		"CAVOS_NETWORK",
+		"CAVOS_APP_ID",
+		"CAVOS_ORG_SECRET",
+		"DATABASE_URL",
+		"NODE_ENV",
+		"NEXTAUTH_SECRET",
+		"RESEND_API_KEY",
+		"EMAIL_FROM",
+		"RPC_URL_MAINNET",
+		"GAM_DELIVERY_PRICE",
+		"OUTSIDE_DELIVERY_PRICE",
+		"MAINNET_ACCOUNT_PRIVATE_KEY",
+		"MAINNET_ACCOUNT_ADDR",
+		"NEXTAUTH_URL"
+	],
 	"tasks": {
 		"build": {
 			"outputs": [".next/**", "!.next/cache/**", ".svelte-kit/**"]

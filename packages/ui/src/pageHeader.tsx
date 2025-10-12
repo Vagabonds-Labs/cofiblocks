@@ -6,7 +6,7 @@ import {
 	Cog6ToothIcon,
 	ShoppingCartIcon,
 } from "@heroicons/react/24/outline";
-import Image from "next/image";
+import NextImage from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -24,13 +24,16 @@ interface CartItem {
 		nftMetadata: string;
 	};
 	quantity: number;
+	is_grounded: boolean;
 }
 
 interface PageHeaderProps {
-	title: string;
+	title?: string;
+	onLogout?: () => void;
+	onSignIn?: () => void;
 	showCart?: boolean;
 	cartItems?: CartItem[];
-	onRemoveFromCart?: (cartItemId: string) => void;
+	onRemoveFromCart?: (itemId: string) => void;
 	cartTranslations?: {
 		cartEmptyMessage: string;
 		quantityLabel: string;
@@ -38,24 +41,26 @@ interface PageHeaderProps {
 		removeConfirmationYes?: string;
 		cancel?: string;
 	};
+	isAuthenticated?: boolean;
 	profileOptions?: React.ReactNode;
 	showBackButton?: boolean;
 	onBackClick?: () => void;
 	rightActions?: React.ReactNode;
-	isAuthenticated?: boolean;
 }
 
 export function PageHeader({
-	title,
+	title = "CofiBlocks",
+	onLogout,
+	onSignIn,
 	showCart,
 	cartItems = [],
 	onRemoveFromCart,
 	cartTranslations,
+	isAuthenticated,
 	profileOptions,
 	showBackButton,
 	onBackClick,
 	rightActions,
-	isAuthenticated,
 }: PageHeaderProps) {
 	const [isCartOpen, setIsCartOpen] = useState(false);
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -90,9 +95,9 @@ export function PageHeader({
 						/>
 					)}
 					<Link href="/" className="flex items-center gap-2">
-						<Image
+						<NextImage
 							src="/images/logo.png"
-							alt="Logo"
+							alt={title}
 							width={40}
 							height={64}
 							className="w-10 h-16"
@@ -101,6 +106,8 @@ export function PageHeader({
 				</div>
 
 				<div className="flex items-center gap-4">
+					{rightActions}
+
 					<Link
 						href="/user/settings"
 						className="p-3 hover:bg-surface-primary-soft rounded-full transition-colors"
@@ -140,11 +147,28 @@ export function PageHeader({
 								onClose={() => setIsMenuOpen(false)}
 								title="Menu"
 							>
-								{profileOptions}
+								<div className="flex flex-col space-y-4">
+									{profileOptions}
+									{onLogout && (
+										<Button onClick={onLogout} variant="primary" size="sm">
+											Sign out
+										</Button>
+									)}
+								</div>
 							</Sidebar>
 						</>
 					) : (
-						rightActions
+						<div className="flex items-center space-x-4">
+							<Button onClick={onSignIn} variant="primary" size="sm">
+								Sign in
+							</Button>
+							<Link
+								href="/auth?mode=signup"
+								className="text-sm font-medium text-content-body-default hover:text-content-title transition-colors"
+							>
+								Create account
+							</Link>
+						</div>
 					)}
 
 					<CartSidebar

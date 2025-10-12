@@ -1,20 +1,16 @@
 "use client";
 
-import Carousel from "@repo/ui/carousel";
 import Skeleton from "@repo/ui/skeleton";
-import { useAccount } from "@starknet-react/core";
 import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import ProductDetails from "~/app/_components/features/ProductDetails";
 import { ProfileOptions } from "~/app/_components/features/ProfileOptions";
-import WalletConnect from "~/app/_components/features/WalletConnect";
 import type { NftMetadata } from "~/app/_components/features/types";
 import Header from "~/app/_components/layout/Header";
 import Main from "~/app/_components/layout/Main";
-import { useMarketplaceContract } from "~/services/contractsInterface";
 import { api } from "~/trpc/react";
 
 interface ParsedMetadata extends NftMetadata {
@@ -37,10 +33,8 @@ interface RawMetadata {
 export default function ProductPage() {
 	const { t } = useTranslation();
 	const { data: session } = useSession();
-	const { address } = useAccount();
-	const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
-	const [bagsAvailable, setBagsAvailable] = useState<number | null>(null);
-	const marketplaceContract = useMarketplaceContract();
+	const [_isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+	const _utils = api.useUtils();
 	const params = useParams();
 	const idParam = params?.id;
 	const id =
@@ -57,7 +51,7 @@ export default function ProductPage() {
 		api.favorites.isProductFavorited.useQuery(
 			{ productId },
 			{
-				enabled: !!productId && !!address && !!session,
+				enabled: !!productId && !!session,
 				retry: false,
 			},
 		);
@@ -118,28 +112,11 @@ export default function ProductPage() {
 			},
 		);
 
-	useEffect(() => {
-		async function getStock() {
-			if (!marketplaceContract || !product?.tokenId) return;
-			try {
-				const stock = await marketplaceContract.call("listed_product_stock", [
-					product.tokenId,
-					"0x0",
-				]);
-				setBagsAvailable(Number(stock));
-			} catch (error) {
-				console.error("Error getting stock:", error);
-				setBagsAvailable(null);
-			}
-		}
-		void getStock();
-	}, [marketplaceContract, product?.tokenId]);
-
 	const handleConnect = () => {
 		setIsWalletModalOpen(true);
 	};
 
-	const handleCloseWalletModal = () => {
+	const _handleCloseWalletModal = () => {
 		setIsWalletModalOpen(false);
 	};
 
@@ -196,9 +173,8 @@ export default function ProductPage() {
 			<div className="flex flex-col min-h-screen">
 				<Header
 					showCart={true}
-					profileOptions={
-						address ? <ProfileOptions address={address} /> : undefined
-					}
+					onConnect={handleConnect}
+					profileOptions={<ProfileOptions />}
 				/>
 				<div className="flex-grow px-4 md:px-6 lg:px-8 pt-24">
 					{isLoadingProduct ? (
@@ -223,16 +199,15 @@ export default function ProductPage() {
 								farmName: parseMetadata(product.nftMetadata as string).farmName,
 								roastLevel: parseMetadata(product.nftMetadata as string)
 									.strength,
-								bagsAvailable,
 								price: product.price,
+								ground_stock: product.ground_stock ?? 0,
+								bean_stock: product.bean_stock ?? 0,
 								type: "Buyer",
 								process: "Natural",
 								description: parseMetadata(product.nftMetadata as string)
 									.description,
 								stock: product.stock ?? 0,
 							}}
-							isConnected={!!address}
-							onConnect={handleConnect}
 							isFavorited={isFavorited}
 							onToggleFavorite={handleToggleFavorite}
 							isLoadingFavorite={isTogglingFavorite}
@@ -243,11 +218,6 @@ export default function ProductPage() {
 						</div>
 					)}
 				</div>
-
-				<WalletConnect
-					isOpen={isWalletModalOpen}
-					onClose={handleCloseWalletModal}
-				/>
 			</div>
 		</Main>
 	);

@@ -2,7 +2,7 @@
 	"name": "snfoundry",
 	"version": "0.0.1",
 	"scripts": {
-		"chain": "starknet-devnet --seed 0",
+		"chain": "starknet-devnet --seed 0 --account-class cairo1",
 		"deploy": "ts-node scripts-ts/helpers/deploy-wrapper.ts --network mainnet",
 		"deploy:clear": "cd deployments && node clear.mjs $* && cd .. && ts-node scripts-ts/helpers/deploy-wrapper.ts --network mainnet",
 		"deploy:no-reset": "snfoundry deploy --no-reset",
@@ -11,7 +11,7 @@
 		"compile": "cd contracts && scarb build",
 		"format": "prettier --write 'scripts-ts/**/*.{ts,tsx}' && cd contracts && scarb fmt",
 		"format:check": "prettier --check 'scripts-ts/**/*.{ts,tsx}' && cd contracts && scarb fmt --check",
-		"postinstall": "shx cp -n .env.example .env",
+		"postinstall": "[ -z \"$CI\" ] && cp -n .env.example .env || true",
 		"verify": "ts-node scripts-ts/verify-contracts.ts"
 	},
 	"devDependencies": {
@@ -29,7 +29,7 @@
 		"dotenv": "^16.3.1",
 		"envfile": "^6.18.0",
 		"prettier": "^2.8.8",
-		"starknet": "^7.5.1",
+		"starknet": "8.5.3",
 		"toml": "^3.0.0",
 		"tslib": "^2.6.2"
 	}

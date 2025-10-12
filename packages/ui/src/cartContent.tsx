@@ -14,6 +14,7 @@ interface CartItem {
 		nftMetadata: string;
 	};
 	quantity: number;
+	is_grounded: boolean;
 }
 
 interface CartContentProps {
@@ -159,6 +160,11 @@ export function CartContent({
 										<TrashIcon className="h-4 w-4" />
 									</button>
 								)}
+							</div>
+							<div>
+								<Text className="text-sm text-gray-500">
+									{item.is_grounded ? "Grano" : "Molido"}
+								</Text>
 							</div>
 						</div>
 					</div>

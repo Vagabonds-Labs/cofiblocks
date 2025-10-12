@@ -1,7 +1,6 @@
 "use client";
 
 import { ArrowLeftIcon, TrashIcon } from "@heroicons/react/24/outline";
-import { useProvider } from "@starknet-react/core";
 import { useSetAtom } from "jotai";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -71,7 +70,6 @@ export default function ShoppingCart() {
 	const { t } = useTranslation();
 	const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 	const setCartItems = useSetAtom(cartItemsAtom);
-
 	// Get cart data from server
 	const { data: cart, refetch: refetchCart } = api.cart.getUserCart.useQuery();
 
@@ -85,6 +83,7 @@ export default function ShoppingCart() {
 				quantity: item.quantity,
 				price: item.product.price,
 				imageUrl: getImageUrl(item.product.nftMetadata),
+				is_grounded: item.is_grounded,
 			}));
 			setCartItems(cartItems);
 		}
@@ -92,6 +91,12 @@ export default function ShoppingCart() {
 
 	const { mutate: removeFromCart } = api.cart.removeFromCart.useMutation({
 		onSuccess: () => {
+			void refetchCart();
+		},
+	});
+	const { mutate: clearCart } = api.cart.clearCart.useMutation({
+		onSuccess: () => {
+			setCartItems([]);
 			void refetchCart();
 		},
 	});
@@ -109,6 +114,33 @@ export default function ShoppingCart() {
 
 	const cancelDelete = () => {
 		setItemToDelete(null);
+	};
+
+	const _handleBuy = async () => {
+		if (!cart) return;
+
+		const token_ids = cart.items.map((item) => item.product.tokenId.toString());
+		const token_amounts = cart.items.map((item) => item.quantity.toString());
+		const totalPrice = cart.items.reduce(
+			(total, item) => total + item.product.price * item.quantity,
+			0,
+		);
+
+		console.log("buying items", token_ids, token_amounts, totalPrice);
+		try {
+			const mutation = api.marketplace.buyProducts.useMutation();
+			const tx_hash = await mutation.mutateAsync({
+				tokenIds: token_ids,
+				tokenAmounts: token_amounts,
+				paymentToken: "USDC",
+			});
+			alert(`Items bought successfully tx hash: ${tx_hash}`);
+			// Clear cart after successful purchase
+			clearCart();
+			void refetchCart();
+		} catch (error) {
+			console.error("Error buying items:", error);
+		}
 	};
 
 	const calculateTotalPrice = (price: number): number => {

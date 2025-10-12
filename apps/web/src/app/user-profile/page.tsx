@@ -1,83 +1,48 @@
 "use client";
 
-import { useAuth, useUser } from "@clerk/nextjs";
-import {
-	ChevronDownIcon,
-	ChevronRightIcon,
-	ChevronUpIcon,
-	UserIcon,
-	WalletIcon,
-} from "@heroicons/react/24/outline";
-import Button from "@repo/ui/button";
-import SkeletonLoader from "@repo/ui/skeleton";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { useTranslation } from "react-i18next";
 import { ProfileCard } from "~/app/_components/features/ProfileCard";
 import { ProfileOptions } from "~/app/_components/features/ProfileOptions";
-import WalletDetails from "~/app/_components/features/WalletDetails";
+import { UserBalances } from "~/app/_components/features/UserBalances";
 import Header from "~/app/_components/layout/Header";
 import Main from "~/app/_components/layout/Main";
-import type { UnsafeMetadata } from "~/types";
+import { api } from "~/trpc/react";
 
 type Badge = "lover" | "contributor" | "producer";
 
 export default function UserProfile() {
 	const { t } = useTranslation();
-	const router = useRouter();
-	const { isLoaded: clerkLoaded, isSignedIn, user } = useUser();
-	const { isSignedIn: authSignedIn } = useAuth();
-	const [isWalletExpanded, setIsWalletExpanded] = useState(false);
+	const { data: session, status: sessionStatus } = useSession();
+	const user = session?.user;
 
-	// Get wallet info from Clerk metadata
-	const walletMetadata = (user?.unsafeMetadata as UnsafeMetadata | undefined)
-		?.wallet;
-	const hasWallet = !!walletMetadata?.encryptedPrivateKey;
-
-	useEffect(() => {
-		if (clerkLoaded && isSignedIn && !hasWallet) {
-			router.push("/onboarding");
-		}
-	}, [clerkLoaded, isSignedIn, hasWallet, router]);
-
-	// Show loading state while checking data
-	if (!clerkLoaded) {
-		return (
-			<Main>
-				<Header />
-				<div className="container mx-auto px-4 py-8">
-					<div className="max-w-3xl mx-auto space-y-6">
-						<div className="bg-white shadow rounded-lg overflow-hidden">
-							<div className="p-6 w-full flex items-center justify-center">
-								<div className="w-full max-w-2xl">
-									<SkeletonLoader width="w-full" height="h-64" />
-								</div>
-							</div>
-						</div>
-						<div className="bg-white shadow rounded-lg overflow-hidden">
-							<div className="p-6 w-full flex items-center justify-center">
-								<div className="w-full max-w-2xl">
-									<SkeletonLoader width="w-full" height="h-48" />
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</Main>
+	// Only fire when we have a userId
+	const { data: userData, isLoading: isLoadingUser } =
+		api.user.getUser.useQuery(
+			{ userId: user?.id ?? "" },
+			{ enabled: !!user?.id, retry: false },
 		);
-	}
 
-	if (!isSignedIn) {
+	console.log("userData", userData);
+
+	const {
+		data: balances,
+		isLoading: isLoadingBalances,
+		error: balancesError,
+		refetch: refetchBalances,
+	} = api.user.getUserBalances.useQuery(
+		{ userId: user?.id ?? "" },
+		{ enabled: !!user?.id, retry: false },
+	);
+
+	// Handle global loading states (session → user → balances)
+	if (sessionStatus === "loading" || (user?.id && isLoadingUser)) {
 		return (
 			<Main>
-				<Header />
 				<div className="container mx-auto px-4 py-8">
-					<div className="text-center">
-						<p className="mb-4">{t("sign_in_required")}</p>
-						<Link href="/sign-in">
-							<Button variant="primary">{t("sign_in")}</Button>
-						</Link>
+					<Header />
+					<div className="animate-pulse">
+						<div className="h-48 bg-gray-200 rounded-lg mb-6" />
 					</div>
 				</div>
 			</Main>
@@ -85,78 +50,78 @@ export default function UserProfile() {
 	}
 
 	const userProfile = {
-		name: user.fullName ?? t("unnamed_user"),
+		name: userData?.name ?? user?.email ?? t("unnamed_user"),
 		country: t("costa_rica"),
-		memberSince: user.createdAt
-			? new Date(user.createdAt).getFullYear()
+		memberSince: userData?.createdAt
+			? new Date(userData.createdAt).getFullYear()
 			: new Date().getFullYear(),
-		walletAddress:
-			walletMetadata?.address ?? "0x0000000000000000000000000000000000000000",
-		role: "user",
+		walletAddress: userData?.walletAddress ?? "",
+		role: userData?.role ?? "USER",
 		badges: ["lover", "contributor"] as Badge[],
-	};
-
-	// Toggle wallet details visibility
-	const toggleWalletDetails = () => {
-		setIsWalletExpanded(!isWalletExpanded);
 	};
 
 	return (
 		<Main>
 			<div className="container mx-auto px-4 py-8">
-				<Header profileOptions={<ProfileOptions />} />
-				<div className="max-w-3xl mx-auto space-y-6">
-					<ProfileCard user={userProfile} />
+				<Header
+					profileOptions={<ProfileOptions />}
+				/>
+				<ProfileCard user={userProfile} />
 
-					{hasWallet && (
-						<div className="bg-white shadow rounded-lg overflow-hidden">
-							<div className="p-6">
-								<div
-									onClick={toggleWalletDetails}
-									onKeyDown={(e) => {
-										if (e.key === "Enter" || e.key === " ") {
-											toggleWalletDetails();
-										}
-									}}
-									tabIndex={0}
-									role="button"
-									aria-expanded={isWalletExpanded}
-									className="w-full bg-white text-content-title flex items-center justify-between p-4 rounded-lg hover:bg-surface-secondary-soft transition-colors cursor-pointer"
-								>
-									<div className="flex items-center">
-										<WalletIcon className="w-5 h-5 mr-3" />
-										<span>{t("wallet_details")}</span>
+				{/* Balances loading skeleton */}
+				{isLoadingBalances && (
+					<div className="bg-white rounded-lg shadow-md p-6 mb-6">
+						<div className="animate-pulse">
+							<div className="h-6 bg-gray-200 rounded mb-4 w-1/3" />
+							<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+								{[
+									{ id: "skeleton-1" },
+									{ id: "skeleton-2" },
+									{ id: "skeleton-3" },
+									{ id: "skeleton-4" },
+								].map((item) => (
+									<div
+										key={item.id}
+										className="flex flex-col items-center p-4 bg-gray-50 rounded-lg"
+									>
+										<div className="w-12 h-12 bg-gray-200 rounded-full mb-3" />
+										<div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
+										<div className="h-6 bg-gray-200 rounded w-1/2" />
 									</div>
-									{isWalletExpanded ? (
-										<ChevronDownIcon className="w-5 h-5 text-content-body-default" />
-									) : (
-										<ChevronRightIcon className="w-5 h-5 text-content-body-default" />
-									)}
-								</div>
-								{isWalletExpanded && (
-									<div className="mt-4 px-4">
-										<WalletDetails />
-									</div>
-								)}
+								))}
 							</div>
 						</div>
-					)}
-
-					<div className="bg-white shadow rounded-lg overflow-hidden">
-						<div className="p-6">
-							<Link
-								href="/user/edit-profile/my-profile"
-								className="w-full bg-white text-content-title flex items-center justify-between p-4 rounded-lg hover:bg-surface-secondary-soft transition-colors"
-							>
-								<div className="flex items-center">
-									<UserIcon className="w-5 h-5 mr-3" />
-									<span>{t("edit_my_profile")}</span>
-								</div>
-								<ChevronRightIcon className="w-5 h-5 text-content-body-default" />
-							</Link>
-						</div>
 					</div>
-				</div>
+				)}
+
+				{/* Balances error */}
+				{balancesError && (
+					<div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+						<p className="text-red-600">
+							Error loading balances:{" "}
+							{balancesError?.message ?? "Unknown error"}
+						</p>
+						<button
+							type="button"
+							onClick={() => refetchBalances()}
+							className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+						>
+							Retry
+						</button>
+					</div>
+				)}
+
+				{/* Balances data */}
+				{!isLoadingBalances && !balancesError && (
+					<UserBalances
+						balances={{
+							starkBalance: balances?.starkBalance ?? 0,
+							usdtBalance: balances?.usdtBalance ?? 0,
+							usdcBalance: balances?.usdcBalance ?? 0,
+							claimBalance: balances?.claimBalance ?? 0,
+						}}
+					/>
+				)}
 			</div>
 		</Main>
 	);

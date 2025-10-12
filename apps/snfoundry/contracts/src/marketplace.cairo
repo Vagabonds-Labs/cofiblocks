@@ -53,7 +53,7 @@ pub trait IMarketplace<ContractState> {
         ref self: ContractState, initial_stock: Span<u256>, price: Span<u256>,
     ) -> Span<u256>;
     fn get_product_price(
-        ref self: ContractState, token_id: u256, token_amount: u256, payment_token: PAYMENT_TOKEN,
+        self: @ContractState, token_id: u256, token_amount: u256, payment_token: PAYMENT_TOKEN,
     ) -> u256;
     fn delete_product(ref self: ContractState, token_id: u256);
     fn delete_products(ref self: ContractState, token_ids: Span<u256>);
@@ -65,6 +65,8 @@ pub trait IMarketplace<ContractState> {
     fn claim_cofounder(ref self: ContractState);
     fn locked(ref self: ContractState, id: u32, data: Array<felt252>) -> Array<felt252>;
     fn withdraw(ref self: ContractState, token: PAYMENT_TOKEN);
+    fn claim_payment(ref self: ContractState);
+    fn get_claim_payment(self: @ContractState, wallet_address: ContractAddress) -> u256;
 }
 
 pub mod MainnetConfig {
@@ -622,10 +624,7 @@ mod Marketplace {
         }
 
         fn get_product_price(
-            ref self: ContractState,
-            token_id: u256,
-            token_amount: u256,
-            payment_token: PAYMENT_TOKEN,
+            self: @ContractState, token_id: u256, token_amount: u256, payment_token: PAYMENT_TOKEN,
         ) -> u256 {
             let stock = self.listed_product_stock.read(token_id);
             assert(stock > 0, 'Product not available');
@@ -764,6 +763,18 @@ mod Marketplace {
             let transfer = token_dispatcher.transfer(get_caller_address(), balance);
             assert(transfer, 'Error withdrawing');
         }
+
+        fn claim_payment(ref self: ContractState) {
+            // Producers/roasters should call this function to receive their payment
+            let balance = self.claim_balances.read(get_caller_address());
+            self.claim_balance(balance, get_caller_address());
+            self.claim_balances.write(get_caller_address(), 0);
+        }
+
+        fn get_claim_payment(self: @ContractState, wallet_address: ContractAddress) -> u256 {
+            // Producers/roasters can read their claim payment from here
+            self.claim_balances.read(wallet_address)
+        }
     }
 
     #[generate_trait]
@@ -806,7 +817,7 @@ mod Marketplace {
         // Use example:
         // Calculate the 3% fee of 250 STRK
         // calculate_fee(250, 300) = 7.5
-        fn calculate_fee(ref self: ContractState, amount: u256, bps: u256) -> u256 {
+        fn calculate_fee(self: @ContractState, amount: u256, bps: u256) -> u256 {
             assert((amount * bps) >= 10_000, 'Fee too low');
             amount * bps / 10_000
         }
@@ -826,7 +837,7 @@ mod Marketplace {
             assert(success, 'Error transferring tokens');
         }
 
-        fn usdc_to_strk_wei(ref self: ContractState, amount_usdc: u256) -> u256 {
+        fn usdc_to_strk_wei(self: @ContractState, amount_usdc: u256) -> u256 {
             let ekubo = self.ekubo.read();
             let usdc_stark_pool_key = PoolKey {
                 token0: MainnetConfig::STRK_ADDRESS.try_into().unwrap(),
