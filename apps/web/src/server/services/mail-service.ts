@@ -14,32 +14,32 @@ export type EmailServiceDeps = {
 };
 
 export const createEmailService = (deps?: EmailServiceDeps) => {
-	//const resend = new Resend(deps?.apiKey ?? process.env.RESEND_API_KEY);
-	const from = deps?.from ?? process.env.EMAIL_FROM ?? "no-reply@cofiblocks.com";
+	const resend = new Resend(deps?.apiKey ?? process.env.RESEND_API_KEY);
+	const from = deps?.from ?? process.env.EMAIL_FROM ?? "no-reply@news.cofiblocks.com";
 
-	//   if (!resend) {
-	//     throw new Error("Resend client not initialized: missing RESEND_API_KEY");
-	//   }
+	  if (!resend) {
+	    throw new Error("Resend client not initialized: missing RESEND_API_KEY");
+	  }
 
 	const send = async ({ to, subject, html, text }: EmailBase) => {
-		// const result = await resend.emails.send({
-		//   from,
-		//   to,
-		//   subject,
-		//   html,
-		//   text,
-		// });
-		// if (result.error) {
-		//   // expose enough info for logs without leaking internals to clients
-		//   throw new Error(
-		//     `Resend send failed: ${result.error.name ?? "Unknown"} - ${result.error.message ?? "No message"}`
-		//   );
-		// }
-		// return {
-		//   id: result.data?.id ?? null,
-		//   // Resend returns { id }; delivery happens asynchronously by the provider
-		//   ok: true as const,
-		// };
+		const result = await resend.emails.send({
+		  from,
+		  to,
+		  subject,
+		  html,
+		  text,
+		});
+		if (result.error) {
+		  // expose enough info for logs without leaking internals to clients
+		  throw new Error(
+		    `Resend send failed: ${result.error.name ?? "Unknown"} - ${result.error.message ?? "No message"}`
+		  );
+		}
+		return {
+		  id: result.data?.id ?? null,
+		  // Resend returns { id }; delivery happens asynchronously by the provider
+		  ok: true as const,
+		};
 	};
 
 	// ---- Templates (Spanish copy) ----

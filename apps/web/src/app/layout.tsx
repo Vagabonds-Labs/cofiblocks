@@ -6,9 +6,7 @@ import "~/i18n";
 import { CheckCircleIcon } from "@heroicons/react/20/solid";
 import { GeistSans } from "geist/font/sans";
 import i18n from "~/i18n";
-import { CavosAuthProvider } from "~/providers/cavos-auth";
 import SessionProvider from "~/providers/session";
-import StarknetProvider from "~/providers/starknet";
 import { TRPCReactProvider } from "~/trpc/react";
 import BetaAnnouncement from "./_components/ui/BetaAnnouncement";
 

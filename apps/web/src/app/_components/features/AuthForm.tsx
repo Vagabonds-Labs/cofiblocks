@@ -7,7 +7,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import GoogleAuth from "~/app/_components/features/GoogleAuth";
+//import GoogleAuth from "~/app/_components/features/GoogleAuth";
 import Spinner from "~/app/_components/ui/Spinner";
 import { api } from "~/trpc/react";
 import {
@@ -115,7 +115,7 @@ export default function AuthForm({ initialMode = "signin" }: AuthFormProps) {
 			await resendVerificationMutation.mutateAsync({ email });
 			setResendSuccess(true);
 			setError("");
-		} catch (error) {
+		} catch (_error) {
 			setError(t("error.registration_failed"));
 		} finally {
 			setIsResendingVerification(false);
@@ -307,7 +307,7 @@ export default function AuthForm({ initialMode = "signin" }: AuthFormProps) {
 						</Button>
 
 						{/* Divider */}
-						<div className="relative my-4">
+						{/* <div className="relative my-4">
 							<div className="absolute inset-0 flex items-center">
 								<div className="w-full border-t border-surface-border" />
 							</div>
@@ -321,7 +321,7 @@ export default function AuthForm({ initialMode = "signin" }: AuthFormProps) {
 						</div>
 
 						{/* Google Auth */}
-						<div className="w-full mb-4 flex justify-center">
+						{/* <div className="w-full mb-4 flex justify-center">
 							<div className="w-full">
 								<GoogleAuth finalRedirectUri="/auth/callback" />
 								{mode === "signup" && (
@@ -330,7 +330,7 @@ export default function AuthForm({ initialMode = "signin" }: AuthFormProps) {
 									</p>
 								)}
 							</div>
-						</div>
+						</div> */}
 					</form>
 
 					{/* Toggle Mode Button */}

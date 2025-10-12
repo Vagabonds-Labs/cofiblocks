@@ -11,7 +11,7 @@
 		"compile": "cd contracts && scarb build",
 		"format": "prettier --write 'scripts-ts/**/*.{ts,tsx}' && cd contracts && scarb fmt",
 		"format:check": "prettier --check 'scripts-ts/**/*.{ts,tsx}' && cd contracts && scarb fmt --check",
-		"postinstall": "shx cp -n .env.example .env",
+		"postinstall": "[ -z \"$CI\" ] && cp -n .env.example .env || true",
 		"verify": "ts-node scripts-ts/verify-contracts.ts"
 	},
 	"devDependencies": {

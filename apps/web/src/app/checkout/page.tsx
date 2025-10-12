@@ -63,7 +63,7 @@ export default function CheckoutPage() {
 				<OrderReview
 					onCurrencySelect={handleCurrencySelect}
 					deliveryAddress={state.deliveryAddress}
-					deliveryPrice={state.deliveryPrice}
+					deliveryMethod={state.deliveryMethod}
 					isConfirmed={state.isConfirmed}
 				/>
 			)}

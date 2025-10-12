@@ -25,10 +25,17 @@ export default function SaleDetails() {
 	const { data: session } = useSession();
 	const isProducer = session?.user?.role === "COFFEE_PRODUCER";
 
-	const { data: order, isLoading } = api.order.getOrder.useQuery(
-		{ orderId: orderId as string },
+	const { data: orderItem, isLoading } = api.order.getOrderItem.useQuery(
+		{ orderItemId: orderId as string },
 		{
 			enabled: !!orderId,
+		},
+	);
+
+	const { data: orderDelivery } = api.order.getOrderDelivery.useQuery(
+		{ orderId: orderItem?.orderId ?? "" },
+		{
+			enabled: !!orderItem?.orderId,
 		},
 	);
 
@@ -46,7 +53,7 @@ export default function SaleDetails() {
 		);
 	}
 
-	if (!order) {
+	if (!orderItem) {
 		return (
 			<ProfileOptionLayout title="" backLink="/user/my-sales">
 				<div className="text-center py-8">
@@ -58,7 +65,7 @@ export default function SaleDetails() {
 
 	let nftMetadata: NFTMetadata | null = null;
 	try {
-		const rawMetadata = order.items[0]?.product.nftMetadata;
+		const rawMetadata = orderItem.product.nftMetadata;
 		if (typeof rawMetadata === "string") {
 			nftMetadata = JSON.parse(rawMetadata) as NFTMetadata;
 		}
@@ -67,14 +74,14 @@ export default function SaleDetails() {
 	}
 
 	const orderDetails = {
-		productName: order.items[0]?.product.name ?? t("unknown_product"),
-		status: order.status,
+		productName: orderItem.product.name ?? t("unknown_product"),
+		status: orderItem.order.status,
 		roast: nftMetadata?.roast ?? t("unknown_roast"),
 		type: t("grounded"), // TODO: Add type to product metadata
-		quantity: `${order.items[0]?.quantity ?? 0} ${t("bags")}`,
-		delivery: t("delivery"), // TODO: Add delivery method to order
-		address: order.user?.physicalAddress ?? "",
-		totalPrice: `${order.total} ${t("usd")}`,
+		quantity: `${orderItem.quantity ?? 0} ${t("bags")}`,
+		delivery: orderItem.order.home_delivery ? t("my_home") : t("pick_up_at_meetup"),
+		address: orderDelivery?.address ?? "",
+		totalPrice: `${orderItem.price * orderItem.quantity} ${t("usd")}`,
 	};
 
 	return (
@@ -90,7 +97,7 @@ export default function SaleDetails() {
 				</div>
 				<div className="flex items-center justify-between mb-4">
 					<span className="text-gray-600">{t("order_date")}</span>
-					<span>{new Date(order.createdAt).toLocaleDateString()}</span>
+					<span>{new Date(orderItem.order.createdAt).toLocaleDateString()}</span>
 				</div>
 				<div className="flex items-center justify-between">
 					<span className="text-gray-600">{t("total_amount")}</span>
@@ -108,9 +115,9 @@ export default function SaleDetails() {
 						<UserIcon className="w-6 h-6 text-gray-400 mr-3" />
 						<div>
 							<p className="font-medium">
-								{order.user?.name ?? t("unknown_buyer")}
+								{orderItem.order.user?.name ?? t("unknown_buyer")}
 							</p>
-							<p className="text-sm text-gray-500">{order.user?.email}</p>
+							<p className="text-sm text-gray-500">{orderItem.order.user?.email}</p>
 						</div>
 					</div>
 					<div className="flex items-start">

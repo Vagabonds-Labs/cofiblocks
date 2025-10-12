@@ -8,10 +8,9 @@ const protectedMatchers: Array<{
 	test: (p: string) => boolean;
 	roles: Role[];
 }> = [
-	{ test: (p) => p === "/user/register-coffee", roles: ["COFFEE_PRODUCER"] },
-	{ test: (p) => p.startsWith("/user/my-coffee"), roles: ["COFFEE_PRODUCER"] },
-	{ test: (p) => p.startsWith("/user/my-sales"), roles: ["COFFEE_PRODUCER"] },
-	{ test: (p) => p.startsWith("/user/my-claims"), roles: ["COFFEE_PRODUCER"] },
+	{ test: (p) => p === "/user/register-coffee", roles: ["COFFEE_PRODUCER", "COFFEE_ROASTER"] },
+	{ test: (p) => p.startsWith("/user/my-coffee"), roles: ["COFFEE_PRODUCER", "COFFEE_ROASTER"] },
+	{ test: (p) => p.startsWith("/user/my-sales"), roles: ["COFFEE_PRODUCER", "COFFEE_ROASTER"] },
 ];
 
 export async function middleware(request: NextRequest) {
@@ -40,7 +39,7 @@ export async function middleware(request: NextRequest) {
 	}
 
 	// For protected routes, check if user has required role
-	const userRole = token.role as Role | undefined;
+	const userRole = token.role;
 	if (!userRole || !match.roles.includes(userRole)) {
 		return NextResponse.redirect(new URL("/marketplace", request.url));
 	}

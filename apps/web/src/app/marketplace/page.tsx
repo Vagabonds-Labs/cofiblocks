@@ -8,16 +8,20 @@ import { ProfileOptions } from "~/app/_components/features/ProfileOptions";
 import Header from "~/app/_components/layout/Header";
 import Main from "~/app/_components/layout/Main";
 import SearchBar from "../_components/features/SearchBar";
+import { useSession } from "next-auth/react";
 
 export default function Home() {
 	const { t } = useTranslation();
-	const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+	const [_isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+	const { data: session } = useSession();
+	const user = session?.user;
+	const isAuthenticated = !!user;
 
 	const handleConnect = () => {
 		setIsWalletModalOpen(true);
 	};
 
-	const handleCloseWalletModal = () => {
+	const _handleCloseWalletModal = () => {
 		setIsWalletModalOpen(false);
 	};
 
@@ -46,10 +50,9 @@ export default function Home() {
 		<Main>
 			<div className="flex flex-col min-h-screen">
 				<Header
-					address={"address"}
-					showCart={true}
+					showCart={isAuthenticated}
 					onConnect={handleConnect}
-					profileOptions={<ProfileOptions address={"address"} />}
+					profileOptions={<ProfileOptions/>}
 				/>
 				<div className="flex-grow">
 					{/* Hero Section */}

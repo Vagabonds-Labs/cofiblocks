@@ -23,6 +23,8 @@ export default function UserProfile() {
 			{ enabled: !!user?.id, retry: false },
 		);
 
+	console.log("userData", userData);
+
 	const {
 		data: balances,
 		isLoading: isLoadingBalances,

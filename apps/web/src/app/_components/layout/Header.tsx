@@ -30,7 +30,7 @@ function Header({
 	const router = useRouter();
 	const { t } = useTranslation();
 	const { data, status } = useSession();
-	const user = data?.user;
+	const _user = data?.user;
 	const isAuthenticated = status === "authenticated";
 	const utils = api.useUtils();
 	const [, setItems] = useAtom(cartItemsAtom);
@@ -57,6 +57,7 @@ function Header({
 						nftMetadata: unknown;
 					};
 					quantity: number;
+					is_grounded: boolean;
 				}) => {
 					let metadata: ProductMetadata;
 					try {
@@ -77,6 +78,7 @@ function Header({
 						quantity: item.quantity,
 						price: item.product.price,
 						imageUrl: metadata.imageUrl ?? "/default-image.webp",
+						is_grounded: item.is_grounded,
 					};
 				},
 			);
@@ -116,7 +118,7 @@ function Header({
 
 	const handleLogout = () => {
 		// Sign out using Cavos auth
-		signOut();
+		void signOut();
 		// Clear cart data
 		setItems([]);
 		// Redirect to home
@@ -138,6 +140,7 @@ function Header({
 				id: string;
 				product: { name: string; price: number; nftMetadata: unknown };
 				quantity: number;
+				is_grounded: boolean;
 			}) => {
 				let metadata: ProductMetadata;
 				try {
@@ -161,6 +164,7 @@ function Header({
 						}),
 					},
 					quantity: item.quantity,
+					is_grounded: item.is_grounded,
 				};
 			},
 		) ?? [];

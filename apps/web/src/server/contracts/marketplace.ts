@@ -158,8 +158,8 @@ export async function deleteProducts(
 	userAuthData: UserAuthData,
 ) {
 	const formattedTokensIds = [];
-	for (let i = 0; i < tokenId.length; i++) {
-		const formattedTokenId = format_number(tokenId[i] ?? 0n);
+	for (const token of tokenId) {
+		const formattedTokenId = format_number(token ?? 0n);
 		formattedTokensIds.push(formattedTokenId.low);
 		formattedTokensIds.push(formattedTokenId.high);
 	}
@@ -204,6 +204,27 @@ export async function claimRoaster(userAuthData: UserAuthData) {
 	return tx;
 }
 
+export async function claim(userAuthData: UserAuthData, role: string) {
+	if (role === "COFFEE_BUYER") {
+		return await claimConsumer(userAuthData);
+	} else if (role === "COFFEE_PRODUCER") {
+		return await claimProducer(userAuthData);
+	} else if (role === "COFFEE_ROASTER") {
+		return await claimRoaster(userAuthData);
+	}
+	throw new Error("Invalid role");
+}
+
+export async function claimPayment(userAuthData: UserAuthData) {
+	const transaction = {
+		contract_address: getContractAddress(CofiBlocksContracts.MARKETPLACE),
+		entrypoint: "claim_payment",
+		calldata: [],
+	};
+	const tx = await executeTransaction(userAuthData, transaction);
+	return tx;
+}
+
 export async function getProductStock(tokenId: bigint) {
 	const formattedTokenId = format_number(tokenId);
 	const calldata = [formattedTokenId.high, formattedTokenId.low];
@@ -220,15 +241,16 @@ export async function getProductPrices(
 	tokenIds: bigint[], 
 	tokenAmounts: bigint[], 
 	paymentToken: PaymentToken,
-	formatted: boolean = true
+	formatted = true
 ) {;
-	const unitPrices: Record<string, Number> = {};
+	const unitPrices: Record<string, number> = {};
 	for (let i = 0; i < tokenIds.length; i++) {
 		const tokenId = tokenIds[i];
 		const tokenAmount = tokenAmounts[i];
 		if (tokenId && tokenAmount) {
-			const result = await getProductPrice(tokenId, tokenAmount, paymentToken);
-			let price = BigInt(result.toString());
+			const result = await getProductPrice(tokenId, tokenAmount, paymentToken) as unknown;
+			const resultValue = Array.isArray(result) ? (result as unknown[])[0] : result;
+			const price = BigInt(String(resultValue as string | number | bigint ?? '0'));
 			const decimals = paymentToken === PaymentToken.STRK ? 18n : 6n;
 			if (!formatted) {
 				unitPrices[tokenId.toString()] = Number(price.toString());
@@ -241,4 +263,14 @@ export async function getProductPrices(
 		}
 	}
 	return unitPrices;
+}
+
+export async function getClaimPayment(walletAddress: string) {
+	const calldata = [walletAddress];
+	const tx = await getCallToContract(
+		CofiBlocksContracts.MARKETPLACE,
+		"get_claim_payment",
+		calldata,
+	);
+	return tx;
 }

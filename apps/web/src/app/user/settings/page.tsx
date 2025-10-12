@@ -1,9 +1,6 @@
 "use client";
 
-import { ChevronRightIcon, GlobeAltIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
-import Button from "@repo/ui/button";
-import { InfoCard } from "@repo/ui/infoCard";
 import { Text } from "@repo/ui/typography";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -41,7 +38,7 @@ export default function Settings() {
 	const { i18n, t } = useTranslation();
 	const [language, setLanguage] = useState<string>("en");
 
-	const { control, handleSubmit, setValue } = useForm<FormValues>({
+	const { control: _control, handleSubmit: _handleSubmit, setValue } = useForm<FormValues>({
 		defaultValues: {
 			language: language,
 		},
@@ -65,7 +62,7 @@ export default function Settings() {
 		setValue("language", langCode);
 	};
 
-	const currentLanguage = LANGUAGES.find((lang) => lang.code === language);
+	const _currentLanguage = LANGUAGES.find((lang) => lang.code === language);
 
 	return (
 		<ProfileOptionLayout title={t("settings")}>

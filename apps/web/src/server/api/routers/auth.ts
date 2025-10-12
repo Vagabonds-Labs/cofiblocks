@@ -51,7 +51,7 @@ export const authRouter = createTRPCRouter({
 			const encrypted_password = await hash(password, 12);
 
 			// Create new user
-			const user = await ctx.db.user.create({
+			const _user = await ctx.db.user.create({
 				data: {
 					id: crypto.randomUUID(),
 					email,
@@ -117,7 +117,7 @@ export const authRouter = createTRPCRouter({
 		.mutation(async ({ ctx, input }) => {
 			const svc = createAuthService({
 				db: ctx.db,
-				mailer: { async sendVerification() {} }, // not needed here
+				mailer: { async sendVerification() { /* not needed here */ } }, // not needed here
 				appUrl: process.env.NEXT_PUBLIC_APP_URL,
 			});
 			const res = await svc.verifyToken(input.token, "EMAIL_VERIFY");
@@ -173,7 +173,7 @@ export const authRouter = createTRPCRouter({
 		} catch (error) {
 			throw new TRPCError({
 				code: "INTERNAL_SERVER_ERROR",
-				message: `Unable to register user with Cavos: ${error}`,
+				message: `Unable to register user with Cavos: ${String(error)}`,
 			});
 		}
 

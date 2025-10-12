@@ -186,8 +186,8 @@ export function CavosAuthProvider({ children }: { children: ReactNode }) {
 				// Check for tokens in authData
 				const authData = data.authData as Record<string, unknown>;
 				accessToken =
-					authData?.accessToken || authData?.access_token || authData?.token;
-				refreshToken = authData?.refreshToken || authData?.refresh_token;
+					authData?.accessToken ?? authData?.access_token ?? authData?.token;
+				refreshToken = authData?.refreshToken ?? authData?.refresh_token;
 			} else {
 				// Check for direct format
 				userData = result?.user;
@@ -253,20 +253,21 @@ export function CavosAuthProvider({ children }: { children: ReactNode }) {
 		// 1) Axios-style
 		if (e?.response?.data) {
 			return (
-				e.response.data.error ||
-				e.response.data.message ||
-				e.message ||
+				e.response.data.error ??
+				e.response.data.message ??
+				e.message ??
 				"Unexpected error"
 			);
 		}
 
 		// 4) Fallback: parse trailing JSON from message
 		if (typeof e?.message === "string") {
-			const m = e.message.match(/{[\s\S]*}$/); // last {...} in the message
+			const m = /{[\s\S]*}$/.exec(e.message); // last {...} in the message
 			if (m) {
 				try {
-					const json = JSON.parse(m[0]);
-					return json.error || json.message || e.message;
+					const json = JSON.parse(m[0]) as Record<string, unknown>;
+					const errorMsg = json.error ?? json.message ?? e.message ?? 'Unknown error';
+					return typeof errorMsg === 'string' ? errorMsg : 'Unknown error';
 				} catch {
 					// ignore
 				}

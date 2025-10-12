@@ -14,7 +14,7 @@ import type { CartItem } from "~/store/cartAtom";
 import { api } from "~/trpc/react";
 import Confirmation from "./Confirmation";
 import { CurrencySelector } from "./CurrencySelector";
-import { PaymentToken } from "~/utils/contracts";
+import type { PaymentToken } from "~/utils/contracts";
 
 const getImageUrl = (src: string) => {
 	if (src.startsWith("Qm")) {
@@ -41,16 +41,16 @@ interface OrderReviewProps {
 		readonly city: string;
 		readonly zipCode: string;
 	};
-	readonly deliveryPrice: number;
+	readonly deliveryMethod: string;
 	readonly isConfirmed: boolean;
 }
 
-const MARKET_FEE_BPS = process.env.MARKET_FEE_BPS ? parseInt(process.env.MARKET_FEE_BPS) : 5000;
+const _MARKET_FEE_BPS = process.env.MARKET_FEE_BPS ? parseInt(process.env.MARKET_FEE_BPS) : 5000;
 
 export default function OrderReview({
 	onCurrencySelect,
 	deliveryAddress,
-	deliveryPrice,
+	deliveryMethod,
 	isConfirmed,
 }: OrderReviewProps) {
 	const { t } = useTranslation();
@@ -79,6 +79,15 @@ export default function OrderReview({
 		}
 	);
 
+	const { data: deliveryFee } = api.order.getDeliveryFee.useQuery(
+		{
+			province: deliveryAddress.city,
+		},
+		{
+			enabled: !!deliveryAddress.city,
+		}
+	);
+
 	// Calculate prices using fetched unit prices or fallback to cart item prices
 	const productPrice = cartItems.reduce((total, item) => {
 		const unitPrice = priceData?.unitPrices?.[item.id] 
@@ -87,7 +96,7 @@ export default function OrderReview({
 		return total + unitPrice * item.quantity;
 	}, 0);
 
-	const totalPrice = productPrice + deliveryPrice;
+	const totalPrice = productPrice + (deliveryFee ?? 0);
 
 	const handleCurrencySelect = (currency: string) => {
 		setSelectedCurrency(currency.toUpperCase());
@@ -105,9 +114,12 @@ export default function OrderReview({
 			}
 
 			// Create order in the database
-			const result = await createOrder.mutateAsync(
-				{ cartId: cart.id, paymentToken: selectedCurrency as PaymentToken }
-			);
+			const _result = await createOrder.mutateAsync({
+				cartId: cart.id, 
+				paymentToken: selectedCurrency as PaymentToken,
+				deliveryAddress: deliveryMethod === "home" ? deliveryAddress : undefined,
+				deliveryMethod: deliveryMethod,
+			});
 
 			// Clear the cart and close the cart sidebar
 			clearCart();
@@ -144,7 +156,8 @@ export default function OrderReview({
 								height={80}
 								className="rounded-lg object-cover bg-gray-100"
 							/>
-							<span className="text-lg">{item.name}</span>
+							<span className="text-lg">{item.name} - </span>
+							<span className="text-lg">{item.is_grounded ? "Grano" : "Molido"}</span>
 						</div>
 
 						<div className="space-y-4">
@@ -166,14 +179,6 @@ export default function OrderReview({
 										</div>
 									) : (
 										<>
-											<span className="text-sm text-gray-500">
-												{(() => {
-													const unitPrice = priceData?.unitPrices?.[item.id]
-														? Number(priceData.unitPrices[item.id]) 
-														: 0;
-													return (unitPrice * item.quantity).toFixed(2);
-												})()} {selectedCurrency}
-											</span>
 											<span className="font-medium">
 												{(() => {
 													const unitPrice = priceData?.unitPrices?.[item.id] 
@@ -198,13 +203,17 @@ export default function OrderReview({
 					<div className="flex justify-between py-2">
 						<span className="text-gray-600">{t("delivery_address")}</span>
 						<div className="text-right">
-							<span className="block font-medium">{t("my_home")}</span>
-							<span className="block text-sm text-gray-500">
-								{deliveryAddress.street}, {deliveryAddress.apartment}
-							</span>
-							<span className="block text-sm text-gray-500">
-								{deliveryAddress.city} {deliveryAddress.zipCode}
-							</span>
+							<span className="block font-medium">{deliveryMethod === "home" ? t("my_home") : t("pick_up_at_meetup")}</span>
+							{deliveryMethod === "home" && (
+								<>
+									<span className="block text-sm text-gray-500">
+										{deliveryAddress.street}, {deliveryAddress.apartment}
+									</span>
+									<span className="block text-sm text-gray-500">
+										{deliveryAddress.city} {deliveryAddress.zipCode}
+									</span>
+								</>
+							)}
 						</div>
 					</div>
 					<Separator />
@@ -225,24 +234,9 @@ export default function OrderReview({
 					<Separator />
 
 					<div className="flex justify-between py-2">
-						<span className="text-gray-600">{t("operating_fee")} (50% incluido en el precio)</span>
-						{isLoadingPrices ? (
-							<div className="flex items-center gap-2">
-								<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
-								<span className="text-sm text-gray-500">{t("loading")}</span>
-							</div>
-						) : (
-							<span>
-								{totalPrice/2} {selectedCurrency}
-							</span>
-						)}
-					</div>
-					<Separator />
-
-					<div className="flex justify-between py-2">
 						<span className="text-gray-600">{t("delivery_price")}</span>
 						<span>
-							+{deliveryPrice.toFixed(2)} {selectedCurrency}
+							+{deliveryFee?.toFixed(2)} {selectedCurrency}
 						</span>
 					</div>
 					<Separator />
@@ -276,7 +270,7 @@ export default function OrderReview({
 				<Button
 					onClick={() => setIsCurrencySelectorOpen(true)}
 					className="w-full bg-white border border-gray-300 text-black mt-6 h-14"
-					disabled={isProcessing || cartItems.length === 0 || isLoadingPrices}
+					disabled={isProcessing || cartItems.length === 0 || isLoadingPrices || deliveryMethod === "home"}
 				>
 					{t("change_currency")}
 				</Button>

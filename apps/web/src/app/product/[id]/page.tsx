@@ -3,7 +3,7 @@
 import Skeleton from "@repo/ui/skeleton";
 import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import ProductDetails from "~/app/_components/features/ProductDetails";
@@ -33,9 +33,8 @@ interface RawMetadata {
 export default function ProductPage() {
 	const { t } = useTranslation();
 	const { data: session } = useSession();
-	const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
-	const [bagsAvailable, setBagsAvailable] = useState<number | null>(null);
-	const utils = api.useUtils();
+	const [_isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+	const _utils = api.useUtils();
 	const params = useParams();
 	const idParam = params?.id;
 	const id =
@@ -113,27 +112,11 @@ export default function ProductPage() {
 			},
 		);
 
-	useEffect(() => {
-		async function getStock() {
-			if (!product?.tokenId) return;
-			try {
-				const stock = await utils.marketplace.getProductStock.fetch({
-					tokenId: product.tokenId.toString(),
-				});
-				setBagsAvailable(Number(stock));
-			} catch (error) {
-				console.error("Error getting stock:", error);
-				setBagsAvailable(null);
-			}
-		}
-		void getStock();
-	}, [product?.tokenId, utils.marketplace.getProductStock.fetch]);
-
 	const handleConnect = () => {
 		setIsWalletModalOpen(true);
 	};
 
-	const handleCloseWalletModal = () => {
+	const _handleCloseWalletModal = () => {
 		setIsWalletModalOpen(false);
 	};
 
@@ -216,8 +199,9 @@ export default function ProductPage() {
 								farmName: parseMetadata(product.nftMetadata as string).farmName,
 								roastLevel: parseMetadata(product.nftMetadata as string)
 									.strength,
-								bagsAvailable,
 								price: product.price,
+								ground_stock: product.ground_stock ?? 0,
+								bean_stock: product.bean_stock ?? 0,
 								type: "Buyer",
 								process: "Natural",
 								description: parseMetadata(product.nftMetadata as string)

@@ -9,6 +9,9 @@ import {
 export const distributionRouter = createTRPCRouter({
 	// Get user's favorites
 	getclaimBalanceProducer: protectedProcedure.query(async ({ ctx }) => {
+		if (!ctx.session.user) {
+			throw new Error("User not authenticated");
+		}
 		if (!ctx.session.user.email) {
 			throw new Error("User email not found");
 		}
@@ -17,6 +20,9 @@ export const distributionRouter = createTRPCRouter({
 	}),
 
 	getclaimBalanceCoffeeLover: protectedProcedure.query(async ({ ctx }) => {
+		if (!ctx.session.user) {
+			throw new Error("User not authenticated");
+		}
 		if (!ctx.session.user.email) {
 			throw new Error("User email not found");
 		}
@@ -25,6 +31,9 @@ export const distributionRouter = createTRPCRouter({
 	}),
 
 	getclaimBalanceRoaster: protectedProcedure.query(async ({ ctx }) => {
+		if (!ctx.session.user) {
+			throw new Error("User not authenticated");
+		}
 		if (!ctx.session.user.email) {
 			throw new Error("User email not found");
 		}

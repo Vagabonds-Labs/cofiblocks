@@ -267,6 +267,14 @@ mod test_marketplace {
         let usdc_token_dispatcher = IERC20Dispatcher { contract_address: usdc_token_address };
         let usdc_in_contract = usdc_token_dispatcher.balance_of(marketplace.contract_address);
         assert(usdc_in_contract >= price * amount_to_buy, 'invalid usdc in contract');
+
+        start_cheat_caller_address(marketplace.contract_address, PRODUCER);
+        let producer_payment = marketplace.get_claim_payment();
+        assert(producer_payment > 0, 'producer payment is 0');
+        marketplace.claim_payment();
+
+        let usdc_of_producer = usdc_token_dispatcher.balance_of(PRODUCER);
+        assert(usdc_of_producer == producer_payment, 'incorret producer usdc');
     }
 
     #[test]

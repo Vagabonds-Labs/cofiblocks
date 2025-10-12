@@ -1,4 +1,4 @@
-import { constants, RpcProvider, shortString } from "starknet";
+import { constants, RpcProvider } from "starknet";
 
 // Network and Chain Configuration
 export const CHAIN_ID =

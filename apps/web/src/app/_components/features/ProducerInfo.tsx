@@ -44,7 +44,7 @@ export function ProducerInfo({
 		goodPractices: farmGoodPractices ?? t("farm_good_practices_placeholder"),
 	};
 
-	const openFarmModal = () => setIsFarmModalOpen(true);
+	const _openFarmModal = () => setIsFarmModalOpen(true);
 	const closeFarmModal = () => setIsFarmModalOpen(false);
 
 	return (
@@ -64,12 +64,6 @@ export function ProducerInfo({
 
 			<div
 				className="w-full px-4 py-3 bg-white rounded-lg flex justify-between items-center cursor-pointer"
-				onClick={openFarmModal}
-				onKeyDown={(e) => {
-					if (e.key === "Enter" || e.key === " ") {
-						openFarmModal();
-					}
-				}}
 				role="button"
 				tabIndex={0}
 			>
@@ -89,7 +83,6 @@ export function ProducerInfo({
 				</div>
 				<div className="flex items-center gap-4">
 					<span className="text-base text-content-title">{farmName}</span>
-					<ChevronRightIcon className="w-6 h-6 text-content-title" />
 				</div>
 			</div>
 

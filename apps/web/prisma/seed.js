@@ -147,7 +147,6 @@ async function main() {
 			const order = await prisma.order.create({
 				data: {
 					userId: user.id,
-					sellerId: seller.id, // Now seller.id is guaranteed to exist
 					total: products[0]?.price ?? 0 + 2 * (products[1]?.price ?? 0),
 					status: "PENDING",
 					items: {
@@ -156,11 +155,13 @@ async function main() {
 								productId: products[0]?.id ?? 0,
 								quantity: 1,
 								price: products[0]?.price ?? 0,
+								sellerId: seller.id,
 							},
 							{
 								productId: products[1]?.id ?? 0,
 								quantity: 2,
 								price: products[1]?.price ?? 0,
+								sellerId: seller.id,
 							},
 						],
 					},

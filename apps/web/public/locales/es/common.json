@@ -131,6 +131,8 @@
 	"bags_available": "Bolsas disponibles",
 	"bags": "bolsas",
 	"bags_available_count": "{{count}} bolsas disponibles",
+	"ground_coffee_stock": "Café molido",
+	"beans_coffee_stock": "Café grano",
 	"unit_price": "Precio por unidad ({{weight}})",
 	"sold_out": "AGOTADO",
 	"add_to_favorites": "Agregar a favoritos",
@@ -163,6 +165,8 @@
 		"bean": "Grano",
 		"grounded": "Molido"
 	},
+	"available_stock": "Stock Disponible",
+	"units": "unidades",
 	"total": "total",
 	"adding_to_cart": "Añadiendo...",
 	"add_to_cart": "Añadir al carrito",
@@ -423,5 +427,10 @@
 		"resend_verification_email": "Reenviar correo de verificación",
 		"resending_verification": "Reenviando correo de verificación...",
 		"verification_email_resent": "Correo de verificación enviado exitosamente"
-	}
+	},
+
+	"previous_slide": "Diapositiva anterior",
+	"next_slide": "Siguiente diapositiva",
+	"no_orders_found": "No se encontraron pedidos",
+	"loading_collectibles": "Cargando coleccionables..."
 }
