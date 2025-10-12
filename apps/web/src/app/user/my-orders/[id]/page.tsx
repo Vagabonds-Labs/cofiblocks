@@ -58,8 +58,8 @@ export default function OrderDetails() {
 		},
 	);
 
-	const { data: orderItem, isLoading } = api.order.getOrderItem.useQuery(
-		{ orderItemId: orderId as string },
+	const { data: order, isLoading } = api.order.getOrder.useQuery(
+		{ orderId: orderId as string },
 		{
 			enabled: !!orderId,
 		},
@@ -79,7 +79,7 @@ export default function OrderDetails() {
 		);
 	}
 
-	if (!orderItem) {
+	if (!order) {
 		return (
 			<ProfileOptionLayout title="" backLink="/user/my-orders">
 				<div className="text-center py-8">
@@ -90,16 +90,16 @@ export default function OrderDetails() {
 	}
 
 	const orderDetails = {
-		productName: orderItem.product.name ?? t("unknown_product"),
-		status: orderItem.order.status,
-		roast: orderItem.product.nftMetadata
-			? parseMetadata(orderItem.product.nftMetadata as string).roast
+		productName: order.items[0]?.product.name ?? t("unknown_product"),
+		status: order.status,
+		roast: order.items[0]?.product.nftMetadata
+			? parseMetadata(order.items[0]?.product.nftMetadata as string).roast
 			: t("unknown_roast"),
 		type: t("grounded"),
-		quantity: `${orderItem.quantity ?? 0} ${t("bags")}`,
+		quantity: `${order.items[0]?.quantity ?? 0} ${t("bags")}`,
 		delivery: t("delivery"),
 		address: user?.physicalAddress ?? "",
-		totalPrice: `${orderItem.price * orderItem.quantity} ${t("usd")}`,
+		totalPrice: `${(order.items[0]?.price ?? 0) * (order.items[0]?.quantity ?? 0)} ${t("usd")}`,
 	};
 
 	return (
