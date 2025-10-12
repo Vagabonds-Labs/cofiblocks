@@ -135,7 +135,7 @@ export function SelectionTypeCard({
 					</Text>
 					<button
 						type="button"
-						onClick={() => onQuantityChange(Math.min(stock, quantity + 1))}
+						onClick={() => onQuantityChange(Math.min(selectedOption === "grounded" ? ground_stock : bean_stock, quantity + 1))}
 						className="w-6 h-6 bg-surface-secondary-default rounded grid place-content-center relative"
 					>
 						<span className="text-white font-bold text-base translate-x-[0.5px] -translate-y-[1px]">
@@ -147,7 +147,7 @@ export function SelectionTypeCard({
 				<Button
 					variant="primary"
 					onClick={handleAddToCart}
-					disabled={isAddingToCart || stock === 0}
+					disabled={isAddingToCart || (selectedOption === "grounded" ? ground_stock === 0 : bean_stock === 0)}
 				>
 					{isAddingToCart ? t("adding_to_cart") : t("add_to_cart")}
 				</Button>

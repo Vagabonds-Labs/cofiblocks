@@ -67,6 +67,41 @@ export const orderRouter = createTRPCRouter({
 			});
 		}),
 
+	getOrderItem: protectedProcedure
+		.input(z.object({ orderItemId: z.string() }))
+		.query(async ({ ctx, input }) => {
+			console.log("orderItemId", input.orderItemId);
+			return ctx.db.orderItem.findUnique({
+				where: { id: input.orderItemId },
+				include: {
+					product: true,
+					order: {
+						include: {
+							user: true,
+						},
+					},
+					seller: true,
+				},
+			});
+		}),
+
+	getOrderDelivery: protectedProcedure
+		.input(z.object({ orderId: z.string() }))
+		.query(async ({ ctx, input }) => {
+			const order = await ctx.db.order.findUnique({
+				where: { id: input.orderId }
+			});
+			if (!order) {
+				throw new TRPCError({ code: "NOT_FOUND", message: "Order not found" });
+			}
+			if (!order.home_delivery) {
+				throw new TRPCError({ code: "NOT_FOUND", message: "Order is not a home delivery" });
+			}
+			return ctx.db.delivery.findFirst({
+				where: { orderId: input.orderId, status: "PENDING" },
+			});
+		}),
+
 	// Get user's orders
 	getUserOrders: protectedProcedure.query(async ({ ctx }) => {
 		// Get user ID from session
@@ -85,15 +120,10 @@ export const orderRouter = createTRPCRouter({
 				items: {
 					include: {
 						product: true,
+						seller: true,
 					},
 				},
 				user: true,
-				seller: {
-					select: {
-						name: true,
-						email: true,
-					},
-				},
 			},
 			orderBy: { createdAt: "desc" },
 		});
@@ -211,14 +241,14 @@ export const orderRouter = createTRPCRouter({
 				const orderId = crypto.randomUUID();
 				const totalUsd = cart.items.reduce((s, i) => s + i.product.price * i.quantity, 0);
 				const created = await tx.order.create({
-				data: {
-					id: orderId,
-					userId: user.id,
-					total: totalUsd,
-					status: OrderStatus.PENDING,
-					home_delivery: input.deliveryMethod === "home",
-				},
-				include: { items: true, delivery: true },
+					data: {
+						id: orderId,
+						userId: user.id,
+						total: totalUsd,
+						status: OrderStatus.PENDING,
+						home_delivery: input.deliveryMethod === "home",
+					},
+					include: { items: true },
 				});
 
 				// Create order items (DB only)

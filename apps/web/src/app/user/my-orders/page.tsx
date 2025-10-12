@@ -66,7 +66,7 @@ export default function MyOrders() {
 			const orderItem = {
 				id: order.id,
 				productName: order.items[0]?.product.name ?? t("unknown_product"),
-				sellerName: order.seller?.email ?? t("unknown_seller"),
+				sellerName: order.items[0]?.seller.email ?? t("unknown_seller"),
 				status: order.status,
 			};
 

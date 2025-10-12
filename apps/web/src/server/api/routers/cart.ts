@@ -125,12 +125,8 @@ export const cartRouter = createTRPCRouter({
 				where: { shoppingCartId: input.cartId },
 				include: { product: true },
 			});
-			console.log("***************");
 			const tokenIds = shopItems.map((item) => BigInt(item.product.tokenId));
-			console.log("tokenIds", tokenIds);
 			const tokenAmounts = shopItems.map((_) => BigInt(1));
-			console.log("***************");
-			console.log("tokenAmounts", tokenAmounts);
 			const result: Record<string, string> = {};
 			const unitPrices = await getProductPrices(tokenIds, tokenAmounts, input.paymentToken as PaymentToken);
 			for (let i = 0; i < shopItems.length; i++) {

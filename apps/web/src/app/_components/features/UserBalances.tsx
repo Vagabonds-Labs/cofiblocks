@@ -81,6 +81,16 @@ export function UserBalances({ balances }: UserBalancesProps) {
 		},
 	});
 
+	const claimBalanceMutation = api.user.claim.useMutation({
+		onSuccess: () => {
+			console.log("Balance claimed successfully!");
+			// You might want to refresh the balances or show a success message
+		},
+		onError: (error) => {
+			console.error("Claim failed:", error);
+		},
+	});
+
 	// Watch the wallet address field to validate it
 	const walletAddress = watch("walletAddress");
 	
@@ -129,6 +139,10 @@ export function UserBalances({ balances }: UserBalancesProps) {
 			token: selectedBalance.symbol as "STRK" | "USDC" | "USDT",
 			recipient: data.walletAddress,
 		});
+	};
+
+	const handleClaimBalance = () => {
+		claimBalanceMutation.mutate();
 	};
 
 	const handleCancelWithdrawal = () => {
@@ -196,10 +210,11 @@ export function UserBalances({ balances }: UserBalancesProps) {
 						</div>
 						<button
 							type="button"
-							disabled={balances.claimBalance === undefined || balances.claimBalance === 0}
+							disabled={balances.claimBalance === undefined || balances.claimBalance === 0 || claimBalanceMutation.isPending}
+							onClick={() => handleClaimBalance()}
 							className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
 						>
-							Claim
+							{claimBalanceMutation.isPending ? "Claiming..." : "Claim"}
 						</button>
 					</div>
 				</div>

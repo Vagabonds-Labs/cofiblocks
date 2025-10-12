@@ -64,23 +64,23 @@ const filtersDefaults = {
 export default function MySales() {
 	const { t } = useTranslation();
 	const router = useRouter();
-	const { data: orders, isLoading } = api.order.getProducerOrders.useQuery();
+	const { data: ordersItems, isLoading } = api.order.getProducerOrders.useQuery();
 
 	const totalSalesAmount = React.useMemo(() => {
-		if (!orders) return 0;
-		return orders.reduce((total, order) => {
-			const orderTotal = order.items.reduce((itemTotal, item) => {
-				return itemTotal + item.product.price * item.quantity;
-			}, 0);
-			return total + orderTotal;
+		if (!ordersItems){
+			return 0;
+		}
+		const total = ordersItems?.reduce((total, item) => {
+			return total + item.price * item.quantity;
 		}, 0);
-	}, [orders]);
+		return total;
+	}, [ordersItems]);
 
 	const groupedOrders = React.useMemo(() => {
-		if (!orders) return [];
+		if (!ordersItems) return [];
 
-		const grouped = orders.reduce((acc: OrderGroup[], order) => {
-			const date = new Date(order.createdAt);
+		const grouped = ordersItems.reduce((acc: OrderGroup[], item) => {
+			const date = new Date(item.order.createdAt);
 			const monthYear = date.toLocaleString("default", {
 				month: "long",
 				year: "numeric",
@@ -88,14 +88,11 @@ export default function MySales() {
 
 			const existingGroup = acc.find((group) => group.date === monthYear);
 			const orderItem: OrderItem = {
-				id: order.id,
-				productName: order.items[0]?.product.name ?? t("unknown_product"),
-				buyerName: order.user?.name ?? t("unknown_buyer"),
-				status: mapOrderStatusToSalesStatus(order.status),
-				total: order.items.reduce(
-					(total, item) => total + item.product.price * item.quantity,
-					0,
-				),
+				id: item.id,
+				productName: item.product.name ?? t("unknown_product"),
+				buyerName: item.order.user?.email ?? t("unknown_buyer"),
+				status: mapOrderStatusToSalesStatus(item.order.status),
+				total: item.price * item.quantity,
 			};
 
 			if (existingGroup) {
@@ -113,7 +110,7 @@ export default function MySales() {
 		return grouped.sort(
 			(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
 		);
-	}, [orders, t]);
+	}, [ordersItems, t]);
 
 	const {
 		searchTerm,
@@ -155,7 +152,7 @@ export default function MySales() {
 
 						<button
 							type="button"
-							onClick={() => router.push("/user/my-claims")}
+							onClick={() => router.push("/user-profile")}
 							className="flex items-center justify-between w-full p-4 bg-surface-primary-soft rounded-lg hover:bg-surface-primary-hover transition-colors"
 						>
 							<div className="flex flex-col">

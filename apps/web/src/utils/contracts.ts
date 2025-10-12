@@ -136,7 +136,9 @@ export const getDeliveryFee = (province: string) => {
 	const normalizedProvince = normalizeProvinceName(province);
 	console.log("normalizedProvince", normalizedProvince);
 	if (gam.includes(normalizedProvince)) {
-		return BigInt(1 * (10 ** 6));
+		const gam_price = process.env.GAM_DELIVERY_PRICE ? parseInt(process.env.GAM_DELIVERY_PRICE) : 1;
+		return BigInt(gam_price * (10 ** 6));
 	}
-	return BigInt(20 * (10 ** 6));
+	const outside_price = process.env.OUTSIDE_DELIVERY_PRICE ? parseInt(process.env.OUTSIDE_DELIVERY_PRICE) : 1;
+	return BigInt(outside_price * (10 ** 6));
 }

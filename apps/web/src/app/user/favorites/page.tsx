@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation";
 interface Product {
 	id: number;
 	tokenId: number;
+	ground_stock: number;
 	name: string;
 	price: number;
 	nftMetadata: JsonValue;
@@ -61,6 +62,7 @@ export default function Favorites() {
 			{
 				productId: product.id,
 				quantity: 1,
+				is_grounded: product.ground_stock > 0 ? true : false,
 			},
 			{
 				onSuccess: () => {

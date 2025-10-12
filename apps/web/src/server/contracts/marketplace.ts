@@ -6,6 +6,7 @@ import {
 	PaymentTokenTag,
 	getCallToContract,
 	getContractAddress,
+	readStorageAt,
 } from "../../utils/contracts";
 import { format_number } from "../../utils/formatting";
 
@@ -204,6 +205,27 @@ export async function claimRoaster(userAuthData: UserAuthData) {
 	return tx;
 }
 
+export async function claim(userAuthData: UserAuthData, role: string) {
+	if (role === "COFFEE_BUYER") {
+		return await claimConsumer(userAuthData);
+	} else if (role === "COFFEE_PRODUCER") {
+		return await claimProducer(userAuthData);
+	} else if (role === "COFFEE_ROASTER") {
+		return await claimRoaster(userAuthData);
+	}
+	throw new Error("Invalid role");
+}
+
+export async function claimPayment(userAuthData: UserAuthData) {
+	const transaction = {
+		contract_address: getContractAddress(CofiBlocksContracts.MARKETPLACE),
+		entrypoint: "claim_payment",
+		calldata: [],
+	};
+	const tx = await executeTransaction(userAuthData, transaction);
+	return tx;
+}
+
 export async function getProductStock(tokenId: bigint) {
 	const formattedTokenId = format_number(tokenId);
 	const calldata = [formattedTokenId.high, formattedTokenId.low];
@@ -241,4 +263,14 @@ export async function getProductPrices(
 		}
 	}
 	return unitPrices;
+}
+
+export async function getClaimPayment(walletAddress: string) {
+	const calldata = [walletAddress];
+	const tx = await getCallToContract(
+		CofiBlocksContracts.MARKETPLACE,
+		"get_claim_payment",
+		calldata,
+	);
+	return tx;
 }

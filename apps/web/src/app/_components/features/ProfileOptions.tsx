@@ -67,11 +67,6 @@ export function ProfileOptions() {
 	const producerOptions: ProfileOption[] = [
 		{ icon: TicketIcon, label: t("my_coffee"), href: "/user/my-coffee" },
 		{ icon: TruckIcon, label: t("my_sales"), href: "/user/my-sales" },
-		{
-			icon: CurrencyDollarIcon,
-			label: t("my_claims"),
-			href: "/user/my-claims",
-		},
 	];
 
 	const renderOption = (option: ProfileOption) => (
@@ -107,7 +102,7 @@ export function ProfileOptions() {
 			{commonOptions.slice(0, 4).map(renderOption)}
 
 			{/* Show producer options only for producers */}
-			{user?.role === "COFFEE_PRODUCER" && producerOptions.map(renderOption)}
+			{(user?.role === "COFFEE_PRODUCER" || user?.role === "COFFEE_ROASTER") && producerOptions.map(renderOption)}
 
 			{/* Always render remaining common options */}
 			{commonOptions.slice(4).map(renderOption)}
