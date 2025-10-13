@@ -150,7 +150,7 @@ export function PageHeader({
 								<div className="flex flex-col space-y-4">
 									{profileOptions}
 									{onLogout && (
-										<Button onClick={onLogout} variant="primary" size="sm">
+										<Button onClick={async () => await onLogout()} variant="primary" size="sm">
 											Sign out
 										</Button>
 									)}

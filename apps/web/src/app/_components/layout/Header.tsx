@@ -116,9 +116,8 @@ function Header({
 		},
 	});
 
-	const handleLogout = () => {
-		// Sign out using Cavos auth
-		void signOut();
+	const handleLogout = async () => {
+		await signOut();
 		// Clear cart data
 		setItems([]);
 		// Redirect to home
@@ -182,7 +181,7 @@ function Header({
 	return (
 		<PageHeader
 			title="CofiBlocks"
-			onLogout={handleLogout}
+			onLogout={async () => await handleLogout()}
 			onSignIn={handleSignIn}
 			showCart={showCart}
 			cartItems={transformedItems}
