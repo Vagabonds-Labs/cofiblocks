@@ -12,7 +12,7 @@ import { useSession } from "next-auth/react";
 
 export default function Home() {
 	const { t } = useTranslation();
-	const [_isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+	const [, setIsWalletModalOpen] = useState(false);
 	const { data: session } = useSession();
 	const user = session?.user;
 	const isAuthenticated = !!user;
@@ -21,9 +21,9 @@ export default function Home() {
 		setIsWalletModalOpen(true);
 	};
 
-	const _handleCloseWalletModal = () => {
-		setIsWalletModalOpen(false);
-	};
+	// const _handleCloseWalletModal = () => {
+	// 	setIsWalletModalOpen(false);
+	// };
 
 	const carouselData = [
 		{

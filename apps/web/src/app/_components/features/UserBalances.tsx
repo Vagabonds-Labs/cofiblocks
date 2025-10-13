@@ -63,7 +63,7 @@ export function UserBalances({ balances }: UserBalancesProps) {
 	const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] = useState(false);
 	const [selectedBalance, setSelectedBalance] = useState<BalanceItem | null>(null);
 	
-	const { control, handleSubmit, reset, formState: { errors: _errors }, watch } = useForm<WithdrawalFormData>({
+	const { control, handleSubmit, reset, watch } = useForm<WithdrawalFormData>({
 		defaultValues: {
 			walletAddress: "",
 		},

@@ -11,7 +11,7 @@ import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { authenticateUserCavos } from "~/server/services/cavos";
 import { balanceOf } from "~/server/contracts/cofi_collection";
 import { getProductPrices, buyProduct } from "~/server/contracts/marketplace";
-import { getDeliveryFee, PaymentToken } from "~/utils/contracts";
+import { getDeliveryFee, type PaymentToken } from "~/utils/contracts";
 import { getBalances, increaseAllowance, transfer } from "~/server/contracts/erc20";
 import { CofiBlocksContracts } from "~/utils/contracts";
 
@@ -23,24 +23,24 @@ interface Collectible {
 	totalQuantity: number;
 }
 
-interface _OrderWithRelations extends Order {
-	items: {
-		product: Product;
-		quantity: number;
-		price: number;
-		sellerId: string;
-	}[];
-	user: User;
-	deliveries?: {
-		id: string;
-		orderId: string;
-		province: string;
-		address: string;
-		status: string;
-		payment_tx_hash: string | null;
-		createdAt: Date;
-	}[];
-}
+// interface _OrderWithRelations extends Order {
+// 	items: {
+// 		product: Product;
+// 		quantity: number;
+// 		price: number;
+// 		sellerId: string;
+// 	}[];
+// 	user: User;
+// 	deliveries?: {
+// 		id: string;
+// 		orderId: string;
+// 		province: string;
+// 		address: string;
+// 		status: string;
+// 		payment_tx_hash: string | null;
+// 		createdAt: Date;
+// 	}[];
+// }
 
 export const orderRouter = createTRPCRouter({
 	// Get a specific order

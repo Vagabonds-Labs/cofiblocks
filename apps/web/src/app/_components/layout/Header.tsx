@@ -29,8 +29,8 @@ function Header({
 }: HeaderProps) {
 	const router = useRouter();
 	const { t } = useTranslation();
-	const { data, status } = useSession();
-	const _user = data?.user;
+	const { status } = useSession();
+	// const _user = data?.user;
 	const isAuthenticated = status === "authenticated";
 	const utils = api.useUtils();
 	const [, setItems] = useAtom(cartItemsAtom);

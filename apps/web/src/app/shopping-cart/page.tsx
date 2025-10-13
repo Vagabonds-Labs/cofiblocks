@@ -94,13 +94,6 @@ export default function ShoppingCart() {
 			void refetchCart();
 		},
 	});
-	const { mutate: clearCart } = api.cart.clearCart.useMutation({
-		onSuccess: () => {
-			setCartItems([]);
-			void refetchCart();
-		},
-	});
-
 	const handleRemove = (cartItemId: string) => {
 		setItemToDelete(cartItemId);
 	};
@@ -114,33 +107,6 @@ export default function ShoppingCart() {
 
 	const cancelDelete = () => {
 		setItemToDelete(null);
-	};
-
-	const _handleBuy = async () => {
-		if (!cart) return;
-
-		const token_ids = cart.items.map((item) => item.product.tokenId.toString());
-		const token_amounts = cart.items.map((item) => item.quantity.toString());
-		const totalPrice = cart.items.reduce(
-			(total, item) => total + item.product.price * item.quantity,
-			0,
-		);
-
-		console.log("buying items", token_ids, token_amounts, totalPrice);
-		try {
-			const mutation = api.marketplace.buyProducts.useMutation();
-			const tx_hash = await mutation.mutateAsync({
-				tokenIds: token_ids,
-				tokenAmounts: token_amounts,
-				paymentToken: "USDC",
-			});
-			alert(`Items bought successfully tx hash: ${tx_hash}`);
-			// Clear cart after successful purchase
-			clearCart();
-			void refetchCart();
-		} catch (error) {
-			console.error("Error buying items:", error);
-		}
 	};
 
 	const calculateTotalPrice = (price: number): number => {

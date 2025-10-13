@@ -115,7 +115,7 @@ export default function AuthForm({ initialMode = "signin" }: AuthFormProps) {
 			await resendVerificationMutation.mutateAsync({ email });
 			setResendSuccess(true);
 			setError("");
-		} catch (_error) {
+		} catch {
 			setError(t("error.registration_failed"));
 		} finally {
 			setIsResendingVerification(false);

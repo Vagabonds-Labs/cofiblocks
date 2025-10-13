@@ -183,7 +183,7 @@ export default function RegisterCoffee() {
 								if (value) {
 									setValue("coffeeScore", Number.parseInt(value));
 								} else {
-									setValue("coffeeScore", undefined as any);
+									setValue("coffeeScore", 100);
 								}
 							}}
 							className="w-full border border-surface-border rounded p-2"
