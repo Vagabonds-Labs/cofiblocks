@@ -109,7 +109,7 @@ export const productRouter = createTRPCRouter({
 			const stock = input.ground_coffee_stock + input.beans_coffee_stock;
 			console.log("Stock", stock);
 			try {
-				tx = await createProduct(BigInt(stock), BigInt(input.price), userAuthData);
+				tx = await createProduct(BigInt(stock), BigInt(input.price * 10**6), userAuthData);
 			} catch (error) {
 				if (error instanceof Error && error.message.includes("Not producer or roaster")) {
 					throw new TRPCError({ code: "BAD_REQUEST", message: "User is not a producer or roaster" });

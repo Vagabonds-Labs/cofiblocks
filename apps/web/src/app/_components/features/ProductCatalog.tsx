@@ -42,7 +42,9 @@ export default function ProductCatalog() {
 
 	const calculateTotalPrice = (price: number): number => {
 		const fee = (price * MARKET_FEE_BPS) / 10000;
-		return price + fee;
+		const raw_price = price + fee;
+		// round to 2 decimal places
+		return Math.round(raw_price * 1000) / 1000;
 	};
 
 	const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
