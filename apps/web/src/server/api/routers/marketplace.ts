@@ -112,7 +112,7 @@ export const marketplaceRouter = createTRPCRouter({
 				throw new Error("User email not found");
 			}
 			const userAuthData = await registerUser(ctx.session.user.email, "1234");
-			const _tx = await createProduct(
+			await createProduct(
 				BigInt(input.initialStock),
 				BigInt(input.price_usd),
 				userAuthData,

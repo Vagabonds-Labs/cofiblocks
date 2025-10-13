@@ -32,9 +32,6 @@ export default function Collectibles() {
 	const [collectibles, setCollectibles] = useState<CollectibleDisplay[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const utils = api.useUtils();
-	const { data: session } = useSession();
-	const user_session = session?.user;
-	const _isAuthenticated = !!user_session;
 
 	const productsQuery = api.order.getUserCollectibles.useQuery();
 

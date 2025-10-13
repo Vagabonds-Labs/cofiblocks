@@ -32,7 +32,7 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
 	const session = await getServerAuthSession();
 
 	// Check for Auth token in headers
-	const _authHeader = opts.headers.get("authorization");
+	// const _authHeader = opts.headers.get("authorization");
 
 	return {
 		db,

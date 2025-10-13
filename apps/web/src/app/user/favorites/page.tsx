@@ -2,12 +2,12 @@
 
 import type { JsonValue } from "@prisma/client/runtime/library";
 import { ProductCard } from "@repo/ui/productCard";
-import { useAtom } from "jotai";
+// import { useAtom } from "jotai";
 import { useSession } from "next-auth/react";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
-import { addItemAtom } from "~/store/cartAtom";
+// import { addItemAtom } from "~/store/cartAtom";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
 
@@ -36,7 +36,7 @@ export default function Favorites() {
 	const { t } = useTranslation();
 	const router = useRouter();
 	const [addedProduct, setAddedProduct] = React.useState<number | null>(null);
-	const [, _addItem] = useAtom(addItemAtom);
+	// const [, _addItem] = useAtom(addItemAtom);
 	const { data: session } = useSession();
 	const isAuthenticated = session?.user !== undefined;
 	const { refetch: refetchCart } = api.cart.getUserCart.useQuery();
@@ -49,8 +49,8 @@ export default function Favorites() {
 	// Get favorites from the database
 	const {
 		data: favorites,
-		refetch: _refetchFavorites,
-		error: _favoritesError,
+		// refetch: _refetchFavorites,
+		// error: _favoritesError,
 	} = api.favorites.getUserFavorites.useQuery(undefined, {
 		retry: false,
 		enabled: isAuthenticated,

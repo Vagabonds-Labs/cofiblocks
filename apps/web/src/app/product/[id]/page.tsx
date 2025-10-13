@@ -33,8 +33,8 @@ interface RawMetadata {
 export default function ProductPage() {
 	const { t } = useTranslation();
 	const { data: session } = useSession();
-	const [_isWalletModalOpen, setIsWalletModalOpen] = useState(false);
-	const _utils = api.useUtils();
+	const [, setIsWalletModalOpen] = useState(false);
+	// const _utils = api.useUtils();
 	const params = useParams();
 	const idParam = params?.id;
 	const id =
@@ -116,9 +116,9 @@ export default function ProductPage() {
 		setIsWalletModalOpen(true);
 	};
 
-	const _handleCloseWalletModal = () => {
-		setIsWalletModalOpen(false);
-	};
+	// const _handleCloseWalletModal = () => {
+	// 	setIsWalletModalOpen(false);
+	// };
 
 	const parseMetadata = (metadata: string | null): ParsedMetadata => {
 		try {

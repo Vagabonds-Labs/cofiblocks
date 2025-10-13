@@ -25,7 +25,12 @@ const schema = z.object({
 	beans_coffee_stock: z.number().min(0, "Beans coffee stock must be a positive number"),
 	description: z.string().min(1, "Description is required"),
 	variety: z.string().min(1, "Variety is required"),
-	coffeeScore: z.number().optional(),
+	coffeeScore: z.union([z.number(), z.nan()]).optional().transform((val) => {
+		if (val === undefined || Number.isNaN(val)) {
+			return 100;
+		}
+		return val;
+	}),
 	image: z.string().optional(),
 });
 
@@ -62,6 +67,7 @@ export default function RegisterCoffee() {
 		const submissionData = {
 			...data,
 			price: Number.parseFloat(data.price),
+			coffeeScore: data.coffeeScore ?? 100,
 		};
 		try {
 			await mutation.mutateAsync({
@@ -137,8 +143,18 @@ export default function RegisterCoffee() {
 						<input
 							{...register("coffeeScore", {
 								valueAsNumber: true,
-								min: { value: 0, message: "Score must be at least 0" },
-								max: { value: 100, message: "Score must be at most 100" },
+								validate: (value) => {
+									if (Number.isNaN(value)) {
+										return true; // Allow empty values (NaN when empty)
+									}
+									if (value < 0) {
+										return "Score must be at least 0";
+									}
+									if (value > 100) {
+										return "Score must be at most 100";
+									}
+									return true;
+								},
 							})}
 							type="text"
 							min="0"
@@ -164,10 +180,11 @@ export default function RegisterCoffee() {
 									value = value.slice(0, 3);
 								}
 								e.target.value = value;
-								setValue(
-									"coffeeScore",
-									value ? Number.parseInt(value) : undefined,
-								);
+								if (value) {
+									setValue("coffeeScore", Number.parseInt(value));
+								} else {
+									setValue("coffeeScore", 100);
+								}
 							}}
 							className="w-full border border-surface-border rounded p-2"
 							placeholder={t("score_placeholder")}

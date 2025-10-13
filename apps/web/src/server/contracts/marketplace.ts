@@ -72,8 +72,11 @@ export async function createProduct(
 	price: bigint,
 	userAuthData: UserAuthData,
 ) {
+	if (price === 0n) {
+		throw new Error("Price cannot be 0");
+	}
 	const formattedInitialStock = format_number(initialStock);
-	const formattedPrice = format_number(price * 10n**6n);
+	const formattedPrice = format_number(price);
 	const calldata = [
 		formattedInitialStock.high,
 		formattedInitialStock.low,

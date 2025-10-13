@@ -45,7 +45,7 @@ interface OrderReviewProps {
 	readonly isConfirmed: boolean;
 }
 
-const _MARKET_FEE_BPS = process.env.MARKET_FEE_BPS ? parseInt(process.env.MARKET_FEE_BPS) : 5000;
+// const _MARKET_FEE_BPS = process.env.MARKET_FEE_BPS ? parseInt(process.env.MARKET_FEE_BPS) : 5000;
 
 export default function OrderReview({
 	onCurrencySelect,
@@ -114,7 +114,7 @@ export default function OrderReview({
 			}
 
 			// Create order in the database
-			const _result = await createOrder.mutateAsync({
+			await createOrder.mutateAsync({
 				cartId: cart.id, 
 				paymentToken: selectedCurrency as PaymentToken,
 				deliveryAddress: deliveryMethod === "home" ? deliveryAddress : undefined,

@@ -44,7 +44,7 @@ export function ProducerInfo({
 		goodPractices: farmGoodPractices ?? t("farm_good_practices_placeholder"),
 	};
 
-	const _openFarmModal = () => setIsFarmModalOpen(true);
+	// const _openFarmModal = () => setIsFarmModalOpen(true);
 	const closeFarmModal = () => setIsFarmModalOpen(false);
 
 	return (
