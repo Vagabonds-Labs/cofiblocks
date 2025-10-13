@@ -53,7 +53,6 @@ export default function DeliveryMethod({ onNext }: DeliveryMethodProps) {
 							/>
 						}
 						label={t("send_to_my_home")}
-						sublabel={t("plus_20_usd")}
 						isSelected={selectedMethod === "home"}
 						onClick={() => {
 							setSelectedMethod("home");
@@ -94,7 +93,6 @@ export default function DeliveryMethod({ onNext }: DeliveryMethodProps) {
 										/>
 									}
 									label={location.label}
-									sublabel={`+ ${location.price} USD`}
 									isSelected={selectedLocation === location.value}
 									onClick={() => {
 										setSelectedLocation(location.value);
