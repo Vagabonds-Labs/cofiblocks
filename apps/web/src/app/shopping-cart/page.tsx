@@ -111,7 +111,8 @@ export default function ShoppingCart() {
 
 	const calculateTotalPrice = (price: number): number => {
 		const fee = (price * MARKET_FEE_BPS) / 10000;
-		return price + fee;
+		const total = price + fee;
+		return Math.round(total * 1000) / 1000;
 	};
 
 	const totalPrice =

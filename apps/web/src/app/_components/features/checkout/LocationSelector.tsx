@@ -15,8 +15,8 @@ export default function LocationSelector({ onSelect }: LocationSelectorProps) {
 	const [selectedLocation, setSelectedLocation] = useState<string>("");
 
 	const locations = [
-		{ value: "gam", label: t("im_in_gam"), price: t("plus_20_usd") },
-		{ value: "outside", label: t("im_not_in_gam"), price: t("plus_40_usd") },
+		{ value: "gam", label: t("im_in_gam") },
+		{ value: "outside", label: t("im_not_in_gam") },
 	];
 
 	const handleSelect = (location: string) => {
@@ -42,7 +42,6 @@ export default function LocationSelector({ onSelect }: LocationSelectorProps) {
 								/>
 							}
 							label={location.label}
-							sublabel={location.price}
 							isSelected={selectedLocation === location.value}
 							onClick={() => handleSelect(location.value)}
 						/>
