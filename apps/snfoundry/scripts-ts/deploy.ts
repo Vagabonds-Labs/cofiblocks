@@ -58,22 +58,23 @@ const string_to_byte_array = (str: string): string[] => {
 
 const deployScript = async (): Promise<void> => {
 	console.log("🚀 Creating deployment calls...");
+	const admin_address = deployer.address;
 
 	const { address: cofiCollectionAddress } = await deployContract({
 		contract: "CofiCollection",
 		constructorArgs: {
-			default_admin: deployer.address,
-			pauser: deployer.address,
-			minter: deployer.address,
-			uri_setter: deployer.address,
-			upgrader: deployer.address,
+			default_admin: admin_address,
+			pauser: admin_address,
+			minter: admin_address,
+			uri_setter: admin_address,
+			upgrader: admin_address,
 		},
 	});
 
 	const { address: distributionAddress } = await deployContract({
 		contract: "Distribution",
 		constructorArgs: {
-			admin: deployer.address,
+			admin: admin_address,
 		},
 	});
 
@@ -82,7 +83,7 @@ const deployScript = async (): Promise<void> => {
 		constructorArgs: {
 			cofi_collection_address: cofiCollectionAddress,
 			distribution_address: distributionAddress,
-			admin: deployer.address,
+			admin: admin_address,
 			market_fee: BigInt(5000), // 50 %
 		},
 	});
