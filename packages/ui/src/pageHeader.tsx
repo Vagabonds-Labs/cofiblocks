@@ -105,7 +105,7 @@ export function PageHeader({
 					</Link>
 				</div>
 
-				<div className="flex items-center gap-4">
+				<div className="flex items-center ml-4">
 					{rightActions}
 
 					<Link
