@@ -110,11 +110,20 @@ export default function ProductCatalog() {
 			metadata = product.nftMetadata as NftMetadata;
 		}
 
-		const imageUrl = metadata?.imageUrl
-			? metadata.imageUrl.startsWith("Qm")
-				? `${process.env.NEXT_PUBLIC_GATEWAY_URL}/ipfs/${metadata.imageUrl}`
-				: metadata.imageUrl
-			: "/images/cafe1.webp";
+		const imageUrl = (() => {
+			if (!metadata?.imageUrl) return "/images/cafe1.webp";
+			
+			if (metadata.imageUrl.startsWith("Qm")) {
+				const gatewayUrl = process.env.NEXT_PUBLIC_GATEWAY_URL ?? "https://gateway.pinata.cloud";
+				return `${gatewayUrl}/ipfs/${metadata.imageUrl}`;
+			}
+			
+			if (metadata.imageUrl.startsWith("http")) {
+				return metadata.imageUrl;
+			}
+			
+			return "/images/cafe1.webp";
+		})();
 
 		const handleAddToCart = () => {
 
@@ -123,7 +132,7 @@ export default function ProductCatalog() {
 				{
 					productId: product.id,
 					quantity: 1,
-					is_grounded: product.ground_stock > 0 ? true : false,
+					is_grounded: product.ground_stock > 0,
 				},
 				{
 					onSuccess: () => {
