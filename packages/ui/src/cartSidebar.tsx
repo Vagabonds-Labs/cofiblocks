@@ -4,6 +4,7 @@ import Button from "./button";
 import { Separator } from "./separator";
 import { Sidebar } from "./sidebar";
 import { Text } from "./typography";
+import { useTranslation } from "react-i18next";
 
 const MARKET_FEE_BPS = 5000; // 50%
 
@@ -26,6 +27,7 @@ export function CartSidebar({
 	onCheckout,
 	checkoutLabel = "Checkout",
 }: CartSidebarProps) {
+	const { t } = useTranslation();
 	const calculateTotalPrice = (price: number): number => {
 		const fee = (price * MARKET_FEE_BPS) / 10000;
 		return price + fee;
@@ -39,19 +41,7 @@ export function CartSidebar({
 			<Separator className="mb-2" />
 			<div className="flex flex-col gap-2">
 				<div className="flex justify-between items-center">
-					<Text className="text-base text-gray-500">Subtotal</Text>
-					<Text className="text-base font-medium">
-						${basePrice?.toFixed(2)} USD
-					</Text>
-				</div>
-				<div className="flex justify-between items-center">
-					<Text className="text-base text-gray-500">Fee (50%)</Text>
-					<Text className="text-base font-medium">
-						${((totalPrice ?? 0) - (basePrice ?? 0)).toFixed(2)} USD
-					</Text>
-				</div>
-				<div className="flex justify-between items-center">
-					<Text className="text-base font-semibold">Total</Text>
+					<Text className="text-base font-semibold">{t("cart.total")}</Text>
 					<Text className="text-lg font-bold">
 						${totalPrice?.toFixed(2)} USD
 					</Text>

@@ -17,11 +17,13 @@ import { CurrencySelector } from "./CurrencySelector";
 import type { PaymentToken } from "~/utils/contracts";
 
 const getImageUrl = (src: string) => {
+	const IPFS_GATEWAY_URL = "https://gateway.pinata.cloud/ipfs/";
+	
 	if (src.startsWith("Qm")) {
-		return `${process.env.NEXT_PUBLIC_GATEWAY_URL}/ipfs/${src}`;
+		return `${IPFS_GATEWAY_URL}${src}`;
 	}
 	if (src.startsWith("ipfs://")) {
-		return `${process.env.NEXT_PUBLIC_GATEWAY_URL}/ipfs/${src.replace("ipfs://", "")}`;
+		return `${IPFS_GATEWAY_URL}${src.replace("ipfs://", "")}`;
 	}
 	if (
 		src.startsWith("http://") ||
@@ -79,9 +81,13 @@ export default function OrderReview({
 		}
 	);
 
+	// Calculate total package count from cart items
+	const totalPackageCount = cartItems.reduce((total, item) => total + item.quantity, 0);
+
 	const { data: deliveryFee } = api.order.getDeliveryFee.useQuery(
 		{
 			province: deliveryAddress.city,
+			packageCount: totalPackageCount,
 		},
 		{
 			enabled: !!deliveryAddress.city,
@@ -96,7 +102,8 @@ export default function OrderReview({
 		return total + unitPrice * item.quantity;
 	}, 0);
 
-	const totalPrice = productPrice + (deliveryFee ?? 0);
+	const deliveryAmount = Number.isFinite(deliveryFee ?? 0) ? (deliveryFee ?? 0) : 0;
+	const totalPrice = productPrice + deliveryAmount;
 
 	const handleCurrencySelect = (currency: string) => {
 		setSelectedCurrency(currency.toUpperCase());
@@ -174,8 +181,8 @@ export default function OrderReview({
 								<div className="flex flex-col items-end">
 									{isLoadingPrices ? (
 										<div className="flex items-center gap-2">
-											<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
-											<span className="text-sm text-gray-500">{t("loading_prices")}</span>
+								<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900" />
+								<span className="text-sm text-gray-500">{t("loading")}</span>
 										</div>
 									) : (
 										<>
@@ -222,7 +229,7 @@ export default function OrderReview({
 						<span className="text-gray-600">{t("subtotal")}</span>
 						{isLoadingPrices ? (
 							<div className="flex items-center gap-2">
-								<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
+								<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900" />
 								<span className="text-sm text-gray-500">{t("loading")}</span>
 							</div>
 						) : (
@@ -236,7 +243,7 @@ export default function OrderReview({
 					<div className="flex justify-between py-2">
 						<span className="text-gray-600">{t("delivery_price")}</span>
 						<span>
-							+{deliveryFee?.toFixed(2)} {selectedCurrency}
+							+{deliveryAmount.toFixed(2)} {selectedCurrency}
 						</span>
 					</div>
 					<Separator />
@@ -246,7 +253,7 @@ export default function OrderReview({
 						<div className="flex flex-col items-end gap-1">
 							{isLoadingPrices ? (
 								<div className="flex items-center gap-2">
-									<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
+									<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900" />
 									<span className="text-sm text-gray-500">{t("loading")}</span>
 								</div>
 							) : (
@@ -280,7 +287,7 @@ export default function OrderReview({
 					className={`w-full bg-yellow-400 hover:bg-yellow-500 text-black mt-6 h-14 ${cartItems.length === 0 || isLoadingPrices ? "opacity-50 cursor-not-allowed" : ""}`}
 					disabled={isProcessing || cartItems.length === 0 || isLoadingPrices}
 				>
-					{isProcessing ? t("processing_payment") : isLoadingPrices ? t("loading_prices") : t("proceed_to_payment")}
+				{isProcessing ? t("processing_payment") : isLoadingPrices ? t("loading") : t("proceed_to_payment")}
 				</Button>
 			</div>
 

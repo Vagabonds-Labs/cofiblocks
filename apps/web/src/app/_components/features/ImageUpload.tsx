@@ -52,7 +52,8 @@ export function ImageUpload({
 				}
 
 				// Update preview URL to use IPFS gateway
-				const ipfsUrl = `${process.env.NEXT_PUBLIC_GATEWAY_URL}/ipfs/${data.ipfsHash}`;
+				const IPFS_GATEWAY_URL = "https://gateway.pinata.cloud/ipfs/";
+				const ipfsUrl = `${IPFS_GATEWAY_URL}${data.ipfsHash}`;
 				setPreviewUrl(ipfsUrl);
 				onImageUploaded(data.ipfsHash);
 

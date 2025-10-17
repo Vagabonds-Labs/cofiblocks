@@ -67,7 +67,19 @@
 		"prepared": "Preparado",
 		"shipped": "Enviado",
 		"completed": "Concluído",
-		"cancelled": "Cancelado"
+		"cancelled": "Cancelado",
+		"failed": "Falhou"
+	},
+	"order_status_message": {
+		"pending": "Seu pedido foi recebido e está sendo processado",
+		"paid": "Pagamento confirmado! Seu café está sendo preparado",
+		"prepared": "Seu café está pronto e será enviado em breve",
+		"shipped": "Seu café está a caminho!",
+		"delivered": "Seu café chegou. Aproveite!",
+		"completed": "Seu pedido foi concluído com sucesso",
+		"canceled": "Este pedido foi cancelado",
+		"cancelled": "Este pedido foi cancelado",
+		"failed": "Este pedido falhou ao ser processado"
 	},
 	"ordered_by": "Pedido por {{name}}",
 	"price_with_currency": "{{price}} USD",
@@ -128,10 +140,13 @@
 	"bags_available_count": "{{count}} sacos disponíveis",
 	"ground_coffee_stock": "Café moído",
 	"beans_coffee_stock": "Café grão",
-	"unit_price": "Preço por unidade ({{weight}})",
+	"unit_price": "Preço por unidade",
 	"sold_out": "ESGOTADO",
 	"add_to_favorites": "Adicionar aos favoritos",
 	"remove_from_favorites": "Remover dos favoritos",
+	"error_insufficient_stock": "Estoque insuficiente para a quantidade solicitada",
+	"error_insufficient_stock_variant": "Apenas {{count}} disponíveis para esta opção",
+	"added_to_cart": "Adicionado ao carrinho",
 	"edit_my_farm": "Editar minha fazenda",
 	"process": "Processo",
 
@@ -162,7 +177,8 @@
 	},
 	"available_stock": "Estoque Disponível",
 	"units": "unidades",
-	"total": "total",
+	"total": "/Total",
+"total_per_units": "/Total por unidades",
 	"adding_to_cart": "Adicionando ao carrinho...",
 	"add_to_cart": "Adicionar ao carrinho",
 	"shopping_cart_title": "Meu carrinho",
@@ -248,6 +264,7 @@
 	"im_in_gam": "Estou em GAM",
 	"im_not_in_gam": "Não estou em GAM",
 	"check_meetup_calendar": "Ver calendário de encontros",
+	"only_costa_rica": "Apenas na Costa Rica",
 	"search_seller_placeholder": "Procurar pelo nome do vendedor",
 	"date": "Data: {{date}}",
 	"status": "Status",
@@ -284,6 +301,11 @@
 	"choose_coffee_photo": "Escolher foto do café",
 	"coffee_variety": "Variedade de café",
 	"type_here": "Digite aqui",
+	"delivery_address_title": "Endereço de entrega",
+	"address_label": "Endereço",
+	"apartment_suite_label": "Apartamento, suíte, etc",
+	"city_label": "Cidade",
+	"zip_code_label": "CEP",
 	"coffee_description": "Descrição do café",
 	"coffee_score": "Pontuação do Café",
 	"not_mandatory": "não obrigatório",
@@ -321,7 +343,10 @@
 		"remove_confirmation_yes": "Sim, remover",
 		"cancel": "Cancelar",
 		"total": "Total",
-		"checkout": "Finalizar compra"
+		"checkout": "Finalizar compra",
+		"subtotal": "Subtotal",
+		"fee": "Taxa (50%)",
+		"each": "cada"
 	},
 	"click_to_upload": "Clique para fazer upload",
 	"no_collectibles_found": "Nenhum colecionável encontrado",
@@ -339,6 +364,8 @@
 	"track_in_my_orders": "Acompanhar em Meus Pedidos",
 	"subtotal": "Subtotal",
 	"amount_with_currency": "{{amount}} USD",
+
+	"marketplace": "Mercado",
 	"amount_with_currency_short": "${amount} USD",
 	"stock_status": {
 		"in_stock": "{{count}} em estoque",
@@ -414,5 +441,22 @@
 	"previous_slide": "Slide anterior",
 	"next_slide": "Próximo slide",
 	"no_orders_found": "Nenhum pedido encontrado",
-	"loading_collectibles": "Carregando colecionáveis..."
+	"loading_collectibles": "Carregando colecionáveis...",
+
+	"unknown_product": "Produto desconhecido",
+	"unknown_seller": "Vendedor desconhecido",
+	"unknown_buyer": "Comprador desconhecido",
+	"unknown_roast": "Torra desconhecida",
+	"unknown": "Desconhecido",
+
+	"user_balances": "Seus Saldos",
+	"claim_balance": "Reivindicar Saldo",
+	"available_to_claim": "Disponível para reivindicar",
+	"claiming": "Reivindicando...",
+	"claim": "Reivindicar",
+	"withdraw": "Sacar",
+	"available_balance": "Saldo Disponível",
+	"enter_destination_wallet_address": "Digite o endereço da carteira de destino (0x...)",
+	"invalid_wallet_address_message": "Por favor, digite um endereço de carteira válido (começa com 0x e tem 66 caracteres no total)",
+	"processing": "Processando..."
 }

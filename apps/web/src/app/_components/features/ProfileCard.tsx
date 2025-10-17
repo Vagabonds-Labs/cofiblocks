@@ -3,6 +3,7 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { formatWalletAddress } from "~/utils/formatting";
 
 const BlockiesSvg = dynamic<{ address: string; size: number; scale: number }>(
 	() => import("blockies-react-svg"),
@@ -29,7 +30,7 @@ function ProfileCard({ user }: ProfileCardProps) {
 
 	const copyToClipboard = async () => {
 		try {
-			await navigator.clipboard.writeText(user.walletAddress);
+			await navigator.clipboard.writeText(formatWalletAddress(user.walletAddress));
 			setCopied(true);
 			setTimeout(() => setCopied(false), 2000);
 		} catch (err) {
@@ -112,7 +113,7 @@ function ProfileCard({ user }: ProfileCardProps) {
 							<div className="bg-surface-primary-soft rounded-lg p-4 border border-surface-border">
 								<div className="flex items-center justify-between">
 									<span className="text-sm text-content-body-default font-mono break-all pr-4">
-										{user.walletAddress}
+										{formatWalletAddress(user.walletAddress)}
 									</span>
 									<button
 										type="button"

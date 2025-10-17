@@ -75,7 +75,7 @@ export function Sidebar({
 									onClick={onClose}
 									variant="primary"
 									size="lg"
-									className="relative z-[70] p-2 hover:bg-gray-100 rounded-full transition-colors !bg-transparent !text-content-body-default !border-0"
+									className="relative z-[70] p-2 hover:bg-warning-default/10 rounded-full transition-colors !bg-transparent !text-warning-default !border-0"
 									aria-label="Close sidebar"
 								/>
 							</div>

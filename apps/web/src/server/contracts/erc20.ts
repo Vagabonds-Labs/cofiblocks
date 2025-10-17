@@ -44,6 +44,7 @@ export const getBalances = async (walletAddress: string, token: PaymentToken, fo
     if (!formatted) {
         return balanceValue;
     }
+  
     const decimals = token === PaymentToken.STRK ? 18 : 6;
     const balance = balanceValue / 10 ** decimals;
     return balance;

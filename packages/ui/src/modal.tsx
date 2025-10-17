@@ -58,7 +58,7 @@ function Modal({ isOpen, onClose, title, children, buttons = [] }: ModalProps) {
 					))}
 					{buttons.length === 0 && (
 						<Button
-							className="w-full"
+							className="w-full bg-warning-default hover:bg-warning-default/90 text-black border-warning-default"
 							onClick={onClose}
 							variant="secondary"
 							size="md"

@@ -3,6 +3,7 @@
 import { TrashIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import Button from "./button";
 import { Text } from "./typography";
 
@@ -81,16 +82,35 @@ export function CartContent({
 		quantityLabel: "Quantity",
 	},
 }: CartContentProps) {
+	const { t } = useTranslation();
 	const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
 	const getImageUrl = (nftMetadata: string): string => {
 		try {
 			const metadata = JSON.parse(nftMetadata) as { imageUrl: string };
-			return metadata.imageUrl.startsWith("Qm")
-				? `${process.env.NEXT_PUBLIC_GATEWAY_URL}/ipfs/${metadata.imageUrl}`
-				: metadata.imageUrl;
+			const imageUrl = metadata.imageUrl;
+			const IPFS_GATEWAY_URL = "https://gateway.pinata.cloud/ipfs/";
+			
+			if (!imageUrl) return "/images/cafe1.webp";
+			
+			// If it's already a full URL, use it
+			if (imageUrl.startsWith("http")) return imageUrl;
+			
+			// If it's an IPFS hash, construct the gateway URL
+			if (imageUrl.startsWith("Qm")) {
+				return `${IPFS_GATEWAY_URL}${imageUrl}`;
+			}
+			
+			// If it's an IPFS URL, extract hash and construct gateway URL
+			if (imageUrl.startsWith("ipfs://")) {
+				const hash = imageUrl.replace("ipfs://", "");
+				return `${IPFS_GATEWAY_URL}${hash}`;
+			}
+			
+			// Fallback to default image
+			return "/images/cafe1.webp";
 		} catch {
-			return "/images/default.webp";
+			return "/images/cafe1.webp";
 		}
 	};
 
@@ -148,7 +168,7 @@ export function CartContent({
 							</div>
 							<div className="flex items-center justify-between mt-1">
 								<Text className="text-sm text-gray-500">
-									${item.product.price.toFixed(2)} each
+									{/* per-item price hidden as we only show total */}
 								</Text>
 								{onRemoveItem && (
 									<button
@@ -163,7 +183,7 @@ export function CartContent({
 							</div>
 							<div>
 								<Text className="text-sm text-gray-500">
-									{item.is_grounded ? "Grano" : "Molido"}
+									{item.is_grounded ? t("coffee_type.bean") : t("coffee_type.grounded")}
 								</Text>
 							</div>
 						</div>

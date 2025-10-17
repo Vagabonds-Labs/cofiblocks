@@ -35,3 +35,21 @@ export function format_number(n: bigint): FormattedNumber {
 		low: "0x0",
 	};
 }
+
+/**
+ * Formats a wallet address with proper padding for copy-paste compatibility
+ * @param address - The wallet address to format
+ * @returns A formatted wallet address with proper padding
+ */
+export function formatWalletAddress(address: string): string {
+	if (!address) return "";
+	
+	// Remove 0x prefix if present
+	const cleanAddress = address.startsWith("0x") ? address.slice(2) : address;
+	
+	// Pad with zeros to make it 64 characters (32 bytes)
+	const paddedAddress = cleanAddress.padStart(64, "0");
+	
+	// Add 0x prefix back
+	return `0x${paddedAddress}`;
+}

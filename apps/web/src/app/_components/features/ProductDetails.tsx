@@ -6,6 +6,7 @@ import { H2, Text } from "@repo/ui/typography";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { api } from "~/trpc/react";
@@ -77,17 +78,22 @@ export default function ProductDetails({
 
 	const { t } = useTranslation();
 	const [quantity, setQuantity] = useState(1);
-	const [selectedImage, setSelectedImage] = useState(0);
 	const [selectedOption, setSelectedOption] = useState<"bean" | "grounded">("grounded");
 	const router = useRouter();
 	const [isAddingToCart, setIsAddingToCart] = useState(false);
 	const { refetch: refetchCart } = api.cart.getUserCart.useQuery();
 	const { data: farmInfo } = api.product.getProductFarmInfo.useQuery({ productId: product.id });
-	const { mutate: addToCart } = api.cart.addToCart.useMutation({
-		onSuccess: () => {
-			void refetchCart();
-		},
-	});
+    const { mutate: addToCart } = api.cart.addToCart.useMutation({
+        onSuccess: () => {
+            toast.success(t("added_to_cart"));
+            void refetchCart();
+        },
+        onError: (err) => {
+            // Show friendly message for stock errors
+            toast.error(t("error_insufficient_stock"));
+            console.error(err);
+        },
+    });
 	const { data: session } = useSession();
 
 	// Only mark as sold out if stock is 0 or type is SoldOut
@@ -97,9 +103,6 @@ export default function ProductDetails({
 	// Update productImages to use getImageUrl
 	const productImages = [
 		{ id: "main", src: getImageUrl(image) },
-		{ id: "detail-1", src: "/images/product-detail-2.webp" },
-		{ id: "detail-2", src: "/images/product-detail-3.webp" },
-		{ id: "detail-3", src: "/images/product-detail-4.webp" },
 	];
 
 	const handleAddToCart = () => {
@@ -212,15 +215,15 @@ export default function ProductDetails({
 			</div>
 
 			{/* Main Content */}
-			<div className="max-w-7xl mx-auto px-4 pt-8">
+			<div className="max-w-7xl mx-auto px-4">
 				<div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
 					{/* Image Gallery */}
 					<div className="space-y-4">
 						<div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100">
-							{productImages[selectedImage] && (
+							{productImages[0] && (
 								<>
 									<Image
-										src={productImages[selectedImage].src}
+										src={productImages[0].src}
 										alt={name}
 										fill
 										className="object-cover hover:scale-105 transition-transform duration-300"
@@ -237,28 +240,6 @@ export default function ProductDetails({
 								</>
 							)}
 						</div>
-						{productImages.length > 1 && (
-							<div className="grid grid-cols-4 gap-4">
-								{productImages.map((img, index) => (
-									<button
-										key={img.id}
-										onClick={() => setSelectedImage(index)}
-										className={`relative aspect-square rounded-lg overflow-hidden ${
-											selectedImage === index ? "ring-2 ring-blue-500" : ""
-										}`}
-										type="button"
-									>
-										<Image
-											src={img.src}
-											alt={`${name} ${index + 1}`}
-											fill
-											className="object-cover"
-											sizes="(max-width: 768px) 25vw, 20vw"
-										/>
-									</button>
-								))}
-							</div>
-						)}
 					</div>
 
 					{/* Product Info */}

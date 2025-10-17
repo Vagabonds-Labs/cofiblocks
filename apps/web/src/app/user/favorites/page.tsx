@@ -80,14 +80,23 @@ export default function Favorites() {
 	};
 
 	const getImageUrl = (nftMetadata: JsonValue): string => {
-		if (typeof nftMetadata !== "string") return "/images/default.webp";
+		if (typeof nftMetadata !== "string") return "/images/cafe1.webp";
 		try {
 			const metadata = JSON.parse(nftMetadata) as { imageUrl: string };
-			return metadata.imageUrl.startsWith("Qm")
-				? `${process.env.NEXT_PUBLIC_GATEWAY_URL}/ipfs/${metadata.imageUrl}`
-				: metadata.imageUrl;
+			const imageUrl = metadata.imageUrl;
+			const IPFS_GATEWAY_URL = "https://gateway.pinata.cloud/ipfs/";
+			
+			if (!imageUrl) return "/images/cafe1.webp";
+			
+			if (imageUrl.startsWith("http")) return imageUrl;
+			if (imageUrl.startsWith("Qm")) return `${IPFS_GATEWAY_URL}${imageUrl}`;
+			if (imageUrl.startsWith("ipfs://")) {
+				const hash = imageUrl.replace("ipfs://", "");
+				return `${IPFS_GATEWAY_URL}${hash}`;
+			}
+			return "/images/cafe1.webp";
 		} catch {
-			return "/images/default.webp";
+			return "/images/cafe1.webp";
 		}
 	};
 

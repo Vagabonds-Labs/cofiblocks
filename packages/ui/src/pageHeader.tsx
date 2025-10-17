@@ -10,6 +10,7 @@ import NextImage from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import Button from "./button";
 import { CartContent } from "./cartContent";
 import { CartSidebar } from "./cartSidebar";
@@ -62,6 +63,7 @@ export function PageHeader({
 	onBackClick,
 	rightActions,
 }: PageHeaderProps) {
+	const { t } = useTranslation();
 	const [isCartOpen, setIsCartOpen] = useState(false);
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	const router = useRouter();
@@ -105,7 +107,7 @@ export function PageHeader({
 					</Link>
 				</div>
 
-				<div className="flex items-center gap-4">
+				<div className="flex items-center ml-4">
 					{rightActions}
 
 					<Link
@@ -151,7 +153,7 @@ export function PageHeader({
 									{profileOptions}
 									{onLogout && (
 										<Button onClick={async () => await onLogout()} variant="primary" size="sm">
-											Sign out
+											{t("log_out")}
 										</Button>
 									)}
 								</div>
@@ -160,13 +162,13 @@ export function PageHeader({
 					) : (
 						<div className="flex items-center space-x-4">
 							<Button onClick={onSignIn} variant="primary" size="sm">
-								Sign in
+								{t("auth.sign_in")}
 							</Button>
 							<Link
 								href="/auth?mode=signup"
 								className="text-sm font-medium text-content-body-default hover:text-content-title transition-colors"
 							>
-								Create account
+								{t("auth.create_account_link")}
 							</Link>
 						</div>
 					)}
@@ -174,9 +176,10 @@ export function PageHeader({
 					<CartSidebar
 						isOpen={isCartOpen}
 						onClose={() => setIsCartOpen(false)}
-						title="Shopping Cart"
+						title={t("shopping_cart")}
 						totalPrice={totalPrice}
 						onCheckout={handleCheckout}
+						checkoutLabel={t("cart.checkout")}
 					>
 						<CartContent
 							items={cartItems}
