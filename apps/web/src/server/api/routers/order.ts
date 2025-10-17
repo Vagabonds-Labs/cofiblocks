@@ -11,7 +11,7 @@ import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { authenticateUserCavos } from "~/server/services/cavos";
 import { balanceOf } from "~/server/contracts/cofi_collection";
 import { getProductPrices, buyProduct } from "~/server/contracts/marketplace";
-import { getDeliveryFee, type PaymentToken } from "~/utils/contracts";
+import type { PaymentToken } from "~/utils/contracts";
 import { getBalances, increaseAllowance, transfer } from "~/server/contracts/erc20";
 import { CofiBlocksContracts } from "~/utils/contracts";
 
@@ -211,7 +211,12 @@ export const orderRouter = createTRPCRouter({
 
 			const balance = await getBalances(userdb.walletAddress, input.paymentToken as PaymentToken, false); 
 			// ^ make sure this returns BigInt in smallest units
-			if (balance < buffer) throw new TRPCError({ code: "BAD_REQUEST", message: "Insufficient balance" });
+			console.log(`Balance check: wallet=${userdb.walletAddress}, token=${input.paymentToken}, balance=${balance.toString()}, required=${buffer.toString()}`);
+			if (balance < buffer) {
+				console.log("Insufficient balance error");
+				throw new TRPCError({ code: "BAD_REQUEST", message: "Insufficient balance" });
+			}
+			console.log("Balance check passed");
 
 			// 5) Start DB transaction for stock + order creation only (no network I/O)
 			const order = await ctx.db.$transaction(async (tx) => {
@@ -236,7 +241,22 @@ export const orderRouter = createTRPCRouter({
 				}
 
 				const orderId = crypto.randomUUID();
-				const totalUsd = cart.items.reduce((s, i) => s + i.product.price * i.quantity, 0);
+				
+				// Calculate total with market fee (50%)
+				const MARKET_FEE_BPS = 5000; // 50%
+				const calculateTotalPrice = (price: number): number => {
+					const fee = (price * MARKET_FEE_BPS) / 10000;
+					const raw_price = price + fee;
+					return Math.round(raw_price * 100) / 100;
+				};
+				
+				const totalUsd = cart.items.reduce((s, i) => {
+					const itemTotalPrice = calculateTotalPrice(i.product.price);
+					console.log(`Price calculation for ${i.product.name}: base=${i.product.price}, total=${itemTotalPrice}, quantity=${i.quantity}`);
+					return s + itemTotalPrice * i.quantity;
+				}, 0);
+				console.log(`Order total calculated: ${totalUsd}`);
+				
 				const created = await tx.order.create({
 					data: {
 						id: orderId,
@@ -250,12 +270,13 @@ export const orderRouter = createTRPCRouter({
 
 				// Create order items (DB only)
 				for (const item of cart.items) {
+					const itemTotalPrice = calculateTotalPrice(item.product.price);
 					await tx.orderItem.create({
 						data: {
 						orderId: created.id,
 						productId: item.product.id,
 						quantity: item.quantity,
-						price: item.product.price, // USD display price
+						price: itemTotalPrice, // USD display price with market fee
 						is_grounded: item.is_grounded,
 						sellerId: item.product.owner ?? "",
 						},
@@ -284,34 +305,75 @@ export const orderRouter = createTRPCRouter({
 			});
 
 			// 6) On-chain phase (outside DB tx): approve & buy per line
+			console.log("Starting payment process for order:", order.id);
+			console.log("Payment token:", input.paymentToken);
+			console.log("Buffer amount:", buffer.toString());
+			
 			const userAuth = await authenticateUserCavos(user.email ?? "", ctx.db);
+			console.log("User authenticated, wallet address:", userAuth.wallet_address);
+			
+			console.log("Increasing allowance...");
 			await increaseAllowance(buffer, input.paymentToken as PaymentToken, CofiBlocksContracts.MARKETPLACE, userAuth);
+			console.log("Allowance increased successfully");
 
 			// Execute purchases; if any fails, mark order accordingly, and (optionally) restore stock in a compensating tx
 			try {
 				// Do the buys
+				console.log("Starting product purchases...");
 				for (const item of cart.items) {
+					console.log(`Buying product ${item.product.tokenId}, quantity: ${item.quantity}`);
 					const txHash = await buyProduct(
 						BigInt(item.product.tokenId),
 						BigInt(item.quantity),
 						input.paymentToken as PaymentToken,
 						userAuth
 					);
+					console.log(`Product ${item.product.tokenId} purchased, tx hash: ${txHash}`);
 					await ctx.db.orderItem.updateMany({
 						where: { orderId: order.id, productId: item.product.id },
 						data: { payment_tx_hash: txHash },
 					});
 				}
+				console.log("All products purchased successfully");
 
 				// Delivery fee
 				if (order.home_delivery) {
+					console.log("Processing home delivery fee...");
 					const owner = await ctx.db.user.findUnique(
 						{ where: { id: cart.items[0]?.product.owner ?? "" }, select: { walletAddress: true } });
 					if (!owner?.walletAddress) {
 						throw new TRPCError({ code: "NOT_FOUND", message: "Owner wallet not found" });
 					}
-					const deliveryFeeUnits = getDeliveryFee(input.deliveryAddress?.city ?? "");
+					console.log("Owner wallet found:", owner.walletAddress);
+					
+					// Calculate delivery fee based on package count
+					const gam = ["san_jose", "alajuela", "cartago", "heredia"];
+					const normalizedProvince = (input.deliveryAddress?.city ?? "").toLowerCase().replace(/\s+/g, '_');
+					
+					let basePrice: number;
+					if (gam.includes(normalizedProvince)) {
+						basePrice = process.env.GAM_DELIVERY_PRICE ? Number.parseInt(process.env.GAM_DELIVERY_PRICE) : 4;
+					} else {
+						basePrice = process.env.OUTSIDE_DELIVERY_PRICE ? Number.parseInt(process.env.OUTSIDE_DELIVERY_PRICE) : 5.5;
+					}
+					
+					// Calculate total package count from cart items
+					const totalPackageCount = cart.items.reduce((total, item) => total + item.quantity, 0);
+					
+					// Calculate shipping price based on package count
+					let totalPrice = basePrice;
+					if (totalPackageCount > 2) {
+						const additionalPackages = totalPackageCount - 2;
+						const additionalGroups = Math.ceil(additionalPackages / 2);
+						totalPrice = basePrice + (additionalGroups * 2);
+					}
+					
+					console.log(`Delivery fee calculation: basePrice=${basePrice}, packageCount=${totalPackageCount}, totalPrice=${totalPrice}`);
+					const deliveryFeeUnits = BigInt(Math.round(totalPrice * (10 ** 6)));
+					console.log("Sending delivery fee:", deliveryFeeUnits.toString());
+					
 					const feeTx = await transfer(deliveryFeeUnits, input.paymentToken as PaymentToken, owner.walletAddress, userAuth);
+					console.log("Delivery fee sent, tx hash:", feeTx);
 					await ctx.db.delivery.updateMany(
 						{ where: { orderId: order.id }, 
 						data: { payment_tx_hash: feeTx } 
@@ -328,22 +390,45 @@ export const orderRouter = createTRPCRouter({
 
 			} catch (e) {
 				// Mark failed; (optional) enqueue compensating restock job
+				console.error("Payment failed with error:", e);
 				await ctx.db.order.update({ where: { id: order.id }, data: { status: OrderStatus.FAILED } });
-				throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Payment failed", cause: e });
+				const errorMessage = e instanceof Error ? e.message : "Unknown payment error";
+				throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: `Payment failed: ${errorMessage}`, cause: e });
 			}
 		}),
 
 	getDeliveryFee: protectedProcedure.input(z.object({
 		province: z.string(),
+		packageCount: z.number().optional().default(1)
 	})).query(async ({ input }) => {
 		if (input.province === "") {
 			return 0;
 		}
-		const deliveryFee = getDeliveryFee(input.province);
-		const human = deliveryFee / (10n ** 6n);
-		const fractional = (deliveryFee % (10n ** 6n)) / (10n ** (6n - 2n));
-		const priceStr = `${human}.${fractional.toString().padStart(2, '0')}`;
-		return Number(priceStr);
+		
+		// Calculate delivery fee based on package count
+		const gam = ["san_jose", "alajuela", "cartago", "heredia"];
+		const normalizedProvince = input.province.toLowerCase().replace(/\s+/g, '_');
+		
+		let basePrice: number;
+		if (gam.includes(normalizedProvince)) {
+			basePrice = process.env.GAM_DELIVERY_PRICE ? Number.parseInt(process.env.GAM_DELIVERY_PRICE) : 4;
+		} else {
+			basePrice = process.env.OUTSIDE_DELIVERY_PRICE ? Number.parseInt(process.env.OUTSIDE_DELIVERY_PRICE) : 5.5;
+		}
+		
+		// Calculate shipping price based on package count
+		// 1-2 packages: base price
+		// 3-4 packages: base price + $2
+		// 5-6 packages: base price + $4
+		// And so on...
+		let totalPrice = basePrice;
+		if (input.packageCount > 2) {
+			const additionalPackages = input.packageCount - 2;
+			const additionalGroups = Math.ceil(additionalPackages / 2);
+			totalPrice = basePrice + (additionalGroups * 2);
+		}
+		
+		return totalPrice;
 	}),
 
 	// Get user's NFT collectibles

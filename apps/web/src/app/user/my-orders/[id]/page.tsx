@@ -11,9 +11,10 @@ import { api } from "~/trpc/react";
 
 interface RawMetadata {
 	roast?: unknown;
+	strength?: unknown;
 }
 
-const parseMetadata = (metadata: string | null): { roast: string } => {
+const parseMetadata = (metadata: string | null, t: (key: string) => string): { roast: string } => {
 	try {
 		let parsed: RawMetadata = {};
 		try {
@@ -26,18 +27,22 @@ const parseMetadata = (metadata: string | null): { roast: string } => {
 				const result = rawResult as Record<string, unknown>;
 				parsed = {
 					roast: result.roast,
+					strength: result.strength,
 				};
 			}
 		} catch {
 			// If JSON parsing fails, use empty object
 		}
 
+		// Try to get roast from either 'roast' or 'strength' field
+		const roastValue = parsed.roast || parsed.strength;
+		const roast = typeof roastValue === "string" ? roastValue : t("unknown_roast");
 		return {
-			roast: typeof parsed.roast === "string" ? parsed.roast : "unknown",
+			roast,
 		};
 	} catch {
 		return {
-			roast: "unknown",
+			roast: t("unknown_roast"),
 		};
 	}
 };
@@ -93,7 +98,7 @@ export default function OrderDetails() {
 		productName: order.items[0]?.product.name ?? t("unknown_product"),
 		status: order.status,
 		roast: order.items[0]?.product.nftMetadata
-			? parseMetadata(order.items[0]?.product.nftMetadata as string).roast
+			? parseMetadata(order.items[0]?.product.nftMetadata as string, t).roast
 			: t("unknown_roast"),
 		type: t("grounded"),
 		quantity: `${order.items[0]?.quantity ?? 0} ${t("bags")}`,

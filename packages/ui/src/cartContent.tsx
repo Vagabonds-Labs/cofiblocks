@@ -88,11 +88,29 @@ export function CartContent({
 	const getImageUrl = (nftMetadata: string): string => {
 		try {
 			const metadata = JSON.parse(nftMetadata) as { imageUrl: string };
-			return metadata.imageUrl.startsWith("Qm")
-				? `${process.env.NEXT_PUBLIC_GATEWAY_URL}/ipfs/${metadata.imageUrl}`
-				: metadata.imageUrl;
+			const imageUrl = metadata.imageUrl;
+			const IPFS_GATEWAY_URL = "https://gateway.pinata.cloud/ipfs/";
+			
+			if (!imageUrl) return "/images/cafe1.webp";
+			
+			// If it's already a full URL, use it
+			if (imageUrl.startsWith("http")) return imageUrl;
+			
+			// If it's an IPFS hash, construct the gateway URL
+			if (imageUrl.startsWith("Qm")) {
+				return `${IPFS_GATEWAY_URL}${imageUrl}`;
+			}
+			
+			// If it's an IPFS URL, extract hash and construct gateway URL
+			if (imageUrl.startsWith("ipfs://")) {
+				const hash = imageUrl.replace("ipfs://", "");
+				return `${IPFS_GATEWAY_URL}${hash}`;
+			}
+			
+			// Fallback to default image
+			return "/images/cafe1.webp";
 		} catch {
-			return "/images/default.webp";
+			return "/images/cafe1.webp";
 		}
 	};
 

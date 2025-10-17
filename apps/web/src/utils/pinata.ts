@@ -5,7 +5,7 @@ import { PinataSDK } from "pinata-web3";
 
 export const pinata = new PinataSDK({
 	pinataJwt: `${process.env.PINATA_JWT}`,
-	pinataGateway: `${process.env.NEXT_PUBLIC_GATEWAY_URL}`,
+	pinataGateway: "https://gateway.pinata.cloud",
 });
 
 // To get the client side form implementation of file uploads to pinata:
@@ -57,7 +57,7 @@ export async function uploadToPinata(file: File): Promise<string> {
  * @returns The full IPFS gateway URL
  */
 export function getIpfsUrl(hash: string): string {
-	return `${process.env.NEXT_PUBLIC_GATEWAY_URL}/ipfs/${hash}`;
+	return `https://gateway.pinata.cloud/ipfs/${hash}`;
 }
 
 /**

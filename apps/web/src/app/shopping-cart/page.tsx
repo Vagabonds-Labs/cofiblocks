@@ -112,7 +112,7 @@ export default function ShoppingCart() {
 	const calculateTotalPrice = (price: number): number => {
 		const fee = (price * MARKET_FEE_BPS) / 10000;
 		const total = price + fee;
-		return Math.round(total * 1000) / 1000;
+		return Math.round(total * 100) / 100;
 	};
 
 	const totalPrice =
@@ -123,15 +123,32 @@ export default function ShoppingCart() {
 		) ?? 0;
 
 	const getImageUrl = (nftMetadata: unknown): string => {
-		if (typeof nftMetadata !== "string") return "/images/default.webp";
+		if (typeof nftMetadata !== "string") return "/images/cafe1.webp";
 		try {
 			const metadata = JSON.parse(nftMetadata) as NftMetadata;
-			// Format the image URL to include the IPFS gateway if it's an IPFS hash
-			return metadata.imageUrl.startsWith("Qm")
-				? `${process.env.NEXT_PUBLIC_GATEWAY_URL}/ipfs/${metadata.imageUrl}`
-				: metadata.imageUrl;
+			const imageUrl = metadata.imageUrl;
+			const IPFS_GATEWAY_URL = "https://gateway.pinata.cloud/ipfs/";
+			
+			if (!imageUrl) return "/images/cafe1.webp";
+			
+			// If it's already a full URL, use it
+			if (imageUrl.startsWith("http")) return imageUrl;
+			
+			// If it's an IPFS hash, construct the gateway URL
+			if (imageUrl.startsWith("Qm")) {
+				return `${IPFS_GATEWAY_URL}${imageUrl}`;
+			}
+			
+			// If it's an IPFS URL, extract hash and construct gateway URL
+			if (imageUrl.startsWith("ipfs://")) {
+				const hash = imageUrl.replace("ipfs://", "");
+				return `${IPFS_GATEWAY_URL}${hash}`;
+			}
+			
+			// Fallback to default image
+			return "/images/cafe1.webp";
 		} catch {
-			return "/images/default.webp";
+			return "/images/cafe1.webp";
 		}
 	};
 
@@ -185,7 +202,7 @@ export default function ShoppingCart() {
 							</div>
 							<div className="flex items-center gap-4">
 								<span className="text-gray-900">
-									{calculateTotalPrice(item.product.price) * item.quantity} USD
+									{(calculateTotalPrice(item.product.price) * item.quantity).toFixed(2)} USD
 								</span>
 								<button
 									type="button"
@@ -209,7 +226,7 @@ export default function ShoppingCart() {
 								{t("total_label")}
 							</span>
 							<span className="font-semibold text-gray-900">
-								{totalPrice} USD
+|								{totalPrice.toFixed(2)} USD
 							</span>
 						</div>
 					</div>

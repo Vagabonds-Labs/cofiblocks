@@ -110,11 +110,20 @@ export default function Collectibles() {
 				) : (
 					collectibles.map((collectible) => {
 						// Format the image URL to include the IPFS gateway if it's an IPFS hash
-						const imageUrl = collectible.metadata.image
-							? collectible.metadata.image.startsWith("Qm")
-								? `${process.env.NEXT_PUBLIC_GATEWAY_URL}/ipfs/${collectible.metadata.image}`
-								: collectible.metadata.image
-							: "/images/cafe1.webp";
+						const getImageUrl = (imageUrl?: string) => {
+							if (!imageUrl) return "/images/cafe1.webp";
+							const IPFS_GATEWAY_URL = "https://gateway.pinata.cloud/ipfs/";
+							
+							if (imageUrl.startsWith("http")) return imageUrl;
+							if (imageUrl.startsWith("Qm")) return `${IPFS_GATEWAY_URL}${imageUrl}`;
+							if (imageUrl.startsWith("ipfs://")) {
+								const hash = imageUrl.replace("ipfs://", "");
+								return `${IPFS_GATEWAY_URL}${hash}`;
+							}
+							return "/images/cafe1.webp";
+						};
+
+						const imageUrl = getImageUrl(collectible.metadata.image);
 
 						return (
 							<NFTCard

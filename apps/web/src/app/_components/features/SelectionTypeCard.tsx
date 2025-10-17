@@ -118,10 +118,10 @@ export function SelectionTypeCard({
 			<div className="flex flex-col">
 				<div>
 					<span className="text-2xl font-bold text-content-title">
-						{price * quantity} USD
+						{(price * quantity).toFixed(2)} USD
 					</span>
 					<span className="text-sm text-content-body-default ml-1">
-						/{t("total")}
+						{t("total_per_units")}
 					</span>
 				</div>
 			</div>

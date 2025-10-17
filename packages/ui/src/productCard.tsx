@@ -120,7 +120,7 @@ export function ProductCard({
 					<Text className="text-base md:text-lg lg:text-xl font-semibold text-surface-primary-default">
 						{t("price_with_currency", { price })}
 						<span className="text-sm md:text-base font-medium text-content-body-default ml-1">
-							{t("per_unit")}
+							{t("total")}
 						</span>
 					</Text>
 					{onAddToCart && isConnected && !isSoldOut && (

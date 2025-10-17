@@ -76,7 +76,7 @@ export default function SaleDetails() {
 	const orderDetails = {
 		productName: orderItem.product.name ?? t("unknown_product"),
 		status: orderItem.order.status,
-		roast: nftMetadata?.roast ?? t("unknown_roast"),
+		roast: nftMetadata?.roast ?? nftMetadata?.strength ?? t("unknown_roast"),
 		type: t("grounded"), // TODO: Add type to product metadata
 		quantity: `${orderItem.quantity ?? 0} ${t("bags")}`,
 		delivery: orderItem.order.home_delivery ? t("my_home") : t("pick_up_at_meetup"),

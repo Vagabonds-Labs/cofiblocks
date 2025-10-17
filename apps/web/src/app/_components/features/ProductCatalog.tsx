@@ -43,8 +43,8 @@ export default function ProductCatalog() {
 	const calculateTotalPrice = (price: number): number => {
 		const fee = (price * MARKET_FEE_BPS) / 10000;
 		const raw_price = price + fee;
-		// round to 2 decimal places
-		return Math.round(raw_price * 1000) / 1000;
+		// round to 2 decimal places using proper decimal arithmetic
+		return Math.round(raw_price * 100) / 100;
 	};
 
 	const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
@@ -89,9 +89,13 @@ export default function ProductCatalog() {
 		return () => window.removeEventListener("scroll", handleScroll);
 	}, [handleScroll]);
 
-	const accessProductDetails = (productId: number) => {
-		router.push(`/product/${productId}`);
-	};
+    const accessProductDetails = (productId: number) => {
+        if (!isAuthenticated) {
+            router.push("/auth");
+            return;
+        }
+        router.push(`/product/${productId}`);
+    };
 
 	const renderProduct = (product: Product) => {
 		if (product.hidden === true) {
@@ -110,11 +114,31 @@ export default function ProductCatalog() {
 			metadata = product.nftMetadata as NftMetadata;
 		}
 
-		const imageUrl = metadata?.imageUrl
-			? metadata.imageUrl.startsWith("Qm")
-				? `${process.env.NEXT_PUBLIC_GATEWAY_URL}/ipfs/${metadata.imageUrl}`
-				: metadata.imageUrl
-			: "/images/cafe1.webp";
+		// Safely construct image URL with validation
+		const IPFS_GATEWAY_URL = "https://gateway.pinata.cloud/ipfs/";
+		
+		const getImageUrl = (imageUrl?: string) => {
+			if (!imageUrl) return "/images/cafe1.webp";
+			
+			// If it's already a full URL, use it
+			if (imageUrl.startsWith("http")) return imageUrl;
+			
+			// If it's an IPFS hash, construct the gateway URL
+			if (imageUrl.startsWith("Qm")) {
+				return `${IPFS_GATEWAY_URL}${imageUrl}`;
+			}
+			
+			// If it's an IPFS URL, extract hash and construct gateway URL
+			if (imageUrl.startsWith("ipfs://")) {
+				const hash = imageUrl.replace("ipfs://", "");
+				return `${IPFS_GATEWAY_URL}${hash}`;
+			}
+			
+			// Fallback to default image
+			return "/images/cafe1.webp";
+		};
+
+		const imageUrl = getImageUrl(metadata?.imageUrl);
 
 		const handleAddToCart = () => {
 
