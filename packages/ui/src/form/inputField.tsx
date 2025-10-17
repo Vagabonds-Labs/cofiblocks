@@ -48,12 +48,12 @@ function InputField<T extends FieldValues>({
 			<div className="flex justify-between items-center">
 				<label
 					htmlFor={name}
-					className="text-[#3c3e3f] text-base font-normal font-['Inter'] leading-normal"
+					className="text-content-body-default text-base font-normal leading-normal"
 				>
 					{label}
 				</label>
 				{description && (
-					<div className="text-right text-[#3c3e3f] text-base font-normal font-['Inter'] leading-normal">
+					<div className="text-right text-content-body-default text-base font-normal leading-normal">
 						{description}
 					</div>
 				)}
@@ -69,14 +69,14 @@ function InputField<T extends FieldValues>({
 					id={name}
 					type="text"
 					className={cs(
-						"w-full px-4 py-[13px] bg-white rounded-lg border text-base font-normal font-['Inter'] leading-normal focus:outline-none focus:ring-2 focus:ring-[#ffc222] focus:border-transparent",
+						"w-full px-4 py-[13px] bg-surface-inverse rounded-lg border text-base font-normal leading-normal focus:outline-none focus:ring-2 focus:ring-surface-secondary-default focus:border-transparent",
 						{
 							"pl-10 pr-4": showSearchIcon,
 							"px-4": !showSearchIcon,
-							"border-[#d32a1b]": error,
-							"border-[#c7ccd0]": !error,
-							"text-[#1f1f20]": field.value,
-							"text-[#788788]": !field.value,
+							"border-error-default": error,
+							"border-surface-border": !error,
+							"text-content-title": field.value,
+							"text-content-body-soft": !field.value,
 						},
 						"py-[13px]",
 					)}
@@ -87,7 +87,7 @@ function InputField<T extends FieldValues>({
 				/>
 			</div>
 			{error && (
-				<div className="text-[#d32a1b] text-base font-normal font-['Inter'] leading-normal">
+				<div className="text-error-default text-base font-normal leading-normal">
 					{error.message}
 				</div>
 			)}

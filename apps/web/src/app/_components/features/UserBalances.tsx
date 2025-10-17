@@ -237,7 +237,7 @@ export function UserBalances({ balances }: UserBalancesProps) {
 					<InputField
 						name="walletAddress"
 						control={control}
-						label="Wallet Address"
+						label=""
 						placeholder="Enter destination wallet address (0x...)"
 						className="mb-4"
 					/>
