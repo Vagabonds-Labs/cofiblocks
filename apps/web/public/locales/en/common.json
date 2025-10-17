@@ -72,7 +72,8 @@
 		"prepared": "Prepared",
 		"shipped": "Shipped",
 		"completed": "Completed",
-		"cancelled": "Cancelled"
+		"cancelled": "Cancelled",
+		"failed": "Failed"
 	},
 	"order_status_message": {
 		"pending": "Your order has been received and is being processed",
@@ -80,7 +81,10 @@
 		"prepared": "Your coffee is ready and will be shipped soon",
 		"shipped": "Your coffee is on its way to you!",
 		"delivered": "Your coffee has arrived. Enjoy!",
-		"canceled": "This order has been canceled"
+		"completed": "Your order has been completed successfully",
+		"canceled": "This order has been canceled",
+		"cancelled": "This order has been cancelled",
+		"failed": "This order has failed to process"
 	},
 	"ordered_by": "Ordered by {{name}}",
 	"price_with_currency": "{{price}} USD",
@@ -141,7 +145,7 @@
 	"bags_available_count": "{{count}} bags available",
 	"ground_coffee_stock": "Ground Coffee Stock",
 	"beans_coffee_stock": "Beans Coffee Stock",
-	"unit_price": "Unit price ({{weight}})",
+	"unit_price": "Unit price",
 	"sold_out": "SOLD OUT",
 	"add_to_favorites": "Add to favorites",
 	"remove_from_favorites": "Remove from favorites",
@@ -289,6 +293,11 @@
 	"choose_coffee_photo": "Choose coffee photo",
 	"coffee_variety": "Coffee variety",
 	"type_here": "Type here",
+	"delivery_address_title": "Delivery address",
+	"address_label": "Address",
+	"apartment_suite_label": "Apartment, suite, etc",
+	"city_label": "City",
+	"zip_code_label": "ZIP code",
 	"coffee_description": "Coffee description",
 	"coffee_score": "Coffee Score",
 	"not_mandatory": "not mandatory",
@@ -357,11 +366,17 @@
 		"remove_confirmation_yes": "Yes, remove",
 		"cancel": "Cancel",
 		"total": "Total",
-		"checkout": "Checkout"
+		"checkout": "Checkout",
+		"subtotal": "Subtotal",
+		"fee": "Fee (50%)",
+		"each": "each"
 	},
 
 	"added_to_favorites": "Added to favorites",
 	"error_adding_to_favorites": "Error adding to favorites",
+	"error_insufficient_stock": "Insufficient stock for the requested quantity",
+	"error_insufficient_stock_variant": "Only {{count}} available for this option",
+"added_to_cart": "Added to cart",
 	"removed_from_favorites": "Removed from favorites",
 	"error_removing_from_favorites": "Error removing from favorites",
 	"error_updating_favorites": "Error updating favorites",
@@ -452,5 +467,22 @@
 	"previous_slide": "Previous slide",
 	"next_slide": "Next slide",
 	"no_orders_found": "No orders found",
-	"loading_collectibles": "Loading collectibles..."
+	"loading_collectibles": "Loading collectibles...",
+
+	"unknown_product": "Unknown product",
+	"unknown_seller": "Unknown seller",
+	"unknown_buyer": "Unknown buyer",
+	"unknown_roast": "Unknown roast",
+	"unknown": "Unknown",
+
+	"user_balances": "Your Balances",
+	"claim_balance": "Claim Balance",
+	"available_to_claim": "Available to claim",
+	"claiming": "Claiming...",
+	"claim": "Claim",
+	"withdraw": "Withdraw",
+	"available_balance": "Available Balance",
+	"enter_destination_wallet_address": "Enter destination wallet address (0x...)",
+	"invalid_wallet_address_message": "Please enter a valid wallet address (starts with 0x and has 66 characters total)",
+	"processing": "Processing..."
 }

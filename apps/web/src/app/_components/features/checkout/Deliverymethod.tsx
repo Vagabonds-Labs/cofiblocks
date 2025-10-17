@@ -107,7 +107,7 @@ export default function DeliveryMethod({ onNext }: DeliveryMethodProps) {
 					variant="transparent"
 					className="w-full mt-4 justify-between p-4"
 					onClick={() => {
-						/* Handle calendar click */
+						window.open("https://lu.ma/cofiblocks", "_blank");
 					}}
 				>
 					<div className="flex items-center gap-3">

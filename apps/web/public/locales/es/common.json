@@ -72,7 +72,19 @@
 		"prepared": "Preparado",
 		"shipped": "Enviado",
 		"completed": "Completado",
-		"cancelled": "Cancelado"
+		"cancelled": "Cancelado",
+		"failed": "Fallido"
+	},
+	"order_status_message": {
+		"pending": "Tu pedido ha sido recibido y está siendo procesado",
+		"paid": "¡Pago confirmado! Tu café está siendo preparado",
+		"prepared": "Tu café está listo y será enviado pronto",
+		"shipped": "¡Tu café está en camino hacia ti!",
+		"delivered": "Tu café ha llegado. ¡Disfrútalo!",
+		"completed": "Tu pedido ha sido completado exitosamente",
+		"canceled": "Este pedido ha sido cancelado",
+		"cancelled": "Este pedido ha sido cancelado",
+		"failed": "Este pedido ha fallado al procesarse"
 	},
 	"ordered_by": "Pedido por {{name}}",
 	"price_with_currency": "{{price}} USD",
@@ -133,7 +145,7 @@
 	"bags_available_count": "{{count}} bolsas disponibles",
 	"ground_coffee_stock": "Café molido",
 	"beans_coffee_stock": "Café grano",
-	"unit_price": "Precio por unidad ({{weight}})",
+	"unit_price": "Precio por unidad",
 	"sold_out": "AGOTADO",
 	"add_to_favorites": "Agregar a favoritos",
 	"remove_from_favorites": "Eliminar de favoritos",
@@ -289,6 +301,11 @@
 	"choose_coffee_photo": "Escoger foto para café",
 	"coffee_variety": "Variedad de café",
 	"type_here": "Escribe aquí",
+	"delivery_address_title": "Dirección de envío",
+	"address_label": "Dirección",
+	"apartment_suite_label": "Apartamento, suite, etc",
+	"city_label": "Ciudad",
+	"zip_code_label": "Código postal",
 	"coffee_description": "Descripción del café",
 	"coffee_score": "Puntuación del Café",
 	"not_mandatory": "no obligatorio",
@@ -326,13 +343,19 @@
 		"remove_confirmation_yes": "Sí, eliminar",
 		"cancel": "Cancelar",
 		"total": "Total",
-		"checkout": "Pagar"
+		"checkout": "Pagar",
+		"subtotal": "Subtotal",
+		"fee": "Tarifa (50%)",
+		"each": "cada uno"
 	},
 
 	"added_to_favorites": "Agregado a favoritos",
 	"error_adding_to_favorites": "Error al agregar a favoritos",
 	"removed_from_favorites": "Eliminado de favoritos",
 	"error_removing_from_favorites": "Error al eliminar de favoritos",
+	"error_insufficient_stock": "Stock insuficiente para la cantidad solicitada",
+	"error_insufficient_stock_variant": "Solo hay {{count}} disponibles para esta opción",
+"added_to_cart": "Añadido al carrito",
 	"error_updating_favorites": "Error al actualizar favoritos",
 	"please_connect_to_favorite": "Por favor conéctate para agregar a favoritos",
 	"loading_strk_price": "Cargando precio en STRK...",
@@ -432,5 +455,22 @@
 	"previous_slide": "Diapositiva anterior",
 	"next_slide": "Siguiente diapositiva",
 	"no_orders_found": "No se encontraron pedidos",
-	"loading_collectibles": "Cargando coleccionables..."
+	"loading_collectibles": "Cargando coleccionables...",
+
+	"unknown_product": "Producto desconocido",
+	"unknown_seller": "Vendedor desconocido",
+	"unknown_buyer": "Comprador desconocido",
+	"unknown_roast": "Tueste desconocido",
+	"unknown": "Desconocido",
+
+	"user_balances": "Tus Saldos",
+	"claim_balance": "Reclamar Saldo",
+	"available_to_claim": "Disponible para reclamar",
+	"claiming": "Reclamando...",
+	"claim": "Reclamar",
+	"withdraw": "Retirar",
+	"available_balance": "Saldo Disponible",
+	"enter_destination_wallet_address": "Ingresa la dirección de billetera de destino (0x...)",
+	"invalid_wallet_address_message": "Por favor ingresa una dirección de billetera válida (comienza con 0x y tiene 66 caracteres en total)",
+	"processing": "Procesando..."
 }

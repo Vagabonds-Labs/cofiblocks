@@ -3,6 +3,7 @@
 import { TrashIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import Button from "./button";
 import { Text } from "./typography";
 
@@ -81,6 +82,7 @@ export function CartContent({
 		quantityLabel: "Quantity",
 	},
 }: CartContentProps) {
+	const { t } = useTranslation();
 	const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
 	const getImageUrl = (nftMetadata: string): string => {
@@ -148,7 +150,7 @@ export function CartContent({
 							</div>
 							<div className="flex items-center justify-between mt-1">
 								<Text className="text-sm text-gray-500">
-									${item.product.price.toFixed(2)} each
+									{/* per-item price hidden as we only show total */}
 								</Text>
 								{onRemoveItem && (
 									<button
@@ -163,7 +165,7 @@ export function CartContent({
 							</div>
 							<div>
 								<Text className="text-sm text-gray-500">
-									{item.is_grounded ? "Grano" : "Molido"}
+									{item.is_grounded ? t("coffee_type.bean") : t("coffee_type.grounded")}
 								</Text>
 							</div>
 						</div>

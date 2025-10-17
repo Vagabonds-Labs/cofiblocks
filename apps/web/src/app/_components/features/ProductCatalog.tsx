@@ -147,7 +147,7 @@ export default function ProductCatalog() {
 				variety={t(product.name)}
 				price={totalPrice}
 				stock={product.stock}
-				badgeText={t(`strength.${metadata?.strength?.toLowerCase()}`)}
+				badgeText={metadata?.strength ? t(`strength.${metadata.strength.toLowerCase()}`) : t("unknown")}
 				onClick={() => accessProductDetails(product.id)}
 				onAddToCart={handleAddToCart}
 				isConnected={isAuthenticated}

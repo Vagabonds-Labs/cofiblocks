@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import Modal from "@repo/ui/modal";
 import InputField from "@repo/ui/form/inputField";
 import Button from "@repo/ui/button";
@@ -60,6 +61,7 @@ function extractBalanceValue(result: ContractResult | number): number {
 }
 
 export function UserBalances({ balances }: UserBalancesProps) {
+	const { t } = useTranslation();
 	const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] = useState(false);
 	const [selectedBalance, setSelectedBalance] = useState<BalanceItem | null>(null);
 	
@@ -101,21 +103,21 @@ export function UserBalances({ balances }: UserBalancesProps) {
 
 	const balanceItems: BalanceItem[] = [
 		{
-			label: "Stark",
+			label: "STRK",
 			value: extractBalanceValue(balances.starkBalance),
-			icon: "/images/logo.png",
+			icon: "/images/balances/strk-svg.svg",
 			symbol: "STRK",
 		},
 		{
 			label: "USDT",
 			value: extractBalanceValue(balances.usdtBalance),
-			icon: "/images/logo.png",
+			icon: "/images/balances/tether-usdt-logo.svg",
 			symbol: "USDT",
 		},
 		{
 			label: "USDC",
 			value: extractBalanceValue(balances.usdcBalance),
-			icon: "/images/logo.png",
+			icon: "/images/balances/usd-coin-usdc-logo.svg",
 			symbol: "USDC",
 		},
 	];
@@ -154,7 +156,7 @@ export function UserBalances({ balances }: UserBalancesProps) {
 	return (
 		<div className="bg-white rounded-lg shadow-md p-6 mb-6">
 			<h3 className="text-lg font-semibold text-gray-800 mb-4">
-				Your Balances
+				{t("user_balances")}
 			</h3>
 			<div className="grid grid-cols-2 md:grid-cols-3 gap-4">
 				{balanceItems.map((item) => (
@@ -189,14 +191,14 @@ export function UserBalances({ balances }: UserBalancesProps) {
 			{balances.claimBalance !== undefined && (
 				<div className="mt-6 pt-6 border-t border-gray-200">
 					<h4 className="text-lg font-semibold text-gray-800 mb-4">
-						Claim Balance
+						{t("claim_balance")}
 					</h4>
 					<div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
 						<div className="flex items-center space-x-3">
 							<div className="relative w-10 h-10">
 								<Image
-									src="/images/logo.png"
-									alt="USDT icon"
+									src="/images/balances/usd-coin-usdc-logo.svg"
+									alt="USDC icon"
 									fill
 									className="object-contain rounded-full"
 								/>
@@ -205,7 +207,7 @@ export function UserBalances({ balances }: UserBalancesProps) {
 								<p className="text-lg font-bold text-green-800">
 									{balances.claimBalance.toLocaleString()} USDC
 								</p>
-								<p className="text-sm text-green-600">Available to claim</p>
+								<p className="text-sm text-green-600">{t("available_to_claim")}</p>
 							</div>
 						</div>
 						<button
@@ -214,7 +216,7 @@ export function UserBalances({ balances }: UserBalancesProps) {
 							onClick={() => handleClaimBalance()}
 							className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
 						>
-							{claimBalanceMutation.isPending ? "Claiming..." : "Claim"}
+							{claimBalanceMutation.isPending ? t("claiming") : t("claim")}
 						</button>
 					</div>
 				</div>
@@ -224,11 +226,11 @@ export function UserBalances({ balances }: UserBalancesProps) {
 			<Modal
 				isOpen={isWithdrawalModalOpen}
 				onClose={handleCancelWithdrawal}
-				title={`Withdraw ${selectedBalance?.symbol}`}
+				title={`${t("withdraw")} ${selectedBalance?.symbol}`}
 			>
 				<form onSubmit={handleSubmit(handleWithdraw)} className="space-y-4">
 					<div className="mb-4 p-3 bg-gray-50 rounded-lg">
-						<p className="text-sm text-gray-600 mb-1">Available Balance</p>
+						<p className="text-sm text-gray-600 mb-1">{t("available_balance")}</p>
 						<p className="text-lg font-semibold text-gray-800">
 							{selectedBalance?.value.toLocaleString()} {selectedBalance?.symbol}
 						</p>
@@ -238,7 +240,7 @@ export function UserBalances({ balances }: UserBalancesProps) {
 						name="walletAddress"
 						control={control}
 						label=""
-						placeholder="Enter destination wallet address (0x...)"
+						placeholder={t("enter_destination_wallet_address")}
 						className="mb-4"
 					/>
 					
@@ -246,7 +248,7 @@ export function UserBalances({ balances }: UserBalancesProps) {
 					{walletAddress && !isValidWalletAddress && (
 						<div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
 							<p className="text-sm text-red-600">
-								Please enter a valid wallet address (starts with 0x and has 66 characters total)
+								{t("invalid_wallet_address_message")}
 							</p>
 						</div>
 					)}
@@ -259,7 +261,7 @@ export function UserBalances({ balances }: UserBalancesProps) {
 							className="flex-1"
 							disabled={withdrawTokenMutation.isPending}
 						>
-							Cancel
+							{t("cancel")}
 						</Button>
 						<Button
 							type="submit"
@@ -267,7 +269,7 @@ export function UserBalances({ balances }: UserBalancesProps) {
 							className="flex-1"
 							disabled={!isValidWalletAddress || withdrawTokenMutation.isPending}
 						>
-							{withdrawTokenMutation.isPending ? "Processing..." : "Withdraw"}
+							{withdrawTokenMutation.isPending ? t("processing") : t("withdraw")}
 						</Button>
 					</div>
 				</form>

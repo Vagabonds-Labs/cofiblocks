@@ -34,6 +34,9 @@ export function SelectionTypeCard({
 
 	const { t } = useTranslation();
 
+	// Maximum available based on selected option
+	const maxAvailable = selectedOption === "grounded" ? ground_stock : bean_stock;
+
 	// Notify parent of initial selection
 	useEffect(() => {
 		onSelectionChange(selectedOption);
@@ -66,20 +69,28 @@ export function SelectionTypeCard({
 		},
 	];
 
+	// Ensure quantity never exceeds available stock when option or stock changes
+	useEffect(() => {
+		if (quantity > maxAvailable && maxAvailable >= 0) {
+			onQuantityChange(Math.max(1, maxAvailable));
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [selectedOption, bean_stock, ground_stock]);
+
 	const handleAddToCart = () => {
+		// Let parent (ProductDetails) handle async success/error toasts
 		onAddToCart();
-		toast.success("Product added to cart successfully!");
 	};
 
 	return (
 		<InfoCard title={t("select_coffee_type")} options={coffeeOptions}>
 			{/* Stock Information */}
 			<div className="bg-gray-50 rounded-lg p-4 mb-4">
-				<Text className="text-sm font-medium text-gray-700 mb-2">
+				<Text className="text-sm font-medium text-gray-700 mb-3">
 					{t("available_stock")}
 				</Text>
-				<div className="grid grid-cols-2 gap-4">
-					<div className="flex items-center justify-between">
+				<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+					<div className="flex items-center justify-between p-2 bg-white rounded-md">
 						<div className="flex items-center">
 							<div className="w-3 h-3 bg-amber-600 rounded-full mr-2"></div>
 							<Text className="text-sm text-gray-600">
@@ -90,7 +101,7 @@ export function SelectionTypeCard({
 							{bean_stock} {t("units")}
 						</Text>
 					</div>
-					<div className="flex items-center justify-between">
+					<div className="flex items-center justify-between p-2 bg-white rounded-md">
 						<div className="flex items-center">
 							<div className="w-3 h-3 bg-amber-800 rounded-full mr-2"></div>
 							<Text className="text-sm text-gray-600">
@@ -105,9 +116,6 @@ export function SelectionTypeCard({
 			</div>
 
 			<div className="flex flex-col">
-				<Text className="text-sm text-content-body-default">
-					{t("unit_price", { weight: "340g" })}: {price} USD
-				</Text>
 				<div>
 					<span className="text-2xl font-bold text-content-title">
 						{price * quantity} USD
@@ -135,7 +143,9 @@ export function SelectionTypeCard({
 					</Text>
 					<button
 						type="button"
-						onClick={() => onQuantityChange(Math.min(selectedOption === "grounded" ? ground_stock : bean_stock, quantity + 1))}
+							onClick={() =>
+								onQuantityChange(Math.min(maxAvailable, quantity + 1))
+							}
 						className="w-6 h-6 bg-surface-secondary-default rounded grid place-content-center relative"
 					>
 						<span className="text-white font-bold text-base translate-x-[0.5px] -translate-y-[1px]">
@@ -147,7 +157,9 @@ export function SelectionTypeCard({
 				<Button
 					variant="primary"
 					onClick={handleAddToCart}
-					disabled={isAddingToCart || (selectedOption === "grounded" ? ground_stock === 0 : bean_stock === 0)}
+						disabled={
+							isAddingToCart || maxAvailable === 0 || quantity > maxAvailable
+						}
 				>
 					{isAddingToCart ? t("adding_to_cart") : t("add_to_cart")}
 				</Button>
