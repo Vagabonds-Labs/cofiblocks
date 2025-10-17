@@ -72,11 +72,15 @@ export function ProductCard({
 				aria-label={`View ${variety} product details`}
 			>
 				<Image
-					src={image}
+					src={image || "/images/cafe1.webp"}
 					alt={t("product_image_alt")}
 					fill
 					className="object-cover rounded-t-2xl transition-transform duration-300 group-hover:scale-105"
 					sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+					onError={(e) => {
+						const target = e.target as HTMLImageElement;
+						target.src = "/images/cafe1.webp";
+					}}
 				/>
 				<div className="absolute bottom-3 left-3">
 					<Badge variant="accent" text={badgeText} />

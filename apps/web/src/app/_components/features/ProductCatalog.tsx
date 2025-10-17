@@ -147,7 +147,7 @@ export default function ProductCatalog() {
 				{
 					productId: product.id,
 					quantity: 1,
-					is_grounded: product.ground_stock > 0 ? true : false,
+					is_grounded: product.ground_stock > 0,
 				},
 				{
 					onSuccess: () => {
