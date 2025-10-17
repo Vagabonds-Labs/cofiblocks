@@ -1,21 +1,35 @@
 export function getLoginErrorMessage(loginError: string): string {
 	// Handle login errors with user-friendly messages
+	const message = loginError?.toString() ?? "";
+	const msg = message.toLowerCase();
+
+	// Specific: user not verified
 	if (
-		loginError.includes("verification") ||
-		loginError.includes("verify") ||
-		loginError.includes("email")
+		msg.includes("email not verified") ||
+		msg.includes("not verified") ||
+		msg.includes("verify your email")
 	) {
-		return "error.email_verification_required";
+		return "error.user_not_verified";
 	}
+
+	// User already exists scenarios (if surfaced during login)
 	if (
-		loginError.includes("USER_ALREADY_EXISTS") ||
-		loginError.includes("already registered")
+		msg.includes("user_already_exists") ||
+		msg.includes("already registered")
 	) {
 		return "error.user_already_exists_signin";
 	}
-	if (loginError.includes("Email not verified")) {
-		return "error.user_not_verified";
+
+	// Invalid credentials (wrong email/password)
+	if (
+		msg.includes("invalid email or password") ||
+		msg.includes("invalid credentials") ||
+		msg.includes("credentialsSignin".toLowerCase())
+	) {
+		return "error.invalid_credentials";
 	}
+
+	// Default to invalid credentials for unknown auth errors
 	return "error.invalid_credentials";
 }
 

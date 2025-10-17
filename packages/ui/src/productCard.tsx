@@ -65,7 +65,12 @@ export function ProductCard({
 
 	return (
 		<div className="w-full h-[20rem] md:h-[24rem] lg:h-[28rem] rounded-2xl overflow-hidden shadow-lg border border-surface-border hover:shadow-xl transition-all duration-300 group flex flex-col">
-			<div className="relative h-36 md:h-40 lg:h-44">
+			<button
+				type="button"
+				onClick={onClick}
+				className="relative h-36 md:h-40 lg:h-44 block w-full cursor-pointer focus:outline-none focus:ring-2 focus:ring-surface-primary-default focus:ring-inset"
+				aria-label={`View ${variety} product details`}
+			>
 				<Image
 					src={image}
 					alt={t("product_image_alt")}
@@ -76,7 +81,7 @@ export function ProductCard({
 				<div className="absolute bottom-3 left-3">
 					<Badge variant="accent" text={badgeText} />
 				</div>
-			</div>
+			</button>
 			<div className="flex-1 px-3 py-2.5 md:px-4 md:py-3 lg:px-5 lg:py-4 bg-surface-primary-soft rounded-b-2xl flex flex-col">
 				<div className="flex flex-col gap-1 md:gap-1.5 mb-2">
 					{hasLocationInfo && (
@@ -103,10 +108,10 @@ export function ProductCard({
 						</Tooltip>
 					</div>
 					<IconButton
-						size="sm"
+						size="lg"
 						variant="secondary"
 						onClick={onClick}
-						icon={<ArrowRightIcon className="w-5 h-5 md:w-6 md:h-6" />}
+						icon={<ArrowRightIcon className="w-6 h-6 md:w-7 md:h-7" />}
 						className="ml-2 flex-shrink-0 hover:bg-surface-primary-default hover:text-white transition-colors"
 					/>
 				</div>
@@ -115,7 +120,7 @@ export function ProductCard({
 					<Text className="text-base md:text-lg lg:text-xl font-semibold text-surface-primary-default">
 						{t("price_with_currency", { price })}
 						<span className="text-sm md:text-base font-medium text-content-body-default ml-1">
-							{t("per_unit")}
+							{t("total")}
 						</span>
 					</Text>
 					{onAddToCart && isConnected && !isSoldOut && (

@@ -23,15 +23,33 @@ export default function DeliveryMethod({ onNext }: DeliveryMethodProps) {
 	//const [deliveryPrice, setDeliveryPrice] = useState<number>(0);
 
 	const locations = [
-		{ value: "gam", label: t("im_in_gam"), price: 20 },
-		{ value: "outside", label: t("im_not_in_gam"), price: 40 },
+		{ value: "gam", label: t("im_in_gam"), price: 4, description: "$4" },
+		{ value: "outside", label: t("im_not_in_gam"), price: 5.5, description: "$5.5" },
 	];
+
+	const calculateShippingPrice = (basePrice: number, packageCount: number): number => {
+		// Pricing logic:
+		// 1-2 packages: base price (GAM: $4, Outside: $5.5)
+		// 3-4 packages: base price + $2 (GAM: $6, Outside: $7.5)
+		// 5-6 packages: base price + $4 (GAM: $8, Outside: $9.5)
+		// 7-8 packages: base price + $6 (GAM: $10, Outside: $11.5)
+		// And so on...
+		
+		if (packageCount <= 2) {
+			return basePrice;
+		}
+		
+		const additionalPackages = packageCount - 2;
+		const additionalGroups = Math.ceil(additionalPackages / 2);
+		return basePrice + (additionalGroups * 2);
+	};
 
 	const handleNext = () => {
 		if (selectedMethod === "home" && selectedLocation) {
-			const price =
-				locations.find((loc) => loc.value === selectedLocation)?.price ?? 0;
-			onNext(selectedMethod, price, selectedLocation);
+			const basePrice = locations.find((loc) => loc.value === selectedLocation)?.price ?? 0;
+			// For home delivery, we'll calculate the price in OrderReview based on actual cart items
+			// For now, just pass the base price and let OrderReview handle the package count calculation
+			onNext(selectedMethod, basePrice, selectedLocation);
 		} else if (selectedMethod === "meetup") {
 			onNext(selectedMethod, 0);
 		}
@@ -53,6 +71,7 @@ export default function DeliveryMethod({ onNext }: DeliveryMethodProps) {
 							/>
 						}
 						label={t("send_to_my_home")}
+						sublabel={t("only_costa_rica")}
 						isSelected={selectedMethod === "home"}
 						onClick={() => {
 							setSelectedMethod("home");
@@ -93,6 +112,7 @@ export default function DeliveryMethod({ onNext }: DeliveryMethodProps) {
 										/>
 									}
 									label={location.label}
+									sublabel={location.description}
 									isSelected={selectedLocation === location.value}
 									onClick={() => {
 										setSelectedLocation(location.value);
@@ -107,7 +127,7 @@ export default function DeliveryMethod({ onNext }: DeliveryMethodProps) {
 					variant="transparent"
 					className="w-full mt-4 justify-between p-4"
 					onClick={() => {
-						/* Handle calendar click */
+						window.open("https://lu.ma/cofiblocks", "_blank");
 					}}
 				>
 					<div className="flex items-center gap-3">

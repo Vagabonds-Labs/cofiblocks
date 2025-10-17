@@ -54,7 +54,7 @@ export default function Home() {
 					onConnect={handleConnect}
 					profileOptions={<ProfileOptions/>}
 				/>
-				<div className="flex-grow">
+				<div className="flex-grow mb-6">
 					{/* Hero Section */}
 					<div className="mb-8">
 						<Carousel cards={carouselData} />

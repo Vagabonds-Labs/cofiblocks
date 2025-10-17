@@ -176,7 +176,7 @@ export default function ProductPage() {
 					onConnect={handleConnect}
 					profileOptions={<ProfileOptions />}
 				/>
-				<div className="flex-grow px-4 md:px-6 lg:px-8 pt-24">
+				<div className="flex-grow px-4 md:px-6 lg:px-8">
 					{isLoadingProduct ? (
 						<div className="space-y-4">
 							<Skeleton className="h-96 w-full" />

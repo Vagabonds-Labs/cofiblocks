@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface DeliveryAddressProps {
 	readonly onNext: (address: {
@@ -12,6 +13,7 @@ interface DeliveryAddressProps {
 }
 
 export default function DeliveryAddress({ onNext }: DeliveryAddressProps) {
+    const { t } = useTranslation();
 	const [address, setAddress] = useState({
 		street: "",
 		apartment: "",
@@ -30,8 +32,8 @@ export default function DeliveryAddress({ onNext }: DeliveryAddressProps) {
 
 	return (
 		<div className="p-4 flex flex-col min-h-[calc(100vh-120px)]">
-			<div className="flex-1">
-				<h2 className="text-lg font-medium mb-4">Delivery address</h2>
+            <div className="flex-1">
+                <h2 className="text-lg font-medium mb-4">{t("delivery_address_title")}</h2>
 
 				<form onSubmit={handleSubmit} className="space-y-4">
 					<div className="space-y-2">
@@ -39,12 +41,12 @@ export default function DeliveryAddress({ onNext }: DeliveryAddressProps) {
 							htmlFor="address"
 							className="block text-sm text-content-body-default"
 						>
-							Address
+                            {t("address_label")}
 						</label>
 						<input
 							type="text"
 							id="address"
-							placeholder="Type here"
+                            placeholder={t("type_here")}
 							value={address.street}
 							onChange={(e) =>
 								setAddress((prev) => ({ ...prev, street: e.target.value }))
@@ -59,12 +61,12 @@ export default function DeliveryAddress({ onNext }: DeliveryAddressProps) {
 							htmlFor="apartment"
 							className="block text-sm text-content-body-default"
 						>
-							Apartment, suite, etc
+                            {t("apartment_suite_label")}
 						</label>
 						<input
 							type="text"
 							id="apartment"
-							placeholder="Type here"
+                            placeholder={t("type_here")}
 							value={address.apartment}
 							onChange={(e) =>
 								setAddress((prev) => ({ ...prev, apartment: e.target.value }))
@@ -78,12 +80,12 @@ export default function DeliveryAddress({ onNext }: DeliveryAddressProps) {
 							htmlFor="city"
 							className="block text-sm text-content-body-default"
 						>
-							City
+                            {t("city_label")}
 						</label>
 						<input
 							type="text"
 							id="city"
-							placeholder="Type here"
+                            placeholder={t("type_here")}
 							value={address.city}
 							onChange={(e) =>
 								setAddress((prev) => ({ ...prev, city: e.target.value }))
@@ -98,12 +100,12 @@ export default function DeliveryAddress({ onNext }: DeliveryAddressProps) {
 							htmlFor="zipCode"
 							className="block text-sm text-content-body-default"
 						>
-							ZIP code
+                            {t("zip_code_label")}
 						</label>
 						<input
 							type="text"
 							id="zipCode"
-							placeholder="Type here"
+                            placeholder={t("type_here")}
 							value={address.zipCode}
 							onChange={(e) =>
 								setAddress((prev) => ({ ...prev, zipCode: e.target.value }))
@@ -115,14 +117,14 @@ export default function DeliveryAddress({ onNext }: DeliveryAddressProps) {
 				</form>
 			</div>
 
-			<button
+            <button
 				type="button"
 				onClick={handleSubmit}
 				disabled={!isFormValid}
 				className="w-full p-4 bg-[#FFC107] hover:bg-[#FDB000] disabled:opacity-50 disabled:hover:bg-[#FFC107]
           rounded-lg text-center font-medium transition-colors mt-6"
 			>
-				Next
+                {t("next")}
 			</button>
 		</div>
 	);
