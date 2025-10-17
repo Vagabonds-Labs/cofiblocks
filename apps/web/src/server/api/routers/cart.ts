@@ -51,6 +51,29 @@ export const cartRouter = createTRPCRouter({
 				});
 			}
 
+			// Fetch product stocks
+			const product = await ctx.db.product.findUnique({
+				where: { id: input.productId },
+				select: { stock: true, ground_stock: true, bean_stock: true, name: true },
+			});
+			if (!product) throw new TRPCError({ code: "NOT_FOUND", message: "Product not found" });
+
+			// Current quantity of this variant already in cart
+			const existingVariantItems = await ctx.db.shoppingCartItem.findMany({
+				where: {
+					shoppingCartId: cart.id,
+					productId: input.productId,
+					is_grounded: input.is_grounded,
+				},
+				select: { quantity: true },
+			});
+			const alreadyInCart = existingVariantItems.reduce((s, i) => s + i.quantity, 0);
+			const variantStock = input.is_grounded ? (product.ground_stock ?? 0) : (product.bean_stock ?? 0);
+			const totalStockCap = Math.min(variantStock, product.stock ?? variantStock);
+			if (alreadyInCart + input.quantity > totalStockCap) {
+				throw new TRPCError({ code: "BAD_REQUEST", message: "Insufficient stock for requested quantity" });
+			}
+
 			// Check if item already exists in cart
 			const existingItem = await ctx.db.shoppingCartItem.findFirst({
 				where: {
@@ -99,6 +122,16 @@ export const cartRouter = createTRPCRouter({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
+			const item = await ctx.db.shoppingCartItem.findUnique({
+				where: { id: input.cartItemId },
+				include: { product: true },
+			});
+			if (!item) throw new TRPCError({ code: "NOT_FOUND", message: "Cart item not found" });
+			const variantStock = item.is_grounded ? (item.product.ground_stock ?? 0) : (item.product.bean_stock ?? 0);
+			const totalStockCap = Math.min(variantStock, item.product.stock ?? variantStock);
+			if (input.quantity > totalStockCap) {
+				throw new TRPCError({ code: "BAD_REQUEST", message: "Insufficient stock for requested quantity" });
+			}
 			return ctx.db.shoppingCartItem.update({
 				where: { id: input.cartItemId },
 				data: { quantity: input.quantity },
