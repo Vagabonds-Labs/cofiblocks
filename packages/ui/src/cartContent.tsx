@@ -167,9 +167,7 @@ export function CartContent({
 								</Text>
 							</div>
 							<div className="flex items-center justify-between mt-1">
-								<Text className="text-sm text-gray-500">
-									{/* per-item price hidden as we only show total */}
-								</Text>
+								{/* per-item price hidden as we only show total */}
 								{onRemoveItem && (
 									<button
 										type="button"
