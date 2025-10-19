@@ -474,5 +474,24 @@
 	"available_balance": "Saldo Disponible",
 	"enter_destination_wallet_address": "Ingresa la dirección de billetera de destino (0x...)",
 	"invalid_wallet_address_message": "Por favor ingresa una dirección de billetera válida (comienza con 0x y tiene 66 caracteres en total)",
-	"processing": "Procesando..."
+	"processing": "Procesando...",
+
+	"sale_details": "Detalles de Venta",
+	"order_id": "ID de Pedido",
+	"order_date": "Fecha de Pedido",
+	"total_amount": "Monto Total",
+	"buyer_information": "Información del Comprador",
+	"no_address_provided": "No se proporcionó dirección",
+	"no_sales_found": "No se encontraron ventas",
+	"order_not_found": "Pedido no encontrado",
+	"usd": "USD",
+	"roast": "Tueste",
+	"type": "Tipo",
+	"quantity": "Cantidad",
+	"delivery": "Entrega",
+	"total_price": "Precio Total",
+	"tips": "Consejos",
+	"product": "Producto",
+	"new_order": "Nuevo pedido",
+	"you_have_new_order": "Tienes un nuevo pedido. Empecemos con los preparativos."
 }

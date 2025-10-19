@@ -7,12 +7,12 @@ import {
 } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { OrderStatus } from "@prisma/client";
-import Image from "next/image";
+// import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
-import { ProductDetailsList } from "./ProductDetailsList";
+// import { ProductDetailsList } from "./ProductDetailsList";
 import { StatusBanner } from "./StatusBanner";
 import StatusUpdateModal from "./StatusUpdateModal";
 
@@ -25,6 +25,7 @@ interface ProductDetails {
 	delivery: string;
 	totalPrice: string;
 	address?: string;
+	productImage?: string;
 }
 
 enum DeliveryTypeEnum {
@@ -106,26 +107,18 @@ export default function ProductStatusDetails({
 	};
 
 	return (
-		<div className="bg-white rounded-lg space-y-4">
-			<div className="my-8">
+		<div className="space-y-6">
+			{/* Status Banner */}
+			<div>
 				<StatusBanner
 					orderStatus={productDetails.status}
 					isProducer={isProducer}
 				/>
 			</div>
 
-			<div className="flex items-center space-x-4 !mb-10">
-				<Image
-					src="/images/cafe2.webp"
-					alt="Product"
-					width={48}
-					height={48}
-					className="rounded-md object-cover"
-				/>
-				<p className="font-semibold">{productDetails.productName}</p>
-			</div>
 
-			<div className="!my-8 flex items-center justify-between w-full">
+			{/* Status Steps - Mobile Optimized */}
+			<div className="flex items-center justify-between w-full space-x-2">
 				{statusSteps.map((step, index) => {
 					const Icon = stepIconMap[step as keyof typeof stepIconMap];
 					const isCompleted = index <= currentStepIndex;
@@ -134,12 +127,12 @@ export default function ProductStatusDetails({
 					return (
 						<div
 							key={step}
-							className={`flex flex-col items-center ${
+							className={`flex flex-col items-center flex-1 ${
 								isCompleted ? "text-green-600" : "text-gray-400"
 							}`}
 						>
 							<div
-								className={`w-12 h-12 rounded-full flex items-center justify-center ${
+								className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${
 									isActive
 										? "bg-green-100"
 										: isCompleted
@@ -147,9 +140,9 @@ export default function ProductStatusDetails({
 											: "bg-gray-100"
 								}`}
 							>
-								<Icon className="w-6 h-6" />
+								<Icon className="w-5 h-5" />
 							</div>
-							<span className="mt-2 text-sm">
+							<span className="text-xs text-center leading-tight">
 								{t(`order_status.${step.toLowerCase()}`)}
 							</span>
 						</div>
@@ -157,22 +150,37 @@ export default function ProductStatusDetails({
 				})}
 			</div>
 
-			<ProductDetailsList
-				details={[
-					{ label: "Roast", value: productDetails.roast },
-					{ label: "Type", value: productDetails.type },
-					{ label: "Quantity", value: productDetails.quantity },
-					{
-						label: "Delivery",
-						value:
-							productDetails.delivery === DeliveryTypeEnum.Delivery.toString()
-								? "My address"
-								: productDetails.delivery,
-						address: productDetails.address,
-					},
-					{ label: "Total price", value: productDetails.totalPrice },
-				]}
-			/>
+
+			{/* Product Details - Mobile Optimized */}
+			<div className="space-y-3">
+				<h4 className="font-semibold text-content-title">{t("product")}</h4>
+				<div className="grid grid-cols-1 gap-3">
+					<div className="flex justify-between items-center py-2 border-b border-gray-100">
+						<span className="text-sm text-content-body-soft">{t("roast")}</span>
+						<span className="text-sm font-medium text-content-title">{productDetails.roast}</span>
+					</div>
+					<div className="flex justify-between items-center py-2 border-b border-gray-100">
+						<span className="text-sm text-content-body-soft">{t("type")}</span>
+						<span className="text-sm font-medium text-content-title">{productDetails.type}</span>
+					</div>
+					<div className="flex justify-between items-center py-2 border-b border-gray-100">
+						<span className="text-sm text-content-body-soft">{t("quantity")}</span>
+						<span className="text-sm font-medium text-content-title">{productDetails.quantity}</span>
+					</div>
+					<div className="flex justify-between items-center py-2 border-b border-gray-100">
+						<span className="text-sm text-content-body-soft">{t("delivery")}</span>
+						<span className="text-sm font-medium text-content-title">
+							{productDetails.delivery === DeliveryTypeEnum.Delivery.toString()
+								? t("my_home")
+								: productDetails.delivery}
+						</span>
+					</div>
+					<div className="flex justify-between items-center py-2">
+						<span className="text-sm text-content-body-soft">{t("total_price")}</span>
+						<span className="text-sm font-semibold text-content-title">{productDetails.totalPrice}</span>
+					</div>
+				</div>
+			</div>
 
 			{isProducer && (
 				<StatusUpdateModal

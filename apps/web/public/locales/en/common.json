@@ -486,5 +486,24 @@
 	"available_balance": "Available Balance",
 	"enter_destination_wallet_address": "Enter destination wallet address (0x...)",
 	"invalid_wallet_address_message": "Please enter a valid wallet address (starts with 0x and has 66 characters total)",
-	"processing": "Processing..."
+	"processing": "Processing...",
+
+	"sale_details": "Sale Details",
+	"order_id": "Order ID",
+	"order_date": "Order Date",
+	"total_amount": "Total Amount",
+	"buyer_information": "Buyer Information",
+	"no_address_provided": "No address provided",
+	"no_sales_found": "No sales found",
+	"order_not_found": "Order not found",
+	"usd": "USD",
+	"roast": "Roast",
+	"type": "Type",
+	"quantity": "Quantity",
+	"delivery": "Delivery",
+	"total_price": "Total Price",
+	"tips": "Tips",
+	"product": "Product",
+	"new_order": "New order",
+	"you_have_new_order": "You have a new order. Let's start the preparations."
 }

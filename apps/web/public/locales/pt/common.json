@@ -458,5 +458,24 @@
 	"available_balance": "Saldo Disponível",
 	"enter_destination_wallet_address": "Digite o endereço da carteira de destino (0x...)",
 	"invalid_wallet_address_message": "Por favor, digite um endereço de carteira válido (começa com 0x e tem 66 caracteres no total)",
-	"processing": "Processando..."
+	"processing": "Processando...",
+
+	"sale_details": "Detalhes da Venda",
+	"order_id": "ID do Pedido",
+	"order_date": "Data do Pedido",
+	"total_amount": "Valor Total",
+	"buyer_information": "Informações do Comprador",
+	"no_address_provided": "Nenhum endereço fornecido",
+	"no_sales_found": "Nenhuma venda encontrada",
+	"order_not_found": "Pedido não encontrado",
+	"usd": "USD",
+	"roast": "Torra",
+	"type": "Tipo",
+	"quantity": "Quantidade",
+	"delivery": "Entrega",
+	"total_price": "Preço Total",
+	"tips": "Dicas",
+	"product": "Produto",
+	"new_order": "Novo pedido",
+	"you_have_new_order": "Você tem um novo pedido. Vamos começar os preparativos."
 }

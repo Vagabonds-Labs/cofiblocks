@@ -1,5 +1,6 @@
 import { LightBulbIcon } from "@heroicons/react/24/solid";
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 type StatusBannerProps = {
 	orderStatus: string;
@@ -14,23 +15,25 @@ const statusText = {
 };
 
 export function StatusBanner({ orderStatus, isProducer }: StatusBannerProps) {
+	const { t } = useTranslation();
+	
 	if (isProducer && orderStatus !== "Delivered") {
 		return (
 			<div className="bg-surface-primary-soft p-4 rounded-lg flex items-center justify-between">
 				<LightBulbIcon className="w-8 h-8 mr-4" />
 				<div>
 					<p className="text-success-content font-bold flex items-center">
-						New order
+						{t("new_order")}
 					</p>
 					<p className="text-xs text-gray-600">
-						You have a new order. Let&apos;s start the preparations.
+						{t("you_have_new_order")}
 					</p>
 				</div>
 				<button
 					className="bg-surface-secondary-default px-3 py-1 ml-4 rounded-lg"
 					type="button"
 				>
-					Tips
+					{t("tips")}
 				</button>
 			</div>
 		);

@@ -9,17 +9,19 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { OrderStatus } from "@prisma/client";
 import Button from "@repo/ui/button";
 import CheckBox from "@repo/ui/form/checkBox";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import OrderListItem from "~/app/_components/features/OrderListItem";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
 import BottomModal from "~/app/_components/ui/BottomModal";
 import { useOrderFiltering } from "~/hooks/user/useOrderFiltering";
 import { api } from "~/trpc/react";
-// import type { RouterOutputs } from "~/trpc/react";
+import type { RouterOutputs } from "~/trpc/react";
 import { type FormValues, filtersSchema } from "~/types";
+
+type ProducerOrderItem = RouterOutputs["order"]["getProducerOrders"][number];
 
 // type _OrderWithItems = RouterOutputs["order"]["getProducerOrders"][number];
 
@@ -29,12 +31,14 @@ interface OrderItem {
 	buyerName: string;
 	status: OrderStatus;
 	total: number;
+	productImage: string;
 }
 
 interface OrderGroup {
 	date: string;
 	items: OrderItem[];
 }
+
 
 const mapOrderStatusToSalesStatus = (status: string): OrderStatus => {
 	switch (status) {
@@ -55,31 +59,65 @@ const statusOptions = [
 	{ key: "statusCancelled", label: "order_status.cancelled" },
 ] as const;
 
-const filtersDefaults = {
-	statusPending: false,
-	statusCompleted: false,
-	statusCancelled: false,
-};
-
 export default function MySales() {
 	const { t } = useTranslation();
 	const router = useRouter();
 	const { data: ordersItems, isLoading } = api.order.getProducerOrders.useQuery();
 
+	const filtersDefaults = React.useMemo(() => ({
+		statusPending: false,
+		statusCompleted: false,
+		statusCancelled: false,
+	}), []);
+
 	const totalSalesAmount = React.useMemo(() => {
 		if (!ordersItems){
 			return 0;
 		}
-		const total = ordersItems?.reduce((total, item) => {
+		const total = ordersItems?.reduce((total: number, item: { price: number; quantity: number }) => {
 			return total + item.price * item.quantity;
 		}, 0);
 		return total;
 	}, [ordersItems]);
 
-	const groupedOrders = React.useMemo(() => {
+	// Helper function to get product image from metadata
+	const getProductImageUrl = (nftMetadata: unknown) => {
+		if (!nftMetadata) return "/images/cafe2.webp";
+		
+		let metadata: { imageUrl?: string } | null = null;
+		try {
+			metadata = typeof nftMetadata === "string" ? JSON.parse(nftMetadata) as { imageUrl?: string } : nftMetadata as { imageUrl?: string };
+		} catch {
+			return "/images/cafe2.webp";
+		}
+
+		const imageUrl = metadata?.imageUrl;
+		if (!imageUrl || typeof imageUrl !== "string") return "/images/cafe2.webp";
+
+		const IPFS_GATEWAY_URL = "https://gateway.pinata.cloud/ipfs/";
+		
+		// If it's already a full URL, use it
+		if (imageUrl.startsWith("http")) return imageUrl;
+		
+		// If it's an IPFS hash, construct the gateway URL
+		if (imageUrl.startsWith("Qm")) {
+			return `${IPFS_GATEWAY_URL}${imageUrl}`;
+		}
+		
+		// If it's an IPFS URL, extract hash and construct gateway URL
+		if (imageUrl.startsWith("ipfs://")) {
+			const hash = imageUrl.replace("ipfs://", "");
+			return `${IPFS_GATEWAY_URL}${hash}`;
+		}
+		
+		// Fallback to default image
+		return "/images/cafe2.webp";
+	};
+
+	const groupedOrders = React.useMemo((): OrderGroup[] => {
 		if (!ordersItems) return [];
 
-		const grouped = ordersItems.reduce((acc: OrderGroup[], item) => {
+		const grouped = ordersItems.reduce((acc: OrderGroup[], item: ProducerOrderItem) => {
 			const date = new Date(item.order.createdAt);
 			const monthYear = date.toLocaleString("default", {
 				month: "long",
@@ -93,6 +131,7 @@ export default function MySales() {
 				buyerName: item.order.user?.email ?? t("unknown_buyer"),
 				status: mapOrderStatusToSalesStatus(item.order.status),
 				total: item.price * item.quantity,
+				productImage: getProductImageUrl(item.product.nftMetadata),
 			};
 
 			if (existingGroup) {
@@ -105,12 +144,26 @@ export default function MySales() {
 			}
 
 			return acc;
-		}, []);
+		}, [] as OrderGroup[]);
 
 		return grouped.sort(
-			(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+			(a: OrderGroup, b: OrderGroup) => new Date(b.date).getTime() - new Date(a.date).getTime(),
 		);
 	}, [ordersItems, t]);
+
+	// Memoize the orders transformation to prevent infinite re-renders
+	const filteredOrdersForHook = React.useMemo(() => {
+		return groupedOrders.map(group => ({
+			...group,
+			items: group.items.map(item => ({
+				id: item.id,
+				productName: item.productName,
+				buyerName: item.buyerName,
+				status: item.status,
+				total: item.total,
+			}))
+		}));
+	}, [groupedOrders]);
 
 	const {
 		searchTerm,
@@ -121,7 +174,7 @@ export default function MySales() {
 		filteredOrders,
 		applyFilters,
 	} = useOrderFiltering({
-		orders: groupedOrders,
+		orders: filteredOrdersForHook,
 		searchKey: "buyerName",
 		filters: filtersDefaults,
 	});
@@ -138,55 +191,62 @@ export default function MySales() {
 	return (
 		<ProfileOptionLayout title={t("my_sales")}>
 			<div className="space-y-6">
-				{/* Sales Summary Card */}
-				<div className="bg-white rounded-lg p-6">
+				{/* Sales Summary Card - Mobile Optimized */}
+				<div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
 					<div className="flex flex-col space-y-4">
-						<div className="flex justify-between items-center">
-							<h2 className="text-xl font-semibold text-content-title">
+						{/* Total Sales Amount Section */}
+						<div className="flex items-center justify-between">
+							<h2 className="text-lg font-medium text-gray-600">
 								{t("total_sales_amount")}
 							</h2>
-							<span className="text-2xl font-bold text-content-title">
-								${totalSalesAmount.toFixed(2)} USD
-							</span>
+							<div className="bg-green-50 border border-green-200 rounded-lg p-3">
+								<span className="text-2xl font-bold text-green-600">
+									${totalSalesAmount.toFixed(2)}
+								</span>
+								<span className="text-sm font-medium text-green-500 ml-1">
+									{t("usd")}
+								</span>
+							</div>
 						</div>
 
+						{/* Claim Rewards Button */}
 						<button
 							type="button"
 							onClick={() => router.push("/user-profile")}
-							className="flex items-center justify-between w-full p-4 bg-surface-primary-soft rounded-lg hover:bg-surface-primary-hover transition-colors"
+							className="flex items-center justify-between w-full p-4 bg-yellow-50 hover:bg-yellow-100 rounded-lg transition-colors border border-yellow-200"
 						>
 							<div className="flex flex-col">
-								<span className="text-content-title font-medium">
+								<span className="text-yellow-900 font-medium">
 									{t("claim_rewards")}
 								</span>
-								<span className="text-content-body-soft text-sm">
+								<span className="text-yellow-700 text-sm">
 									{t("available_to_claim")}
 								</span>
 							</div>
-							<ArrowRightIcon className="w-5 h-5 text-content-body-default" />
+							<ArrowRightIcon className="w-5 h-5 text-yellow-600" />
 						</button>
 					</div>
 				</div>
 
 				{/* Orders List with Sales Information */}
-				<div className="bg-white rounded-lg p-6 space-y-6">
-					<div className="flex space-x-2">
+				<div className="space-y-6">
+					<div className="flex space-x-3">
 						<div className="flex-grow relative">
-							<MagnifyingGlassIcon className="w-6 h-6 absolute left-3 top-1/2 transform -translate-y-1/2 text-content-body-default" />
+							<MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
 							<input
 								type="text"
 								placeholder={t("search_placeholder")}
-								className="w-full pl-10 pr-4 py-[0.8125rem] px-[1rem] border border-surface-border rounded-[0.5rem] focus:outline-none focus:ring-2 focus:ring-blue-500 text-content-body-default placeholder-content-body-default"
+								className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
 								value={searchTerm}
 								onChange={(e) => setSearchTerm(e.target.value)}
 							/>
 						</div>
 						<Button
-							className="py-3 rounded-lg h-fit"
+							className="px-4 py-3 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 border-0"
 							type="button"
 							onClick={openFiltersModal}
 						>
-							<FunnelIcon className="w-6 h-6 text-content-body-default" />
+							<FunnelIcon className="w-5 h-5" />
 						</Button>
 					</div>
 
@@ -199,38 +259,84 @@ export default function MySales() {
 							</div>
 						</div>
 					) : filteredOrders.length > 0 ? (
-						filteredOrders.map((orderGroup, index) => (
-							<div key={`${orderGroup.date}-${index}`}>
-								<h2 className="text-lg font-semibold text-gray-500 mb-2">
+						// Filter the original groupedOrders based on filteredOrders
+						groupedOrders.filter(group => 
+							filteredOrders.some(filteredGroup => filteredGroup.date === group.date)
+						).map((orderGroup: OrderGroup, index: number) => (
+							<div key={`${orderGroup.date}-${index}`} className="space-y-4">
+								<h2 className="text-lg font-semibold text-gray-500 mb-4 px-2">
 									{orderGroup.date}
 								</h2>
-								<div className="bg-white rounded-lg">
-									{orderGroup.items.map((order, orderIndex) => (
-										<React.Fragment key={`${order.id}-${orderIndex}`}>
-											<div className="flex items-center justify-between py-4">
-												<div className="flex-grow">
-													<OrderListItem
-														productName={order.productName}
-														name={order.buyerName ?? t("unknown_buyer")}
-														status={t(
-															`order_status.${order.status.toLowerCase()}`,
-														)}
-														onClick={() => handleItemClick(order.id)}
+								<div className="space-y-3">
+									{orderGroup.items.map((order: OrderItem, orderIndex: number) => (
+										<div
+											key={`${order.id}-${orderIndex}`}
+											className="bg-white border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer shadow-sm"
+											onClick={() => handleItemClick(order.id)}
+											onKeyDown={(e) => {
+												if (e.key === 'Enter' || e.key === ' ') {
+													e.preventDefault();
+													handleItemClick(order.id);
+												}
+											}}
+											role="button"
+											tabIndex={0}
+										>
+											{/* Mobile-optimized layout */}
+											<div className="flex items-start space-x-4">
+												{/* Product Image */}
+												<div className="flex-shrink-0">
+													<Image
+														src={order.productImage}
+														alt={t("product_image_alt", { productName: order.productName })}
+														width={64}
+														height={64}
+														className="w-16 h-16 rounded-lg object-cover border border-gray-100"
 													/>
 												</div>
-												<div className="flex flex-col items-end ml-4">
-													<span className="font-medium text-content-title">
-														${(order.total ?? 0).toFixed(2)} USD
-													</span>
-													<span className="text-sm text-content-body-soft">
-														{orderGroup.date}
-													</span>
+												
+												{/* Product Info */}
+												<div className="flex-grow min-w-0">
+													<div className="flex flex-col space-y-2">
+														<div>
+															<h3 className="font-semibold text-gray-900 text-base leading-tight">
+																{order.productName}
+															</h3>
+															<p className="text-sm text-gray-600 mt-1 break-all">
+																{order.buyerName ?? t("unknown_buyer")}
+															</p>
+														</div>
+														
+														{/* Status and Price Row */}
+														<div className="flex items-center justify-between pt-2">
+															<span
+																className={`px-3 py-1 text-xs font-medium rounded-full ${
+																	order.status === "COMPLETED"
+																		? "bg-green-100 text-green-700"
+																		: order.status === "CANCELLED"
+																			? "bg-red-100 text-red-700"
+																			: order.status === "FAILED"
+																				? "bg-red-100 text-red-700"
+																				: order.status === "PAID"
+																					? "bg-blue-100 text-blue-700"
+																					: "bg-yellow-100 text-yellow-700"
+																}`}
+															>
+																{t(`order_status.${order.status.toLowerCase()}`)}
+															</span>
+															<div className="text-center">
+																<span className="font-bold text-gray-900 text-lg">
+																	${(order.total ?? 0).toFixed(2)}
+																</span>
+																<span className="text-sm text-gray-500 ml-1">
+																	{t("usd")}
+																</span>
+															</div>
+														</div>
+													</div>
 												</div>
 											</div>
-											{orderIndex < orderGroup.items.length - 1 && (
-												<hr className="border-surface-primary-soft" />
-											)}
-										</React.Fragment>
+										</div>
 									))}
 								</div>
 							</div>
