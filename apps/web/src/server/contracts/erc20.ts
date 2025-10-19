@@ -6,31 +6,6 @@ import { getContractAddress } from "~/utils/contracts";
 import { format_number } from "~/utils/formatting";
 
 
-// Helper function to extract numeric value from contract result
-function extractBalanceValue(result: unknown): number {
-    if (typeof result === "number") {
-        return result;
-    }
-
-    // Handle different possible result structures
-    if (result && typeof result === "object") {
-        // Check if it's an array
-        if (Array.isArray(result)) {
-            const hexValue = (result[0] as string) ?? "0x0";
-            return Number.parseInt(hexValue, 16);
-        }
-
-        // Check if it has a result property
-        if ("result" in result && Array.isArray((result as { result: unknown[] }).result)) {
-            const resultArray = (result as { result: string[] }).result;
-            const hexValue = resultArray[0] ?? "0x0";
-            return Number.parseInt(hexValue, 16);
-        }
-    }
-
-    return 0;
-}
-
 export const getBalances = async (walletAddress: string, token: PaymentToken, formatted = true) => {
     const calldata = [walletAddress];
     const balance_result = await getCallToContract(
@@ -39,14 +14,12 @@ export const getBalances = async (walletAddress: string, token: PaymentToken, fo
         calldata,
     );
     
-    const balanceValue = extractBalanceValue(balance_result);
-    
     if (!formatted) {
-        return balanceValue;
+        return Number(balance_result);
     }
-  
+    
     const decimals = token === PaymentToken.STRK ? 18 : 6;
-    const balance = balanceValue / 10 ** decimals;
+    const balance = Number(balance_result) / 10 ** decimals;
     return balance;
 }
 
