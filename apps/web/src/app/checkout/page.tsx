@@ -4,6 +4,7 @@ import { ArrowLeftIcon } from "@heroicons/react/24/outline";;
 import Link from "next/link";
 import { useReducer } from "react";
 import { useTranslation } from "react-i18next";
+import { useAtomValue } from "jotai";
 import {
 	CheckoutReducer,
 	initialState,
@@ -11,15 +12,27 @@ import {
 import DeliveryAddress from "~/app/_components/features/checkout/DeliveryAddress";
 import DeliveryMethod from "~/app/_components/features/checkout/Deliverymethod";
 import OrderReview from "~/app/_components/features/checkout/OrderReview";
+import { cartItemsAtom, type CartItem } from "~/store/cartAtom";
+import { api } from "~/trpc/react";
 
 export default function CheckoutPage() {
 	const { t } = useTranslation();
 	const [state, dispatch] = useReducer(CheckoutReducer, initialState);
+	const cartItems = useAtomValue(cartItemsAtom);
 
-	const handleNextStep = (method: string, price: number, location?: string) => {
+	// Get current cart
+	api.cart.getUserCart.useQuery();
+
+	// Calculate total package count from cart items
+	const packageCount = cartItems.reduce((total: number, item: CartItem) => total + item.quantity, 0);
+
+	// Calculate product price (simplified - using cart item prices directly)
+	const productPrice = cartItems.reduce((total: number, item: CartItem) => total + (item.price * item.quantity), 0);
+
+	const handleNextStep = (method: string, totalPrice: number, location?: string, deliveryPrice?: number) => {
 		if (state.checkoutStep === "delivery") {
 			dispatch({ type: "SET_DELIVERY_METHOD", payload: method });
-			dispatch({ type: "SET_DELIVERY_PRICE", payload: price });
+			dispatch({ type: "SET_DELIVERY_PRICE", payload: deliveryPrice ?? 0 });
 			if (method === "home") {
 				dispatch({ type: "SET_DELIVERY_LOCATION", payload: location ?? "" });
 				dispatch({ type: "SET_STEP", payload: "address" });
@@ -54,7 +67,11 @@ export default function CheckoutPage() {
 				</div>
 			</Link>
 			{state.checkoutStep === "delivery" && (
-				<DeliveryMethod onNext={handleNextStep} />
+				<DeliveryMethod 
+					onNext={handleNextStep} 
+					productPrice={productPrice}
+					packageCount={packageCount}
+				/>
 			)}
 			{state.checkoutStep === "address" && (
 				<DeliveryAddress onNext={handleAddressSubmit} />
@@ -64,6 +81,7 @@ export default function CheckoutPage() {
 					onCurrencySelect={handleCurrencySelect}
 					deliveryAddress={state.deliveryAddress}
 					deliveryMethod={state.deliveryMethod}
+					deliveryPrice={state.deliveryPrice}
 					isConfirmed={state.isConfirmed}
 				/>
 			)}

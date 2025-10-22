@@ -2,8 +2,6 @@ import {
 	type Order,
 	OrderStatus,
 	Prisma,
-	type Product,
-	type User,
 } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -346,16 +344,26 @@ export const orderRouter = createTRPCRouter({
 					}
 					console.log("Owner wallet found:", owner.walletAddress);
 					
-					// Calculate delivery fee based on package count
-					const gam = ["san_jose", "alajuela", "cartago", "heredia"];
-					const normalizedProvince = (input.deliveryAddress?.city ?? "").toLowerCase().replace(/\s+/g, '_');
+					// Calculate delivery fee using the same logic as getDeliveryFee
+					const DELIVERY_PRICES = {
+						GAM: 4,
+						OUTSIDE: 5.5,
+					} as const;
 					
-					let basePrice: number;
-					if (gam.includes(normalizedProvince)) {
-						basePrice = process.env.GAM_DELIVERY_PRICE ? Number.parseInt(process.env.GAM_DELIVERY_PRICE) : 4;
-					} else {
-						basePrice = process.env.OUTSIDE_DELIVERY_PRICE ? Number.parseInt(process.env.OUTSIDE_DELIVERY_PRICE) : 5.5;
-					}
+					const gam = ["san_jose", "alajuela", "cartago", "heredia"];
+					const normalizeProvince = (province: string): string => {
+						return province
+							.toLowerCase()
+							.trim()
+							.replace(/[,\s]+/g, '_')
+							.replace(/[^a-z_]/g, '')
+							.replace(/_+/g, '_')
+							.replace(/^_|_$/g, '');
+					};
+					
+					const normalizedProvince = normalizeProvince(input.deliveryAddress?.city ?? "");
+					const isGAM = gam.includes(normalizedProvince);
+					const basePrice = isGAM ? DELIVERY_PRICES.GAM : DELIVERY_PRICES.OUTSIDE;
 					
 					// Calculate total package count from cart items
 					const totalPackageCount = cart.items.reduce((total, item) => total + item.quantity, 0);
@@ -405,16 +413,31 @@ export const orderRouter = createTRPCRouter({
 			return 0;
 		}
 		
-		// Calculate delivery fee based on package count
-		const gam = ["san_jose", "alajuela", "cartago", "heredia"];
-		const normalizedProvince = input.province.toLowerCase().replace(/\s+/g, '_');
+		// Hardcoded delivery prices (matching frontend)
+		const DELIVERY_PRICES = {
+			GAM: 4,
+			OUTSIDE: 5.5,
+		} as const;
 		
-		let basePrice: number;
-		if (gam.includes(normalizedProvince)) {
-			basePrice = process.env.GAM_DELIVERY_PRICE ? Number.parseInt(process.env.GAM_DELIVERY_PRICE) : 4;
-		} else {
-			basePrice = process.env.OUTSIDE_DELIVERY_PRICE ? Number.parseInt(process.env.OUTSIDE_DELIVERY_PRICE) : 5.5;
-		}
+		// GAM provinces with improved normalization
+		const gam = ["san_jose", "alajuela", "cartago", "heredia"];
+		
+		// Normalize province name - handle various formats
+		const normalizeProvince = (province: string): string => {
+			return province
+				.toLowerCase()
+				.trim()
+				.replace(/[,\s]+/g, '_') // Replace commas and spaces with underscores
+				.replace(/[^a-z_]/g, '') // Remove any non-alphabetic characters except underscores
+				.replace(/_+/g, '_') // Replace multiple underscores with single
+				.replace(/^_|_$/g, ''); // Remove leading/trailing underscores
+		};
+		
+		const normalizedProvince = normalizeProvince(input.province);
+		
+		// Determine if province is in GAM
+		const isGAM = gam.includes(normalizedProvince);
+		const basePrice = isGAM ? DELIVERY_PRICES.GAM : DELIVERY_PRICES.OUTSIDE;
 		
 		// Calculate shipping price based on package count
 		// 1-2 packages: base price

@@ -7,12 +7,10 @@ import {
 } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { OrderStatus } from "@prisma/client";
-// import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
-// import { ProductDetailsList } from "./ProductDetailsList";
 import { StatusBanner } from "./StatusBanner";
 import StatusUpdateModal from "./StatusUpdateModal";
 

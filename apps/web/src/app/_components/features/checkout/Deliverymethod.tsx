@@ -11,47 +11,58 @@ import Button from "@repo/ui/button";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { SelectableOption } from "./SelectableOption";
+import { api } from "~/trpc/react";
 
 interface DeliveryMethodProps {
-	readonly onNext: (method: string, price: number, location?: string) => void;
+	readonly onNext: (method: string, totalPrice: number, location?: string, deliveryPrice?: number) => void;
+	readonly productPrice: number; // Product price from cart
+	readonly packageCount: number; // Number of bags/packages
 }
 
-export default function DeliveryMethod({ onNext }: DeliveryMethodProps) {
+export default function DeliveryMethod({ onNext, productPrice, packageCount }: DeliveryMethodProps) {
 	const { t } = useTranslation();
 	const [selectedMethod, setSelectedMethod] = useState<string>("");
 	const [selectedLocation, setSelectedLocation] = useState<string>("");
-	//const [deliveryPrice, setDeliveryPrice] = useState<number>(0);
+
+	const DELIVERY_PRICES = {
+		GAM: 4,
+		OUTSIDE: 5.5,
+	} as const;
 
 	const locations = [
-		{ value: "gam", label: t("im_in_gam"), price: 4, description: "$4" },
-		{ value: "outside", label: t("im_not_in_gam"), price: 5.5, description: "$5.5" },
+		{ value: "gam", label: t("im_in_gam"), price: DELIVERY_PRICES.GAM, description: `$${DELIVERY_PRICES.GAM}` },
+		{ value: "outside", label: t("im_not_in_gam"), price: DELIVERY_PRICES.OUTSIDE, description: `$${DELIVERY_PRICES.OUTSIDE}` },
 	];
 
-	const calculateShippingPrice = (basePrice: number, packageCount: number): number => {
-		// Pricing logic:
-		// 1-2 packages: base price (GAM: $4, Outside: $5.5)
-		// 3-4 packages: base price + $2 (GAM: $6, Outside: $7.5)
-		// 5-6 packages: base price + $4 (GAM: $8, Outside: $9.5)
-		// 7-8 packages: base price + $6 (GAM: $10, Outside: $11.5)
-		// And so on...
-		
-		if (packageCount <= 2) {
-			return basePrice;
-		}
-		
-		const additionalPackages = packageCount - 2;
-		const additionalGroups = Math.ceil(additionalPackages / 2);
-		return basePrice + (additionalGroups * 2);
-	};
+	// Get delivery fee from backend API
+	const { data: gamDeliveryFee } = api.order.getDeliveryFee.useQuery({
+		province: "san_jose", // Use GAM province for GAM pricing
+		packageCount: packageCount,
+	}, {
+		enabled: selectedLocation === "gam",
+	});
+
+	const { data: outsideDeliveryFee } = api.order.getDeliveryFee.useQuery({
+		province: "puntarenas", // Use outside GAM province for outside pricing
+		packageCount: packageCount,
+	}, {
+		enabled: selectedLocation === "outside",
+	});
 
 	const handleNext = () => {
 		if (selectedMethod === "home" && selectedLocation) {
-			const basePrice = locations.find((loc) => loc.value === selectedLocation)?.price ?? 0;
-			// For home delivery, we'll calculate the price in OrderReview based on actual cart items
-			// For now, just pass the base price and let OrderReview handle the package count calculation
-			onNext(selectedMethod, basePrice, selectedLocation);
+			// Get delivery price from API results
+			const deliveryPrice = selectedLocation === "gam" 
+				? (gamDeliveryFee ?? 0)
+				: (outsideDeliveryFee ?? 0);
+			
+			// Calculate total price: product price + delivery price
+			const totalPrice = productPrice + deliveryPrice;
+			
+			onNext(selectedMethod, totalPrice, selectedLocation, deliveryPrice);
 		} else if (selectedMethod === "meetup") {
-			onNext(selectedMethod, 0);
+			// For meetup, no delivery cost, only product price
+			onNext(selectedMethod, productPrice, undefined, 0);
 		}
 	};
 
@@ -102,23 +113,29 @@ export default function DeliveryMethod({ onNext }: DeliveryMethodProps) {
 							{t("im_in")}
 						</h3>
 						<div className="space-y-3">
-							{locations.map((location) => (
-								<SelectableOption
-									key={location.value}
-									icon={
-										<MapPinIcon
-											className="h-6 w-6 text-success-default"
-											aria-hidden="true"
-										/>
-									}
-									label={location.label}
-									sublabel={location.description}
-									isSelected={selectedLocation === location.value}
-									onClick={() => {
-										setSelectedLocation(location.value);
-									}}
-								/>
-							))}
+							{locations.map((location) => {
+								// Get the actual delivery fee from API
+								const actualFee = location.value === "gam" ? gamDeliveryFee : outsideDeliveryFee;
+								const displayPrice = actualFee ? `$${actualFee.toFixed(2)}` : location.description;
+								
+								return (
+									<SelectableOption
+										key={location.value}
+										icon={
+											<MapPinIcon
+												className="h-6 w-6 text-success-default"
+												aria-hidden="true"
+											/>
+										}
+										label={location.label}
+										sublabel={displayPrice}
+										isSelected={selectedLocation === location.value}
+										onClick={() => {
+											setSelectedLocation(location.value);
+										}}
+									/>
+								);
+							})}
 						</div>
 					</div>
 				)}

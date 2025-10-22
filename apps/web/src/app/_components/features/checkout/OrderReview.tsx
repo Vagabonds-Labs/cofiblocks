@@ -44,6 +44,7 @@ interface OrderReviewProps {
 		readonly zipCode: string;
 	};
 	readonly deliveryMethod: string;
+	readonly deliveryPrice: number;
 	readonly isConfirmed: boolean;
 }
 
@@ -53,6 +54,7 @@ export default function OrderReview({
 	onCurrencySelect,
 	deliveryAddress,
 	deliveryMethod,
+	deliveryPrice,
 	isConfirmed,
 }: OrderReviewProps) {
 	const { t } = useTranslation();
@@ -84,16 +86,6 @@ export default function OrderReview({
 	// Calculate total package count from cart items
 	const totalPackageCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
-	const { data: deliveryFee } = api.order.getDeliveryFee.useQuery(
-		{
-			province: deliveryAddress.city,
-			packageCount: totalPackageCount,
-		},
-		{
-			enabled: !!deliveryAddress.city,
-		}
-	);
-
 	// Calculate prices using fetched unit prices or fallback to cart item prices
 	const productPrice = cartItems.reduce((total, item) => {
 		const unitPrice = priceData?.unitPrices?.[item.id] 
@@ -102,7 +94,15 @@ export default function OrderReview({
 		return total + unitPrice * item.quantity;
 	}, 0);
 
-	const deliveryAmount = Number.isFinite(deliveryFee ?? 0) ? (deliveryFee ?? 0) : 0;
+	api.order.getDeliveryFee.useQuery({
+		province: deliveryAddress.city,
+		packageCount: totalPackageCount,
+	}, {
+		enabled: !!deliveryAddress.city && deliveryMethod === "home",
+	});
+
+	// Use delivery price from checkout state, but validate with backend
+	const deliveryAmount = deliveryMethod === "home" ? (deliveryPrice || 0) : 0;
 	const totalPrice = productPrice + deliveryAmount;
 
 	const handleCurrencySelect = (currency: string) => {
