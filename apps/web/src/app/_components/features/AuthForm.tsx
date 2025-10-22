@@ -16,7 +16,7 @@ import {
 } from "~/utils/parseErrorMessages";
 
 interface AuthFormProps {
-	initialMode?: "signin" | "signup";
+	initialMode?: "signin" | "signup" | "forgot-password";
 }
 
 export default function AuthForm({ initialMode = "signin" }: AuthFormProps) {
@@ -24,7 +24,8 @@ export default function AuthForm({ initialMode = "signin" }: AuthFormProps) {
 	const router = useRouter();
 	const registerUserMutation = api.auth.registerUser.useMutation();
 	const resendVerificationMutation = api.auth.requestEmailVerification.useMutation();
-	const [mode, setMode] = useState<"signin" | "signup">(initialMode);
+	const requestPasswordResetMutation = api.auth.requestPasswordReset.useMutation();
+	const [mode, setMode] = useState<"signin" | "signup" | "forgot-password">(initialMode);
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
@@ -36,11 +37,14 @@ export default function AuthForm({ initialMode = "signin" }: AuthFormProps) {
 	const [sendVerification, setSendVerification] = useState(false);
 	const [isResendingVerification, setIsResendingVerification] = useState(false);
 	const [resendSuccess, setResendSuccess] = useState(false);
+	const [passwordResetSent, setPasswordResetSent] = useState(false);
 
 	// Update URL when mode changes
 	useEffect(() => {
 		if (mode === "signup") {
 			router.replace("/auth?mode=signup");
+		} else if (mode === "forgot-password") {
+			router.replace("/auth?mode=forgot-password");
 		} else {
 			router.replace("/auth");
 		}
@@ -72,6 +76,23 @@ export default function AuthForm({ initialMode = "signin" }: AuthFormProps) {
 
 			router.refresh();
 			router.push("/marketplace");
+		} else if (mode === "forgot-password") {
+			// Forgot Password
+			if (!email) {
+				setError(t("error.email_required"));
+				setIsLoading(false);
+				return;
+			}
+
+			try {
+				await requestPasswordResetMutation.mutateAsync({ email });
+				setPasswordResetSent(true);
+				setIsLoading(false);
+			} catch {
+				setError(t("error.password_reset_failed"));
+				setIsLoading(false);
+				return;
+			}
 		} else {
 			// Sign Up
 			// Check if passwords match
@@ -98,11 +119,18 @@ export default function AuthForm({ initialMode = "signin" }: AuthFormProps) {
 	};
 
 	const toggleMode = () => {
-		setMode(mode === "signin" ? "signup" : "signin");
+		if (mode === "signin") {
+			setMode("signup");
+		} else if (mode === "signup") {
+			setMode("signin");
+		} else {
+			setMode("signin");
+		}
 		setError("");
 		setConfirmPassword("");
 		setSendVerification(false);
 		setResendSuccess(false);
+		setPasswordResetSent(false);
 	};
 
 	const handleResendVerification = async () => {
@@ -182,6 +210,50 @@ export default function AuthForm({ initialMode = "signin" }: AuthFormProps) {
 						</button>
 					</div>
 				</div>
+			) : passwordResetSent ? (
+				// Password Reset Sent Message
+				<div className="flex-1 flex flex-col items-center justify-center text-center">
+					<div className="bg-success-default/10 p-6 rounded-lg mb-6">
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							className="h-16 w-16 mx-auto text-success-default mb-4"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+							aria-hidden="true"
+						>
+							<title>Password reset email</title>
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								strokeWidth={2}
+								d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+							/>
+						</svg>
+						<h3 className="text-xl font-medium text-content-title mb-3">
+							{t("auth.password_reset_email_sent")}
+						</h3>
+						<p className="text-content-body-default mb-4">
+							{t("auth.password_reset_instructions")}
+						</p>
+						<p className="text-sm text-content-body-soft mb-3">
+							{t("auth.email_sent_to")} <strong>{email}</strong>
+						</p>
+					</div>
+					<div className="flex flex-col items-center">
+						<button
+							type="button"
+							onClick={() => {
+								setMode("signin");
+								setPasswordResetSent(false);
+								setEmail("");
+							}}
+							className="bg-yellow-400 hover:bg-yellow-500 text-content-title font-medium py-3 px-8 rounded-lg border border-yellow-400 transition-all duration-300 text-lg shadow-sm"
+						>
+							{t("auth.back_to_signin")}
+						</button>
+					</div>
+				</div>
 			) : (
 				// Form
 				<>
@@ -198,32 +270,34 @@ export default function AuthForm({ initialMode = "signin" }: AuthFormProps) {
 								/>
 							</div>
 
-							<div className="relative">
-								<input
-									type={showPassword ? "text" : "password"}
-									placeholder={t("auth.password_placeholder")}
-									required
-									className="w-full p-3 rounded-lg border border-surface-border bg-surface-inverse focus:outline-none focus:ring-2 focus:ring-surface-secondary-default shadow-sm"
-									value={password}
-									onChange={(e) => setPassword(e.target.value)}
-								/>
-								<button
-									type="button"
-									onClick={() => setShowPassword(!showPassword)}
-									className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-									aria-label={
-										showPassword
-											? t("auth.hide_password")
-											: t("auth.show_password")
-									}
-								>
-									{showPassword ? (
-										<EyeSlashIcon className="h-5 w-5" />
-									) : (
-										<EyeIcon className="h-5 w-5" />
-									)}
-								</button>
-							</div>
+							{mode !== "forgot-password" && (
+								<div className="relative">
+									<input
+										type={showPassword ? "text" : "password"}
+										placeholder={t("auth.password_placeholder")}
+										required
+										className="w-full p-3 rounded-lg border border-surface-border bg-surface-inverse focus:outline-none focus:ring-2 focus:ring-surface-secondary-default shadow-sm"
+										value={password}
+										onChange={(e) => setPassword(e.target.value)}
+									/>
+									<button
+										type="button"
+										onClick={() => setShowPassword(!showPassword)}
+										className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+										aria-label={
+											showPassword
+												? t("auth.hide_password")
+												: t("auth.show_password")
+										}
+									>
+										{showPassword ? (
+											<EyeSlashIcon className="h-5 w-5" />
+										) : (
+											<EyeIcon className="h-5 w-5" />
+										)}
+									</button>
+								</div>
+							)}
 
 							{mode === "signup" && (
 								<div className="relative">
@@ -294,17 +368,36 @@ export default function AuthForm({ initialMode = "signin" }: AuthFormProps) {
 									<span>
 										{mode === "signin"
 											? t("auth.signing_in")
+											: mode === "forgot-password"
+											? t("auth.sending_reset_email")
 											: t("auth.creating_account")}
 									</span>
 								</div>
 							) : (
 								<div className="flex items-center justify-center">
 									<span>
-										{mode === "signin" ? t("auth.sign_in") : t("auth.sign_up")}
+										{mode === "signin" 
+											? t("auth.sign_in") 
+											: mode === "forgot-password"
+											? t("auth.send_reset_email")
+											: t("auth.sign_up")}
 									</span>
 								</div>
 							)}
 						</Button>
+
+						{/* Forgot Password Link */}
+						{mode === "signin" && (
+							<div className="text-center mt-2">
+								<button
+									type="button"
+									onClick={() => setMode("forgot-password")}
+									className="text-sm text-blue-600 hover:text-blue-800 underline"
+								>
+									{t("auth.forgot_password")}
+								</button>
+							</div>
+						)}
 
 						{/* Divider */}
 						{/* <div className="relative my-4">
@@ -335,15 +428,34 @@ export default function AuthForm({ initialMode = "signin" }: AuthFormProps) {
 
 					{/* Toggle Mode Button */}
 					<div className="mt-auto pt-2">
-						<button
-							type="button"
-							onClick={toggleMode}
-							className="block w-full text-center text-content-title text-sm font-normal underline transition-colors duration-300 hover:text-content-title-hover"
-						>
-							{mode === "signin"
-								? t("auth.create_account_link")
-								: t("auth.already_have_account")}
-						</button>
+						{mode === "forgot-password" ? (
+							<div className="flex flex-col items-center space-y-2">
+								<button
+									type="button"
+									onClick={() => setMode("signin")}
+									className="text-content-title text-sm font-normal underline transition-colors duration-300 hover:text-content-title-hover"
+								>
+									{t("auth.back_to_signin")}
+								</button>
+								<button
+									type="button"
+									onClick={() => setMode("signup")}
+									className="text-content-title text-sm font-normal underline transition-colors duration-300 hover:text-content-title-hover"
+								>
+									{t("auth.create_account_link")}
+								</button>
+							</div>
+						) : (
+							<button
+								type="button"
+								onClick={toggleMode}
+								className="block w-full text-center text-content-title text-sm font-normal underline transition-colors duration-300 hover:text-content-title-hover"
+							>
+								{mode === "signin"
+									? t("auth.create_account_link")
+									: t("auth.already_have_account")}
+							</button>
+						)}
 					</div>
 				</>
 			)}

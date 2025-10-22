@@ -409,7 +409,24 @@
 		"email_verified_success": "E-mail Verificado com Sucesso!",
 		"redirecting_to_marketplace": "Redirecionando para o mercado...",
 		"verification_failed": "Falha na Verificação do E-mail",
-		"back_to_auth": "Voltar para Login"
+		"back_to_auth": "Voltar para Login",
+		"resend_verification_email": "Reenviar e-mail de verificação",
+		"resending_verification": "Reenviando e-mail de verificação...",
+		"verification_email_resent": "E-mail de verificação enviado com sucesso",
+		"forgot_password": "Esqueceu sua senha?",
+		"send_reset_email": "Enviar E-mail de Redefinição",
+		"sending_reset_email": "Enviando e-mail de redefinição...",
+		"password_reset_email_sent": "E-mail de Redefinição Enviado",
+		"password_reset_instructions": "Por favor, verifique seu e-mail e clique no link de redefinição para definir uma nova senha.",
+		"reset_password_title": "Redefinir Sua Senha",
+		"new_password_placeholder": "Nova Senha",
+		"confirm_new_password_placeholder": "Confirmar Nova Senha",
+		"resetting_password": "Redefinindo senha...",
+		"reset_password": "Redefinir Senha",
+		"password_reset_success": "Senha Redefinida com Sucesso",
+		"password_reset_success_description": "Sua senha foi redefinida com sucesso. Agora você pode fazer login com sua nova senha.",
+		"invalid_reset_link": "Link de Redefinição Inválido",
+		"invalid_reset_link_description": "O link de redefinição de senha é inválido ou expirou. Por favor, solicite um novo."
 	},
 
 	"wallet": {
@@ -435,7 +452,11 @@
 		"user_not_verified": "Este e-mail não está verificado. Por favor, verifique seu e-mail antes de fazer login.",
 		"resend_verification_email": "Reenviar e-mail de verificação",
 		"resending_verification": "Reenviando e-mail de verificação...",
-		"verification_email_resent": "E-mail de verificação enviado com sucesso"
+		"verification_email_resent": "E-mail de verificação enviado com sucesso",
+		"email_required": "E-mail é obrigatório",
+		"password_required": "Senha é obrigatória",
+		"password_reset_failed": "Falha na redefinição de senha. Por favor, tente novamente.",
+		"invalid_reset_token": "Token de redefinição inválido ou expirado"
 	},
 
 	"previous_slide": "Slide anterior",

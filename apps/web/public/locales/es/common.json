@@ -425,7 +425,24 @@
 		"email_verified_success": "¡Correo Verificado Exitosamente!",
 		"redirecting_to_marketplace": "Redirigiendo al mercado...",
 		"verification_failed": "Falló la Verificación del Correo",
-		"back_to_auth": "Volver a Iniciar Sesión"
+		"back_to_auth": "Volver a Iniciar Sesión",
+		"resend_verification_email": "Reenviar correo de verificación",
+		"resending_verification": "Reenviando correo de verificación...",
+		"verification_email_resent": "Correo de verificación enviado exitosamente",
+		"forgot_password": "¿Olvidaste tu contraseña?",
+		"send_reset_email": "Enviar Correo de Restablecimiento",
+		"sending_reset_email": "Enviando correo de restablecimiento...",
+		"password_reset_email_sent": "Correo de Restablecimiento Enviado",
+		"password_reset_instructions": "Por favor revisa tu correo y haz clic en el enlace de restablecimiento para establecer una nueva contraseña.",
+		"reset_password_title": "Restablecer Tu Contraseña",
+		"new_password_placeholder": "Nueva Contraseña",
+		"confirm_new_password_placeholder": "Confirmar Nueva Contraseña",
+		"resetting_password": "Restableciendo contraseña...",
+		"reset_password": "Restablecer Contraseña",
+		"password_reset_success": "Contraseña Restablecida Exitosamente",
+		"password_reset_success_description": "Tu contraseña ha sido restablecida exitosamente. Ahora puedes iniciar sesión con tu nueva contraseña.",
+		"invalid_reset_link": "Enlace de Restablecimiento Inválido",
+		"invalid_reset_link_description": "El enlace de restablecimiento de contraseña es inválido o ha expirado. Por favor solicita uno nuevo."
 	},
 
 	"wallet": {
@@ -451,7 +468,11 @@
 		"user_not_verified": "Este correo no está verificado. Por favor verifica tu correo antes de iniciar sesión.",
 		"resend_verification_email": "Reenviar correo de verificación",
 		"resending_verification": "Reenviando correo de verificación...",
-		"verification_email_resent": "Correo de verificación enviado exitosamente"
+		"verification_email_resent": "Correo de verificación enviado exitosamente",
+		"email_required": "El correo electrónico es requerido",
+		"password_required": "La contraseña es requerida",
+		"password_reset_failed": "Falló el restablecimiento de contraseña. Por favor intente de nuevo.",
+		"invalid_reset_token": "Token de restablecimiento inválido o expirado"
 	},
 
 	"previous_slide": "Diapositiva anterior",

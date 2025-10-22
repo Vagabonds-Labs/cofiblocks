@@ -443,7 +443,21 @@
 		"back_to_auth": "Back to Sign In",
 		"resend_verification_email": "Resend verification email",
 		"resending_verification": "Resending verification email...",
-		"verification_email_resent": "Verification email sent successfully"
+		"verification_email_resent": "Verification email sent successfully",
+		"forgot_password": "Forgot your password?",
+		"send_reset_email": "Send Reset Email",
+		"sending_reset_email": "Sending reset email...",
+		"password_reset_email_sent": "Password Reset Email Sent",
+		"password_reset_instructions": "Please check your email and click the reset link to set a new password.",
+		"reset_password_title": "Reset Your Password",
+		"new_password_placeholder": "New Password",
+		"confirm_new_password_placeholder": "Confirm New Password",
+		"resetting_password": "Resetting password...",
+		"reset_password": "Reset Password",
+		"password_reset_success": "Password Reset Successful",
+		"password_reset_success_description": "Your password has been successfully reset. You can now sign in with your new password.",
+		"invalid_reset_link": "Invalid Reset Link",
+		"invalid_reset_link_description": "The password reset link is invalid or has expired. Please request a new one."
 	},
 
 	"wallet": {
@@ -463,7 +477,11 @@
 		"passwords_do_not_match": "Passwords do not match. Please try again.",
 		"user_already_exists_signin": "This email is already registered. Please use the sign-up form instead.",
 		"user_already_exists_signup": "This email is already registered. Please sign in instead.",
-		"user_not_verified": "This email is not verified. Please verify your email before signing in."
+		"user_not_verified": "This email is not verified. Please verify your email before signing in.",
+		"email_required": "Email is required",
+		"password_required": "Password is required",
+		"password_reset_failed": "Password reset failed. Please try again.",
+		"invalid_reset_token": "Invalid or expired reset token"
 	},
 
 	"previous_slide": "Previous slide",

@@ -1,6 +1,8 @@
-import type { Role } from "@prisma/client";
+// Role type from Prisma schema
+type Role = "ADMIN" | "COFFEE_PRODUCER" | "COFFEE_ROASTER" | "COFFEE_BUYER";
 import { TRPCError } from "@trpc/server";
 import { hash } from "bcrypt";
+import crypto from "node:crypto";
 import { z } from "zod";
 import {
 	createTRPCRouter,
@@ -184,4 +186,106 @@ export const authRouter = createTRPCRouter({
 		});
 		return { ok: true as const };
 	}),
+
+	requestPasswordReset: publicProcedure
+		.input(z.object({ email: z.string().email() }))
+		.mutation(async ({ ctx, input }) => {
+			const { email: email_raw } = input;
+			const email = email_raw.toLowerCase();
+
+			// Check if user exists
+			const user = await ctx.db.user.findUnique({
+				where: { email },
+			});
+
+			if (!user) {
+				// Don't reveal if user exists or not for security
+				return { ok: true };
+			}
+
+			// Create password reset token
+			const emailSvc = createEmailService();
+			const svc = createAuthService({
+				db: ctx.db,
+				mailer: {
+					async sendVerification(email: string, url: string) {
+						await emailSvc.sendPasswordResetEmail({
+							to: email,
+							resetUrl: url,
+							userName: user.name,
+						});
+					},
+				},
+				appUrl: process.env.NEXT_PUBLIC_APP_URL,
+			});
+
+			// Create password reset token (similar to email verification but with different type)
+			const { token } = await svc.createVerificationToken({ 
+				email, 
+				ttlMinutes: 1440 // 24 hours
+			});
+			
+			// Update token type to PASSWORD_RESET
+			await ctx.db.verificationToken.updateMany({
+				where: { 
+					email: email, 
+					token: crypto.createHash("sha256").update(token).digest("hex") 
+				},
+				data: { type: "PASSWORD_RESET" }
+			});
+
+			const url = `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password?token=${encodeURIComponent(token)}`;
+			await emailSvc.sendPasswordResetEmail({
+				to: email,
+				resetUrl: url,
+				userName: user.name,
+			});
+
+			return { ok: true };
+		}),
+
+	resetPassword: publicProcedure
+		.input(z.object({ 
+			token: z.string().min(1),
+			password: z.string().min(1, "Password is required")
+		}))
+		.mutation(async ({ ctx, input }) => {
+			const { token, password } = input;
+
+			// Validate password meets security requirements
+			try {
+				validatePasswordOrThrow(password);
+			} catch (error) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: error instanceof Error ? error.message : "Invalid password",
+				});
+			}
+
+			// Verify the reset token
+			const svc = createAuthService({
+				db: ctx.db,
+				mailer: { async sendVerification() { /* not needed here */ } },
+				appUrl: process.env.NEXT_PUBLIC_APP_URL,
+			});
+
+			const res = await svc.verifyToken(token, "PASSWORD_RESET");
+			if (!res.ok) {
+				throw new TRPCError({ 
+					code: "BAD_REQUEST", 
+					message: "Invalid or expired reset token" 
+				});
+			}
+
+			// Hash the new password
+			const encrypted_password = await hash(password, 12);
+
+			// Update user's password
+			await ctx.db.user.update({
+				where: { email: res.email },
+				data: { password: encrypted_password },
+			});
+
+			return { ok: true };
+		}),
 });
