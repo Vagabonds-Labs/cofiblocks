@@ -21,6 +21,26 @@ export interface TransactionDetails {
 	calldata: string[];
 }
 
+export interface WalletExportOTPResponse {
+	success: boolean;
+	data: {
+		email: string;
+		expiresIn: number;
+		timestamp: number;
+	};
+	message: string;
+}
+
+export interface WalletExportVerifyResponse {
+	success: boolean;
+	data: {
+		private_key: string;
+		wallet_address: string;
+		warning: string;
+	};
+	message: string;
+}
+
 const getHeaders = (token: string) => ({
 	Authorization: `Bearer ${token}`,
 	"Content-Type": "application/json",
@@ -55,7 +75,7 @@ export async function registerUserCavos(
 				accessToken: existingUserAuthData.access_token,
 				accessExpiration: new Date(
 					Number(existingUserAuthData.expires_in) * 1000 +
-						Number(existingUserAuthData.timestamp),
+					Number(existingUserAuthData.timestamp),
 				),
 				refreshToken: existingUserAuthData.refresh_token,
 				walletAddress: existingUserAuthData.wallet_address,
@@ -182,6 +202,7 @@ export async function authenticateUser(
 			throw new Error('Invalid auth data');
 		}
 
+		console.log(auth);
 		return {
 			user_id: typeof data.user_id === 'string' ? data.user_id : '',
 			email: typeof data.email === 'string' ? data.email : '',
@@ -236,4 +257,72 @@ export async function executeTransaction(
 		console.log(err);
 		throw new Error(`executeTransaction error: ${(err as Error).message}`);
 	}
+}
+
+export async function requestWalletExportOTP(
+	userAuthData: UserAuthData,
+): Promise<WalletExportOTPResponse> {
+	const headers = getHeaders(userAuthData.access_token);
+
+	try {
+		const res = await axios.post(
+			`${CAVOS_API_BASE}/wallet/export/request-otp`,
+			{},
+			{
+				headers,
+				validateStatus: () => true,
+			},
+		);
+		const responseData = res.data as WalletExportOTPResponse;
+		if (responseData?.success !== true) {
+			throw new Error(
+				`Failed to request OTP: ${JSON.stringify(responseData)}`,
+			);
+		}
+		return responseData;
+	} catch (err) {
+		throw new Error(`requestWalletExportOTP error: ${(err as Error).message}`);
+	}
+}
+
+export async function verifyWalletExportOTP(
+	userAuthData: UserAuthData,
+	otp: string,
+): Promise<WalletExportVerifyResponse> {
+	const headers = getHeaders(userAuthData.access_token);
+	const payload = { otp };
+
+	try {
+		const res = await axios.post(
+			`${CAVOS_API_BASE}/wallet/export/verify`,
+			payload,
+			{
+				headers,
+				validateStatus: () => true,
+			},
+		);
+		const responseData = res.data as WalletExportVerifyResponse;
+		if (responseData?.success !== true) {
+			throw new Error(
+				`Failed to verify OTP: ${JSON.stringify(responseData)}`,
+			);
+		}
+		return responseData;
+	} catch (err) {
+		throw new Error(`verifyWalletExportOTP error: ${(err as Error).message}`);
+	}
+}
+
+export async function getOnrampLink(address: string): Promise<string> {
+	const baseUrl = 'https://app.rampnetwork.com/exchange';
+	const params = new URLSearchParams();
+	params.append('defaultFlow', 'ONRAMP');
+	params.append('enabledFlows', 'ONRAMP');
+	params.append('enabledCryptoAssets', 'STARKNET_*');
+	params.append('hostApiKey', 'p8skgorascdvryjzeqoah3xxfbpnx79nopzo6pzw');
+	params.append('userAddress', address);
+	params.append('outAsset', 'STARKNET_USDC');
+	params.append('inAsset', 'USD');
+	params.append('inAssetValue', '10000');
+	return `${baseUrl}?${params.toString()}`;
 }
