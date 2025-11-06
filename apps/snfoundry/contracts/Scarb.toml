@@ -23,7 +23,9 @@ sierra = true
 
 [[tool.snforge.fork]]
 name = "MAINNET_LATEST"
-url = "https://starknet-mainnet.public.blastapi.io/rpc/v0_8"
+# Note: Blast API is deprecated. Using Cartridge public RPC endpoint.
+# For Cartridge public endpoint: https://api.cartridge.gg/x/starknet/mainnet
+url = "https://api.cartridge.gg/x/starknet/mainnet"
 block_id.tag = "latest"
 
 [tool.fmt]

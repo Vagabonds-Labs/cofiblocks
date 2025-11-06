@@ -42,7 +42,7 @@ export const PaymentTokenTag: Record<PaymentToken, string> = {
 
 export const localAccount = () => {
 	const provider = new RpcProvider({
-		nodeUrl: process.env.RPC_URL_MAINNET ?? "",
+		nodeUrl: "https://api.cartridge.gg/x/starknet/mainnet",
 	});
 
 	const account = new Account(
@@ -73,7 +73,8 @@ export const getCallToContract = async (
 		configExternalContracts.mainnet[contract].address,
 		account,
 	);
-	return await contractInstance.call(entrypoint, calldata);
+	// Use "latest" instead of "pending" as Cartridge RPC doesn't support "pending"
+	return await contractInstance.call(entrypoint, calldata, { blockIdentifier: "latest" });
 };
 
 export const readStorageAt = async (
@@ -81,9 +82,11 @@ export const readStorageAt = async (
 	selector: string,
 ) => {
 	const account = localAccount();
+	// Use "latest" instead of "pending" as Cartridge RPC doesn't support "pending"
 	return await account.getStorageAt(
 		configExternalContracts.mainnet[contract].address,
 		selector,
+		"latest",
 	)
 };
 
@@ -91,7 +94,7 @@ export async function getEvents(
 	contract: CofiBlocksContracts,
 ): Promise<BlockchainEvent[]> {
 	const starknetProvider = new RpcProvider({
-		nodeUrl: process.env.RPC_URL_MAINNET ?? "",
+		nodeUrl: "https://api.cartridge.gg/x/starknet/mainnet",
 	});
 	const eventsResponse = await starknetProvider.getEvents({
 		address: configExternalContracts.mainnet[contract].address,
