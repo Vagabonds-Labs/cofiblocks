@@ -114,10 +114,7 @@ export default function DeliveryMethod({ onNext, productPrice, packageCount }: D
 						</h3>
 						<div className="space-y-3">
 							{locations.map((location) => {
-								// Get the actual delivery fee from API
-								const actualFee = location.value === "gam" ? gamDeliveryFee : outsideDeliveryFee;
-								const displayPrice = actualFee ? `$${actualFee.toFixed(2)}` : location.description;
-								
+								// Always use static price for display (don't show API-calculated price that changes based on package count)
 								return (
 									<SelectableOption
 										key={location.value}
@@ -128,7 +125,7 @@ export default function DeliveryMethod({ onNext, productPrice, packageCount }: D
 											/>
 										}
 										label={location.label}
-										sublabel={displayPrice}
+										sublabel={location.description}
 										isSelected={selectedLocation === location.value}
 										onClick={() => {
 											setSelectedLocation(location.value);
@@ -140,27 +137,30 @@ export default function DeliveryMethod({ onNext, productPrice, packageCount }: D
 					</div>
 				)}
 
-				<Button
-					variant="transparent"
-					className="w-full mt-4 justify-between p-4"
-					onClick={() => {
-						window.open("https://lu.ma/cofiblocks", "_blank");
-					}}
-				>
-					<div className="flex items-center gap-3">
-						<CalendarIcon
-							className="h-6 w-6 text-content-title"
+				{/* Only show calendar link when "Pick up at meetup" is selected */}
+				{selectedMethod === "meetup" && (
+					<Button
+						variant="transparent"
+						className="w-full mt-4 justify-between p-4"
+						onClick={() => {
+							window.open("https://lu.ma/cofiblocks", "_blank");
+						}}
+					>
+						<div className="flex items-center gap-3">
+							<CalendarIcon
+								className="h-6 w-6 text-content-title"
+								aria-hidden="true"
+							/>
+							<span className="text-content-body-default">
+								{t("check_meetup_calendar")}
+							</span>
+						</div>
+						<ChevronRightIcon
+							className="h-5 w-5 text-content-body-soft"
 							aria-hidden="true"
 						/>
-						<span className="text-content-body-default">
-							{t("check_meetup_calendar")}
-						</span>
-					</div>
-					<ChevronRightIcon
-						className="h-5 w-5 text-content-body-soft"
-						aria-hidden="true"
-					/>
-				</Button>
+					</Button>
+				)}
 			</div>
 
 			<div className="p-4">

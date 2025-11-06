@@ -1,7 +1,6 @@
 "use client";
 
 import NFTCard from "@repo/ui/nftCard";
-import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
