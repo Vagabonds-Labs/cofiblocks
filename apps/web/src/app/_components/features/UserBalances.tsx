@@ -154,7 +154,7 @@ export function UserBalances({ balances }: UserBalancesProps) {
 	};
 
 	return (
-		<div className="bg-white rounded-lg shadow-md p-6 mb-6">
+		<div className="bg-white rounded-lg border-surface-border shadow-sm p-6 mb-6">
 			<h3 className="text-lg font-semibold text-gray-800 mb-4">
 				{t("user_balances")}
 			</h3>

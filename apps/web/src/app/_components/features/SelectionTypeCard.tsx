@@ -2,7 +2,6 @@ import Button from "@repo/ui/button";
 import { InfoCard } from "@repo/ui/infoCard";
 import { Text } from "@repo/ui/typography";
 import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 
 interface SelectionTypeCardProps {

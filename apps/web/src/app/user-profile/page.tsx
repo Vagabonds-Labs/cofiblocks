@@ -51,7 +51,7 @@ export default function UserProfile() {
 
 	const userProfile = {
 		name: userData?.name ?? user?.email ?? t("unnamed_user"),
-		country: t("costa_rica"),
+		country: "CofiBlocks",
 		memberSince: userData?.createdAt
 			? new Date(userData.createdAt).getFullYear()
 			: new Date().getFullYear(),

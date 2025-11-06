@@ -6,7 +6,7 @@ import {
 	publicProcedure,
 } from "~/server/api/trpc";
 import { CofiBlocksContracts, getCallToContract, getContractAddress } from "~/utils/contracts";
-import { authenticateUser, authenticateUserCavos, executeTransaction } from "~/server/services/cavos";
+import { authenticateUser, authenticateUserCavos, executeTransaction, getOnrampLink, requestWalletExportOTP, verifyWalletExportOTP } from "~/server/services/cavos";
 import { TRPCError } from "@trpc/server";
 import { format_number } from "~/utils/formatting";
 import { getBalances } from "~/server/contracts/erc20";
@@ -207,5 +207,46 @@ export const userRouter = createTRPCRouter({
 			};
 			const tx = await executeTransaction(userAuthData, transaction)
 			return tx;
+		}),
+
+	getOnrampLink: protectedProcedure
+		.query(async ({ ctx }) => {
+			if (!ctx.session.user || !ctx.session.user.email) {
+				throw new TRPCError({ code: "UNAUTHORIZED", message: "User not found" });
+			}
+
+			const user = await ctx.db.user.findUnique({
+				where: { id: ctx.session.user.id },
+			});
+
+			if (!user?.walletAddress) {
+				throw new TRPCError({ code: "BAD_REQUEST", message: "User wallet address not found" });
+			}
+
+			const onrampLink = await getOnrampLink(user.walletAddress);
+			return { url: onrampLink };
+		}),
+
+	requestWalletExportOTP: protectedProcedure
+		.mutation(async ({ ctx }) => {
+			if (!ctx.session.user || !ctx.session.user.email) {
+				throw new TRPCError({ code: "UNAUTHORIZED", message: "User not found" });
+			}
+
+			const userAuthData = await authenticateUserCavos(ctx.session.user.email, ctx.db);
+			const response = await requestWalletExportOTP(userAuthData);
+			return response;
+		}),
+
+	verifyWalletExportOTP: protectedProcedure
+		.input(z.object({ otp: z.string() }))
+		.mutation(async ({ ctx, input }) => {
+			if (!ctx.session.user || !ctx.session.user.email) {
+				throw new TRPCError({ code: "UNAUTHORIZED", message: "User not found" });
+			}
+
+			const userAuthData = await authenticateUserCavos(ctx.session.user.email, ctx.db);
+			const response = await verifyWalletExportOTP(userAuthData, input.otp);
+			return response;
 		}),
 });
