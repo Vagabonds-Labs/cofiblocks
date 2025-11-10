@@ -139,27 +139,27 @@ export default function DeliveryMethod({ onNext, productPrice, packageCount }: D
 
 				{/* Only show calendar link when "Pick up at meetup" is selected */}
 				{selectedMethod === "meetup" && (
-					<Button
-						variant="transparent"
-						className="w-full mt-4 justify-between p-4"
-						onClick={() => {
-							window.open("https://lu.ma/cofiblocks", "_blank");
-						}}
-					>
-						<div className="flex items-center gap-3">
-							<CalendarIcon
-								className="h-6 w-6 text-content-title"
-								aria-hidden="true"
-							/>
-							<span className="text-content-body-default">
-								{t("check_meetup_calendar")}
-							</span>
-						</div>
-						<ChevronRightIcon
-							className="h-5 w-5 text-content-body-soft"
+				<Button
+					variant="transparent"
+					className="w-full mt-4 justify-between p-4"
+					onClick={() => {
+						window.open("https://lu.ma/cofiblocks", "_blank");
+					}}
+				>
+					<div className="flex items-center gap-3">
+						<CalendarIcon
+							className="h-6 w-6 text-content-title"
 							aria-hidden="true"
 						/>
-					</Button>
+						<span className="text-content-body-default">
+							{t("check_meetup_calendar")}
+						</span>
+					</div>
+					<ChevronRightIcon
+						className="h-5 w-5 text-content-body-soft"
+						aria-hidden="true"
+					/>
+				</Button>
 				)}
 			</div>
 

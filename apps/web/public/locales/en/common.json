@@ -344,6 +344,24 @@
 	"congrats": "Congratulations!",
 	"order_confirmation_message": "Your order has been confirmed and is being processed.",
 	"track_in_my_orders": "Track in My Orders",
+	"order_success": {
+		"congrats": "Congrats!",
+		"coffee_on_way": "Your coffee is on the way!",
+		"support_message": "Your purchase is directly supporting small coffee producers in Costa Rica.",
+		"thank_you": "Thank you for being a #CoffeeLover",
+		"your_purchase": "Your purchase:",
+		"share_label": "Share your purchase:",
+		"share_button": "Share",
+		"desktop_share_instruction": "An image will be downloaded. You can share it on your favorite social media platform.",
+		"share_title": "My coffee purchase on CofiBlocks!",
+		"share_text": "Just purchased amazing coffee from Costa Rica on CofiBlocks! Supporting small coffee producers directly. #CoffeeLover",
+		"track_in_my_orders": "Track in my orders",
+		"generating_image": "Generating image...",
+		"download_error": "Failed to download image. Please try again.",
+		"image_generation_error": "Failed to generate image. Please try again.",
+		"download_instruction": "The image has been opened in a new tab. Please right-click and select 'Save image as...' to download it.",
+		"download_popup_blocked": "Please allow popups to download the image, or check your browser's download folder."
+	},
 	"subtotal": "Subtotal",
 
 	"marketplace": "Marketplace",
@@ -372,6 +390,11 @@
 		"subtotal": "Subtotal",
 		"fee": "Fee (50%)",
 		"each": "each"
+	},
+	"checkout_section": {
+		"insufficient_balance_message": "You don't have enough balance to complete this order.",
+		"fund_wallet_instruction": "Please fund your wallet to continue with your purchase.",
+		"fund_your_wallet": "Fund your wallet"
 	},
 
 	"added_to_favorites": "Added to favorites",
