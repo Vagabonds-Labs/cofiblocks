@@ -30,7 +30,6 @@ export default function Collectibles() {
 	const { t } = useTranslation();
 	const [collectibles, setCollectibles] = useState<CollectibleDisplay[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
-	const utils = api.useUtils();
 
 	const productsQuery = api.order.getUserCollectibles.useQuery();
 
@@ -83,7 +82,7 @@ export default function Collectibles() {
 		}
 
 		void fetchCollectibles();
-	}, [productsQuery.data, utils.cofiCollection.getBalanceOf]);
+	}, [productsQuery.data]);
 
 	if (isLoading || productsQuery.isLoading) {
 		return (
@@ -110,16 +109,45 @@ export default function Collectibles() {
 					collectibles.map((collectible) => {
 						// Format the image URL to include the IPFS gateway if it's an IPFS hash
 						const getImageUrl = (imageUrl?: string) => {
-							if (!imageUrl) return "/images/cafe1.webp";
+							if (!imageUrl || imageUrl === "/images/cafe1.webp") {
+								// Only use fallback if imageUrl is missing or already the fallback
+								return imageUrl ?? "/images/cafe1.webp";
+							}
+							
 							const IPFS_GATEWAY_URL = "https://gateway.pinata.cloud/ipfs/";
 							
-							if (imageUrl.startsWith("http")) return imageUrl;
-							if (imageUrl.startsWith("Qm")) return `${IPFS_GATEWAY_URL}${imageUrl}`;
+							// If it's already a full URL (http/https), use it as-is
+							if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
+								return imageUrl;
+							}
+							
+							// If it's a relative path (starts with /), use it as-is
+							if (imageUrl.startsWith("/")) {
+								return imageUrl;
+							}
+							
+							// If it's an IPFS URL (ipfs://), extract hash and construct gateway URL
 							if (imageUrl.startsWith("ipfs://")) {
-								const hash = imageUrl.replace("ipfs://", "");
+								const hash = imageUrl.replace("ipfs://", "").trim();
 								return `${IPFS_GATEWAY_URL}${hash}`;
 							}
-							return "/images/cafe1.webp";
+							
+							// Check if it's an IPFS hash (CIDv0 starts with Qm, CIDv1 can start with bafy, bafkrei, etc.)
+							// IPFS hashes are typically base58 encoded and don't contain slashes or special URL characters
+							// They're usually 46 characters for CIDv0 or start with specific prefixes for CIDv1
+							const isIpfsHash = /^[Qmb][A-Za-z0-9]{44,}$/.test(imageUrl) || 
+												imageUrl.startsWith("bafy") || 
+												imageUrl.startsWith("bafkrei") ||
+												imageUrl.startsWith("bafkre") ||
+												imageUrl.startsWith("Qm");
+							
+							if (isIpfsHash) {
+								return `${IPFS_GATEWAY_URL}${imageUrl}`;
+							}
+							
+							// If we can't determine the format, try using it as-is (might be a valid path we don't recognize)
+							// Only fall back to default if it's clearly invalid
+							return imageUrl;
 						};
 
 						const imageUrl = getImageUrl(collectible.metadata.image);

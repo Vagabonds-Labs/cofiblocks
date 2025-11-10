@@ -350,6 +350,11 @@
 		"fee": "Tarifa (50%)",
 		"each": "cada uno"
 	},
+	"checkout_section": {
+		"insufficient_balance_message": "No tienes suficiente saldo para completar este pedido.",
+		"fund_wallet_instruction": "Por favor, fondéa tu billetera para continuar con tu compra.",
+		"fund_your_wallet": "Fondéa tu billetera"
+	},
 
 	"added_to_favorites": "Agregado a favoritos",
 	"error_adding_to_favorites": "Error al agregar a favoritos",
@@ -380,6 +385,24 @@
 	"congrats": "¡Felicitaciones!",
 	"order_confirmation_message": "Tu pedido ha sido confirmado y está siendo procesado.",
 	"track_in_my_orders": "Seguir en Mis Pedidos",
+	"order_success": {
+		"congrats": "¡Felicitaciones!",
+		"coffee_on_way": "¡Tu café está en camino!",
+		"support_message": "Tu compra está apoyando directamente a pequeños productores de café en Costa Rica.",
+		"thank_you": "Gracias por ser un #AmanteDelCafé",
+		"your_purchase": "Tu compra:",
+		"share_label": "Comparte tu compra:",
+		"share_button": "Compartir",
+		"desktop_share_instruction": "Se descargará una imagen. Puedes compartirla en tu red social favorita.",
+		"share_title": "¡Mi compra de café en CofiBlocks!",
+		"share_text": "¡Acabo de comprar café increíble de Costa Rica en CofiBlocks! Apoyando directamente a pequeños productores de café. #AmanteDelCafé",
+		"track_in_my_orders": "Seguir en mis pedidos",
+		"generating_image": "Generando imagen...",
+		"download_error": "Error al descargar la imagen. Por favor, inténtalo de nuevo.",
+		"image_generation_error": "Error al generar la imagen. Por favor, inténtalo de nuevo.",
+		"download_instruction": "La imagen se ha abierto en una nueva pestaña. Por favor, haz clic derecho y selecciona 'Guardar imagen como...' para descargarla.",
+		"download_popup_blocked": "Por favor, permite las ventanas emergentes para descargar la imagen, o verifica la carpeta de descargas de tu navegador."
+	},
 	"subtotal": "Subtotal",
 	"amount_with_currency": "{{amount}} USD",
 	"amount_with_currency_short": "${amount} USD",

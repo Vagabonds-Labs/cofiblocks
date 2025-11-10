@@ -1,10 +1,11 @@
 "use client";
 
-import { ArrowDownIcon } from "@heroicons/react/24/outline";
+import { ArrowDownIcon, ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
 import Button from "@repo/ui/button";
 import { Separator } from "@repo/ui/separator";
 import { useAtomValue, useSetAtom } from "jotai";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -66,6 +67,7 @@ export default function OrderReview({
 	const [showConfirmation, setShowConfirmation] = useState(false);
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [purchasedItems, setPurchasedItems] = useState<CartItem[]>([]);
 	const router = useRouter();
 	const createOrder = useCreateOrder();
 
@@ -120,6 +122,9 @@ export default function OrderReview({
 				throw new Error("Cart not found");
 			}
 
+			// Store cart items before clearing (for confirmation page)
+			setPurchasedItems([...cartItems]);
+
 			// Create order in the database
 			await createOrder.mutateAsync({
 				cartId: cart.id, 
@@ -132,20 +137,21 @@ export default function OrderReview({
 			clearCart();
 			setIsCartOpen(false);
 
-			// Show confirmation and redirect to my-orders
+			// Show confirmation (don't redirect immediately - let user see success page)
 			setShowConfirmation(true);
-			router.push("/user/my-orders");
 		} catch (err) {
 			console.error("Payment error:", err);
-			setError(
-				err instanceof Error ? err.message : "Failed to process payment",
-			);
+			const errorMessage = err instanceof Error ? err.message : "Failed to process payment";
+			setError(errorMessage);
 		}
 		setIsProcessing(false);
 	};
 
+	// Check if error is related to insufficient balance
+	const isInsufficientBalance = error && /insufficient.*balance/i.test(error);
+
 	if (showConfirmation || isConfirmed) {
-		return <Confirmation />;
+		return <Confirmation cartItems={purchasedItems} />;
 	}
 
 	return (
@@ -269,15 +275,41 @@ export default function OrderReview({
 				</div>
 
 				{error && (
-					<div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600">
-						{error}
+					<div className={`mt-4 p-4 rounded-lg border ${
+						isInsufficientBalance 
+							? "bg-yellow-50 border-yellow-200" 
+							: "bg-red-50 border-red-200"
+					}`}>
+						{isInsufficientBalance ? (
+							<div className="space-y-3">
+								<p className="text-sm font-medium text-yellow-800">
+									{t("checkout_section.insufficient_balance_message") || "You don't have enough balance to complete this order."}
+								</p>
+								<p className="text-sm text-yellow-700">
+									{t("checkout_section.fund_wallet_instruction") || "Please fund your wallet to continue with your purchase."}
+								</p>
+								<Link href="/user-profile">
+									<Button
+										variant="primary"
+										className="w-full mt-2"
+									>
+										<span className="flex items-center justify-center gap-2">
+											{t("checkout_section.fund_your_wallet") || "Fund your wallet"}
+											<ArrowTopRightOnSquareIcon className="h-4 w-4" />
+										</span>
+									</Button>
+								</Link>
+							</div>
+						) : (
+							<p className="text-sm text-red-800">{error}</p>
+						)}
 					</div>
 				)}
 
 				<Button
 					onClick={() => setIsCurrencySelectorOpen(true)}
 					className="w-full bg-white border border-gray-300 text-black mt-6 h-14"
-					disabled={isProcessing || cartItems.length === 0 || isLoadingPrices || deliveryMethod === "home"}
+					disabled={isProcessing || cartItems.length === 0 || isLoadingPrices}
 				>
 					{t("change_currency")}
 				</Button>
