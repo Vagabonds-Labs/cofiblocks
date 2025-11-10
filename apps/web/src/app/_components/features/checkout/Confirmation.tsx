@@ -265,8 +265,9 @@ export default function Confirmation({ cartItems = [] }: ConfirmationProps) {
 			&& "canShare" in navigator 
 			&& navigator.canShare({ files: [shareImage] });
 
-		// For all platforms, prioritize native share with image if supported
-		if (supportsFileShare) {
+		// On mobile: Always use native share API with image file for all platforms
+		// This allows users to select X, Instagram, or any other app from their device's share menu
+		if (isMobile && supportsFileShare) {
 			try {
 				await navigator.share({
 					title: t("order_success.share_title") || "My coffee purchase on CofiBlocks!",
@@ -280,12 +281,23 @@ export default function Confirmation({ cartItems = [] }: ConfirmationProps) {
 				if ((error as { name?: string }).name === "AbortError") {
 					return;
 				}
-				// If native share failed for other reasons, fall through to platform-specific handling
-				console.log("Native share failed, falling back to platform-specific sharing:", error);
+				// If native share failed, try text-only as fallback
+				if (typeof navigator !== "undefined" && "share" in navigator) {
+					try {
+						await navigator.share({
+							title: t("order_success.share_title") || "My coffee purchase on CofiBlocks!",
+							text: shareText,
+							url: shareUrl,
+						});
+						return;
+					} catch (fallbackError) {
+						console.log("Text-only native share also failed:", fallbackError);
+					}
+				}
 			}
 		}
 
-		// Platform-specific fallbacks for desktop or when native share isn't available
+		// Desktop or when native share with files isn't available
 		if (platform === "native") {
 			// Try text-only native share as fallback
 			if (typeof navigator !== "undefined" && "share" in navigator) {
@@ -305,6 +317,7 @@ export default function Confirmation({ cartItems = [] }: ConfirmationProps) {
 			return;
 		}
 
+		// Desktop fallbacks for X and Instagram (download image)
 		if (platform === "x") {
 			// For X (Twitter), download image and open Twitter
 			// Note: Twitter web doesn't support direct image upload via URL
