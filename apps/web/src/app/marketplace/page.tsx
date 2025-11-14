@@ -30,19 +30,19 @@ export default function Home() {
 			id: "1",
 			tag: t("tag_new"),
 			title: t("welcome_coffee_lover"),
-			image: "/images/carousel1.webp",
+			image: "/images/01.svg",
 		},
 		{
 			id: "2",
 			tag: t("featured"),
 			title: t("find_best_coffee"),
-			image: "/images/carousel2.webp",
+			image: "/images/02.svg",
 		},
 		{
 			id: "3",
 			tag: t("popular"),
 			title: t("discover_unique_blends"),
-			image: "/images/carousel3.webp",
+			image: "/images/03.svg",
 		},
 	];
 
