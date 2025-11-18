@@ -46,6 +46,8 @@ const mapOrderStatusToSalesStatus = (status: string): OrderStatus => {
 			return "PENDING";
 		case "COMPLETED":
 			return "COMPLETED";
+		case "FAILED":
+			return "FAILED";
 		case "CANCELLED":
 			return "CANCELLED";
 		default:
