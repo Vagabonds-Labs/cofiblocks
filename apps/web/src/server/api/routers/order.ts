@@ -202,7 +202,7 @@ export const orderRouter = createTRPCRouter({
 				return acc + BigInt(v.toString());
 			}, 0n);
 
-			const buffer = (totalWei * 101n) / 100n; // +1%
+			const buffer = totalWei; // no buffer
 			// 4) Balance check
 			const userdb = await ctx.db.user.findUnique({ where: { id: user.id }, select: { walletAddress: true }});
 			if (!userdb?.walletAddress) throw new TRPCError({ code: "NOT_FOUND", message: "Wallet not set" });
