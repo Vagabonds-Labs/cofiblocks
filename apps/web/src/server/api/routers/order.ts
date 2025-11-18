@@ -210,7 +210,7 @@ export const orderRouter = createTRPCRouter({
 			const balance = await getBalances(userdb.walletAddress, input.paymentToken as PaymentToken, false); 
 			// ^ make sure this returns BigInt in smallest units
 			console.log(`Balance check: wallet=${userdb.walletAddress}, token=${input.paymentToken}, balance=${balance.toString()}, required=${buffer.toString()}`);
-			if (balance < buffer) {
+			if (balance < totalWei) {
 				console.log("Insufficient balance error");
 				throw new TRPCError({ code: "BAD_REQUEST", message: "Insufficient balance" });
 			}
