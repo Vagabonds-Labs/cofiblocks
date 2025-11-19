@@ -32,6 +32,7 @@ interface OrderItem {
 	status: OrderStatus;
 	total: number;
 	productImage: string;
+	createdAt: Date;
 }
 
 interface OrderGroup {
@@ -134,6 +135,7 @@ export default function MySales() {
 				status: mapOrderStatusToSalesStatus(item.order.status),
 				total: item.price * item.quantity,
 				productImage: getProductImageUrl(item.product.nftMetadata),
+				createdAt: new Date(item.order.createdAt),
 			};
 
 			if (existingGroup) {
@@ -163,6 +165,7 @@ export default function MySales() {
 				buyerName: item.buyerName,
 				status: item.status,
 				total: item.total,
+				createdAt: item.createdAt,
 			}))
 		}));
 	}, [groupedOrders]);

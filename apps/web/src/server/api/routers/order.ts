@@ -2,8 +2,8 @@ import {
 	type Order,
 	OrderStatus,
 	Prisma,
-	PrismaClient,
-	Product,
+	type PrismaClient,
+	type Product,
 } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -90,7 +90,7 @@ async function checkUserBalance(db: PrismaClient, userId: string, paymentToken: 
 	const userdb = await db.user.findUnique({ where: { id: userId }, select: { walletAddress: true }});
 	if (!userdb?.walletAddress) throw new TRPCError({ code: "NOT_FOUND", message: "Wallet not set" });
 
-	const balance = await getBalances(userdb.walletAddress, paymentToken as PaymentToken, false); 
+	const balance = await getBalances(userdb.walletAddress, paymentToken, false); 
 	// ^ make sure this returns BigInt in smallest units
 	console.log(`Balance check: wallet=${userdb.walletAddress}, token=${paymentToken}, balance=${balance.toString()}`);
 	if (balance < totalWei) {
@@ -241,7 +241,7 @@ export const orderRouter = createTRPCRouter({
 			const tokenAmounts = cart.items.map(i => BigInt(i.quantity));
 			const lineTotals = await getProductPrices(tokenIds, tokenAmounts, input.paymentToken as PaymentToken, false);
 
-			const totalWei = getCartTotalInWei(cart, lineTotals as Record<string, number>);
+			const totalWei = getCartTotalInWei(cart, lineTotals);
 			const buffer = (totalWei * 101n) / 100n; // +1%
 
 			await checkUserBalance(ctx.db, user.id, input.paymentToken as PaymentToken, totalWei);
