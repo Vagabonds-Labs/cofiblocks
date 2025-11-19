@@ -7,6 +7,8 @@ import { useTranslation } from "react-i18next";
 import Button from "./button";
 import { Text } from "./typography";
 
+const MARKET_FEE_BPS = 5000; // 50%
+
 interface CartItem {
 	id: string;
 	product: {
@@ -84,6 +86,10 @@ export function CartContent({
 }: CartContentProps) {
 	const { t } = useTranslation();
 	const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+	const calculateTotalPrice = (price: number): number => {
+		const fee = (price * MARKET_FEE_BPS) / 10000;
+		return price + fee;
+	};
 
 	const getImageUrl = (nftMetadata: string): string => {
 		try {
@@ -163,7 +169,7 @@ export function CartContent({
 									{item.product.name}
 								</Text>
 								<Text className="font-semibold whitespace-nowrap">
-									${(item.product.price * item.quantity).toFixed(2)}
+									${(calculateTotalPrice(item.product.price) * item.quantity).toFixed(2)}
 								</Text>
 							</div>
 							<div className="flex items-center justify-between mt-1">
