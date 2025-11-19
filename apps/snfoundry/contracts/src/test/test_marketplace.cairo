@@ -269,7 +269,7 @@ mod test_marketplace {
         assert(usdc_in_contract >= price * amount_to_buy, 'invalid usdc in contract');
 
         start_cheat_caller_address(marketplace.contract_address, PRODUCER);
-        let producer_payment = marketplace.get_claim_payment();
+        let producer_payment = marketplace.get_claim_payment(PRODUCER);
         assert(producer_payment > 0, 'producer payment is 0');
         marketplace.claim_payment();
 
