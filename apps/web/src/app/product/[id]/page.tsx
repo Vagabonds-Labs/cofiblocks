@@ -12,6 +12,7 @@ import type { NftMetadata } from "~/app/_components/features/types";
 import Header from "~/app/_components/layout/Header";
 import Main from "~/app/_components/layout/Main";
 import { api } from "~/trpc/react";
+import { calculatePriceWithMarketFee } from "~/utils/formatting";
 
 interface ParsedMetadata extends NftMetadata {
 	imageUrl: string;
@@ -199,7 +200,7 @@ export default function ProductPage() {
 								farmName: parseMetadata(product.nftMetadata as string).farmName,
 								roastLevel: parseMetadata(product.nftMetadata as string)
 									.strength,
-								price: product.price,
+								price: calculatePriceWithMarketFee(product.price),
 								ground_stock: product.ground_stock ?? 0,
 								bean_stock: product.bean_stock ?? 0,
 								type: "Buyer",

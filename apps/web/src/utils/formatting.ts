@@ -53,3 +53,9 @@ export function formatWalletAddress(address: string): string {
 	// Add 0x prefix back
 	return `0x${paddedAddress}`;
 }
+
+export const calculatePriceWithMarketFee = (price: number): number => {
+	const marketFeeBps = 5000; // 50%
+	const fee = (price * marketFeeBps) / 10000;
+	return price + fee;
+};
