@@ -41,7 +41,7 @@ pub trait IMarketplace<ContractState> {
         ref self: ContractState, token_id: u256, token_amount: u256, payment_token: PAYMENT_TOKEN,
     );
     fn buy_product_with_mist(
-        ref self: ContractState, token_id: u256, token_amount: u256, txid: u256,
+        ref self: ContractState, token_id: u256, token_amount: u256, buyer: ContractAddress,
     );
     fn buy_products(
         ref self: ContractState,
@@ -442,9 +442,66 @@ mod Marketplace {
         }
 
         fn buy_product_with_mist(
-            ref self: ContractState, token_id: u256, token_amount: u256, txid: u256,
+            ref self: ContractState, token_id: u256, token_amount: u256, buyer: ContractAddress,
         ) { //
-        // @TODO: Implement buy_products with MIST payment
+            let stock = self.listed_product_stock.read(token_id);
+            assert(stock >= token_amount, 'Not enough stock');
+
+            let buyer = get_caller_address();
+            let contract_address = get_contract_address();
+
+            let mut producer_fee = self.listed_product_price.read(token_id) * token_amount;
+            let mut total_required_tokens = self
+                .get_product_price(token_id, token_amount, payment_token);
+
+            // Process payment
+            if payment_token == PAYMENT_TOKEN::STRK {
+                let strk_address = MainnetConfig::STRK_ADDRESS.try_into().unwrap();
+                self.pay_with_token(strk_address, total_required_tokens);
+                self.swap_token_for_usdc(strk_address, total_required_tokens);
+            } else if payment_token == PAYMENT_TOKEN::USDC {
+                let usdc_address = MainnetConfig::USDC_ADDRESS.try_into().unwrap();
+                self.pay_with_token(usdc_address, total_required_tokens);
+            } else if payment_token == PAYMENT_TOKEN::USDT {
+                let usdt_address = MainnetConfig::USDT_ADDRESS.try_into().unwrap();
+                self.pay_with_token(usdt_address, total_required_tokens);
+                self.swap_token_for_usdc(usdt_address, total_required_tokens);
+            } else {
+                assert(false, 'Invalid payment token');
+            }
+
+            // Transfer the nft products
+            let cofi_collection = ICofiCollectionDispatcher {
+                contract_address: self.cofi_collection_address.read(),
+            };
+            cofi_collection
+                .safe_transfer_from(
+                    contract_address, buyer, token_id, token_amount, array![0].span(),
+                );
+
+            // Update stock
+            let new_stock = stock - token_amount;
+            self.update_stock(token_id, new_stock);
+
+            self.emit(BuyProduct { token_id, amount: token_amount, price: total_required_tokens });
+            if (!self.accesscontrol.has_role(CONSUMER, get_caller_address())) {
+                self.accesscontrol._grant_role(CONSUMER, get_caller_address());
+            }
+
+            // Send payment to the producer
+            let seller_address = self.seller_products.read(token_id);
+            self
+                .claim_balances
+                .write(seller_address, self.claim_balances.read(seller_address) + producer_fee);
+            let token_ids = array![token_id].span();
+            self.emit(PaymentSeller { token_ids, seller: seller_address, payment: producer_fee });
+
+            // Register purchase in the distribution contract
+            let distribution = self.distribution.read();
+            let profit = self.calculate_fee(producer_fee, self.market_fee.read());
+            let is_producer = self.seller_is_producer.read(token_id);
+            distribution
+                .register_purchase(buyer, seller_address, is_producer, producer_fee, profit);
         }
 
         fn buy_products(

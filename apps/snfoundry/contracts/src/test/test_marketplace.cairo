@@ -389,7 +389,7 @@ mod test_marketplace {
         cheat_caller_address(marketplace.contract_address, CONSUMER, CheatSpan::TargetCalls(1));
         stop_cheat_caller_address(token_address);
         stop_cheat_caller_address(cofi_collection.contract_address);
-        marketplace.buy_product_with_mist(token_id, amount_to_buy, 0);
+        marketplace.buy_product_with_mist(token_id, amount_to_buy, CONSUMER);
         let usdt_in_contract = token_dispatcher.balance_of(marketplace.contract_address);
         assert(usdt_in_contract == 0, 'Failed to swap usdt');
 
