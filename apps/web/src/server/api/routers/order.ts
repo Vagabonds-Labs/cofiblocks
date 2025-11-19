@@ -436,6 +436,232 @@ export const orderRouter = createTRPCRouter({
 			}
 		}),
 
+	// Create a new order
+	createMistOrder: protectedProcedure
+		.input(
+			z.object({
+				cartId: z.string(),
+				paymentToken: z.enum(["STRK", "USDC", "USDT"]),
+				deliveryAddress: z.object({
+					street: z.string(),
+					apartment: z.string().optional(),
+					city: z.string(),
+					zipCode: z.string(),
+				}).optional(),
+				deliveryMethod: z.string().optional(),
+			}),
+		)
+		.mutation(async ({ ctx, input }): Promise<Order> => {
+			const { user } = ctx.session;
+			if (!user) throw new TRPCError({ code: "UNAUTHORIZED" });
+
+			// 1) Load cart with ownership check
+			const cart = await getUserCartForCreateOrder(
+				ctx.db, input.cartId, user.id, input.deliveryMethod, input.deliveryAddress as DeliveryAddress
+			);
+			console.log("Cart loaded:", cart);
+
+			// 3) BigInt pricing
+			// Assuming getProductPrices returns per-line TOTAL price in smallest units (BigInt)
+			const tokenIds = cart.items.map(i => BigInt(i.product.tokenId));
+			const tokenAmounts = cart.items.map(i => BigInt(i.quantity));
+			const lineTotals = await getProductPrices(tokenIds, tokenAmounts, input.paymentToken as PaymentToken, false);
+
+			const totalWei = getCartTotalInWei(cart, lineTotals);
+			const buffer = (totalWei * 101n) / 100n; // +1%
+
+			await checkUserBalance(ctx.db, user.id, input.paymentToken as PaymentToken, totalWei);
+
+			// 5) Start DB transaction for stock + order creation only (no network I/O)
+			const order = await ctx.db.$transaction(async (tx) => {
+				// Validate and atomically decrement stocks per line
+				for (const item of cart.items) {
+					const qty = item.quantity;
+					console.log(
+						'Updating stock for item:',
+						item.product.name,
+						'item id',
+						item.product.id,
+						'quantity:',
+						qty
+					);
+					// Conditional update for variant + total stock
+					const res = await tx.product.updateMany({
+						where: {
+							id: item.product.id,
+							stock: { gte: qty },
+							...(item.is_grounded ? { ground_stock: { gte: qty } } : { bean_stock: { gte: qty } }),
+						},
+						data: {
+							stock: { decrement: qty },
+							...(item.is_grounded ? { ground_stock: { decrement: qty } } : { bean_stock: { decrement: qty } }),
+						},
+					});
+					if (res.count !== 1) {
+						throw new TRPCError({ code: "BAD_REQUEST", message: `Insufficient stock for ${item.product.name}` });
+					}
+				}
+
+				const orderId = crypto.randomUUID();
+
+				const totalUsd = cart.items.reduce((s, i) => {
+					const itemTotalPrice = calculatePriceWithMarketFee(i.product.price);
+					console.log(`Price calculation for ${i.product.name}: base=${i.product.price}, total=${itemTotalPrice}, quantity=${i.quantity}`);
+					return s + itemTotalPrice * i.quantity;
+				}, 0);
+				console.log(`Order total calculated: ${totalUsd}`);
+
+				const created = await tx.order.create({
+					data: {
+						id: orderId,
+						userId: user.id,
+						total: totalUsd,
+						status: OrderStatus.PENDING,
+						home_delivery: input.deliveryMethod === "home",
+					},
+					include: { items: true },
+				});
+
+				// Create order items (DB only)
+				for (const item of cart.items) {
+					const itemTotalPrice = calculatePriceWithMarketFee(item.product.price);
+					await tx.orderItem.create({
+						data: {
+							orderId: created.id,
+							productId: item.product.id,
+							quantity: item.quantity,
+							price: itemTotalPrice, // USD display price with market fee
+							is_grounded: item.is_grounded,
+							sellerId: item.product.owner ?? "",
+						},
+					});
+				}
+
+				// Create delivery record (no on-chain yet)
+				if (input.deliveryMethod === "home" && input.deliveryAddress) {
+					await tx.delivery.create({
+						data: {
+							orderId: created.id,
+							province: input.deliveryAddress.city,
+							address: `${input.deliveryAddress.street}${input.deliveryAddress.apartment ? `, ${input.deliveryAddress.apartment}` : ""}, ${input.deliveryAddress.city}, ${input.deliveryAddress.zipCode}`,
+							status: "PENDING",
+						},
+					});
+				}
+
+				// Clear cart
+				await tx.shoppingCartItem.deleteMany({ where: { shoppingCartId: cart.id } });
+				await tx.shoppingCart.delete({ where: { id: cart.id } });
+				return created;
+			}, {
+				isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+				timeout: 8000,
+			});
+
+			// 6) On-chain phase (outside DB tx): approve & buy per line
+			console.log("Starting payment process for order:", order.id);
+			console.log("Payment token:", input.paymentToken);
+			console.log("Buffer amount:", buffer.toString());
+
+			const userAuth = await authenticateUserCavos(user.email ?? "", ctx.db);
+			console.log("User authenticated, wallet address:", userAuth.wallet_address);
+
+			console.log("Increasing allowance...");
+			await increaseAllowance(buffer, input.paymentToken as PaymentToken, CofiBlocksContracts.MARKETPLACE, userAuth);
+			console.log("Allowance increased successfully");
+
+			// Execute purchases; if any fails, mark order accordingly, and (optionally) restore stock in a compensating tx
+			try {
+				// Do the buys
+				console.log("Starting product purchases...");
+				for (const item of cart.items) {
+					console.log(`Buying product ${item.product.tokenId}, quantity: ${item.quantity}`);
+					const txHash = await buyProduct(
+						BigInt(item.product.tokenId),
+						BigInt(item.quantity),
+						input.paymentToken as PaymentToken,
+						userAuth
+					);
+					console.log(`Product ${item.product.tokenId} purchased, tx hash: ${txHash}`);
+					await ctx.db.orderItem.updateMany({
+						where: { orderId: order.id, productId: item.product.id },
+						data: { payment_tx_hash: txHash },
+					});
+				}
+				console.log("All products purchased successfully");
+
+				// Delivery fee
+				if (order.home_delivery) {
+					console.log("Processing home delivery fee...");
+					const owner = await ctx.db.user.findUnique(
+						{ where: { id: cart.items[0]?.product.owner ?? "" }, select: { walletAddress: true } });
+					if (!owner?.walletAddress) {
+						throw new TRPCError({ code: "NOT_FOUND", message: "Owner wallet not found" });
+					}
+					console.log("Owner wallet found:", owner.walletAddress);
+
+					// Calculate delivery fee using the same logic as getDeliveryFee
+					const DELIVERY_PRICES = {
+						GAM: 4,
+						OUTSIDE: 5.5,
+					} as const;
+
+					const gam = ["san_jose", "alajuela", "cartago", "heredia"];
+					const normalizeProvince = (province: string): string => {
+						return province
+							.toLowerCase()
+							.trim()
+							.replace(/[,\s]+/g, '_')
+							.replace(/[^a-z_]/g, '')
+							.replace(/_+/g, '_')
+							.replace(/^_|_$/g, '');
+					};
+
+					const normalizedProvince = normalizeProvince(input.deliveryAddress?.city ?? "");
+					const isGAM = gam.includes(normalizedProvince);
+					const basePrice = isGAM ? DELIVERY_PRICES.GAM : DELIVERY_PRICES.OUTSIDE;
+
+					// Calculate total package count from cart items
+					const totalPackageCount = cart.items.reduce((total, item) => total + item.quantity, 0);
+
+					// Calculate shipping price based on package count
+					let totalPrice = basePrice;
+					if (totalPackageCount > 2) {
+						const additionalPackages = totalPackageCount - 2;
+						const additionalGroups = Math.ceil(additionalPackages / 2);
+						totalPrice = basePrice + (additionalGroups * 2);
+					}
+
+					console.log(`Delivery fee calculation: basePrice=${basePrice}, packageCount=${totalPackageCount}, totalPrice=${totalPrice}`);
+					const deliveryFeeUnits = BigInt(Math.round(totalPrice * (10 ** 6)));
+					console.log("Sending delivery fee:", deliveryFeeUnits.toString());
+
+					const feeTx = await transfer(deliveryFeeUnits, input.paymentToken as PaymentToken, owner.walletAddress, userAuth);
+					console.log("Delivery fee sent, tx hash:", feeTx);
+					await ctx.db.delivery.updateMany(
+						{
+							where: { orderId: order.id },
+							data: { payment_tx_hash: feeTx }
+						});
+				}
+
+				// Mark order paid
+				const finalOrder = await ctx.db.order.update({
+					where: { id: order.id },
+					data: { status: OrderStatus.PENDING },
+					include: { items: true },
+				});
+				return finalOrder;
+
+			} catch (e) {
+				// Mark failed; (optional) enqueue compensating restock job
+				console.error("Payment failed with error:", e);
+				await ctx.db.order.update({ where: { id: order.id }, data: { status: OrderStatus.FAILED } });
+				const errorMessage = e instanceof Error ? e.message : "Unknown payment error";
+				throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: `Payment failed: ${errorMessage}`, cause: e });
+			}
+		}),
+
 	getDeliveryFee: protectedProcedure.input(z.object({
 		province: z.string(),
 		packageCount: z.number().optional().default(1)
