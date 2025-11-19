@@ -7,7 +7,7 @@ const deployedContracts = {
   mainnet: {
     CofiCollection: {
       address:
-        "0x24142264b093896d764a24c74787a15e61e59e2732fc97dd15bcf4995566d2c",
+        "0x41d189d6d28b46ac9effafe7633aecc149db07d41f8dbac373ef82fa4efd4ee",
       abi: [
         {
           type: "impl",
@@ -1136,7 +1136,7 @@ const deployedContracts = {
     },
     Distribution: {
       address:
-        "0x14e8ef608c0854fccb94913bdd52b243d977bbd8ef51b8b700cb8a908d7d779",
+        "0x1af532c544733864ac38b9aab04a8addbf68e0c86c3ebfb21331378da1608d7",
       abi: [
         {
           type: "impl",
@@ -1786,7 +1786,7 @@ const deployedContracts = {
     },
     Marketplace: {
       address:
-        "0x6472349b26e7d586e3f1d71727742d49e7334bc13b867fc6322547251b64499",
+        "0x38d983ab040f866242944cd01439423d03c3f2ee23bbfbae81e79613ba5b5a4",
       abi: [
         {
           type: "impl",
@@ -1948,6 +1948,26 @@ const deployedContracts = {
                 {
                   name: "payment_token",
                   type: "contracts::marketplace::PAYMENT_TOKEN",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "buy_product_with_mist",
+              inputs: [
+                {
+                  name: "token_id",
+                  type: "core::integer::u256",
+                },
+                {
+                  name: "token_amount",
+                  type: "core::integer::u256",
+                },
+                {
+                  name: "txid",
+                  type: "core::integer::u256",
                 },
               ],
               outputs: [],
@@ -2694,7 +2714,7 @@ const deployedContracts = {
         },
       ],
       classHash:
-        "0x6f1abf4e3ed2e5596b1b9feadf3aa5ded6dab8929d79c9116b55def5ce5dee8",
+        "0x6038298f96ee032f04b613bf301f7b7c231136cd3f16366dc53c7d364935f5e",
     },
     STRK: {
 			address:
