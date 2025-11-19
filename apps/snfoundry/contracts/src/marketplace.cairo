@@ -443,7 +443,10 @@ mod Marketplace {
 
         fn buy_product_with_mist(
             ref self: ContractState, token_id: u256, token_amount: u256, buyer: ContractAddress,
-        ) { //
+        ) {
+            // only owner can buy product with mist because we check payment offchain
+            self.accesscontrol.assert_only_role(DEFAULT_ADMIN_ROLE);
+
             let stock = self.listed_product_stock.read(token_id);
             assert(stock >= token_amount, 'Not enough stock');
 
@@ -452,23 +455,7 @@ mod Marketplace {
 
             let mut producer_fee = self.listed_product_price.read(token_id) * token_amount;
             let mut total_required_tokens = self
-                .get_product_price(token_id, token_amount, payment_token);
-
-            // Process payment
-            if payment_token == PAYMENT_TOKEN::STRK {
-                let strk_address = MainnetConfig::STRK_ADDRESS.try_into().unwrap();
-                self.pay_with_token(strk_address, total_required_tokens);
-                self.swap_token_for_usdc(strk_address, total_required_tokens);
-            } else if payment_token == PAYMENT_TOKEN::USDC {
-                let usdc_address = MainnetConfig::USDC_ADDRESS.try_into().unwrap();
-                self.pay_with_token(usdc_address, total_required_tokens);
-            } else if payment_token == PAYMENT_TOKEN::USDT {
-                let usdt_address = MainnetConfig::USDT_ADDRESS.try_into().unwrap();
-                self.pay_with_token(usdt_address, total_required_tokens);
-                self.swap_token_for_usdc(usdt_address, total_required_tokens);
-            } else {
-                assert(false, 'Invalid payment token');
-            }
+                .get_product_price(token_id, token_amount, super::PAYMENT_TOKEN::USDC);
 
             // Transfer the nft products
             let cofi_collection = ICofiCollectionDispatcher {
@@ -484,8 +471,8 @@ mod Marketplace {
             self.update_stock(token_id, new_stock);
 
             self.emit(BuyProduct { token_id, amount: token_amount, price: total_required_tokens });
-            if (!self.accesscontrol.has_role(CONSUMER, get_caller_address())) {
-                self.accesscontrol._grant_role(CONSUMER, get_caller_address());
+            if (!self.accesscontrol.has_role(CONSUMER, buyer)) {
+                self.accesscontrol._grant_role(CONSUMER, buyer);
             }
 
             // Send payment to the producer
