@@ -14,6 +14,7 @@ interface OrderItem {
 	sellerName?: string;
 	status: OrderStatus;
 	total?: number;
+	createdAt: Date;
 }
 
 interface UseOrderFilteringProps {

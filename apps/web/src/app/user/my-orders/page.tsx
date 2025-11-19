@@ -22,6 +22,7 @@ interface GroupedOrderItem {
 	productName: string;
 	sellerName: string;
 	status: OrderStatus;
+	createdAt: Date;
 }
 
 interface OrderGroup {
@@ -63,11 +64,19 @@ export default function MyOrders() {
 			});
 
 			const existingGroup = acc.find((group) => group.date === monthYear);
+			const productNames = order.items
+				.map((item) => item.product.name)
+				.filter((name): name is string => !!name);
+			const productName =
+				productNames.length > 0
+					? productNames.join(", ")
+					: t("unknown_product");
 			const orderItem = {
 				id: order.id,
-				productName: order.items[0]?.product.name ?? t("unknown_product"),
+				productName,
 				sellerName: order.items[0]?.seller.email ?? t("unknown_seller"),
 				status: order.status,
+				createdAt: order.createdAt,
 			};
 
 			if (existingGroup) {
@@ -154,6 +163,7 @@ export default function MyOrders() {
 											productName={order.productName}
 											name={order.sellerName ?? t("unknown_seller")}
 											status={t(`order_status.${order.status.toLowerCase()}`)}
+											createdAt={order.createdAt}
 											onClick={() => handleItemClick(order.id)}
 										/>
 										{orderIndex < orderGroup.items.length - 1 && (

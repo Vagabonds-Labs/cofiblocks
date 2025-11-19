@@ -4,7 +4,6 @@ import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import ProductStatusDetails from "~/app/_components/features/ProductStatusDetails";
 import { ProfileOptionLayout } from "~/app/_components/features/ProfileOptionLayout";
 import { CoffeeIcon } from "~/app/_components/icons/CoffeeIcon";
 import { api } from "~/trpc/react";
@@ -53,8 +52,6 @@ export default function OrderDetails() {
 	const { data: session } = useSession();
 	const user_session = session?.user;
 	const isAuthenticated = !!user_session;
-	// Temporarily assume user is not a producer since CavosUser doesn't have a role property
-	const isProducer = false; // Will need to be updated when role information is available from Cavos
 
 	const { data: user } = api.user.getUser.useQuery(
 		{ userId: user_session?.id ?? "" },
@@ -94,22 +91,13 @@ export default function OrderDetails() {
 		);
 	}
 
-	const orderDetails = {
-		productName: order.items[0]?.product.name ?? t("unknown_product"),
-		status: order.status,
-		roast: order.items[0]?.product.nftMetadata
-			? parseMetadata(order.items[0]?.product.nftMetadata as string, t).roast
-			: t("unknown_roast"),
-		type: t("grounded"),
-		quantity: `${order.items[0]?.quantity ?? 0} ${t("bags")}`,
-		delivery: t("delivery"),
-		address: user?.physicalAddress ?? "",
-		totalPrice: `${(order.items[0]?.price ?? 0) * (order.items[0]?.quantity ?? 0)} ${t("usd")}`,
-	};
+	const totalPrice = order.items.reduce((sum, item) => {
+		return sum + (item.price ?? 0) * (item.quantity ?? 0);
+	}, 0);
 
 	return (
 		<ProfileOptionLayout
-			title={orderDetails.productName}
+			title={t("order_details")}
 			backLink="/user/my-orders"
 		>
 			{/* Status Banner - Most important info for customers */}
@@ -117,64 +105,84 @@ export default function OrderDetails() {
 				<div className="flex items-center justify-between mb-4">
 					<h2 className="text-xl font-semibold">{t("status")}</h2>
 					<span className="px-4 py-2 bg-white rounded-full text-sm font-medium">
-						{t(`order_status.${orderDetails.status.toLowerCase()}`)}
+						{t(`order_status.${order.status.toLowerCase()}`)}
 					</span>
 				</div>
 				<p className="text-gray-600">
-					{t(`order_status_message.${orderDetails.status.toLowerCase()}`)}
+					{t(`order_status_message.${order.status.toLowerCase()}`)}
 				</p>
 			</div>
 
-			{/* Product Experience Card */}
-			<div className="bg-white rounded-lg p-6 mb-6">
-				<div className="flex items-start space-x-4">
-					<div className="bg-surface-primary-soft p-4 rounded-lg">
-						<CoffeeIcon className="w-8 h-8 text-primary" />
-					</div>
-					<div className="flex-1">
-						<h3 className="text-lg font-medium mb-2">{t("your_coffee")}</h3>
-						<div className="grid grid-cols-2 gap-4">
-							<div>
-								<p className="text-sm text-gray-500">{t("roast")}</p>
-								<p className="font-medium">{orderDetails.roast}</p>
-							</div>
-							<div>
-								<p className="text-sm text-gray-500">{t("quantity")}</p>
-								<p className="font-medium">{orderDetails.quantity}</p>
-							</div>
-							<div>
-								<p className="text-sm text-gray-500">{t("type")}</p>
-								<p className="font-medium">{orderDetails.type}</p>
-							</div>
-							<div>
-								<p className="text-sm text-gray-500">{t("total")}</p>
-								<p className="font-medium">{orderDetails.totalPrice}</p>
+			{/* Order Items List */}
+			<div className="space-y-4 mb-6">
+				<h3 className="text-lg font-medium mb-4">{t("order_items")}</h3>
+				{order.items.map((item) => {
+					const roast = item.product.nftMetadata
+						? parseMetadata(item.product.nftMetadata as string, t).roast
+						: t("unknown_roast");
+					const itemTotal = (item.price ?? 0) * (item.quantity ?? 0);
+
+					return (
+						<div key={item.id} className="bg-white rounded-lg p-6">
+							<div className="flex items-start space-x-4">
+								<div className="bg-surface-primary-soft p-4 rounded-lg">
+									<CoffeeIcon className="w-8 h-8 text-primary" />
+								</div>
+								<div className="flex-1">
+									<h4 className="text-lg font-medium mb-2">
+										{item.product.name ?? t("unknown_product")}
+									</h4>
+									<div className="grid grid-cols-2 gap-4">
+										<div>
+											<p className="text-sm text-gray-500">{t("roast")}</p>
+											<p className="font-medium">{roast}</p>
+										</div>
+										<div>
+											<p className="text-sm text-gray-500">{t("quantity")}</p>
+											<p className="font-medium">
+												{item.quantity ?? 0} {t("bags")}
+											</p>
+										</div>
+										<div>
+											<p className="text-sm text-gray-500">{t("type")}</p>
+											<p className="font-medium">{t("grounded")}</p>
+										</div>
+										<div>
+											<p className="text-sm text-gray-500">{t("price")}</p>
+											<p className="font-medium">
+												{itemTotal} {t("usd")}
+											</p>
+										</div>
+									</div>
+								</div>
 							</div>
 						</div>
-					</div>
+					);
+				})}
+			</div>
+
+			{/* Order Total */}
+			<div className="bg-white rounded-lg p-6 mb-6">
+				<div className="flex items-center justify-between">
+					<h3 className="text-lg font-medium">{t("order_total")}</h3>
+					<p className="text-xl font-semibold">
+						{totalPrice} {t("usd")}
+					</p>
 				</div>
 			</div>
 
 			{/* Delivery Information - Only if there's an address */}
-			{orderDetails.address && (
+			{user?.physicalAddress && (
 				<div className="bg-white rounded-lg p-6">
 					<h3 className="text-lg font-medium mb-4">
 						{t("delivery_information")}
 					</h3>
 					<div className="bg-surface-primary-soft rounded-lg p-4">
 						<p className="text-sm text-gray-600 mb-2">{t("shipping_to")}</p>
-						<p className="font-medium">{orderDetails.address}</p>
+						<p className="font-medium">{user.physicalAddress}</p>
 					</div>
 				</div>
 			)}
-
-			{/* Hidden ProductStatusDetails for maintaining functionality */}
-			<div className="hidden">
-				<ProductStatusDetails
-					productDetails={orderDetails}
-					isProducer={isProducer}
-				/>
-			</div>
 		</ProfileOptionLayout>
 	);
 }

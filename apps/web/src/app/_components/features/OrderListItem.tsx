@@ -10,6 +10,7 @@ interface OrderListItemProps {
 	productName: string;
 	name: string;
 	status: string;
+	createdAt: Date;
 	onClick?: () => void;
 }
 
@@ -17,6 +18,7 @@ export default function OrderListItem({
 	productName,
 	name,
 	status,
+	createdAt,
 	onClick,
 }: OrderListItemProps) {
 	const { t } = useTranslation();
@@ -47,6 +49,13 @@ export default function OrderListItem({
 					<div>
 						<h3 className="font-semibold">{productName}</h3>
 						<p className="text-sm text-gray-500">{name}</p>
+						<p className="text-xs text-gray-400 mt-1">
+							{new Date(createdAt).toLocaleDateString("default", {
+								year: "numeric",
+								month: "short",
+								day: "numeric",
+							})}
+						</p>
 					</div>
 				</div>
 				<div className="flex items-center space-x-2">
