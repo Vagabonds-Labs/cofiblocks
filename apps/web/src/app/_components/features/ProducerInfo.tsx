@@ -49,13 +49,12 @@ export function ProducerInfo({
 
 	return (
 		<div className="flex flex-col items-center mt-6">
-			<div className="w-24 h-24 relative overflow-hidden mb-6">
+			<div className="w-24 h-24 relative mb-6">
 				<Image
-					src="/images/Avatar.png"
+					src="/images/farm-cafe-las-penas.jpg"
 					alt={t("producer_avatar_alt")}
-					width={96}
-					height={96}
-					className="object-cover"
+					fill
+					className="object-contain"
 				/>
 			</div>
 			<h2 className="text-2xl font-bold text-content-title mb-6">
