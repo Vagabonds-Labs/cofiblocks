@@ -2,6 +2,8 @@ import {
 	type Order,
 	OrderStatus,
 	Prisma,
+	PrismaClient,
+	Product,
 } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -21,24 +23,82 @@ interface Collectible {
 	totalQuantity: number;
 }
 
-// interface _OrderWithRelations extends Order {
-// 	items: {
-// 		product: Product;
-// 		quantity: number;
-// 		price: number;
-// 		sellerId: string;
-// 	}[];
-// 	user: User;
-// 	deliveries?: {
-// 		id: string;
-// 		orderId: string;
-// 		province: string;
-// 		address: string;
-// 		status: string;
-// 		payment_tx_hash: string | null;
-// 		createdAt: Date;
-// 	}[];
-// }
+
+type DeliveryAddress = {
+	street: string
+	apartment: string | undefined
+	city: string
+	zipCode: string
+  }
+
+type ShoppingCart = {
+	id: string
+	userId: string
+	items: {
+		id: string
+		product: Product
+		quantity: number,
+		is_grounded: boolean,
+	}[]
+}
+async function getUserCartForCreateOrder(
+	db: PrismaClient, 
+	cartId: string, 
+	userId: string, 
+	deliveryMethod: string | undefined, 
+	deliveryAddress: DeliveryAddress | undefined
+): Promise<ShoppingCart> {
+	const cart = await db.shoppingCart.findFirst({
+		where: { id: cartId, userId: userId },
+		include: { items: { include: { product: true } } },
+	});
+	if (!cart) throw new TRPCError({ code: "NOT_FOUND", message: "Cart not found" });
+	if (!cart.items.length) throw new TRPCError({ code: "BAD_REQUEST", message: "Cart is empty" });
+
+	// 2) Home delivery constraints
+	if (deliveryMethod === "home") {
+		const owners = new Set(cart.items.map(i => i.product.owner).filter(Boolean));
+		if (owners.size !== 1) {
+		throw new TRPCError({ code: "BAD_REQUEST", message: "Home delivery requires single seller" });
+		}
+		if (!deliveryAddress) {
+		throw new TRPCError({ code: "BAD_REQUEST", message: "Address required for home delivery" });
+		}
+	}
+	return cart;
+}
+
+function getCartTotalInWei(cart: ShoppingCart, lineTotals: Record<string, number>): bigint {
+	const total = cart.items.reduce<bigint>((acc, i) => {
+		const k = i.product.tokenId.toString();
+		const v = lineTotals[k];
+		if (v == null) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Price missing" });
+		return acc + BigInt(v.toString());
+	}, 0n)
+	return total;
+}
+
+// Calculate total with market fee (50%)
+const MARKET_FEE_BPS = 5000; // 50%
+const calculatePriceWithMarketFee = (price: number): number => {
+	const fee = (price * MARKET_FEE_BPS) / 10000;
+	const raw_price = price + fee;
+	return Math.round(raw_price * 100) / 100;
+};
+
+async function checkUserBalance(db: PrismaClient, userId: string, paymentToken: PaymentToken, totalWei: bigint) {
+	const userdb = await db.user.findUnique({ where: { id: userId }, select: { walletAddress: true }});
+	if (!userdb?.walletAddress) throw new TRPCError({ code: "NOT_FOUND", message: "Wallet not set" });
+
+	const balance = await getBalances(userdb.walletAddress, paymentToken as PaymentToken, false); 
+	// ^ make sure this returns BigInt in smallest units
+	console.log(`Balance check: wallet=${userdb.walletAddress}, token=${paymentToken}, balance=${balance.toString()}`);
+	if (balance < totalWei) {
+		console.log("Insufficient balance error");
+		throw new TRPCError({ code: "BAD_REQUEST", message: "Insufficient balance" });
+	}
+	console.log("Balance check passed");
+}
 
 export const orderRouter = createTRPCRouter({
 	// Get a specific order
@@ -170,57 +230,35 @@ export const orderRouter = createTRPCRouter({
 			if (!user) throw new TRPCError({ code: "UNAUTHORIZED" });
 
 			// 1) Load cart with ownership check
-			const cart = await ctx.db.shoppingCart.findFirst({
-				where: { id: input.cartId, userId: user.id },
-				include: { items: { include: { product: true } } },
-			});
-			if (!cart) throw new TRPCError({ code: "NOT_FOUND", message: "Cart not found" });
-			if (!cart.items.length) throw new TRPCError({ code: "BAD_REQUEST", message: "Cart is empty" });
-
-			// 2) Home delivery constraints
-			if (input.deliveryMethod === "home") {
-				const owners = new Set(cart.items.map(i => i.product.owner).filter(Boolean));
-				if (owners.size !== 1) {
-				throw new TRPCError({ code: "BAD_REQUEST", message: "Home delivery requires single seller" });
-				}
-				if (!input.deliveryAddress) {
-				throw new TRPCError({ code: "BAD_REQUEST", message: "Address required for home delivery" });
-				}
-			}
+			const cart = await getUserCartForCreateOrder(
+				ctx.db, input.cartId, user.id, input.deliveryMethod, input.deliveryAddress as DeliveryAddress
+			);
+			console.log("Cart loaded:", cart);
 
 			// 3) BigInt pricing
 			// Assuming getProductPrices returns per-line TOTAL price in smallest units (BigInt)
 			const tokenIds = cart.items.map(i => BigInt(i.product.tokenId));
 			const tokenAmounts = cart.items.map(i => BigInt(i.quantity));
-			const lineTotals = await getProductPrices(tokenIds, tokenAmounts, input.paymentToken as PaymentToken, false); 
-			// lineTotals: Record<string, bigint> of totals (NOT unit price)
+			const lineTotals = await getProductPrices(tokenIds, tokenAmounts, input.paymentToken as PaymentToken, false);
 
-			const totalWei = cart.items.reduce<bigint>((acc, i) => {
-				const k = i.product.tokenId.toString();
-				const v = lineTotals[k];
-				if (v == null) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Price missing" });
-				return acc + BigInt(v.toString());
-			}, 0n);
+			const totalWei = getCartTotalInWei(cart, lineTotals as Record<string, number>);
+			const buffer = (totalWei * 101n) / 100n; // +1%
 
-			const buffer = totalWei; // no buffer
-			// 4) Balance check
-			const userdb = await ctx.db.user.findUnique({ where: { id: user.id }, select: { walletAddress: true }});
-			if (!userdb?.walletAddress) throw new TRPCError({ code: "NOT_FOUND", message: "Wallet not set" });
-
-			const balance = await getBalances(userdb.walletAddress, input.paymentToken as PaymentToken, false); 
-			// ^ make sure this returns BigInt in smallest units
-			console.log(`Balance check: wallet=${userdb.walletAddress}, token=${input.paymentToken}, balance=${balance.toString()}, required=${buffer.toString()}`);
-			if (balance < totalWei) {
-				console.log("Insufficient balance error");
-				throw new TRPCError({ code: "BAD_REQUEST", message: "Insufficient balance" });
-			}
-			console.log("Balance check passed");
+			await checkUserBalance(ctx.db, user.id, input.paymentToken as PaymentToken, totalWei);
 
 			// 5) Start DB transaction for stock + order creation only (no network I/O)
 			const order = await ctx.db.$transaction(async (tx) => {
 				// Validate and atomically decrement stocks per line
 				for (const item of cart.items) {
 					const qty = item.quantity;
+					console.log(
+						'Updating stock for item:', 
+						item.product.name, 
+						'item id', 
+						item.product.id, 
+						'quantity:', 
+						qty
+					);
 					// Conditional update for variant + total stock
 					const res = await tx.product.updateMany({
 						where: {
@@ -240,16 +278,8 @@ export const orderRouter = createTRPCRouter({
 
 				const orderId = crypto.randomUUID();
 				
-				// Calculate total with market fee (50%)
-				const MARKET_FEE_BPS = 5000; // 50%
-				const calculateTotalPrice = (price: number): number => {
-					const fee = (price * MARKET_FEE_BPS) / 10000;
-					const raw_price = price + fee;
-					return Math.round(raw_price * 100) / 100;
-				};
-				
 				const totalUsd = cart.items.reduce((s, i) => {
-					const itemTotalPrice = calculateTotalPrice(i.product.price);
+					const itemTotalPrice = calculatePriceWithMarketFee(i.product.price);
 					console.log(`Price calculation for ${i.product.name}: base=${i.product.price}, total=${itemTotalPrice}, quantity=${i.quantity}`);
 					return s + itemTotalPrice * i.quantity;
 				}, 0);
@@ -268,7 +298,7 @@ export const orderRouter = createTRPCRouter({
 
 				// Create order items (DB only)
 				for (const item of cart.items) {
-					const itemTotalPrice = calculateTotalPrice(item.product.price);
+					const itemTotalPrice = calculatePriceWithMarketFee(item.product.price);
 					await tx.orderItem.create({
 						data: {
 						orderId: created.id,
