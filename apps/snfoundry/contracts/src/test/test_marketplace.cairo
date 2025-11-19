@@ -342,6 +342,69 @@ mod test_marketplace {
 
     #[test]
     #[fork("MAINNET_LATEST")]
+    fn test_buy_product_mist() {
+        let (cofi_collection, _, marketplace) = deploy_contracts();
+        let CONSUMER = deploy_receiver();
+
+        // Create a producer
+        start_cheat_caller_address(marketplace.contract_address, OWNER());
+        let PRODUCER = 'PRODUCER'.try_into().unwrap();
+        marketplace.assign_producer_role(PRODUCER);
+
+        // Give marketplace permission to mint tokens
+        start_cheat_caller_address(cofi_collection.contract_address, OWNER());
+        cofi_collection.set_minter(marketplace.contract_address);
+
+        // Create a product
+        start_cheat_caller_address(marketplace.contract_address, PRODUCER);
+        let data = array!['testing'].span();
+        let price = 40 * ONE_E6; // 40 USD
+        let token_id = marketplace.create_product(10, price, data);
+
+        // Create a consumer
+        start_cheat_caller_address(marketplace.contract_address, OWNER());
+        marketplace.assign_producer_role(CONSUMER);
+
+        // Fund buyer wallet
+        let amount_to_buy = 10;
+        let total_price_in_usdt = marketplace
+            .get_product_price(token_id, amount_to_buy, PAYMENT_TOKEN::USDT);
+        let minter_address = USDT_TOKEN_MINTER_ADDRESS.try_into().unwrap();
+        let token_address = MainnetConfig::USDT_ADDRESS.try_into().unwrap();
+        let token_dispatcher = IERC20Dispatcher { contract_address: token_address };
+
+        start_cheat_caller_address(token_address, minter_address);
+        let mut calldata = array![];
+        calldata.append_serde(CONSUMER);
+        calldata.append_serde(total_price_in_usdt);
+        call_contract_syscall(token_address, selector!("permissioned_mint"), calldata.span())
+            .unwrap();
+        assert(token_dispatcher.balance_of(CONSUMER) >= total_price_in_usdt, 'invalid balance');
+
+        // Approve marketplace to spend buyer's tokens
+        start_cheat_caller_address(token_address, CONSUMER);
+        token_dispatcher.approve(marketplace.contract_address, total_price_in_usdt);
+
+        // Buy a product
+        cheat_caller_address(marketplace.contract_address, CONSUMER, CheatSpan::TargetCalls(1));
+        stop_cheat_caller_address(token_address);
+        stop_cheat_caller_address(cofi_collection.contract_address);
+        marketplace.buy_product_with_mist(token_id, amount_to_buy, 0);
+        let usdt_in_contract = token_dispatcher.balance_of(marketplace.contract_address);
+        assert(usdt_in_contract == 0, 'Failed to swap usdt');
+
+        let minted_nfts = cofi_collection.balance_of(CONSUMER, token_id);
+        assert(minted_nfts == amount_to_buy, 'invalid minted nfts');
+
+        // Check that the contract now has the expected balance in usdt
+        let usdc_token_address = MainnetConfig::USDC_ADDRESS.try_into().unwrap();
+        let usdc_token_dispatcher = IERC20Dispatcher { contract_address: usdc_token_address };
+        let usdc_in_contract = usdc_token_dispatcher.balance_of(marketplace.contract_address);
+        assert(usdc_in_contract >= price * amount_to_buy, 'invalid usdc in contract');
+    }
+
+    #[test]
+    #[fork("MAINNET_LATEST")]
     fn test_buy_products() {
         let (cofi_collection, distribution, marketplace) = deploy_contracts();
         let CONSUMER = deploy_receiver();

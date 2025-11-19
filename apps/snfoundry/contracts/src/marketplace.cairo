@@ -40,6 +40,9 @@ pub trait IMarketplace<ContractState> {
     fn buy_product(
         ref self: ContractState, token_id: u256, token_amount: u256, payment_token: PAYMENT_TOKEN,
     );
+    fn buy_product_with_mist(
+        ref self: ContractState, token_id: u256, token_amount: u256, txid: u256,
+    );
     fn buy_products(
         ref self: ContractState,
         token_ids: Span<u256>,
@@ -436,6 +439,12 @@ mod Marketplace {
             let is_producer = self.seller_is_producer.read(token_id);
             distribution
                 .register_purchase(buyer, seller_address, is_producer, producer_fee, profit);
+        }
+
+        fn buy_product_with_mist(
+            ref self: ContractState, token_id: u256, token_amount: u256, txid: u256,
+        ) { //
+        // @TODO: Implement buy_products with MIST payment
         }
 
         fn buy_products(
