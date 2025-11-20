@@ -4,7 +4,9 @@ import type { TransactionDetails, UserAuthData } from "~/server/services/cavos";
 import { executeTransaction } from "~/server/services/cavos";
 import { getContractAddress } from "~/utils/contracts";
 import { format_number } from "~/utils/formatting";
+import { txSecret } from "@mistcash/crypto";
 
+const TWO_POW_128 = 0x100000000000000000000000000000000n;
 
 export const getBalances = async (walletAddress: string, token: PaymentToken, formatted = true) => {
 	const calldata = [walletAddress];
@@ -34,6 +36,33 @@ export function increaseAllowanceTx(
 		entrypoint: "approve",
 		calldata: [
 			getContractAddress(contract),
+			formattedAllowance.high,
+			formattedAllowance.low
+		],
+	};
+}
+
+export async function mistTransferTx(
+	allowance: bigint,
+	paymentToken: PaymentToken,
+	contract: CofiBlocksContracts,
+	orderId: string,
+): Promise<TransactionDetails> {
+	const secret = await txSecret(
+		`0x${orderId.replaceAll("-", "")}`,
+		getContractAddress(contract)
+	);
+	const high = secret / TWO_POW_128;
+	const low = secret % TWO_POW_128;
+	const formattedAllowance = format_number(allowance);
+	const tokenAddr = getContractAddress(CofiBlocksContracts[paymentToken]);
+	return {
+		contract_address: getContractAddress(CofiBlocksContracts.MIST),
+		entrypoint: "deposit",
+		calldata: [
+			high.toString(),
+			low.toString(),
+			tokenAddr,
 			formattedAllowance.high,
 			formattedAllowance.low
 		],
