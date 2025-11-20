@@ -110,9 +110,10 @@ mod Marketplace {
     use openzeppelin::token::erc1155::erc1155_receiver::ERC1155ReceiverComponent;
     use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
     use openzeppelin::upgrades::UpgradeableComponent;
+    use openzeppelin::upgrades::interface::IUpgradeable;
     use starknet::event::EventEmitter;
     use starknet::storage::Map;
-    use starknet::{ContractAddress, get_caller_address, get_contract_address, syscalls};
+    use starknet::{ClassHash, ContractAddress, get_caller_address, get_contract_address, syscalls};
     use super::{MainnetConfig, PAYMENT_TOKEN, SwapAfterLockParameters, SwapResult};
 
     component!(
@@ -840,6 +841,16 @@ mod Marketplace {
         fn get_claim_payment(self: @ContractState, wallet_address: ContractAddress) -> u256 {
             // Producers/roasters can read their claim payment from here
             self.claim_balances.read(wallet_address)
+        }
+    }
+
+    #[abi(embed_v0)]
+    impl UpgradeableImpl of IUpgradeable<ContractState> {
+        fn upgrade(ref self: ContractState, new_class_hash: ClassHash) {
+            // This function can only be called by the owner
+            self.accesscontrol.assert_only_role(DEFAULT_ADMIN_ROLE);
+            // Replace the class hash upgrading the contract
+            self.upgradeable.upgrade(new_class_hash);
         }
     }
 
