@@ -331,7 +331,8 @@
 	"im_not_in_gam": "I'm not in GAM",
 	"next": "Next",
 
-	"proceed_to_payment": "Proceed to Payment",
+	"proceed_to_payment": "Pay",
+	"proceed_to_payment_private": "Pay with privacy (Beta)",
 	"processing_payment": "Processing Payment...",
 	"review_your_order": "Review Your Order",
 	"quantity": "Quantity",
