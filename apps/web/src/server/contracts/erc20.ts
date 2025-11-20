@@ -59,9 +59,9 @@ export async function mistTransferTx(
 		calldata: [
 			secret_u256.low,
 			secret_u256.high,
-			tokenAddr,
 			formattedAllowance.low,
-			formattedAllowance.high
+			formattedAllowance.high,
+			tokenAddr,
 		],
 	};
 }
