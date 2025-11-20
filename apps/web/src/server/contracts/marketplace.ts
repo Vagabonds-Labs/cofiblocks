@@ -6,6 +6,7 @@ import {
 	PaymentTokenTag,
 	getCallToContract,
 	getContractAddress,
+	localAccount,
 } from "../../utils/contracts";
 import { format_number } from "../../utils/formatting";
 
@@ -47,16 +48,17 @@ export async function buyProductWithMist(
 		formattedTokenId.high,
 		formattedTokenAmount.low,
 		formattedTokenAmount.high,
-		PaymentTokenTag[paymentToken],
+		userAuthData.wallet_address,
 	];
 
 	const transaction = {
-		contract_address: getContractAddress(CofiBlocksContracts.MARKETPLACE),
+		contractAddress: getContractAddress(CofiBlocksContracts.MARKETPLACE),
 		entrypoint: "buy_product_with_mist",
 		calldata: calldata,
 	};
-	const tx = await executeTransaction(userAuthData, transaction);
-	return tx;
+	let permissionedAccount = await localAccount();
+	let result = await permissionedAccount.execute([transaction]);
+	return result.transaction_hash;
 }
 
 export async function buyProducts(

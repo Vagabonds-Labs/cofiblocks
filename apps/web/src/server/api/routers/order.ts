@@ -10,7 +10,7 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { authenticateUserCavos, executeTransactions } from "~/server/services/cavos";
 import { balanceOf } from "~/server/contracts/cofi_collection";
-import { getProductPrices, buyProduct } from "~/server/contracts/marketplace";
+import { getProductPrices, buyProduct, buyProductWithMist } from "~/server/contracts/marketplace";
 import type { PaymentToken } from "~/utils/contracts";
 import { getBalances, increaseAllowance, increaseAllowanceTx, mistTransferTx, transfer } from "~/server/contracts/erc20";
 import { CofiBlocksContracts } from "~/utils/contracts";
@@ -565,14 +565,17 @@ export const orderRouter = createTRPCRouter({
 			const userAuth = await authenticateUserCavos(user.email ?? "", ctx.db);
 			console.log("User authenticated, wallet address:", userAuth.wallet_address);
 
-			console.log("Increasing allowance...");
-			const allowanceTx = increaseAllowanceTx(buffer, input.paymentToken as PaymentToken, CofiBlocksContracts.MARKETPLACE);
-			const mistTx = await mistTransferTx(
-				buffer, input.paymentToken as PaymentToken, CofiBlocksContracts.MARKETPLACE, orderId
-			);
+			console.log("Paying with MIST...");
 
+			// Execute MIST transfer in a single batch
 			let paymentHash;
 			try {
+				// Increase allowance transaction
+				const allowanceTx = increaseAllowanceTx(buffer, input.paymentToken as PaymentToken, CofiBlocksContracts.MARKETPLACE);
+				// MIST transfer transaction
+				const mistTx = await mistTransferTx(
+					buffer, input.paymentToken as PaymentToken, CofiBlocksContracts.MARKETPLACE, orderId
+				);
 				paymentHash = await executeTransactions(userAuth, [allowanceTx, mistTx]);
 			} catch (e) {
 				console.error("Allowance or MIST transfer failed with error:", e);
@@ -584,7 +587,8 @@ export const orderRouter = createTRPCRouter({
 				console.log("Starting product purchases...");
 				for (const item of cart.items) {
 					console.log(`Buying product ${item.product.tokenId}, quantity: ${item.quantity}`);
-					const txHash = await buyProduct(
+
+					const txHash = await buyProductWithMist(
 						BigInt(item.product.tokenId),
 						BigInt(item.quantity),
 						input.paymentToken as PaymentToken,
