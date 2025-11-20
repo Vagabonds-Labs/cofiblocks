@@ -34,6 +34,31 @@ export async function buyProduct(
 	return tx;
 }
 
+export async function buyProductWithMist(
+	tokenId: bigint,
+	tokenAmount: bigint,
+	paymentToken: PaymentToken,
+	userAuthData: UserAuthData,
+) {
+	const formattedTokenId = format_number(tokenId);
+	const formattedTokenAmount = format_number(tokenAmount);
+	const calldata = [
+		formattedTokenId.low,
+		formattedTokenId.high,
+		formattedTokenAmount.low,
+		formattedTokenAmount.high,
+		PaymentTokenTag[paymentToken],
+	];
+
+	const transaction = {
+		contract_address: getContractAddress(CofiBlocksContracts.MARKETPLACE),
+		entrypoint: "buy_product_with_mist",
+		calldata: calldata,
+	};
+	const tx = await executeTransaction(userAuthData, transaction);
+	return tx;
+}
+
 export async function buyProducts(
 	tokenId: bigint[],
 	tokenAmount: bigint[],
