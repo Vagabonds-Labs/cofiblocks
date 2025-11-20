@@ -566,7 +566,6 @@ export const orderRouter = createTRPCRouter({
 			console.log("User authenticated, wallet address:", userAuth.wallet_address);
 
 			console.log("Paying with MIST...");
-
 			// Execute MIST transfer in a single batch
 			let paymentHash;
 			try {
@@ -580,6 +579,7 @@ export const orderRouter = createTRPCRouter({
 			} catch (e) {
 				console.error("Allowance or MIST transfer failed with error:", e);
 			}
+			console.log("Paid with MIST:", paymentHash);
 
 			// Execute purchases; if any fails, mark order accordingly, and (optionally) restore stock in a compensating tx
 			try {

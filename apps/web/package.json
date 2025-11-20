@@ -83,7 +83,7 @@
 		"react-i18next": "^15.0.2",
 		"resend": "^6.1.2",
 		"server-only": "^0.0.1",
-		"starknet": "^6.11.0",
+		"starknet": "^8.9.0",
 		"starknetkit": "^2.3.0",
 		"storybook": "^8.3.0",
 		"superjson": "^2.2.1",

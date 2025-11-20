@@ -11,6 +11,15 @@ export const getContractAddress = (contract: CofiBlocksContracts) => {
 	return configExternalContracts[env][contract].address;
 };
 
+export const getContract = (contract: CofiBlocksContracts, account: Account) => {
+	const env = "mainnet";
+	return new Contract({
+		abi: configExternalContracts[env][contract].abi,
+		address: configExternalContracts[env][contract].address,
+		providerOrAccount: account,
+	});
+};
+
 export const CURRENT_TOKEN_ID_SELECTOR = "0x02d1f2240a2ec0158271955aa86d008519cb3eb290544ba488a608bb086c40a7";
 
 interface BlockchainEvent {
@@ -45,11 +54,12 @@ export const localAccount = () => {
 		nodeUrl: process.env.NEXT_PUBLIC_NODE_URL ?? "https://api.cartridge.gg/x/starknet/mainnet",
 	});
 
-	const account = new Account(
+	const account = new Account({
 		provider,
-		process.env.MAINNET_ACCOUNT_ADDR ?? "",
-		process.env.MAINNET_ACCOUNT_PRIVATE_KEY ?? "",
-	);
+		address: process.env.MAINNET_ACCOUNT_ADDR ?? "",
+		signer: process.env.MAINNET_ACCOUNT_PRIVATE_KEY ?? "",
+	});
+
 	return account;
 };
 
@@ -69,11 +79,7 @@ export const getCallToContract = async (
 	calldata: ArgsOrCalldata,
 ) => {
 	const account = localAccount();
-	const contractInstance = new Contract(
-		configExternalContracts.mainnet[contract].abi,
-		configExternalContracts.mainnet[contract].address,
-		account,
-	);
+	const contractInstance = getContract(contract, account);
 	// Use "latest" instead of "pending" as Cartridge RPC doesn't support "pending"
 	return await contractInstance.call(entrypoint, calldata, { blockIdentifier: "latest" });
 };
