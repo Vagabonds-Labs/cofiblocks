@@ -4,7 +4,7 @@ import {
 	Contract,
 	RpcProvider,
 } from "starknet";
-import configExternalContracts from "../contracts/deployedContracts";
+import configExternalContracts from "../contracts/allContracts";
 
 export const getContractAddress = (contract: CofiBlocksContracts) => {
 	const env = "mainnet";
