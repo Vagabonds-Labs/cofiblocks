@@ -5,6 +5,7 @@
 
 import { CHAMBER_ABI, CHAMBER_ADDR_MAINNET } from "@mistcash/config";
 import deployedContracts from "./deployedContracts";
+import { mainnet } from "@starknet-react/chains";
 
 export const existingContracts = {
   STRK: {
@@ -2595,6 +2596,8 @@ export const existingContracts = {
 } as const;
 
 export default {
-  ...existingContracts,
-  ...deployedContracts,
+  mainnet: {
+    ...deployedContracts.mainnet,
+    ...existingContracts,
+  }
 };
