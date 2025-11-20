@@ -7,7 +7,7 @@ const deployedContracts = {
   mainnet: {
     CofiCollection: {
       address:
-        "0x611c49c8714ad412cb7b8a9f6b7945a66caa5794c6cf89f199dd8ae0715daa3",
+        "0xf4d8a8007be734f6ea586c7cb27504dc7a48991d7d2aaddb245fc09c6e973b",
       abi: [
         {
           type: "impl",
@@ -1136,7 +1136,7 @@ const deployedContracts = {
     },
     Distribution: {
       address:
-        "0xc1f35ffaf249a7b26db675f064552d1a723f7ed6fb11d3250e17e00e264327",
+        "0x5f1f375d39e99b0c79ae2f3d738495879d13f06be877030a161ccc7856e0119",
       abi: [
         {
           type: "impl",
@@ -1786,7 +1786,7 @@ const deployedContracts = {
     },
     Marketplace: {
       address:
-        "0x43be0662e35fcab4a5b26146493a4bfa13c6e49ed061149de33413797dcc236",
+        "0x9fa2066e4a460be35d078876569479a6131e980b493a27401caf42400d24d7",
       abi: [
         {
           type: "impl",
