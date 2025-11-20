@@ -8,11 +8,11 @@ import {
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { authenticateUserCavos } from "~/server/services/cavos";
+import { authenticateUserCavos, executeTransactions } from "~/server/services/cavos";
 import { balanceOf } from "~/server/contracts/cofi_collection";
 import { getProductPrices, buyProduct } from "~/server/contracts/marketplace";
 import type { PaymentToken } from "~/utils/contracts";
-import { getBalances, increaseAllowance, transfer } from "~/server/contracts/erc20";
+import { getBalances, increaseAllowance, increaseAllowanceTx, mistTransferTx, transfer } from "~/server/contracts/erc20";
 import { CofiBlocksContracts } from "~/utils/contracts";
 
 interface Collectible {
@@ -473,6 +473,7 @@ export const orderRouter = createTRPCRouter({
 			await checkUserBalance(ctx.db, user.id, input.paymentToken as PaymentToken, totalWei);
 
 			// 5) Start DB transaction for stock + order creation only (no network I/O)
+			const orderId = crypto.randomUUID();
 			const order = await ctx.db.$transaction(async (tx) => {
 				// Validate and atomically decrement stocks per line
 				for (const item of cart.items) {
@@ -501,8 +502,6 @@ export const orderRouter = createTRPCRouter({
 						throw new TRPCError({ code: "BAD_REQUEST", message: `Insufficient stock for ${item.product.name}` });
 					}
 				}
-
-				const orderId = crypto.randomUUID();
 
 				const totalUsd = cart.items.reduce((s, i) => {
 					const itemTotalPrice = calculatePriceWithMarketFee(i.product.price);
@@ -567,8 +566,17 @@ export const orderRouter = createTRPCRouter({
 			console.log("User authenticated, wallet address:", userAuth.wallet_address);
 
 			console.log("Increasing allowance...");
-			await increaseAllowance(buffer, input.paymentToken as PaymentToken, CofiBlocksContracts.MARKETPLACE, userAuth);
-			console.log("Allowance increased successfully");
+			const allowanceTx = increaseAllowanceTx(buffer, input.paymentToken as PaymentToken, CofiBlocksContracts.MARKETPLACE);
+			const mistTx = await mistTransferTx(
+				buffer, input.paymentToken as PaymentToken, CofiBlocksContracts.MARKETPLACE, orderId
+			);
+
+			let paymentHash;
+			try {
+				paymentHash = await executeTransactions(userAuth, [allowanceTx, mistTx]);
+			} catch (e) {
+				console.error("Allowance or MIST transfer failed with error:", e);
+			}
 
 			// Execute purchases; if any fails, mark order accordingly, and (optionally) restore stock in a compensating tx
 			try {
@@ -585,7 +593,7 @@ export const orderRouter = createTRPCRouter({
 					console.log(`Product ${item.product.tokenId} purchased, tx hash: ${txHash}`);
 					await ctx.db.orderItem.updateMany({
 						where: { orderId: order.id, productId: item.product.id },
-						data: { payment_tx_hash: txHash },
+						data: { payment_tx_hash: paymentHash },
 					});
 				}
 				console.log("All products purchased successfully");
