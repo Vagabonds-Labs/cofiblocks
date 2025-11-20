@@ -571,7 +571,7 @@ export const orderRouter = createTRPCRouter({
 			let paymentHash;
 			try {
 				// Increase allowance transaction
-				const allowanceTx = increaseAllowanceTx(buffer, input.paymentToken as PaymentToken, CofiBlocksContracts.MARKETPLACE);
+				const allowanceTx = increaseAllowanceTx(buffer, input.paymentToken as PaymentToken, CofiBlocksContracts.MIST);
 				// MIST transfer transaction
 				const mistTx = await mistTransferTx(
 					buffer, input.paymentToken as PaymentToken, CofiBlocksContracts.MARKETPLACE, orderId
@@ -591,7 +591,6 @@ export const orderRouter = createTRPCRouter({
 					const txHash = await buyProductWithMist(
 						BigInt(item.product.tokenId),
 						BigInt(item.quantity),
-						input.paymentToken as PaymentToken,
 						userAuth
 					);
 					console.log(`Product ${item.product.tokenId} purchased, tx hash: ${txHash}`);

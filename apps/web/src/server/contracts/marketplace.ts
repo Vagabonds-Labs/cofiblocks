@@ -38,9 +38,10 @@ export async function buyProduct(
 export async function buyProductWithMist(
 	tokenId: bigint,
 	tokenAmount: bigint,
-	paymentToken: PaymentToken,
 	userAuthData: UserAuthData,
 ) {
+	console.log("Buying product with MIST:", tokenId.toString(), tokenAmount.toString());
+
 	const formattedTokenId = format_number(tokenId);
 	const formattedTokenAmount = format_number(tokenAmount);
 	const calldata = [
