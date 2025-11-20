@@ -223,16 +223,21 @@ export async function executeTransaction(
 	userAuthData: UserAuthData,
 	transaction: TransactionDetails,
 ): Promise<string> {
+	return executeTransactions(userAuthData, [transaction]);
+}
+
+export async function executeTransactions(
+	userAuthData: UserAuthData,
+	transactions: TransactionDetails[],
+): Promise<string> {
 	const payload = {
 		address: userAuthData.wallet_address,
 		org_id: ORG_ID,
-		calls: [
-			{
-				contractAddress: transaction.contract_address,
-				entrypoint: transaction.entrypoint,
-				calldata: transaction.calldata,
-			},
-		],
+		calls: transactions.map(transaction => ({
+			contractAddress: transaction.contract_address,
+			entrypoint: transaction.entrypoint,
+			calldata: transaction.calldata,
+		})),
 		network: NETWORK,
 	};
 
