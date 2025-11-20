@@ -6,8 +6,6 @@ import { getContractAddress } from "~/utils/contracts";
 import { format_number } from "~/utils/formatting";
 import { txSecret } from "@mistcash/crypto";
 
-const TWO_POW_128 = 0x100000000000000000000000000000000n;
-
 export const getBalances = async (walletAddress: string, token: PaymentToken, formatted = true) => {
 	const calldata = [walletAddress];
 	const balance_result = await getCallToContract(
@@ -36,8 +34,8 @@ export function increaseAllowanceTx(
 		entrypoint: "approve",
 		calldata: [
 			getContractAddress(contract),
-			formattedAllowance.high,
-			formattedAllowance.low
+			formattedAllowance.low,
+			formattedAllowance.high
 		],
 	};
 }
@@ -52,19 +50,18 @@ export async function mistTransferTx(
 		`0x${orderId.replaceAll("-", "")}`,
 		getContractAddress(contract)
 	);
-	const high = secret / TWO_POW_128;
-	const low = secret % TWO_POW_128;
+	const secret_u256 = format_number(secret);
 	const formattedAllowance = format_number(allowance);
 	const tokenAddr = getContractAddress(CofiBlocksContracts[paymentToken]);
 	return {
 		contract_address: getContractAddress(CofiBlocksContracts.MIST),
 		entrypoint: "deposit",
 		calldata: [
-			high.toString(),
-			low.toString(),
+			secret_u256.low,
+			secret_u256.high,
 			tokenAddr,
-			formattedAllowance.high,
-			formattedAllowance.low
+			formattedAllowance.low,
+			formattedAllowance.high
 		],
 	};
 }
@@ -90,7 +87,7 @@ export async function transfer(
 	const transaction = {
 		contract_address: getContractAddress(CofiBlocksContracts[paymentToken]),
 		entrypoint: "transfer",
-		calldata: [recipient, formattedAmount.high, formattedAmount.low],
+		calldata: [recipient, formattedAmount.low, formattedAmount.high],
 	};
 	const tx = await executeTransaction(userAuthData, transaction);
 	return tx;
