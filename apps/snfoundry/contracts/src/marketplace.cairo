@@ -36,6 +36,7 @@ pub trait IMarketplace<ContractState> {
     fn assign_cofiblocks_role(ref self: ContractState, assignee: ContractAddress);
     fn assign_cofounder_role(ref self: ContractState, assignee: ContractAddress);
     fn assign_consumer_role(ref self: ContractState, assignee: ContractAddress);
+    fn assign_mist_manager_role(ref self: ContractState, assignee: ContractAddress);
     fn assign_admin_role(ref self: ContractState, assignee: ContractAddress);
     fn buy_product(
         ref self: ContractState, token_id: u256, token_amount: u256, payment_token: PAYMENT_TOKEN,
@@ -347,6 +348,11 @@ mod Marketplace {
             self.accesscontrol._grant_role(PRODUCER, assignee);
         }
 
+        fn assign_mist_manager_role(ref self: ContractState, assignee: ContractAddress) {
+            self.accesscontrol.assert_only_role(DEFAULT_ADMIN_ROLE);
+            self.accesscontrol._grant_role(MIST_MANAGER, assignee);
+        }
+
         fn assign_roaster_role(ref self: ContractState, assignee: ContractAddress) {
             self.accesscontrol.assert_only_role(DEFAULT_ADMIN_ROLE);
             self.accesscontrol._grant_role(ROASTER, assignee);
@@ -464,7 +470,6 @@ mod Marketplace {
             let stock = self.listed_product_stock.read(token_id);
             assert(stock >= token_amount, 'Not enough stock');
 
-            let buyer = get_caller_address();
             let contract_address = get_contract_address();
 
             let mut producer_fee = self.listed_product_price.read(token_id) * token_amount;
