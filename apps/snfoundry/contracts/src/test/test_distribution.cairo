@@ -374,7 +374,7 @@ mod test_distribution {
 
         // Check claims for roasters
         let total_profit = profit1 + profit2;
-        let total_purchases = product_price1 + product_price2 + total_profit;
+        let _total_purchases = product_price1 + product_price2 + total_profit;
         let roaster_profits = (total_profit * 5 * 100) / 10_000; // 5% of total profit
 
         // Check for roaster1

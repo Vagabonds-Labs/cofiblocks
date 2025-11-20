@@ -1,3 +1,5 @@
+const TWO_POW_128 = 0x100000000000000000000000000000000n;
+
 /**
  * Formats a price value into a currency string
  * @param price - The price value to format
@@ -24,15 +26,9 @@ export interface FormattedNumber {
 }
 
 export function format_number(n: bigint): FormattedNumber {
-	const hexString = n.toString(16);
-	if (hexString.length > 32) {
-		const high = `0x${hexString.slice(0, 32)}`;
-		const low = `0x${hexString.slice(32)}`;
-		return { high, low };
-	}
 	return {
-		high: `0x${hexString}`,
-		low: "0x0",
+		high: (n / TWO_POW_128).toString(),
+		low: (n % TWO_POW_128).toString(),
 	};
 }
 
@@ -43,13 +39,13 @@ export function format_number(n: bigint): FormattedNumber {
  */
 export function formatWalletAddress(address: string): string {
 	if (!address) return "";
-	
+
 	// Remove 0x prefix if present
 	const cleanAddress = address.startsWith("0x") ? address.slice(2) : address;
-	
+
 	// Pad with zeros to make it 64 characters (32 bytes)
 	const paddedAddress = cleanAddress.padStart(64, "0");
-	
+
 	// Add 0x prefix back
 	return `0x${paddedAddress}`;
 }

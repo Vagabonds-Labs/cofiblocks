@@ -36,9 +36,13 @@ pub trait IMarketplace<ContractState> {
     fn assign_cofiblocks_role(ref self: ContractState, assignee: ContractAddress);
     fn assign_cofounder_role(ref self: ContractState, assignee: ContractAddress);
     fn assign_consumer_role(ref self: ContractState, assignee: ContractAddress);
+    fn assign_mist_manager_role(ref self: ContractState, assignee: ContractAddress);
     fn assign_admin_role(ref self: ContractState, assignee: ContractAddress);
     fn buy_product(
         ref self: ContractState, token_id: u256, token_amount: u256, payment_token: PAYMENT_TOKEN,
+    );
+    fn buy_product_with_mist(
+        ref self: ContractState, token_id: u256, token_amount: u256, buyer: ContractAddress,
     );
     fn buy_products(
         ref self: ContractState,
@@ -55,6 +59,9 @@ pub trait IMarketplace<ContractState> {
     fn get_product_price(
         self: @ContractState, token_id: u256, token_amount: u256, payment_token: PAYMENT_TOKEN,
     ) -> u256;
+    fn withdraw_mist(
+        ref self: ContractState, mist_address: ContractAddress, calldata: Span<felt252>,
+    );
     fn delete_product(ref self: ContractState, token_id: u256);
     fn delete_products(ref self: ContractState, token_ids: Span<u256>);
     fn claim_consumer(ref self: ContractState);
@@ -104,9 +111,10 @@ mod Marketplace {
     use openzeppelin::token::erc1155::erc1155_receiver::ERC1155ReceiverComponent;
     use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
     use openzeppelin::upgrades::UpgradeableComponent;
+    use openzeppelin::upgrades::interface::IUpgradeable;
     use starknet::event::EventEmitter;
     use starknet::storage::Map;
-    use starknet::{ContractAddress, get_caller_address, get_contract_address};
+    use starknet::{ClassHash, ContractAddress, get_caller_address, get_contract_address, syscalls};
     use super::{MainnetConfig, PAYMENT_TOKEN, SwapAfterLockParameters, SwapResult};
 
     component!(
@@ -122,6 +130,7 @@ mod Marketplace {
     const CAMBIATUS: felt252 = selector!("CAMBIATUS");
     const COFIBLOCKS: felt252 = selector!("COFIBLOCKS");
     const COFOUNDER: felt252 = selector!("COFOUNDER");
+    const MIST_MANAGER: felt252 = selector!("MIST_MANAGER");
     const CONSUMER: felt252 = selector!("CONSUMER");
 
     // ERC1155Receiver
@@ -339,6 +348,11 @@ mod Marketplace {
             self.accesscontrol._grant_role(PRODUCER, assignee);
         }
 
+        fn assign_mist_manager_role(ref self: ContractState, assignee: ContractAddress) {
+            self.accesscontrol.assert_only_role(DEFAULT_ADMIN_ROLE);
+            self.accesscontrol._grant_role(MIST_MANAGER, assignee);
+        }
+
         fn assign_roaster_role(ref self: ContractState, assignee: ContractAddress) {
             self.accesscontrol.assert_only_role(DEFAULT_ADMIN_ROLE);
             self.accesscontrol._grant_role(ROASTER, assignee);
@@ -420,6 +434,64 @@ mod Marketplace {
             self.emit(BuyProduct { token_id, amount: token_amount, price: total_required_tokens });
             if (!self.accesscontrol.has_role(CONSUMER, get_caller_address())) {
                 self.accesscontrol._grant_role(CONSUMER, get_caller_address());
+            }
+
+            // Send payment to the producer
+            let seller_address = self.seller_products.read(token_id);
+            self
+                .claim_balances
+                .write(seller_address, self.claim_balances.read(seller_address) + producer_fee);
+            let token_ids = array![token_id].span();
+            self.emit(PaymentSeller { token_ids, seller: seller_address, payment: producer_fee });
+
+            // Register purchase in the distribution contract
+            let distribution = self.distribution.read();
+            let profit = self.calculate_fee(producer_fee, self.market_fee.read());
+            let is_producer = self.seller_is_producer.read(token_id);
+            distribution
+                .register_purchase(buyer, seller_address, is_producer, producer_fee, profit);
+        }
+
+        fn withdraw_mist(
+            ref self: ContractState, mist_address: ContractAddress, calldata: Span<felt252>,
+        ) {
+            self.assert_mist_manager(get_caller_address());
+            // Low level call allows updating calldata type without redeploying marketplace
+            syscalls::call_contract_syscall(mist_address, selector!("handle_zkp"), calldata)
+                .unwrap();
+        }
+
+        fn buy_product_with_mist(
+            ref self: ContractState, token_id: u256, token_amount: u256, buyer: ContractAddress,
+        ) {
+            // only mist manager can buy product with mist because we check payment offchain
+            self.assert_mist_manager(get_caller_address());
+
+            let stock = self.listed_product_stock.read(token_id);
+            assert(stock >= token_amount, 'Not enough stock');
+
+            let contract_address = get_contract_address();
+
+            let mut producer_fee = self.listed_product_price.read(token_id) * token_amount;
+            let mut total_required_tokens = self
+                .get_product_price(token_id, token_amount, super::PAYMENT_TOKEN::USDC);
+
+            // Transfer the nft products
+            let cofi_collection = ICofiCollectionDispatcher {
+                contract_address: self.cofi_collection_address.read(),
+            };
+            cofi_collection
+                .safe_transfer_from(
+                    contract_address, buyer, token_id, token_amount, array![0].span(),
+                );
+
+            // Update stock
+            let new_stock = stock - token_amount;
+            self.update_stock(token_id, new_stock);
+
+            self.emit(BuyProduct { token_id, amount: token_amount, price: total_required_tokens });
+            if (!self.accesscontrol.has_role(CONSUMER, buyer)) {
+                self.accesscontrol._grant_role(CONSUMER, buyer);
             }
 
             // Send payment to the producer
@@ -777,6 +849,16 @@ mod Marketplace {
         }
     }
 
+    #[abi(embed_v0)]
+    impl UpgradeableImpl of IUpgradeable<ContractState> {
+        fn upgrade(ref self: ContractState, new_class_hash: ClassHash) {
+            // This function can only be called by the owner
+            self.accesscontrol.assert_only_role(DEFAULT_ADMIN_ROLE);
+            // Replace the class hash upgrading the contract
+            self.upgradeable.upgrade(new_class_hash);
+        }
+    }
+
     #[generate_trait]
     impl InternalImpl of InternalTrait {
         fn initialize_product(
@@ -857,6 +939,14 @@ mod Marketplace {
             let starks_required = (amount_usdc * ONE_E12) / stark_price;
             // output should be in 10^18 representation (wei) so padding with 12 zeros
             starks_required * ONE_E12
+        }
+
+        fn assert_mist_manager(ref self: ContractState, caller: ContractAddress) {
+            assert(
+                self.accesscontrol.has_role(DEFAULT_ADMIN_ROLE, caller)
+                    || self.accesscontrol.has_role(MIST_MANAGER, caller),
+                'Not mist manager',
+            );
         }
 
         fn compute_sqrt_ratio_limit(

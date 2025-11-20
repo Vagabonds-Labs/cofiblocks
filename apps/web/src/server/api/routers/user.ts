@@ -108,9 +108,9 @@ export const userRouter = createTRPCRouter({
 		} catch (error) {
 			if (error instanceof Error && error.message.includes("No tokens to claim")) {
 				claim_payment_success = true;
-			} else{
+			} else {
 				console.error("Error claiming payment:", error);
-			}	
+			}
 		}
 
 		console.log("Claim balance success:", claim_balance_success);
@@ -203,7 +203,7 @@ export const userRouter = createTRPCRouter({
 			const transaction = {
 				contract_address: getContractAddress(CofiBlocksContracts[input.token]),
 				entrypoint: "transfer",
-				calldata: [input.recipient, formattedBalance.high, formattedBalance.low],
+				calldata: [input.recipient, formattedBalance.low, formattedBalance.high],
 			};
 			const tx = await executeTransaction(userAuthData, transaction)
 			return tx;

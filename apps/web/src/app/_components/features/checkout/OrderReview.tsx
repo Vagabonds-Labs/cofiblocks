@@ -9,7 +9,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useCreateOrder } from "~/services/useCreateOrder";
+import { useCreateOrder, useCreateOrderMist } from "~/services/useCreateOrder";
 import { cartItemsAtom, clearCartAtom, isCartOpenAtom } from "~/store/cartAtom";
 import type { CartItem } from "~/store/cartAtom";
 import { api } from "~/trpc/react";
@@ -70,6 +70,7 @@ export default function OrderReview({
 	const [purchasedItems, setPurchasedItems] = useState<CartItem[]>([]);
 	const router = useRouter();
 	const createOrder = useCreateOrder();
+	const createOrderMist = useCreateOrderMist();
 
 	// Get current cart
 	const { data: cart } = api.cart.getUserCart.useQuery();
@@ -127,6 +128,40 @@ export default function OrderReview({
 
 			// Create order in the database
 			await createOrder.mutateAsync({
+				cartId: cart.id, 
+				paymentToken: selectedCurrency as PaymentToken,
+				deliveryAddress: deliveryMethod === "home" ? deliveryAddress : undefined,
+				deliveryMethod: deliveryMethod,
+			});
+
+			// Clear the cart and close the cart sidebar
+			clearCart();
+			setIsCartOpen(false);
+
+			// Show confirmation (don't redirect immediately - let user see success page)
+			setShowConfirmation(true);
+		} catch (err) {
+			console.error("Payment error:", err);
+			const errorMessage = err instanceof Error ? err.message : "Failed to process payment";
+			setError(errorMessage);
+		}
+		setIsProcessing(false);
+	};
+
+	const handleProceedToPaymentSecure = async () => {
+		try {
+			setIsProcessing(true);
+			setError(null);
+
+			if (!cart?.id) {
+				throw new Error("Cart not found");
+			}
+
+			// Store cart items before clearing (for confirmation page)
+			setPurchasedItems([...cartItems]);
+
+			// Create order in the database
+			await createOrderMist.mutateAsync({
 				cartId: cart.id, 
 				paymentToken: selectedCurrency as PaymentToken,
 				deliveryAddress: deliveryMethod === "home" ? deliveryAddress : undefined,
@@ -314,9 +349,17 @@ export default function OrderReview({
 					{t("change_currency")}
 				</Button>
 
+			<Button
+				onClick={handleProceedToPaymentSecure}
+				className={`w-full !bg-black hover:!bg-gray-800 !text-white mt-6 h-14 ${cartItems.length === 0 || isLoadingPrices || selectedCurrency !== "USDC" ? "opacity-50 cursor-not-allowed" : ""}`}
+				disabled={isProcessing || cartItems.length === 0 || isLoadingPrices || selectedCurrency !== "USDC"}
+			>
+			{isProcessing ? t("processing_payment") : isLoadingPrices ? t("loading") : t("proceed_to_payment_private")}
+			</Button>
+
 				<Button
 					onClick={handleProceedToPayment}
-					className={`w-full bg-yellow-400 hover:bg-yellow-500 text-black mt-6 h-14 ${cartItems.length === 0 || isLoadingPrices ? "opacity-50 cursor-not-allowed" : ""}`}
+					className={`w-full bg-yellow-400 hover:bg-yellow-500 text-black mt-4 h-14 ${cartItems.length === 0 || isLoadingPrices ? "opacity-50 cursor-not-allowed" : ""}`}
 					disabled={isProcessing || cartItems.length === 0 || isLoadingPrices}
 				>
 				{isProcessing ? t("processing_payment") : isLoadingPrices ? t("loading") : t("proceed_to_payment")}

@@ -1,6 +1,7 @@
 mod cofi_collection;
 mod distribution;
 mod marketplace;
+pub mod mist;
 
 #[cfg(test)]
 mod test {

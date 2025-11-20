@@ -6,6 +6,7 @@ import {
 	PaymentTokenTag,
 	getCallToContract,
 	getContractAddress,
+	localAccount,
 } from "../../utils/contracts";
 import { format_number } from "../../utils/formatting";
 
@@ -18,10 +19,10 @@ export async function buyProduct(
 	const formattedTokenId = format_number(tokenId);
 	const formattedTokenAmount = format_number(tokenAmount);
 	const calldata = [
-		formattedTokenId.high,
 		formattedTokenId.low,
-		formattedTokenAmount.high,
+		formattedTokenId.high,
 		formattedTokenAmount.low,
+		formattedTokenAmount.high,
 		PaymentTokenTag[paymentToken],
 	];
 
@@ -32,6 +33,33 @@ export async function buyProduct(
 	};
 	const tx = await executeTransaction(userAuthData, transaction);
 	return tx;
+}
+
+export async function buyProductWithMist(
+	tokenId: bigint,
+	tokenAmount: bigint,
+	userAuthData: UserAuthData,
+) {
+	console.log("Buying product with MIST:", tokenId.toString(), tokenAmount.toString());
+
+	const formattedTokenId = format_number(tokenId);
+	const formattedTokenAmount = format_number(tokenAmount);
+	const calldata = [
+		formattedTokenId.low,
+		formattedTokenId.high,
+		formattedTokenAmount.low,
+		formattedTokenAmount.high,
+		userAuthData.wallet_address,
+	];
+
+	const transaction = {
+		contractAddress: getContractAddress(CofiBlocksContracts.MARKETPLACE),
+		entrypoint: "buy_product_with_mist",
+		calldata: calldata,
+	};
+	let permissionedAccount = await localAccount();
+	let result = await permissionedAccount.execute([transaction]);
+	return result.transaction_hash;
 }
 
 export async function buyProducts(
@@ -45,10 +73,10 @@ export async function buyProducts(
 	for (let i = 0; i < tokenId.length; i++) {
 		const formattedTokenId = format_number(tokenId[i] ?? 0n);
 		const formattedTokenAmount = format_number(tokenAmount[i] ?? 0n);
-		formattedTokenIds.push(formattedTokenId.high);
 		formattedTokenIds.push(formattedTokenId.low);
-		formattedTokenAmounts.push(formattedTokenAmount.high);
+		formattedTokenIds.push(formattedTokenId.high);
 		formattedTokenAmounts.push(formattedTokenAmount.low);
+		formattedTokenAmounts.push(formattedTokenAmount.high);
 	}
 	const calldata = [
 		`0x${tokenId.length.toString(16)}`,
@@ -78,10 +106,10 @@ export async function createProduct(
 	const formattedInitialStock = format_number(initialStock);
 	const formattedPrice = format_number(price);
 	const calldata = [
-		formattedInitialStock.high,
 		formattedInitialStock.low,
-		formattedPrice.high,
+		formattedInitialStock.high,
 		formattedPrice.low,
+		formattedPrice.high,
 		"0x1",
 		"0x0",
 	];
@@ -104,11 +132,11 @@ export async function createProducts(
 	const formattedPrices = [];
 	for (let i = 0; i < initialStock.length; i++) {
 		const formattedInitialStock = format_number(initialStock[i] ?? 0n);
-		const formattedPrice = format_number((price[i] ?? 0n) * 10n**6n);
-		formattedInitialStocks.push(formattedInitialStock.high);
+		const formattedPrice = format_number((price[i] ?? 0n) * 10n ** 6n);
 		formattedInitialStocks.push(formattedInitialStock.low);
-		formattedPrices.push(formattedPrice.high);
+		formattedInitialStocks.push(formattedInitialStock.high);
 		formattedPrices.push(formattedPrice.low);
+		formattedPrices.push(formattedPrice.high);
 	}
 	const calldata = [
 		`0x${initialStock.length.toString(16)}`,
@@ -145,7 +173,7 @@ export async function deleteProduct(
 	userAuthData: UserAuthData,
 ) {
 	const formattedTokenId = format_number(tokenId);
-	const calldata = [formattedTokenId.high, formattedTokenId.low];
+	const calldata = [formattedTokenId.low, formattedTokenId.high];
 
 	const transaction = {
 		contract_address: getContractAddress(CofiBlocksContracts.MARKETPLACE),
@@ -163,8 +191,8 @@ export async function deleteProducts(
 	const formattedTokensIds = [];
 	for (const token of tokenId) {
 		const formattedTokenId = format_number(token ?? 0n);
-		formattedTokensIds.push(formattedTokenId.low);
 		formattedTokensIds.push(formattedTokenId.high);
+		formattedTokensIds.push(formattedTokenId.low);
 	}
 	const calldata = [`0x${tokenId.length.toString(16)}`, ...formattedTokensIds];
 
@@ -230,7 +258,7 @@ export async function claimPayment(userAuthData: UserAuthData) {
 
 export async function getProductStock(tokenId: bigint) {
 	const formattedTokenId = format_number(tokenId);
-	const calldata = [formattedTokenId.high, formattedTokenId.low];
+	const calldata = [formattedTokenId.low, formattedTokenId.high];
 
 	const tx = await getCallToContract(
 		CofiBlocksContracts.MARKETPLACE,
@@ -241,11 +269,11 @@ export async function getProductStock(tokenId: bigint) {
 }
 
 export async function getProductPrices(
-	tokenIds: bigint[], 
-	tokenAmounts: bigint[], 
+	tokenIds: bigint[],
+	tokenAmounts: bigint[],
 	paymentToken: PaymentToken,
 	formatted = true
-) {;
+) {
 	const unitPrices: Record<string, number> = {};
 	for (let i = 0; i < tokenIds.length; i++) {
 		const tokenId = tokenIds[i];
