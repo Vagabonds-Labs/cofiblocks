@@ -42,7 +42,7 @@ export const PaymentTokenTag: Record<PaymentToken, string> = {
 
 export const localAccount = () => {
 	const provider = new RpcProvider({
-		nodeUrl: "https://api.cartridge.gg/x/starknet/mainnet",
+		nodeUrl: process.env.NEXT_PUBLIC_NODE_URL ?? "https://api.cartridge.gg/x/starknet/mainnet",
 	});
 
 	const account = new Account(
@@ -95,7 +95,7 @@ export async function getEvents(
 	contract: CofiBlocksContracts,
 ): Promise<BlockchainEvent[]> {
 	const starknetProvider = new RpcProvider({
-		nodeUrl: "https://api.cartridge.gg/x/starknet/mainnet",
+		nodeUrl: process.env.NEXT_PUBLIC_NODE_URL ?? "https://api.cartridge.gg/x/starknet/mainnet",
 	});
 	const eventsResponse = await starknetProvider.getEvents({
 		address: configExternalContracts.mainnet[contract].address,

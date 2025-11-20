@@ -6,11 +6,8 @@ export const CHAIN_ID =
 		? constants.NetworkName.SN_MAIN
 		: constants.NetworkName.SN_SEPOLIA;
 
-// RPC URL configuration - Using Cartridge public RPC endpoints
-const NODE_URL =
-	process.env.NEXT_PUBLIC_CHAIN_ID === constants.NetworkName.SN_MAIN
-		? "https://api.cartridge.gg/x/starknet/mainnet"
-		: "https://api.cartridge.gg/x/starknet/sepolia";
+// RPC URL configuration
+const NODE_URL = process.env.NEXT_PUBLIC_NODE_URL ?? "https://api.cartridge.gg/x/starknet/mainnet";
 
 const STARKNET_CHAIN_ID =
 	process.env.NEXT_PUBLIC_CHAIN_ID === constants.NetworkName.SN_MAIN
