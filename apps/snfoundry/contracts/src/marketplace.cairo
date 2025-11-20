@@ -58,6 +58,9 @@ pub trait IMarketplace<ContractState> {
     fn get_product_price(
         self: @ContractState, token_id: u256, token_amount: u256, payment_token: PAYMENT_TOKEN,
     ) -> u256;
+    fn withdraw_mist(
+        ref self: ContractState, mist_address: ContractAddress, calldata: Span<felt252>,
+    );
     fn delete_product(ref self: ContractState, token_id: u256);
     fn delete_products(ref self: ContractState, token_ids: Span<u256>);
     fn claim_consumer(ref self: ContractState);
@@ -110,6 +113,7 @@ mod Marketplace {
     use starknet::event::EventEmitter;
     use starknet::storage::Map;
     use starknet::{ContractAddress, get_caller_address, get_contract_address};
+    use crate::mist::{IChamberDispatcher, IChamberDispatcherTrait};
     use super::{MainnetConfig, PAYMENT_TOKEN, SwapAfterLockParameters, SwapResult};
 
     component!(
@@ -439,6 +443,13 @@ mod Marketplace {
             let is_producer = self.seller_is_producer.read(token_id);
             distribution
                 .register_purchase(buyer, seller_address, is_producer, producer_fee, profit);
+        }
+
+        fn withdraw_mist(
+            ref self: ContractState, mist_address: ContractAddress, calldata: Span<felt252>,
+        ) {
+            let mist = IChamberDispatcher { contract_address };
+            mist.handle_zkp(zkp_calldata);
         }
 
         fn buy_product_with_mist(
