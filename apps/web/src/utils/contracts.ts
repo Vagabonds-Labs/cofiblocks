@@ -60,6 +60,7 @@ export enum CofiBlocksContracts {
 	STRK = "STRK",
 	USDC = "USDC",
 	USDT = "USDT",
+	MIST = "MIST",
 }
 
 export const getCallToContract = async (

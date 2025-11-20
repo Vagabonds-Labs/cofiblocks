@@ -1,17 +1,17 @@
 {
   "CofiCollection": {
     "classHash": "0x7463d920bd22b863168f817135bfe755c739f237f36750918a2463fe491d99f",
-    "address": "0x41d189d6d28b46ac9effafe7633aecc149db07d41f8dbac373ef82fa4efd4ee",
+    "address": "0x286de5f422cdde90bebfe435b4da0e0464fd832693e2c80933e53148788cb92",
     "contract": "CofiCollection"
   },
   "Distribution": {
     "classHash": "0x19a04b0531e4bb2b57d75e8d4cf5c6e536280f626aa015fe4cfecbde0defc8c",
-    "address": "0x1af532c544733864ac38b9aab04a8addbf68e0c86c3ebfb21331378da1608d7",
+    "address": "0x4c5e8ae65febd2ff2570f3fbd00d52450afaaa7ed715b8b01fcb37c10f19d5b",
     "contract": "Distribution"
   },
   "Marketplace": {
-    "classHash": "0x6038298f96ee032f04b613bf301f7b7c231136cd3f16366dc53c7d364935f5e",
-    "address": "0x38d983ab040f866242944cd01439423d03c3f2ee23bbfbae81e79613ba5b5a4",
+    "classHash": "0x3729b04635296c70a7164f6536f3310e478161044598f0274efb983d26ad238",
+    "address": "0x71d2b3552431db10ea79c6c000ffb1b61f23280574f66f4b1cb52e0acfd6669",
     "contract": "Marketplace"
   }
 }
