@@ -349,13 +349,13 @@ export default function OrderReview({
 					{t("change_currency")}
 				</Button>
 
-				<Button
-					onClick={handleProceedToPaymentSecure}
-					className={`w-full !bg-black hover:!bg-gray-800 !text-white mt-6 h-14 ${cartItems.length === 0 || isLoadingPrices ? "opacity-50 cursor-not-allowed" : ""}`}
-					disabled={isProcessing || cartItems.length === 0 || isLoadingPrices}
-				>
-				{isProcessing ? t("processing_payment") : isLoadingPrices ? t("loading") : t("proceed_to_payment_private")}
-				</Button>
+			<Button
+				onClick={handleProceedToPaymentSecure}
+				className={`w-full !bg-black hover:!bg-gray-800 !text-white mt-6 h-14 ${cartItems.length === 0 || isLoadingPrices || selectedCurrency !== "USDC" ? "opacity-50 cursor-not-allowed" : ""}`}
+				disabled={isProcessing || cartItems.length === 0 || isLoadingPrices || selectedCurrency !== "USDC"}
+			>
+			{isProcessing ? t("processing_payment") : isLoadingPrices ? t("loading") : t("proceed_to_payment_private")}
+			</Button>
 
 				<Button
 					onClick={handleProceedToPayment}
