@@ -112,8 +112,7 @@ mod Marketplace {
     use openzeppelin::upgrades::UpgradeableComponent;
     use starknet::event::EventEmitter;
     use starknet::storage::Map;
-    use starknet::{ContractAddress, get_caller_address, get_contract_address};
-    use crate::mist::{IChamberDispatcher, IChamberDispatcherTrait};
+    use starknet::{ContractAddress, get_caller_address, get_contract_address, syscalls};
     use super::{MainnetConfig, PAYMENT_TOKEN, SwapAfterLockParameters, SwapResult};
 
     component!(
@@ -129,6 +128,7 @@ mod Marketplace {
     const CAMBIATUS: felt252 = selector!("CAMBIATUS");
     const COFIBLOCKS: felt252 = selector!("COFIBLOCKS");
     const COFOUNDER: felt252 = selector!("COFOUNDER");
+    const MIST_MANAGER: felt252 = selector!("MIST_MANAGER");
     const CONSUMER: felt252 = selector!("CONSUMER");
 
     // ERC1155Receiver
@@ -448,15 +448,17 @@ mod Marketplace {
         fn withdraw_mist(
             ref self: ContractState, mist_address: ContractAddress, calldata: Span<felt252>,
         ) {
-            let mist = IChamberDispatcher { contract_address };
-            mist.handle_zkp(zkp_calldata);
+            self.assert_mist_manager(get_caller_address());
+            // Low level call allows updating calldata type without redeploying marketplace
+            syscalls::call_contract_syscall(mist_address, selector!("handle_zkp"), calldata)
+                .unwrap();
         }
 
         fn buy_product_with_mist(
             ref self: ContractState, token_id: u256, token_amount: u256, buyer: ContractAddress,
         ) {
-            // only owner can buy product with mist because we check payment offchain
-            self.accesscontrol.assert_only_role(DEFAULT_ADMIN_ROLE);
+            // only mist manager can buy product with mist because we check payment offchain
+            self.assert_mist_manager(get_caller_address());
 
             let stock = self.listed_product_stock.read(token_id);
             assert(stock >= token_amount, 'Not enough stock');
@@ -921,6 +923,14 @@ mod Marketplace {
             let starks_required = (amount_usdc * ONE_E12) / stark_price;
             // output should be in 10^18 representation (wei) so padding with 12 zeros
             starks_required * ONE_E12
+        }
+
+        fn assert_mist_manager(ref self: ContractState, caller: ContractAddress) {
+            assert(
+                self.accesscontrol.has_role(DEFAULT_ADMIN_ROLE, caller)
+                    || self.accesscontrol.has_role(MIST_MANAGER, caller),
+                'Not mist manager',
+            );
         }
 
         fn compute_sqrt_ratio_limit(
